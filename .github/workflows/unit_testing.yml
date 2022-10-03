@@ -28,3 +28,4 @@ jobs:
     - name: Run unit testing
       run: |
         coverage run --source=./ -m unittest discover -s ./tests
+        coverage report -m
