@@ -8,8 +8,8 @@ def list_files_directory(directory: str, extensions: list = None):
         1) The directory to search for files in (str).
         2) A list of file extensions to filter by (list). If no extensions are provided, all files will be returned.
 
-    :param directory:str: Specify the directory that you want to list files from
-    :param extensions:list: Specify the file extensions that should be included
+    :param directory: str: Specify the directory that you want to list files from
+    :param extensions: list: Specify the file extensions that should be included
     :return: A list of all filtered files in a directory
     """
     if extensions is None:
