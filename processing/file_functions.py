@@ -16,3 +16,4 @@ def list_files_directory(directory: str, extensions: list = None):
         extensions = ['.']
     return [fr'{directory}\{f}' for f in listdir(fr'{directory}')
             if any([f.__contains__(f'{ext}') for ext in extensions])]
+
