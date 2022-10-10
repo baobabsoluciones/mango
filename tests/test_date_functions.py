@@ -12,9 +12,9 @@ class DateTests(TestCase):
 
     def test_get_date_from_string(self):
         string = "2022-09-27"
-        date = get_date_from_string(string)
-        self.assertIsInstance(date, datetime)
-        self.assertEqual(date, datetime(2022, 9, 27))
+        dt = get_date_from_string(string)
+        self.assertIsInstance(dt, datetime)
+        self.assertEqual(dt, datetime(2022, 9, 27))
 
     def test_get_date_from_string_bad_string(self):
         string = "2022-09-274"
