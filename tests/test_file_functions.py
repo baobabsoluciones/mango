@@ -25,6 +25,5 @@ class FileTests(TestCase):
         for file in some_files:
             self.assertIn(file, some_files)
 
-    # def test_bad_folder(self):
-    #     files = list_files_directory("./no-exists")
-    #     print(files)
+    def test_bad_folder(self):
+        files = list_files_directory("./no-exists")
