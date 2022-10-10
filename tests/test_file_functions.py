@@ -27,3 +27,4 @@ class FileTests(TestCase):
 
     def test_bad_folder(self):
         files = list_files_directory("./no-exists")
+        self.assertEqual(files, None)
