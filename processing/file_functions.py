@@ -11,6 +11,7 @@ def list_files_directory(directory: str, extensions: list = None):
     :param str directory: Specify the directory that you want to list files from
     :param list extensions: Specify the file extensions that should be included
     :return: A list of all filtered files in a directory
+    :raises WindowsError: if the directory doesn't exist
     """
     if extensions is None:
         extensions = ['.']
