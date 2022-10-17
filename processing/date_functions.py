@@ -8,6 +8,7 @@ def get_date_from_string(string: str) -> datetime:
     :param str string: the datetime string
     :return: the datetime object
     :rtype: :class:`datetime`
+    :raises ValueError: if the string does not have the format %Y-%m-%d
     """
     return datetime.strptime(string, "%Y-%m-%d")
 
@@ -19,6 +20,7 @@ def get_date_time_from_string(string: str) -> datetime:
     :param str string: the datetime string
     :return: the datetime object
     :rtype: :class:`datetime`
+    :raises ValueError: if the string does not have the format %Y-%m-%dT%H:%M
     """
     return datetime.strptime(string, "%Y-%m-%dT%H:%M")
 
@@ -54,6 +56,7 @@ def get_hour_from_date_time(ts: datetime) -> float:
     :type ts: :class:`datetime`
     :return: the number of hours
     :rtype: float
+    :raises AttributeError: if the passed object is a :class:`date` object instead of a :class:`datetime` object
     """
     return float(ts.hour + ts.minute / 60)
 
@@ -65,6 +68,7 @@ def get_hour_from_string(string: str) -> float:
     :param str string: the datetime string
     :return: the number of hours
     :rtype: float
+    :raises ValueError: if the string does not have the format %Y-%m-%dT%H:%M
     """
     return get_hour_from_date_time(get_date_time_from_string(string))
 
@@ -81,6 +85,7 @@ def date_add_weeks_days(
     :param int days: the number of days to add.
     :return: the newly datetime object.
     :rtype: :class:`datetime`
+    :raises TypeError: if weeks and days is not an integer value
     """
     return starting_date + timedelta(days=weeks * 7 + days)
 
@@ -94,6 +99,7 @@ def date_time_add_minutes(date: datetime, minutes: float = 0) -> datetime:
     :param float minutes: the number of minutes to add
     :return: the newly datetime object.
     :rtype: :class:`datetime`.
+    :raises TypeError: if minutes is not a float value
     """
     return date + timedelta(minutes=minutes)
 
