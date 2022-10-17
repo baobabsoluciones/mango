@@ -26,4 +26,4 @@ class FileTests(TestCase):
             self.assertIn(file, files)
 
     def test_bad_folder(self):
-        self.assertRaises(WindowsError, list_files_directory, "./no-exists")
+        self.assertRaises(FileNotFoundError, list_files_directory, "./no-exists")
