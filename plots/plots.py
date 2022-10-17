@@ -12,6 +12,7 @@ def plotly_plot_lines(
     y_axis: Union[list, str],
     output_path: str,
     hover_list: list = None,
+    show: bool = False,
     title: str = None,
 ):
     """
@@ -24,8 +25,9 @@ def plotly_plot_lines(
     :param pd.DataFrame df: Specify the dataframe that contains the data to be plotted
     :param str x_axis: Specify the column name of the dataframe that will be used as x axis
     :param Union[list, str] y_axis: Specify the columns of the dataframe that will be plotted
-    :param str output_path: Specify the path where you want to save the plot. Without specifying the extension, the plot will be saved as a html file.
+    :param str output_path: Specify the path where you want to save the plot. Without specifying the extension, the plot will be saved as a html file
     :param list hover_list: Add the name of the column to be shown when hovering over a point in the plot
+    :param bool show: Set to True if you want to show the plot
     :param str title: Set the title of the plot
     """
     # Create a list of traces
@@ -34,8 +36,13 @@ def plotly_plot_lines(
     # add title
     fig.update_layout(title_text=title)
 
+    # Show
+    if show == True:
+        fig.show()
+
     # Save the plot as an html file
-    fig.write_html(output_path + ".html")
+    if output_path != None:
+        fig.write_html(output_path + ".html")
 
 
 def plotly_plot_scatter(
@@ -45,6 +52,7 @@ def plotly_plot_scatter(
     color_by: str = None,
     hover_list: list = None,
     output_path: str = None,
+    show: bool = False,
     title: str = None,
 ):
     """
@@ -59,6 +67,7 @@ def plotly_plot_scatter(
     :param str color_by: Specify which column in the dataframe should be used to color the points
     :param list hover_list:list: Add a list of columns that will be displayed when hovering over the data points
     :param str output_path: Specify the path where the html file will be saved
+    :param bool show: Set to True if you want to show the plot
     :param str title: Set the title of the plot
     """
     # Create a list of traces
@@ -67,5 +76,10 @@ def plotly_plot_scatter(
     # add title
     fig.update_layout(title_text=title)
 
+    # Show
+    if show == True:
+        fig.show()
+
     # Save the plot as an html file
-    fig.write_html(output_path + ".html")
+    if output_path != None:
+        fig.write_html(output_path + ".html")
