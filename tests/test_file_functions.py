@@ -23,8 +23,7 @@ class FileTests(TestCase):
         some_files = [".\\requirements-dev.txt", ".\\requirements.txt"]
         files = list_files_directory(".", ["txt"])
         for file in some_files:
-            self.assertIn(file, some_files)
+            self.assertIn(file, files)
 
     def test_bad_folder(self):
-        files = list_files_directory("./no-exists")
-        self.assertEqual(files, None)
+        self.assertRaises(WindowsError, list_files_directory, "./no-exists")
