@@ -22,6 +22,6 @@ class FileTests(TestCase):
         )
         for lag in lags:
             if lag > 0:
-                self.assertIn(f"target_lag_{lag}", df_result.columns)
+                self.assertIn(f"target_lag{lag}", df_result.columns)
             elif lag < 0:
-                self.assertIn(f"target_lead_{abs(lag)}", df_result.columns)
+                self.assertIn(f"target_lead{abs(lag)}", df_result.columns)
