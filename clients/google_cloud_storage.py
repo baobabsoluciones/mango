@@ -1,5 +1,6 @@
-import os
 import logging as log
+import os
+
 from google.api_core.exceptions import NotFound
 from google.cloud import storage
 from .cloud_storage import CloudStorage
@@ -12,17 +13,14 @@ class GoogleCloudStorage(CloudStorage):
     """
 
     def __init__(self, secrets_file, bucket_name):
-        if secrets_file is not None:
-            self.connection = storage.Client.from_service_account_json(secrets_file)
-        else:
-            self.connection = storage.Client.from_service_account_json(
-                os.getenv("SECRETS_FILE")
-            )
+        secrets = (
+            secrets_file if secrets_file is not None else os.getenv("SECRETS_FILE")
+        )
+        self.connection = storage.Client.from_service_account_json(secrets)
 
-        if bucket_name is not None:
-            self.bucket_name = bucket_name
-        else:
-            self.bucket_name = os.getenv("BUCKET_NAME", None)
+        self.bucket_name = (
+            bucket_name if bucket_name is not None else os.getenv("BUCKET_NAME")
+        )
 
         self.bucket = self.connection.bucket(self.bucket_name)
 
