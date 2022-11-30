@@ -9,6 +9,10 @@ from os.path import basename
 
 
 class EmailSender:
+    """
+    This class can be used to send emails to a given destination address from a given address.
+    """
+
     def __init__(
         self, host: str = None, port: int = None, user: str = None, password: str = None
     ):
@@ -20,8 +24,16 @@ class EmailSender:
         )
 
     def send_email_with_attachments(
-        self, destination: str, subject: str, attachments: list = None
+        self, destination: str, subject: str, body: str = None, attachments: list = None
     ):
+        """
+        Method to email a destination address with a subject, a body and attachments
+
+        :param str destination: the email address that receives the email
+        :param str subject: the subject of the email
+        :param str body: the body of the email
+        :param list attachments: the list with the paths of the attachments for the email
+        """
 
         msg = MIMEMultipart()
         msg["From"] = self.user
@@ -29,7 +41,7 @@ class EmailSender:
         msg["Date"] = formatdate(localtime=True)
         msg["Subject"] = subject
 
-        msg.attach(MIMEText(""))
+        msg.attach(MIMEText(f"{body}"))
 
         for at in attachments:
             with open(at, "rb") as fp:
