@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -80,3 +81,48 @@ def create_dense_data(
     df_w = df_grid.merge(df_w, on=id_cols + [time_col], how="left")
 
     return df_w
+
+
+def create_lags_col(
+    df: pd.DataFrame, col: str, lags: list[int], check_col: list[str] = None
+) -> pd.DataFrame:
+    """
+    The create_lags_col function creates lagged columns for a given dataframe.
+    The function takes three arguments: df, col, and lags. The df argument is the
+    dataframe to which we want to add lagged columns. The col argument is the name of
+    the column in the dataframe that we want to create lag variables for (e.g., 'sales').
+    The lags argument should be a list of integers representing how far back in time we
+    want to shift our new lag features (e.g., [3, 6] would create two new lag features).
+
+    :param pd.DataFrame df: Pass the dataframe to be manipulated
+    :param str col: Specify which column to create lags for
+    :param list[int] lags: Specify the lags that should be created
+    :param list[str] check_col: Check if the value of a column is equal to the previous or next value
+    :return: A dataframe with the lagged columns
+    """
+    df_c = df.copy()
+
+    for i in lags:
+        if i > 0:
+            name_col = col + "_lag" + str(abs(i))
+            df_c[name_col] = df_c[col].shift(i)
+            if check_col is None:
+                continue
+            if type(check_col) is list:
+                for c in check_col:
+                    df_c.loc[df_c[c] != df_c[c].shift(i), name_col] = np.nan
+            else:
+                df_c.loc[df_c[check_col] != df_c[check_col].shift(i), name_col] = np.nan
+
+        if i < 0:
+            name_col = col + "_lead" + str(abs(i))
+            df_c[name_col] = df_c[col].shift(i)
+            if check_col is None:
+                continue
+            if type(check_col) is list:
+                for c in check_col:
+                    df_c.loc[df_c[c] != df_c[c].shift(i), name_col] = np.nan
+            else:
+                df_c.loc[df_c[check_col] != df_c[check_col].shift(i), name_col] = np.nan
+
+    return df_c
