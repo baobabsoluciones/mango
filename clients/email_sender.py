@@ -16,12 +16,22 @@ class EmailSender:
     def __init__(
         self, host: str = None, port: int = None, user: str = None, password: str = None
     ):
-        self.host = host if host is not None else os.getenv("EMAIL_HOST")
-        self.port = port if port is not None else os.getenv("EMAIL_PORT")
-        self.user = user if user is not None else os.getenv("EMAIL_USER")
+        self.host = host if host is not None else os.getenv("EMAIL_HOST", None)
+        self.port = port if port is not None else os.getenv("EMAIL_PORT", None)
+        self.user = user if user is not None else os.getenv("EMAIL_USER", None)
         self.password = (
-            password if password is not None else os.getenv("EMAIL_PASSWORD")
+            password if password is not None else os.getenv("EMAIL_PASSWORD", None)
         )
+
+        if (
+            self.host is None
+            or self.port is None
+            or self.user is None
+            or self.password is None
+        ):
+            raise ValueError(
+                "Some configuration (host, port, user or password) is missing."
+            )
 
     def send_email_with_attachments(
         self, destination: str, subject: str, body: str = None, attachments: list = None

@@ -14,8 +14,13 @@ class GoogleCloudStorage(CloudStorage):
 
     def __init__(self, secrets_file, bucket_name):
         secrets = (
-            secrets_file if secrets_file is not None else os.getenv("SECRETS_FILE")
+            secrets_file
+            if secrets_file is not None
+            else os.getenv("SECRETS_FILE", None)
         )
+
+        if secrets is None:
+            raise ValueError("The secrets file is missing.")
         self.connection = storage.Client.from_service_account_json(secrets)
 
         self.bucket_name = (

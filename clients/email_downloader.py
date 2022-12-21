@@ -6,11 +6,14 @@ import logging as log
 
 class EmailDownloader:
     def __init__(self, host: str = None, user: str = None, password: str = None):
-        self.host = host if host is not None else os.getenv("EMAIL_HOST")
-        self.user = user if user is not None else os.getenv("EMAIL_USER")
+        self.host = host if host is not None else os.getenv("EMAIL_HOST", None)
+        self.user = user if user is not None else os.getenv("EMAIL_USER", None)
         self.password = (
-            password if password is not None else os.getenv("EMAIL_PASSWORD")
+            password if password is not None else os.getenv("EMAIL_PASSWORD", None)
         )
+
+        if self.host is None or self.user is None or self.password is None:
+            raise ValueError("Some configuration (host, user or password) is missing.")
 
         self.connection = imaplib.IMAP4_SSL(self.host)
         self.connection.login(self.user, self.password)
