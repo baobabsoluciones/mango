@@ -1,7 +1,10 @@
 from unittest import TestCase
 
-from mango.processing.file_functions import list_files_directory, load_json
-from mango.tests.const import normalize_path
+from mango.processing.file_functions import (
+    list_files_directory,
+    load_json,
+    normalize_path,
+)
 
 
 class FileTests(TestCase):

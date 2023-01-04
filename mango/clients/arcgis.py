@@ -2,6 +2,7 @@ import json
 import time
 
 import requests
+from mango.processing.file_functions import normalize_path
 from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args
 from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
@@ -64,8 +65,8 @@ class ArcGisClient:
         return location["x"], location["y"]
 
     @validate_args(
-        origins="./schemas/location.json",
-        destinations="./schemas/location.json",
+        origins=normalize_path("./schemas/location.json"),
+        destinations=normalize_path("./schemas/location.json"),
     )
     def get_origin_destination_matrix(
         self, *, origins: list, destinations: list, travel_mode: dict

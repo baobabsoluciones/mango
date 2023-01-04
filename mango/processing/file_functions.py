@@ -1,4 +1,5 @@
 import json
+import os
 from os import listdir
 
 
@@ -33,3 +34,15 @@ def load_json(path):
     """
     with open(path, "r") as f:
         return json.load(f)
+
+
+def normalize_path(rel_path):
+    """
+    The normalize_path function is used to convert relative paths into absolute paths.
+    The normalize_path function takes a relative path as an argument and returns the absolute path.
+
+    :param str rel_path: Specify the path of the file that is being read
+    :return: The absolute path of rel_path
+    :doc-author: baobab soluciones
+    """
+    os.path.join(os.path.dirname(__file__), rel_path)
