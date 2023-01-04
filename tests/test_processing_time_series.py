@@ -2,12 +2,13 @@ from unittest import TestCase
 
 from processing.processing_time_series import create_lags_col
 import pandas as pd
+from tests.const import normalize_path
 
 
-class FileTests(TestCase):
+class ProcessingTests(TestCase):
     def setUp(self):
         # Read data to test the functions
-        self.df = pd.read_pickle("data/ts_dataset.pkl")
+        self.df = pd.read_pickle(normalize_path("../data/ts_dataset.pkl"))
 
     def tearDown(self):
         pass
@@ -18,7 +19,10 @@ class FileTests(TestCase):
         self.assertIsInstance(df_result, pd.DataFrame)
         self.assertEqual(
             df_result.shape,
-            (len(self.df), len(self.df.columns) + len(set([lag for lag in lags if lag != 0]))),
+            (
+                len(self.df),
+                len(self.df.columns) + len(set([lag for lag in lags if lag != 0])),
+            ),
         )
         for lag in lags:
             if lag > 0:

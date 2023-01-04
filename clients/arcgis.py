@@ -10,8 +10,7 @@ from shared.const import (
 
 
 class ArcGisClient:
-    def __init__(self, base_api_url, client_id, client_secret):
-        self.base_api_url = base_api_url
+    def __init__(self, client_id, client_secret):
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = None
@@ -76,6 +75,7 @@ class ArcGisClient:
 
         :param list origins: a list of dictionaries with the origin information. Keys needed: "Name", "x", "y".
         :param list destinations: a list of dictionaries with the destination information. Keys needed: "Name", "x", "y".
+        :param dict travel_mode:
         :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
         :rtype: list
         :doc-author: baobab soluciones
