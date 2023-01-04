@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from artic.processing.processing_time_series import create_lags_col
+from mango.processing.processing_time_series import create_lags_col
 import pandas as pd
-from artic.tests.const import normalize_path
+from mango.tests.const import normalize_path
 
 
 class ProcessingTests(TestCase):

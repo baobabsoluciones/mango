@@ -1,7 +1,7 @@
 from functools import wraps
 from fastjsonschema import compile
 from fastjsonschema.exceptions import JsonSchemaValueException
-from artic.processing import load_json
+from mango.processing import load_json
 from .exceptions import ValidationError
 
 

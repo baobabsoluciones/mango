@@ -2,8 +2,8 @@ import json
 import time
 
 import requests
-from artic.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args
-from artic.shared.const import (
+from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args
+from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
 )
