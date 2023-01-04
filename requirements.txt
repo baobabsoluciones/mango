@@ -1,3 +1,4 @@
+fastjsonschema
 numpy
 pandas
 plotly
