@@ -1,3 +1,4 @@
+import json
 from os import listdir
 
 
@@ -14,7 +15,21 @@ def list_files_directory(directory: str, extensions: list = None):
     :raises WindowsError: if the directory doesn't exist
     """
     if extensions is None:
-        extensions = ['.']
-    return [fr'{directory}\{f}' for f in listdir(fr'{directory}')
-            if any([f.__contains__(f'{ext}') for ext in extensions])]
+        extensions = ["."]
+    return [
+        rf"{directory}\{f}"
+        for f in listdir(rf"{directory}")
+        if any([f.__contains__(f"{ext}") for ext in extensions])
+    ]
 
+
+def load_json(path):
+    """
+    The load_json function loads a json file from the specified path and returns it as a dictionary.
+
+    :param path: Specify the path of the file to be loaded
+    :return: A dictionary
+    :doc-author: baobab soluciones
+    """
+    with open(path, "r") as f:
+        return json.load(f)
