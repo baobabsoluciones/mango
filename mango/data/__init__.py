@@ -1,5 +1,6 @@
+import os
+
 import pandas
-from mango.processing.file_functions import normalize_path
 
 
 def get_ts_dataset():
@@ -8,5 +9,6 @@ def get_ts_dataset():
     :return: the time series dataset
     :rtype: pandas.DataFrame
     """
-    df = pandas.read_pickle(normalize_path("./ts_dataset.pkl"))
+    dir, file = os.path.split(__file__)
+    df = pandas.read_pickle(f"{dir}/ts_dataset.pkl")
     return df

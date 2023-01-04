@@ -1,8 +1,7 @@
 from unittest import TestCase
 
-from mango.processing.file_functions import normalize_path
 from mango.shared import validate_args, ValidationError
-from mango.tests.const import VALIDATION_SCHEMA
+from mango.tests.const import VALIDATION_SCHEMA, normalize_path
 
 
 class ValidationTests(TestCase):
