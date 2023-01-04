@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from processing.file_functions import list_files_directory, load_json
-from tests.const import normalize_path
+from artic.processing.file_functions import list_files_directory, load_json
+from artic.tests.const import normalize_path
 
 
 class FileTests(TestCase):

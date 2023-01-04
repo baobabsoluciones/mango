@@ -1,7 +1,6 @@
 from unittest import TestCase
-
-from shared import validate_args, ValidationError
-from tests.const import normalize_path, VALIDATION_SCHEMA
+from artic.shared import validate_args, ValidationError
+from artic.tests.const import normalize_path, VALIDATION_SCHEMA
 
 
 class ValidationTests(TestCase):

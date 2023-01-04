@@ -1,6 +1,5 @@
 from unittest import TestCase
 from datetime import date
-from processing.date_functions import *
 
 
 class DateTests(TestCase):

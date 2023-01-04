@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from processing.processing_time_series import create_lags_col
+from artic.processing.processing_time_series import create_lags_col
 import pandas as pd
-from tests.const import normalize_path
+from artic.tests.const import normalize_path
 
 
 class ProcessingTests(TestCase):
