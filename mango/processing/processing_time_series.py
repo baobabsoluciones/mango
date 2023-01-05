@@ -136,6 +136,29 @@ def create_recurrent_dataset(
     lags: List[int] = None,
     output_last: bool = True,
 ):
+    """
+    The create_recurrent_dataset function creates a dataset for recurrent neural networks.
+    The function takes in an array of data, and returns two arrays: one containing the input data,
+    and another containing the output labels. The input is a 2D array with shape (num_samples, num_features).
+    The input data output is a 3D array with shape (num_samples, look_back, num_features), while the labels output
+    have a 1D array with shape (num_samples, ).
+
+    The function allows to include the output lags in the input output data. If include_output_lags is True,
+    the function will creare the lags indicated on the lags argument.
+
+    The function allows for the lable to be the first "column" of the input data, or the last "column" of the input data
+    by setting the output_last argument to False or True, respectively.
+
+    :param :class:`np.array` data: pass the data to be used for training
+    :param int look_back: define the number of previous time steps to use as input variables
+    to predict the next time period
+    :param bool include_output_lags: decide whether the output lags should be included in the input data
+    :param lags:sSpecify which lags should be included in the input data
+    :param output_last: indicate if the label column is the first or last one in the original data
+    :return: A tuple of numpy arrays: (input_data, labels)
+    :rtype: tuple
+    :doc-author: baobab soluciones
+    """
     x, y = [], []
     if output_last:
         x_in = data[:, :-1]
