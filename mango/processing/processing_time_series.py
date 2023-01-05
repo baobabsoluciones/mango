@@ -127,3 +127,51 @@ def create_lags_col(
                 df_c.loc[df_c[check_col] != df_c[check_col].shift(i), name_col] = np.nan
 
     return df_c
+
+
+def create_recurrent_dataset(
+    data: np.array,
+    look_back: int,
+    include_output_lags: bool = False,
+    lags: List[int] = None,
+    output_last: bool = True,
+):
+    x, y = [], []
+    if output_last:
+        x_in = data[:, :-1]
+        y_in = data[:, -1:]
+    else:
+        x_in = data[:, 1:]
+        y_in = data[:, :1]
+
+    if lags is None or not include_output_lags:
+        max_lag = 0
+    else:
+        max_lag = max(lags)
+
+    for i in range(max_lag, data.shape[0] - look_back):
+
+        a = x_in[i : (i + look_back), :]
+
+        if include_output_lags:
+            lagged = np.empty((look_back, 1))
+            for lag in lags:
+                lagged = np.concatenate(
+                    (
+                        lagged,
+                        y_in[i - lag : (i + look_back - lag)].reshape((look_back, 1)),
+                    ),
+                    axis=1,
+                )
+            lagged = lagged[:, 1:]
+
+            x.append(np.concatenate((a, lagged), axis=1))
+        else:
+            x.append(a)
+
+        if output_last:
+            y.append(y_in[i + look_back])
+        else:
+            y.append(y_in[i + look_back])
+
+    return np.array(x), np.array(y).reshape((data.shape[0] - look_back - max_lag,))
