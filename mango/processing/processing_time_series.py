@@ -144,9 +144,9 @@ def create_recurrent_dataset(
     have a 1D array with shape (num_samples, ).
 
     The function allows to include the output lags in the input output data. If include_output_lags is True,
-    the function will creare the lags indicated on the lags argument.
+    the function will create the lags indicated on the lags' argument.
 
-    The function allows for the lable to be the first "column" of the input data, or the last "column" of the input data
+    The function allows for the label to be the first "column" of the input data, or the last "column" of the input data
     by setting the output_last argument to False or True, respectively.
 
     :param :class:`np.array` data: pass the data to be used for training
