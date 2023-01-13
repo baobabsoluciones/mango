@@ -3,6 +3,7 @@ from unittest import TestCase
 from mango.data import get_ts_dataset
 from mango.processing.processing_time_series import create_lags_col
 import pandas as pd
+from tests.const import normalize_path
 
 
 class ProcessingTests(TestCase):

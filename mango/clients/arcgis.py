@@ -129,20 +129,22 @@ class ArcGisClient:
         job_id = response.json()["jobId"]
         timeout = 600
         start = datetime.utcnow()
-        while True and (datetime.utcnow() - start).seconds < timeout:
+        while (datetime.utcnow() - start).seconds < timeout:
             response = requests.get(
                 url=f"{ARCIS_ODMATRIX_JOB_URL}/jobs/{job_id}?f=json&returnMessages=True&token={self.token}"
             )
             if response.json()["jobStatus"] == "esriJobSucceeded":
                 break
             elif response.json()["jobStatus"] == "esriJobFailed":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(f"ArcGis job has a failed status: {response.json()}")
             elif response.json()["jobStatus"] == "esriJobCancelled":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(f"ArcGis job was cancelled: {response.json()}")
             elif response.json()["jobStatus"] == "esriJobTimedOut":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(f"ArcGis job timed out: {response.json()}")
             elif response.json()["jobStatus"] == "esriJobCancelling":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(
+                    f"ArcGis job is in the process of getting cancelled: {response.json()}"
+                )
             else:
                 time.sleep(2)
 
