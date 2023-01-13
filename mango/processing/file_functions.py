@@ -1,6 +1,7 @@
 import json
 import os
 from os import listdir
+from typing import Union
 
 
 def list_files_directory(directory: str, extensions: list = None):
@@ -34,3 +35,17 @@ def load_json(path):
     """
     with open(path, "r") as f:
         return json.load(f)
+
+
+def write_json(data: Union[dict, list], path):
+    """
+    The write_json function writes a dictionary or list to a JSON file.
+
+    :param data: allow the function to accept both a dictionary and list object
+    :param path: Specify the path of the file that you want to write to
+    :return: None
+    :doc-author: baobab soluciones
+    """
+
+    with open(path, "w") as f:
+        json.dump(data, f, indent=4, sort_keys=False)
