@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import List
 
 
 def create_dense_data(
@@ -84,7 +85,7 @@ def create_dense_data(
 
 
 def create_lags_col(
-    df: pd.DataFrame, col: str, lags: list[int], check_col: list[str] = None
+    df: pd.DataFrame, col: str, lags: List[int], check_col: List[str] = None
 ) -> pd.DataFrame:
     """
     The create_lags_col function creates lagged columns for a given dataframe.
