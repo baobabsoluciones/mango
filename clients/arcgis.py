@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 
 import requests
-from shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args
+from shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
 from shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
@@ -131,13 +131,15 @@ class ArcGisClient:
             if response.json()["jobStatus"] == "esriJobSucceeded":
                 break
             elif response.json()["jobStatus"] == "esriJobFailed":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(f"ArcGis job has a failed status: {response.json()}")
             elif response.json()["jobStatus"] == "esriJobCancelled":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(f"ArcGis job was cancelled: {response.json()}")
             elif response.json()["jobStatus"] == "esriJobTimedOut":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(f"ArcGis job timed out: {response.json()}")
             elif response.json()["jobStatus"] == "esriJobCancelling":
-                raise Exception(f"Error on ArcGis job: {response.json()}")
+                raise JobError(
+                    f"ArcGis job is in the process of getting cancelled: {response.json()}"
+                )
             else:
                 time.sleep(2)
 
