@@ -124,7 +124,7 @@ class ArcGisClient:
         job_id = response.json()["jobId"]
         timeout = 600
         start = datetime.utcnow()
-        while True and (datetime.utcnow() - start).seconds < timeout:
+        while (datetime.utcnow() - start).seconds < timeout:
             response = requests.get(
                 url=f"{ARCIS_ODMATRIX_JOB_URL}/jobs/{job_id}?f=json&returnMessages=True&token={self.token}"
             )
