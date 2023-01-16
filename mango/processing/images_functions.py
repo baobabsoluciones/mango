@@ -1,4 +1,3 @@
-# Paquetes necesarios
 from imutils import face_utils, url_to_image
 import dlib
 import cvlib as cv
@@ -17,7 +16,6 @@ def plot_face(img, face, color=(0, 255, 0)):
     :return: The image with the rectangle plotted
     :doc-author: baobab-soluciones
     """
-    # Plotea el recuadro de la cara
     img_c = img.copy()
     cv2.rectangle(img_c, (face[0], face[1]), (face[2], face[3]), color, 2)
     cv2.imshow("Output", img_c)
@@ -39,8 +37,6 @@ def plot_eyes(img, shape, color=(0, 0, 255)):
     :return: The image with the eyes plotted
     :doc-author: baobab-soluciones
     """
-    ""
-    # Plotea los rasgos de la cara
     img_c = img.copy()
     for (x, y) in shape:
         cv2.circle(img_c, (x, y), 2, color, -1)
@@ -61,7 +57,6 @@ def detect_face_cv(img, thres=0.9, size=0.66):
     :return: A face in a given image
     :doc-author: baobab-soluciones
     """
-    # dada una imagen devuelve una cara mediante OpenCv
     faces, confidences = cv.detect_face(img)
     faces_ok = []
     confi_ok = []
@@ -86,12 +81,11 @@ def detect_face_dlib(img, detector=None, thres=0):
     :param img: Pass the image to be processed
     :param detector: Load the default detector
     :param thres: Detect faces with a confidence higher than 0
-    :return: :
+    :return: the coordinates of the rectangle with the face
     :doc-author: baobab-soluciones
     """
     if detector is None:
         detector = dlib.get_frontal_face_detector()
-    # dada una imagen devuelve una cara mediante dblib
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     dets, scores, idx = detector.run(gray, 1, thres)
     faces_ok = None
@@ -99,9 +93,9 @@ def detect_face_dlib(img, detector=None, thres=0):
 
     for index, det in enumerate(dets):
         (x, y, w, h) = face_utils.rect_to_bb(det)
-        # Si el cuadrado no es pequeño
+        # the size is enough?
         if x <= img.shape[1] * 0.66 and y <= img.shape[0] * 0.66:
-            # y es mejor score se guarda
+            # keeps the best score
             if scores[index] > confi_ok:
                 faces_ok = [x, y, min(x + w, img.shape[1]), min(y + h, img.shape[0])]
                 confi_ok = scores[index]
@@ -121,7 +115,6 @@ def detect_eyes(img, face, predictor):
     """
     if predictor is None:
         predictor = dlib.shape_predictor("shared/shape_predictor_5_face_landmarks.dat")
-    # dada una imagen y el recuadro de la cara detecta los rasgos
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rect = dlib.rectangle(face[0], face[1], face[2], face[3])
     shape = predictor(gray, rect)
@@ -139,9 +132,9 @@ def resize_img(img, size=(512, 512)):
     :return: The image resized
     :doc-author: baobab-soluciones
     """
-    # Modifica el tamaño de la imagen mantenteniendo la relación alto-ancho
+    # Keeps the proportion
     proportion = sqrt(img.shape[0] * img.shape[1] / (size[0] * size[1]))
-    # shape da (alto, ancho)
+    # shape returns (height, width)
     new_size = (round(img.shape[1] / proportion), round(img.shape[0] / proportion))
     image_rs = cv2.resize(img, new_size, interpolation=cv2.INTER_AREA)
     return image_rs
@@ -157,9 +150,8 @@ def resize_inv_crop(img, box, size=(512, 512)):
     :return: The cropped image
     :doc-author: baobab-soluciones
     """
-    # Recorta una imagen grande en base an encuadre y al tamaño que se usara para calcular el encuadre
     proportion = sqrt(img.shape[0] * img.shape[1] / (size[0] * size[1]))
-    # shape da (alto, ancho)
+    # shape returns (height, width)
     cropped_image = img[
                     round(box[1] * proportion): round(box[3] * proportion),
                     round(box[0] * proportion): round(box[2] * proportion),
@@ -178,12 +170,11 @@ def resize_img_max_size(img, size=(512, 512)):
     :return: The image with the larger side resized to the size specified (by default 512), and the other side is adjusted proportionally
     :doc-author: baobab-soluciones
     """
-    # Devuelve la imagen con el lado mayor con el tamaño que se quiera (512 por defecto) y el otro se ajusta en proporción.
     p1 = size[0] / img.shape[0]
     p2 = size[1] / img.shape[1]
     proportion = min(p1, p2)
 
-    # shape da (alto, ancho)
+    # shape returns (height, width)
     new_size = (round(img.shape[1] * proportion), round(img.shape[0] * proportion))
     image_rs = cv2.resize(img, new_size, interpolation=cv2.INTER_AREA)
     return image_rs
@@ -191,22 +182,20 @@ def resize_img_max_size(img, size=(512, 512)):
 
 def fix_size_img(img, size=(512, 512)):
     """
-    The fix_size_img function takes an image as input and returns a square black border around the image.
+    The fix_size_img function takes an image as input with a side equal to the final size and returns a square black border around the image.
     If the original image is already square, it simply returns that same image.
 
     :param img: Get the image to be resized
     :param size: Resize the image to a 512x512 square
-    :return: A black image of the same size as the input
+    :return: A black image of the same size as the input or None ifthe teh size is not correct.
     :doc-author: baobab-soluciones
     """
-
-    # Si una imagen no es cuadrada le mete bordes negros
+    if img.shape[1] != size[0] and img.shape[0] != size[1]:
+        return None
     if len(img.shape) == 3:
         negro = np.zeros([size[0], size[1], 3], dtype=np.uint8)
     else:
         negro = np.zeros([size[0], size[1]], dtype=np.uint8)
-    # .shape da (alto, ancho)
-    # si el ancho es igual la pegamos abajo
     if img.shape[1] == size[0]:
         arriba = negro.shape[0] - img.shape[0]
         negro[arriba:, :] = img
@@ -229,8 +218,6 @@ def get_circle(edges, gval):
     :return: A list of the coordinates of the center and radius of a circle
     :doc-author: baobab-soluciones
     """
-
-    # Busca circulos con un radio maximo menor a la mitad del lado mayor de la imagen.
     max_radius = round(max(edges.shape[0], edges.shape[1]) / 2)
 
     circles = cv2.HoughCircles(
@@ -305,12 +292,12 @@ def flood_fill_alg(img):
     im_floodfill_inv = cv2.bitwise_not(im_floodfill_fin)
 
     # Combine the two images to get the foreground.
-    im_out = (im_th | im_floodfill_inv) / 255
+    im_out = (im_th | im_floodfill_inv)
 
     return im_out
 
 
-def overlay_two_image_v2(image, overlay, prob=0.65, ignore_color=[0, 0, 0]):
+def overlay_two_image_v2(image, overlay, prob=0.65, ignore_color=None):
     """
     The overlay_two_image_v2 function takes two images as input and overlays the second image onto the first.
     The overlay_two_image_v2 function has three parameters: image, overlay, and prob. The image parameter is a numpy array
@@ -322,8 +309,11 @@ def overlay_two_image_v2(image, overlay, prob=0.65, ignore_color=[0, 0, 0]):
     :param overlay: Overlay the image with the mask
     :param prob: Set the opacity of the overlay being applied to a pixel
     :param ignore_color: Ignore the  color in the overlay image
+    :return: The new image
     :doc-author: baobab-soluciones
     """
+    if ignore_color is None:
+        ignore_color = [0, 0, 0]
     ignore_color = np.asarray(ignore_color)
     mask = (overlay == ignore_color).all(-1, keepdims=True)
     out = np.where(
@@ -345,7 +335,7 @@ def write_text(url, text, load_func=cv2.imread):
     :param url: Specify the path of the image that will be used for text insertion
     :param text: Specify the text to be written on the image
     :param load_func: Specify the function that is used to load an image
-    :return: None
+    :return: True if the image has been correctly generated
     :doc-author: baobab-soluciones
     """
     try:
