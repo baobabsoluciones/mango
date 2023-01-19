@@ -1,5 +1,7 @@
 import pickle
 
+import pandas
+
 
 def pickle_copy(instance):
     """
@@ -35,3 +37,73 @@ def reverse_dict(data):
     :doc-author: baobab soluciones
     """
     return {v: k for k, v in data.items()}
+
+
+def cumsum(lst: list) -> list:
+    """
+    The cumsum function takes a list of numbers and returns a list of the cumulative sum of those numbers.
+
+    :param lst: the list of numbers to be summed
+    :return: a list of the cumulative sum of the inputted list
+    :doc-author: baobab soluciones
+    """
+    return [sum(lst[: i + 1]) for i in range(len(lst))]
+
+
+def lag_list(lst: list, lag: int = 1) -> list:
+    """
+    The lag_list function takes a list and returns a list with the values lagged by the specified amount.
+
+    :param lst: the list to be lagged
+    :param lag: the amount by which to lag the list
+    :return: a list with the values lagged by the specified amount
+    :doc-author: baobab soluciones
+    """
+    return [None] * lag + lst[:-lag]
+
+
+def row_number(lst: list, start: int = 0) -> list:
+    """
+    The row_number function takes a list and returns a list with the row number of each element.
+
+    :param lst: the list to be numbered
+    :param start: the number to start the row numbering at
+    :return: a list with the row number of each element
+    :doc-author: baobab soluciones
+    """
+    return [i + start for i, _ in enumerate(lst)]
+
+
+def flatten(lst: list) -> list:
+    """
+    The flatten function takes a list of lists and returns a flattened list.
+
+    :param lst: the list of lists to be flattened
+    :return: a flattened list
+    :doc-author: baobab soluciones
+    """
+    return [item for sublist in lst for item in sublist]
+
+
+def data_frame_to_list(df: pandas.DataFrame) -> list:
+    """
+    The data_frame_to_list function takes a DataFrame and returns a list of dictionaries with the
+    column names as keys and the values as values.
+
+    :param df: the DataFrame to be converted to a list of dictionaries
+    :return: a list of dictionaries
+    :doc-author: baobab soluciones
+    """
+    return df.to_dict(orient="records")
+
+
+def data_frame_to_dict(df: pandas.DataFrame) -> dict:
+    """
+    The data_frame_to_dict function takes a DataFrame and returns a dictionary with the
+    column names as keys and the values as values.
+
+    :param df: the DataFrame to be converted to a dictionary
+    :return: a dictionary
+    :doc-author: baobab soluciones
+    """
+    return {name: content.to_dict(orient="records") for name, content in df.items()}
