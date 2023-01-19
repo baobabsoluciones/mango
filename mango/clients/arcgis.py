@@ -5,7 +5,7 @@ from datetime import datetime
 
 import requests
 from mango.processing import load_json
-from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args
+from mango.shared import InvalidCredentials, JobError, ARCGIS_TOKEN_URL, validate_args
 from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
