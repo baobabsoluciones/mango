@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from mango.data import get_ts_dataset
-from mango.processing.processing_time_series import create_lags_col
+from mango.processing import create_lags_col
 import pandas as pd
 
 

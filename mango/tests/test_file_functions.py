@@ -1,8 +1,12 @@
 from unittest import TestCase
 
-from mango.processing.file_functions import (
+from mango.processing import (
     list_files_directory,
-    load_json
+    load_json,
+    is_json_file,
+    is_excel_file,
+    load_excel,
+    load_excel_sheet,
 )
 from mango.tests.const import normalize_path
 
@@ -40,3 +44,30 @@ class FileTests(TestCase):
         data = load_json(file)
         self.assertIsInstance(data, dict)
         self.assertIn("name", data.keys())
+
+    def test_write_json(self):
+        pass
+
+    def test_check_json_extension(self):
+        file = normalize_path("./data/test.json")
+        self.assertTrue(is_json_file(file))
+        self.assertFalse(is_json_file(file + ".txt"))
+
+    def test_check_excel_extension(self):
+        file = normalize_path("./data/test.xlsx")
+        self.assertTrue(is_excel_file(file))
+        self.assertFalse(is_excel_file(file + ".txt"))
+
+    def test_load_excel_sheet(self):
+        pass
+
+    def test_excel_file(self):
+        pass
+
+    def test_write_excel(self):
+        pass
+
+    def test_read_bad_excel_file(self):
+        file = normalize_path("./data/test.json")
+        self.assertRaises(FileNotFoundError, load_excel, file)
+        self.assertRaises(FileNotFoundError, load_excel_sheet, file, None)
