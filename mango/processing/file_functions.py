@@ -128,7 +128,7 @@ def write_excel(path, data):
     The write_excel function writes a dictionary of DataFrames to an Excel file.
 
     :param path: Specify the path of the file that you want to write to
-    :param data: Specify the dictionary of DataFrames to be written
+    :param data: Specify the dictionary to be written
     :return: None
     :doc-author: baobab soluciones
     """
@@ -145,3 +145,70 @@ def write_excel(path, data):
             elif isinstance(content, dict):
                 df = pd.DataFrame.from_dict(content, orient="index")
                 df.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
+
+
+def write_df_to_excel(path, data, **kwargs):
+    """
+    The write_df_to_excel function writes a DataFrame to an Excel file.
+
+    :param path: Specify the path of the file that you want to write to
+    :param data: Specify the DataFrame to be written
+    :return: None
+    :doc-author: baobab soluciones
+    """
+    if not is_excel_file(path):
+        raise FileNotFoundError(
+            f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
+        )
+
+    with pd.ExcelWriter(path) as writer:
+        data.to_excel(writer, **kwargs, index=False)
+
+
+def load_csv(path, **kwargs):
+    """
+    The load_csv function loads a CSV file and returns it as a DataFrame.
+
+    :param path: Specify the path of the file to be loaded
+    :return: A DataFrame
+    :doc-author: baobab soluciones
+    """
+    if not check_extension(path, ".csv"):
+        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
+
+    return pd.read_csv(path, **kwargs)
+
+
+def write_csv(path, data, **kwargs):
+    """
+    The write_csv function writes a DataFrame to a CSV file.
+
+    :param path: Specify the path of the file that you want to write to
+    :param data: Specify the DataFrame to be written
+    :return: None
+    :doc-author: baobab soluciones
+    """
+    if not check_extension(path, ".csv"):
+        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
+
+    if isinstance(data, list):
+        df = pd.DataFrame.from_records(data)
+        df.to_csv(path, **kwargs, index=False)
+    elif isinstance(data, dict):
+        df = pd.DataFrame.from_dict(data)
+        df.to_csv(path, **kwargs, index=False)
+
+
+def write_df_to_csv(path, data, **kwargs):
+    """
+    The write_csv function writes a DataFrame to a CSV file.
+
+    :param path: Specify the path of the file that you want to write to
+    :param data: Specify the DataFrame to be written
+    :return: None
+    :doc-author: baobab soluciones
+    """
+    if not check_extension(path, ".csv"):
+        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
+
+    data.to_csv(path, **kwargs, index=False)

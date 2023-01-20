@@ -62,6 +62,18 @@ def lag_list(lst: list, lag: int = 1) -> list:
     return [None] * lag + lst[:-lag]
 
 
+def lead_list(lst: list, lead: int = 1) -> list:
+    """
+    The lead_list function takes a list and returns a list with the values led by the specified amount.
+
+    :param lst: the list to be led
+    :param lead: the amount by which to lead the list
+    :return: a list with the values led by the specified amount
+    :doc-author: baobab soluciones
+    """
+    return lst[lead:] + [None] * lead
+
+
 def row_number(lst: list, start: int = 0) -> list:
     """
     The row_number function takes a list and returns a list with the row number of each element.
@@ -99,10 +111,10 @@ def data_frame_to_list(df: pandas.DataFrame) -> list:
 
 def data_frame_to_dict(df: pandas.DataFrame) -> dict:
     """
-    The data_frame_to_dict function takes a DataFrame and returns a dictionary with the
-    column names as keys and the values as values.
+    The data_frame_to_dict function takes a dict of DataFrames and returns a dictionary with the
+    sheet names as keys and the DataFrames in records as values.
 
-    :param df: the DataFrame to be converted to a dictionary
+    :param dict df: the dict of DataFrames to be converted to a dictionary
     :return: a dictionary
     :doc-author: baobab soluciones
     """

@@ -6,3 +6,4 @@ python-dateutil
 pytz
 six
 tenacity
+openpyxl
