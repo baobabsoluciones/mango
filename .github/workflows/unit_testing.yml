@@ -26,5 +26,5 @@ jobs:
         pip install -r requirements-dev.txt
     - name: Run unit testing
       run: |
-        coverage run --source=./ -m unittest discover -s tests
+        coverage run --source=./mango/ -m unittest discover -s mango/tests
         coverage report -m

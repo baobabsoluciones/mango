@@ -1,14 +1,20 @@
 import json
+import os
 import time
 from datetime import datetime
 
 import requests
-from shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
-from shared.const import (
+from mango.processing import load_json
+from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args
+from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
     ARCGIS_CAR_TRAVEL_MODE,
 )
+from mango.shared.exceptions import JobError
+
+this_dir, file = os.path.split(__file__)
+schema = load_json(f"{this_dir}/../schemas/location.json")
 
 
 class ArcGisClient:
@@ -67,8 +73,8 @@ class ArcGisClient:
         return location["x"], location["y"]
 
     @validate_args(
-        origins="./schemas/location.json",
-        destinations="./schemas/location.json",
+        origins=schema,
+        destinations=schema,
     )
     def get_origin_destination_matrix(
         self, *, origins: list, destinations: list, travel_mode: dict = None

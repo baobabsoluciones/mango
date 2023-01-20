@@ -1,14 +1,14 @@
 from unittest import TestCase
 
-from processing.processing_time_series import create_lags_col
+from mango.data import get_ts_dataset
+from mango.processing.processing_time_series import create_lags_col
 import pandas as pd
-from tests.const import normalize_path
 
 
 class ProcessingTests(TestCase):
     def setUp(self):
         # Read data to test the functions
-        self.df = pd.read_pickle(normalize_path("../data/ts_dataset.pkl"))
+        self.df = get_ts_dataset()
 
     def tearDown(self):
         pass

@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from shared import validate_args, ValidationError
-from tests.const import normalize_path, VALIDATION_SCHEMA
+from mango.shared import validate_args, ValidationError
+from mango.tests.const import VALIDATION_SCHEMA, normalize_path
 
 
 class ValidationTests(TestCase):
@@ -52,4 +52,3 @@ class ValidationTests(TestCase):
         data = [{"name": "random"}]
 
         self.assertRaises(ValueError, do_nothing, argument=data)
-
