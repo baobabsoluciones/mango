@@ -127,3 +127,74 @@ def create_lags_col(
                 df_c.loc[df_c[check_col] != df_c[check_col].shift(i), name_col] = np.nan
 
     return df_c
+
+
+def create_recurrent_dataset(
+    data: np.array,
+    look_back: int,
+    include_output_lags: bool = False,
+    lags: List[int] = None,
+    output_last: bool = True,
+):
+    """
+    The create_recurrent_dataset function creates a dataset for recurrent neural networks.
+    The function takes in an array of data, and returns two arrays: one containing the input data,
+    and another containing the output labels. The input is a 2D array with shape (num_samples, num_features).
+    The input data output is a 3D array with shape (num_samples, look_back, num_features), while the labels output
+    have a 1D array with shape (num_samples, ).
+
+    The function allows to include the output lags in the input output data. If include_output_lags is True,
+    the function will create the lags indicated on the lags' argument.
+
+    The function allows for the label to be the first "column" of the input data, or the last "column" of the input data
+    by setting the output_last argument to False or True, respectively.
+
+    :param :class:`np.array` data: pass the data to be used for training
+    :param int look_back: define the number of previous time steps to use as input variables
+    to predict the next time period
+    :param bool include_output_lags: decide whether the output lags should be included in the input data
+    :param lags:sSpecify which lags should be included in the input data
+    :param output_last: indicate if the label column is the first or last one in the original data
+    :return: A tuple of numpy arrays: (input_data, labels)
+    :rtype: tuple
+    :doc-author: baobab soluciones
+    """
+    x, y = [], []
+    if output_last:
+        x_in = data[:, :-1]
+        y_in = data[:, -1:]
+    else:
+        x_in = data[:, 1:]
+        y_in = data[:, :1]
+
+    if lags is None or not include_output_lags:
+        max_lag = 0
+    else:
+        max_lag = max(lags)
+
+    for i in range(max_lag, data.shape[0] - look_back):
+
+        a = x_in[i : (i + look_back), :]
+
+        if include_output_lags:
+            lagged = np.empty((look_back, 1))
+            for lag in lags:
+                lagged = np.concatenate(
+                    (
+                        lagged,
+                        y_in[i - lag : (i + look_back - lag)].reshape((look_back, 1)),
+                    ),
+                    axis=1,
+                )
+            lagged = lagged[:, 1:]
+
+            x.append(np.concatenate((a, lagged), axis=1))
+        else:
+            x.append(a)
+
+        if output_last:
+            y.append(y_in[i + look_back])
+        else:
+            y.append(y_in[i + look_back])
+
+    return np.array(x), np.array(y).reshape((data.shape[0] - look_back - max_lag,))
