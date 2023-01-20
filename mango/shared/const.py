@@ -12,6 +12,8 @@ ARCIS_ODMATRIX_JOB_URL = (
     "GenerateOriginDestinationCostMatrix/"
 )
 
+ARCGIS_CAR_TRAVEL_MODE = {}
+
 ARCGIS_TRUCK_TRAVEL_MODE = {
     "attributeParameterValues": [
         {

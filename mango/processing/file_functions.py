@@ -1,5 +1,4 @@
 import json
-import os
 from os import listdir
 
 
@@ -34,6 +33,3 @@ def load_json(path):
     """
     with open(path, "r") as f:
         return json.load(f)
-
-
-
