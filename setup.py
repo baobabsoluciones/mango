@@ -7,6 +7,21 @@ required = []
 with open("requirements.txt", "r") as fh:
     required.append(fh.read().splitlines())
 
+required = ["fastjsonschema"]
+
+extra_require = {
+    "arcgis": [],
+    "email": [],
+    "gcloud": ["google-cloud-storage"],
+    "config": [],
+    "data": ["pandas"],
+    "logging": [],
+    "model": ["numpy"],
+    "plot": ["pandas", "plotly"],
+    "processing": ["numpy", "pandas"],
+}
+
+
 setuptools.setup(
     name="mango",
     version="0.0.1a5",
@@ -25,4 +40,5 @@ setuptools.setup(
     python_requires=">=3.8",
     include_package_data=True,
     install_requires=required,
+    extras_require=extra_require,
 )
