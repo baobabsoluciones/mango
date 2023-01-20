@@ -11,6 +11,7 @@ from mango.shared.const import (
     ARCIS_ODMATRIX_JOB_URL,
     ARCGIS_CAR_TRAVEL_MODE,
 )
+from mango.shared.exceptions import JobError
 
 this_dir, file = os.path.split(__file__)
 schema = load_json(f"{this_dir}/../schemas/location.json")
