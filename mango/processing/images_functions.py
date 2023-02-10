@@ -6,13 +6,13 @@ import cv2
 import numpy as np
 
 
-def plot_face(img, face, color=(0, 255, 0)):
+def add_rectangle(img: np.array, face: tuple, color: tuple = (0, 255, 0)):
     """
-    The plot_face function draws a rectangle around the face in an image.
+    The add_rectangle function draws a rectangle in a picture with the given coordinates
 
-    :param img: Pass the image to be processed
-    :param face: Pass the coordinates of the face
-    :param color: Set the color of the rectangle
+    :param :class:`np.array` img: pass the image to be processed
+    :param tuple face: pass the coordinates of the rectangle, a tuple with the form (x, y, w, h)
+    :param tuple color: set the color of the rectangle (RGB tuple)
     :return: The image with the rectangle plotted
     :doc-author: baobab-soluciones
     """
@@ -23,7 +23,7 @@ def plot_face(img, face, color=(0, 255, 0)):
     return img_c
 
 
-def plot_eyes(img, shape, color=(0, 0, 255)):
+def add_circles(img, shape, color: tuple = (0, 0, 255)):
     """
     The plot_eyes function plots the facial landmarks on the image.
        The function takes three arguments: img, shape and color.
@@ -153,9 +153,9 @@ def resize_inv_crop(img, box, size=(512, 512)):
     proportion = sqrt(img.shape[0] * img.shape[1] / (size[0] * size[1]))
     # shape returns (height, width)
     cropped_image = img[
-                    round(box[1] * proportion): round(box[3] * proportion),
-                    round(box[0] * proportion): round(box[2] * proportion),
-                    ]
+        round(box[1] * proportion) : round(box[3] * proportion),
+        round(box[0] * proportion) : round(box[2] * proportion),
+    ]
     return cropped_image
 
 
@@ -201,7 +201,7 @@ def fix_size_img(img, size=(512, 512)):
         negro[arriba:, :] = img
     else:
         izq = round((negro.shape[1] - img.shape[1]) / 2)
-        negro[:, izq: (izq + img.shape[1])] = img
+        negro[:, izq : (izq + img.shape[1])] = img
 
     return negro
 
@@ -292,7 +292,7 @@ def flood_fill_alg(img):
     im_floodfill_inv = cv2.bitwise_not(im_floodfill_fin)
 
     # Combine the two images to get the foreground.
-    im_out = (im_th | im_floodfill_inv)
+    im_out = im_th | im_floodfill_inv
 
     return im_out
 
