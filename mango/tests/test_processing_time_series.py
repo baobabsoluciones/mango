@@ -1,12 +1,12 @@
+import random
 from unittest import TestCase
 
+import pandas as pd
 from mango.data import get_ts_dataset
 from mango.processing.processing_time_series import (
     create_lags_col,
     create_recurrent_dataset,
 )
-import pandas as pd
-import random
 
 
 class ProcessingTests(TestCase):

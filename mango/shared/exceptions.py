@@ -4,3 +4,7 @@ class InvalidCredentials(Exception):
 
 class ValidationError(Exception):
     pass
+
+
+class JobError(Exception):
+    pass

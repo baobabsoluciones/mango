@@ -1,6 +1,8 @@
 import os
 
 path_to_tests_dir = os.path.dirname(os.path.abspath(__file__))
+
+
 def normalize_path(rel_path):
     """
     The normalize_path function is used to convert relative paths into absolute paths.
