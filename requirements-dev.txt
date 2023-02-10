@@ -10,4 +10,4 @@ imutils==0.5.4
 keras==2.9.0
 opencv_python==4.6.0.66
 tensorflow==2.9.0
-sklearn
+scikit-learn
