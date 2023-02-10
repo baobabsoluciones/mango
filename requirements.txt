@@ -1,7 +1,4 @@
 fastjsonschema
-numpy
-pandas
-plotly
 python-dateutil
 pytz
 six
