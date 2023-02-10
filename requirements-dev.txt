@@ -1,2 +1,6 @@
 -r requirements.txt
 coverage==6.5.0
+google-cloud-storage
+pandas
+plotly
+numpy

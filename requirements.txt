@@ -1,9 +1,5 @@
 fastjsonschema
-numpy
-pandas
-plotly
 python-dateutil
 pytz
 six
 tenacity
-google-cloud-storage
