@@ -1,6 +1,8 @@
 import time
 from functools import wraps
-import logging as log
+import logging
+
+logger = logging.getLogger("root")
 
 
 def log_time(func):
@@ -31,7 +33,7 @@ def log_time(func):
         start = time.time()
         result = func(*args, **kwargs)
         duration = round(time.time() - start, 2)
-        log.info(f"{func.__name__} took {duration} seconds")
+        logger.info(f"{func.__name__} took {duration} seconds")
         return result
 
     return wrapper

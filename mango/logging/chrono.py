@@ -1,5 +1,7 @@
 import time
-import logging as log
+import logging
+
+logger = logging.getLogger("root")
 
 
 class Chrono:
@@ -40,46 +42,67 @@ class Chrono:
 
     def stop(self, name: str):
         """
-        Method to stop a chrono
+        Method to stop a chrono and get back its duration
 
         :param name: name of the chrono
+        :return: the time elapsed for the specific chrono
+        :rtype: float
         """
         self.end[name] = time.time()
+        duration = self.end[name] - self.start_time[name]
         if not self.silent:
-            log.info(
-                f"Operation {name} took: {round(self.end[name] - self.start_time[name], self.precision)} seconds"
+            logger.info(
+                f"Operation {name} took: {round(duration, self.precision)} seconds"
             )
+        return duration
 
     def stop_all(self):
         """
-        Method to stop all chronos
+        Method to stop all chronos and get back a dict with their durations
         """
+        durations = dict()
         for name in self.start_time.keys():
             if self.end[name] is None:
-                self.stop(name)
+                durations[name] = self.stop(name)
 
-    def report(self, name):
+        return durations
+
+    def report(self, name: str, message: str = None):
         """
-        Method to report the time of a chrono
+        Method to report the time of a chrono and get back its duration
 
         :param name: name of the chrono
         """
+
         if self.end[name] is not None:
-            log.info(
-                f"Operation {name} took: {round(self.end[name] - self.start_time[name], self.precision)} seconds"
-            )
+            msg = f"Operation {name} took: {round(self.end[name] - self.start_time[name], self.precision)} seconds"
+            if message is not None:
+                msg = f"{msg}. {message}"
+
+            logger.info(msg)
+
+            return self.end[name] - self.start_time[name]
         else:
-            log.info(
+            duration = time.time() - self.start_time[name]
+            msg = (
                 f"Operation {name} is still running. "
-                f"Time elapsed: {round(time.time() - self.start_time[name], self.precision)}"
+                f"Time elapsed: {round(duration, self.precision)} seconds"
             )
+            if message is not None:
+                msg = f"{msg}. {message}"
+
+            logger.info(msg)
+
+            return duration
 
     def report_all(self):
         """
-        Method to report the time of all chronos
+        Method to report the time of all chronos and get back a dict with all the durations
         """
+        durations = dict()
         for name in self.start_time.keys():
-            self.report(name)
+            durations[name] = self.report(name)
+        return durations
 
     def __call__(self, func: callable, *args, **kwargs):
         """

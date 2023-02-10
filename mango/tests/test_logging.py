@@ -9,7 +9,7 @@ from mango.tests.const import normalize_path
 
 class LoggingTests(TestCase):
     def setUp(self) -> None:
-        self.root = log.getLogger()
+        self.root = log.getLogger("root")
         self.root.setLevel(log.DEBUG)
         self.handler = log.FileHandler(normalize_path("./data/temp.log"))
         self.handler.setLevel(log.DEBUG)
@@ -96,3 +96,22 @@ class LoggingTests(TestCase):
             self.assertIn("sleep", lines[2])
             self.assertIn("INFO", lines[2])
             self.assertIn("took", lines[2])
+
+    def test_chrono_report_custom(self):
+        chrono = Chrono("first test", silent=True)
+        time.sleep(0.1)
+        chrono.report("first test", "custom message")
+        time.sleep(0.1)
+        chrono.stop_all()
+        chrono.report_all()
+        with open(normalize_path("./data/temp.log"), "r") as f:
+            lines = f.readlines()
+            self.assertEqual(len(lines), 2)
+            self.assertIn("first test", lines[0])
+            self.assertIn("INFO", lines[0])
+            self.assertIn("elapsed", lines[0])
+            self.assertIn("custom message", lines[0])
+
+            self.assertIn("first test", lines[1])
+            self.assertIn("INFO", lines[1])
+            self.assertIn("took", lines[1])

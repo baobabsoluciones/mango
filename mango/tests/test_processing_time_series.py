@@ -1,7 +1,8 @@
+import random
 from unittest import TestCase
 
 from mango.data import get_ts_dataset
-from mango.processing import create_lags_col
+from mango.processing import create_lags_col, create_recurrent_dataset
 import pandas as pd
 
 

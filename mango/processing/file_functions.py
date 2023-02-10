@@ -65,7 +65,7 @@ def is_json_file(path: str):
     return check_extension(path, ".json")
 
 
-def load_json(path):
+def load_json(path: str, **kwargs):
     """
     The load_json function loads a json file from the specified path and returns it as a dictionary.
 
@@ -73,7 +73,7 @@ def load_json(path):
     :return: A dictionary
     :doc-author: baobab soluciones
     """
-    with open(path, "r") as f:
+    with open(path, "r", **kwargs) as f:
         return json.load(f)
 
 
@@ -212,3 +212,19 @@ def write_df_to_csv(path, data, **kwargs):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
     data.to_csv(path, **kwargs, index=False)
+
+
+def adjust_excel_col_width(writer, df: pd.DataFrame, table_name: str, min_len: int = 7):
+    """
+    Adjusts the width of the column on the Excel file
+
+    :param writer:
+    :param :class:`pandas.DataFrame` df:
+    :param str table_name:
+    :param int min_len:
+    """
+    for column in df:
+        content_len = df[column].astype(str).map(len).max()
+        column_width = max(content_len, len(str(column)), min_len) + 2
+        col_idx = df.columns.get_loc(column)
+        writer.sheets[table_name].set_column(col_idx, col_idx, column_width)

@@ -1,4 +1,5 @@
 import pickle
+from collections.abc import Iterable
 
 import pandas
 
@@ -119,3 +120,23 @@ def data_frame_to_dict(df: pandas.DataFrame) -> dict:
     :doc-author: baobab soluciones
     """
     return {name: content.to_dict(orient="records") for name, content in df.items()}
+
+
+def as_list(x):
+    """
+    Transform an object into a list without nesting lists or iterating over strings.
+    Behave like [x] if x is a scalar or a string and list(x) if x is another iterable.
+
+    as_list(1) -> [1]
+    as_list("one") -> ["one"]
+    as_list([1,2]) -> [1,2]
+    as_list({1,2}) -> [1,2]
+    as_list((1,2)) -> [1,2]
+
+    :param x: an object
+    :return: a list
+    """
+    if isinstance(x, Iterable) and not isinstance(x, str):
+        return list(x)
+    else:
+        return [x]
