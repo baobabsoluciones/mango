@@ -98,7 +98,7 @@ def flatten(lst: list) -> list:
     return [item for sublist in lst for item in sublist]
 
 
-def data_frame_to_list(df: pandas.DataFrame) -> list:
+def df_to_list(df: pandas.DataFrame) -> list:
     """
     The data_frame_to_list function takes a DataFrame and returns a list of dictionaries with the
     column names as keys and the values as values.
@@ -110,7 +110,7 @@ def data_frame_to_list(df: pandas.DataFrame) -> list:
     return df.to_dict(orient="records")
 
 
-def data_frame_to_dict(df: pandas.DataFrame) -> dict:
+def df_to_dict(df: pandas.DataFrame) -> dict:
     """
     The data_frame_to_dict function takes a dict of DataFrames and returns a dictionary with the
     sheet names as keys and the DataFrames in records as values.

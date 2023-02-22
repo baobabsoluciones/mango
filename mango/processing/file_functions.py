@@ -1,5 +1,4 @@
 import json
-import os
 from os import listdir
 from typing import Union
 
@@ -145,6 +144,7 @@ def write_excel(path, data):
             elif isinstance(content, dict):
                 df = pd.DataFrame.from_dict(content, orient="index")
                 df.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
+            adjust_excel_col_width(writer, df, sheet_name)
 
 
 def write_df_to_excel(path, data, **kwargs):

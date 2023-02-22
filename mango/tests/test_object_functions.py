@@ -9,8 +9,8 @@ from mango.processing import (
     lag_list,
     row_number,
     flatten,
-    data_frame_to_list,
-    data_frame_to_dict,
+    df_to_list,
+    df_to_dict,
     load_excel,
     lead_list,
 )
@@ -69,13 +69,13 @@ class ObjectTests(TestCase):
 
     def test_data_frame_to_list(self):
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-        lst = data_frame_to_list(df)
+        lst = df_to_list(df)
         self.assertEqual(lst, [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}])
 
     def test_data_frame_to_dict(self):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file)
-        dict_data = data_frame_to_dict(data)
+        dict_data = df_to_dict(data)
         self.assertEqual(
             dict_data,
             {"Sheet1": [{"a": 1, "b": 2}, {"a": 3, "b": 4}]},

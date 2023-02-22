@@ -24,8 +24,8 @@ from .object_functions import (
     lead_list,
     row_number,
     flatten,
-    data_frame_to_list,
-    data_frame_to_dict,
+    df_to_list,
+    df_to_dict,
 )
 from .processing_time_series import (
     create_dense_data,
