@@ -4,10 +4,8 @@ with open("README.rst") as fh:
     long_description = fh.read()
 
 required = []
-with open("requirements.txt", "r") as fh:
-    required.append(fh.read().splitlines())
-
-required = ["fastjsonschema"]
+# with open("requirements.txt", "r") as fh:
+#     required.append(fh.read().splitlines())
 
 extra_require = {
     "arcgis": [],
@@ -15,10 +13,6 @@ extra_require = {
     "gcloud": ["google-cloud-storage"],
     "config": [],
     "data": ["pandas"],
-    "logging": [],
-    "model": ["numpy"],
-    "plot": ["pandas", "plotly"],
-    "processing": ["numpy", "pandas"],
     "images": [
         "cvlib==0.2.7",
         "dlib==19.24.0",
@@ -28,12 +22,16 @@ extra_require = {
         "tensorflow==2.9.0",
         "sklearn",
     ],
+    "logging": [],
+    "model": ["numpy"],
+    "plot": ["pandas", "plotly"],
+    "processing": ["numpy", "pandas"],
 }
 
 
 setuptools.setup(
     name="mango",
-    version="0.0.1a9",
+    version="0.0.1a8",
     author="baobab soluciones",
     author_email="sistemas@baobabsoluciones.es",
     description="Library with a collection of useful classes and methods to DRY",

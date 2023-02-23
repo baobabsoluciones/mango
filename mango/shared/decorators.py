@@ -1,4 +1,5 @@
 from functools import wraps
+
 from fastjsonschema import compile
 from fastjsonschema.exceptions import JsonSchemaValueException
 from mango.processing import load_json

@@ -1,7 +1,6 @@
 from typing import List
 
 import numpy as np
-from mango.models.activations import sigmoid
 
 
 def calculate_network_output(

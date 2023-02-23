@@ -1,7 +1,7 @@
 from unittest import TestCase
 from datetime import date, datetime
 
-from mango.processing.date_functions import (
+from mango.processing import (
     get_date_from_string,
     get_date_time_from_string,
     get_date_string_from_ts,
