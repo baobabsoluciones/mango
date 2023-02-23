@@ -1,4 +1,4 @@
-from imutils import face_utils, url_to_image
+from imutils import face_utils
 import dlib
 import cvlib as cv
 from math import sqrt
@@ -51,10 +51,10 @@ def detect_face_cv(img, thres=0.9, size=0.66):
     It uses the OpenCV library to detect faces in the image, and then returns the
     bounding box of that face.
 
-    :param img: Pass the image to be processed
-    :param thres: Set the threshold for the confidence of a face detection
-    :param size: Reduce the size of the face detected
-    :return: A face in a given image
+    :param img: pass the image to be processed
+    :param thres: set the threshold for the confidence of a face detection
+    :param size: reduce the size of the face detected
+    :return: a face in a given image
     :doc-author: baobab-soluciones
     """
     faces, confidences = cv.detect_face(img)
@@ -62,7 +62,6 @@ def detect_face_cv(img, thres=0.9, size=0.66):
     confi_ok = []
     for index, face in enumerate(faces):
         if face[0] <= img.shape[1] * size and face[1] <= img.shape[0] * size:
-            # Puede que el rectangulo se salga de la img. Se ajusta.
             face[2] = min(face[2], img.shape[1])
             face[3] = min(face[3], img.shape[0])
             faces_ok.append(face)
@@ -77,6 +76,7 @@ def detect_face_dlib(img, detector=None, thres=0):
     """
     The detect_face_dlib function takes as input an image and a face detector.
     It returns the coordinates of the bounding box for each detected face in the image, along with its confidence score.
+    It uses the facial recognition library in dlib
 
     :param img: Pass the image to be processed
     :param detector: Load the default detector
@@ -114,7 +114,7 @@ def detect_eyes(img, face, predictor):
     :doc-author: baobab-soluciones
     """
     if predictor is None:
-        predictor = dlib.shape_predictor("shared/shape_predictor_5_face_landmarks.dat")
+        predictor = dlib.shape_predictor("./data/shape_predictor_5_face_landmarks.dat")
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     rect = dlib.rectangle(face[0], face[1], face[2], face[3])
     shape = predictor(gray, rect)
@@ -182,7 +182,8 @@ def resize_img_max_size(img, size=(512, 512)):
 
 def fix_size_img(img, size=(512, 512)):
     """
-    The fix_size_img function takes an image as input with a side equal to the final size and returns a square black border around the image.
+    The fix_size_img function takes an image as input with a side equal to the final size and returns a square
+    black border around the image.
     If the original image is already square, it simply returns that same image.
 
     :param img: Get the image to be resized
@@ -300,9 +301,11 @@ def flood_fill_alg(img):
 def overlay_two_image_v2(image, overlay, prob=0.65, ignore_color=None):
     """
     The overlay_two_image_v2 function takes two images as input and overlays the second image onto the first.
-    The overlay_two_image_v2 function has three parameters: image, overlay, and prob. The image parameter is a numpy array
-    representing an RGB or grayscale image. The overlay parameter is a numpy array representing an RGB or grayscale
-    image that will be overlaid on top of the first one (the &quot;base&quot; image). The prob parameter is a float between 0 and 1
+    The overlay_two_image_v2 function has three parameters: image, overlay, and prob.
+    The image parameter is a numpy array representing an RGB or grayscale image.
+    The overlay parameter is a numpy array representing an RGB or grayscale image that will be overlaid on top of the
+    first one (the &quot;base&quot; image).
+    The prob parameter is a float between 0 and 1
     and represents how much of each pixel in the base should be replaced by its corresponding pixel in the overlay.
 
     :param image: Specify the image to be processed

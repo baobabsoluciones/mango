@@ -1,8 +1,11 @@
 from unittest import TestCase
 import numpy as np
-from mango.processing.images_functions import (
-    resize_img, resize_inv_crop, resize_img_max_size, fix_size_img,
-    overlay_two_image_v2
+from mango.images.images_functions import (
+    resize_img,
+    resize_inv_crop,
+    resize_img_max_size,
+    fix_size_img,
+    overlay_two_image_v2,
 )
 
 
@@ -16,25 +19,25 @@ class ValidationTests(TestCase):
     def test_resize_img(self):
         img = 200 * np.ones(shape=(500, 250, 3), dtype=np.uint8)
         rs = resize_img(img, size=(250, 125))
-        self.assertEqual(img.shape[0]/img.shape[1], rs.shape[0]/rs.shape[1])
+        self.assertEqual(img.shape[0] / img.shape[1], rs.shape[0] / rs.shape[1])
 
     def test_resize_inv_crop(self):
         img = np.ones(shape=(500, 250, 3), dtype=np.uint8)
         img[:20, :50, 0] = 100
         # rs = resize_img(img, size=(250, 125))
-        box = [0,0,25,10]
+        box = [0, 0, 25, 10]
         rs = resize_inv_crop(img, box, size=(250, 125))
 
         # the sum of blue pixels before and after crop must be equal
         self.assertEqual(img[img[:, :, 0] == 100].sum(), rs.sum())
 
     def test_resize_img_max_size_h(self):
-        img = 200*np.ones(shape=(500, 250, 3), dtype=np.uint8)
+        img = 200 * np.ones(shape=(500, 250, 3), dtype=np.uint8)
         rs = resize_img_max_size(img, size=(400, 400))
         self.assertEqual(rs.shape[0], 400)
 
     def test_resize_img_max_size_w(self):
-        img = 200*np.ones(shape=(250, 500, 3), dtype=np.uint8)
+        img = 200 * np.ones(shape=(250, 500, 3), dtype=np.uint8)
         rs = resize_img_max_size(img, size=(400, 400))
         self.assertEqual(rs.shape[1], 400)
 

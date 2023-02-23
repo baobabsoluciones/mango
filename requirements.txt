@@ -58,3 +58,7 @@ Werkzeug==2.2.2
 wrapt==1.14.1
 XlsxWriter==3.0.8
 zipp==3.10.0
+cvlib==0.2.7
+dlib==19.24.0
+imutils==0.5.4
+opencv_python==4.6.0.66
