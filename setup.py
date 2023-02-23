@@ -4,10 +4,8 @@ with open("README.rst") as fh:
     long_description = fh.read()
 
 required = []
-with open("requirements.txt", "r") as fh:
-    required.append(fh.read().splitlines())
-
-required = ["fastjsonschema"]
+# with open("requirements.txt", "r") as fh:
+#     required.append(fh.read().splitlines())
 
 extra_require = {
     "arcgis": [],
@@ -18,7 +16,8 @@ extra_require = {
     "logging": [],
     "model": ["numpy"],
     "plot": ["pandas", "plotly"],
-    "processing": ["numpy", "pandas"],
+    "processing": ["numpy", "pandas", "xlsxwriter"],
+    "shared": ["fastjsonschema"],
 }
 
 
