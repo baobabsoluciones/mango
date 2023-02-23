@@ -29,7 +29,6 @@ extra_require = {
 }
 
 
-
 setuptools.setup(
     name="mango",
     version="0.0.1a8",
