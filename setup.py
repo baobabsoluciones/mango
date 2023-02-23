@@ -13,11 +13,17 @@ extra_require = {
     "gcloud": ["google-cloud-storage"],
     "config": [],
     "data": ["pandas"],
+    "images": [
+        "cvlib==0.2.7",
+        "dlib==19.24.0",
+        "imutils==0.5.4",
+        "opencv_python==4.6.0.66",
+        "tensorflow==2.9.0",
+    ],
     "logging": [],
     "model": ["numpy"],
     "plot": ["pandas", "plotly"],
-    "processing": ["numpy", "pandas", "xlsxwriter"],
-    "shared": ["fastjsonschema"],
+    "processing": ["numpy", "pandas"],
 }
 
 
