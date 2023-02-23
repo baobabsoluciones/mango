@@ -8,15 +8,22 @@ required = []
 #     required.append(fh.read().splitlines())
 
 extra_require = {
-    "arcgis": [],
+    "arcgis": ["fastjsonschema"],
     "email": [],
-    "gcloud": ["google-cloud-storage"],
+    "gcloud": ["google-cloud-storage==2.6.0"],
     "config": [],
-    "data": ["pandas"],
+    "data": ["pandas==1.5.1"],
     "logging": [],
-    "model": ["numpy"],
-    "plot": ["pandas", "plotly"],
-    "processing": ["numpy", "pandas", "xlsxwriter"],
+    "model": ["numpy==1.23.4"],
+    "plot": [
+        "pandas==1.5.1",
+        "plotly==5.11.0",
+    ],
+    "processing": [
+        "numpy==1.23.4",
+        "pandas==1.5.1",
+        "xlsxwriter==3.0.8",
+    ],
     "shared": ["fastjsonschema"],
 }
 
