@@ -48,6 +48,7 @@ pkgutil_resolve_name==1.3.10
 plotly==5.11.0
 ply==3.11
 progressbar==2.5
+tensorflow==2.9.0
 tensorflow-estimator==2.9.0
 tensorflow-io-gcs-filesystem==0.30.0
 termcolor==2.2.0

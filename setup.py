@@ -18,6 +18,7 @@ extra_require = {
         "dlib==19.24.0",
         "imutils==0.5.4",
         "opencv_python==4.6.0.66",
+        "tensorflow==2.9.0",
     ],
     "logging": [],
     "model": ["numpy"],
