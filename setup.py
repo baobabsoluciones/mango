@@ -23,12 +23,12 @@ extra_require = {
 
 setuptools.setup(
     name="mango",
-    version="0.0.1a8",
+    version="0.0.1",
     author="baobab soluciones",
     author_email="sistemas@baobabsoluciones.es",
     description="Library with a collection of useful classes and methods to DRY",
     long_description=long_description,
-    url="https://github.com/baobabsoluciones/mlfunctions",
+    url="https://github.com/baobabsoluciones/mango",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
