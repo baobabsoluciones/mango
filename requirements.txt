@@ -18,5 +18,6 @@ python-dateutil
 pytz
 requests
 six
+tensorflow
 urllib3
 XlsxWriter
