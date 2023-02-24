@@ -1,5 +1,6 @@
 cmake
 et-xmlfile
+fastjsonschema
 imutils
 numpy
 opencv-python
