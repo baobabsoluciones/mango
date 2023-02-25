@@ -5,6 +5,7 @@ cvlib
 dlib
 et-xmlfile
 fastjsonschema
+google-cloud-storage
 idna
 imageio
 imutils
