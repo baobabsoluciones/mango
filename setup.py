@@ -8,33 +8,41 @@ required = []
 #     required.append(fh.read().splitlines())
 
 extra_require = {
-    "arcgis": [],
+    "arcgis": ["fastjsonschema"],
     "email": [],
     "gcloud": ["google-cloud-storage"],
     "config": [],
     "data": ["pandas"],
     "images": [
-        "cvlib==0.2.7",
-        "dlib==19.24.0",
-        "imutils==0.5.4",
-        "opencv_python==4.6.0.66",
-        "tensorflow==2.9.0",
+        "cvlib",
+        "dlib",
+        "imutils",
+        "opencv_python",
+        "tensorflow",
     ],
     "logging": [],
     "model": ["numpy"],
-    "plot": ["pandas", "plotly"],
-    "processing": ["numpy", "pandas"],
+    "plot": [
+        "pandas",
+        "plotly",
+    ],
+    "processing": [
+        "numpy",
+        "pandas",
+        "xlsxwriter",
+    ],
+    "shared": ["fastjsonschema"],
 }
 
 
 setuptools.setup(
     name="mango",
-    version="0.0.1a8",
+    version="0.0.1",
     author="baobab soluciones",
     author_email="sistemas@baobabsoluciones.es",
     description="Library with a collection of useful classes and methods to DRY",
     long_description=long_description,
-    url="https://github.com/baobabsoluciones/mlfunctions",
+    url="https://github.com/baobabsoluciones/mango",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
