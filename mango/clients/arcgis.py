@@ -1,3 +1,4 @@
+import logging
 import json
 import os
 import time
@@ -21,6 +22,7 @@ class ArcGisClient:
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = None
+        logging.getLogger("root")
 
     def connect(self):
         """
@@ -66,9 +68,13 @@ class ArcGisClient:
         try:
             location = response.json()["candidates"][0]["location"]
         except KeyError as e:
+            # TODO: this does not have to be an InvalidCredentials Exception.
             raise InvalidCredentials(
                 f"There was an error on login into ArcGis: {response.json()}. Exception: {e}"
             )
+        except IndexError as e:
+          logging.warning(f"There was no candidates for address {address}")
+          return None, None
         return location["x"], location["y"]
 
     @validate_args(
@@ -81,7 +87,7 @@ class ArcGisClient:
         """
         Get the origin destination matrix for a list of origins and destinations.
 
-        :param list origins: a list of dictionaries with the origin information. Keys needed: "Name", "x", "y".
+        :param list origins: a list of dictionaries with the origin information. Keys needed: "name", "x", "y".
         :param list destinations: a list of dictionaries with the destination information.
         Keys needed: "Name", "x", "y".
         :param dict travel_mode:
