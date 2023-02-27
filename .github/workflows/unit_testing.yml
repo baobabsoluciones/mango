@@ -3,6 +3,10 @@ name: mlfunctions unit testing
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
+  push:
+    branches:
+      - master
+      - development
 
 jobs:
   testing:

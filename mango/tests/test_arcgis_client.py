@@ -1,7 +1,7 @@
 from unittest import TestCase, mock
 
 from mango.clients.arcgis import ArcGisClient
-from mango.shared.exceptions import InvalidCredentials
+from mango.shared.exceptions import InvalidCredentials, JobError
 
 
 class TestArcGisClient(TestCase):
@@ -85,9 +85,194 @@ class TestArcGisClient(TestCase):
         mock_requests.get.return_value.json.side_effect = [
             {"jobId": 100},
             {"jobStatus": "esriJobSucceeded"},
-            {},
+            {
+                "value": {
+                    "features": [
+                        {
+                            "attributes": {
+                                "Total_Distance": 100,
+                                "Total_Time": 100,
+                                "OriginName": "First location",
+                                "DestinationName": "Second location",
+                            }
+                        }
+                    ]
+                }
+            },
         ]
 
         response = client.get_origin_destination_matrix(
             origins=origins, destinations=destinations
         )
+
+        self.assertEqual(
+            response,
+            [
+                {
+                    "origin": "First location",
+                    "destination": "Second location",
+                    "distance": 100,
+                    "time": 100,
+                }
+            ],
+        )
+
+        mock_requests.get.assert_called()
+
+    def test_too_many_origins(self):
+        origins = [{"x": 1, "y": 1, "name": "First location"}] * 1001
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+        self.assertRaises(
+            NotImplementedError,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+        )
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_job_failed(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.json.side_effect = [
+            {"jobId": 100},
+            {"jobStatus": "esriJobFailed"},
+            {"jobStatus": "esriJobFailed"},
+        ]
+
+        self.assertRaises(
+            JobError,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+        )
+
+        mock_requests.get.assert_called()
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_job_cancelled(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.json.side_effect = [
+            {"jobId": 100},
+            {"jobStatus": "esriJobCancelled"},
+            {"jobStatus": "esriJobCancelled"},
+        ]
+
+        self.assertRaises(
+            JobError,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+        )
+
+        mock_requests.get.assert_called()
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_job_timed_out(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.json.side_effect = [
+            {"jobId": 100},
+            {"jobStatus": "esriJobTimedOut"},
+            {"jobStatus": "esriJobTimedOut"},
+        ]
+
+        self.assertRaises(
+            JobError,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+        )
+
+        mock_requests.get.assert_called()
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_job_cancelling(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.json.side_effect = [
+            {"jobId": 100},
+            {"jobStatus": "esriJobCancelling"},
+            {"jobStatus": "esriJobCancelling"},
+        ]
+
+        self.assertRaises(
+            JobError,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+        )
+
+        mock_requests.get.assert_called()
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_iterations_correct(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.json.side_effect = [
+            {"jobId": 100},
+            {"jobStatus": "some_other_status"},
+            {"jobStatus": "esriJobSucceeded"},
+            {
+                "value": {
+                    "features": [
+                        {
+                            "attributes": {
+                                "Total_Distance": 100,
+                                "Total_Time": 100,
+                                "OriginName": "First location",
+                                "DestinationName": "Second location",
+                            }
+                        }
+                    ]
+                }
+            },
+        ]
+
+        response = client.get_origin_destination_matrix(
+            origins=origins, destinations=destinations
+        )
+
+        self.assertEqual(
+            response,
+            [
+                {
+                    "origin": "First location",
+                    "destination": "Second location",
+                    "distance": 100,
+                    "time": 100,
+                }
+            ],
+        )
+
+        mock_requests.get.assert_called()
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_job_id_missing(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.json.side_effect = [
+            {"no_job_id": 100},
+            {"no_job_id": 100},
+        ]
+
+        self.assertRaises(
+            JobError,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+        )
+        mock_requests.get.assert_called_once()
