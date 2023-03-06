@@ -1,3 +1,4 @@
+beautifulsoup4
 certifi
 charset-normalizer
 cmake
@@ -14,6 +15,7 @@ opencv-python
 openpyxl
 pandas
 Pillow
+plotly
 progressbar
 python-dateutil
 pytz

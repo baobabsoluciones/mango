@@ -23,6 +23,7 @@ extra_require = {
     "logging": [],
     "model": ["numpy"],
     "plot": [
+        "beautifulsoup4",
         "pandas",
         "plotly",
     ],

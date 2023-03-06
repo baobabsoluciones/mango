@@ -1,9 +1,11 @@
-# Full imports
+# Import from python base modules
+from logging import log
+from typing import Union
+
+# Import from external modules
 import pandas as pd
 import plotly.express as px
 from bs4 import BeautifulSoup
-# Partial imports
-from typing import Union
 
 
 def plotly_plot_lines(
@@ -85,8 +87,7 @@ def plotly_plot_scatter(
         fig.write_html(output_path + ".html")
 
 
-def join_html(htmls_path: list,
-              button_list: list = None) -> BeautifulSoup:
+def join_html(htmls_path: list, button_list: list = None) -> BeautifulSoup:
     """
     The join_html function takes a list of html files and joins them into one html file. In the new html file,
     the user can switch between the different plots by clicking on the buttons. The function takes as input
@@ -134,7 +135,7 @@ def join_html(htmls_path: list,
     if button_list is None:
         button_list = [f"{html[:-4]}" for html in htmls_path]
     if len(button_list) != len(htmls_path):
-        logging.warning(
+        log.warning(
             "The length of the button list must be the same as the length of the htmls_path list"
         )
     for i, button in enumerate(button_list):

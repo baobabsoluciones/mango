@@ -23,23 +23,24 @@ def add_rectangle(img: np.array, face: tuple, color: tuple = (0, 255, 0)):
     return img_c
 
 
-def add_circles(img, shape, color: tuple = (0, 0, 255)):
+def add_circles(img, shape, radius: int = 2, color: tuple = (0, 0, 255)):
     """
-    The plot_eyes function plots the facial landmarks on the image.
-       The function takes three arguments: img, shape and color.
-       The img argument is a numpy array representing an image of a face,
-       shape is a list of tuples containing the coordinates for each landmark point
-       in the form (x, y) and color is a tuple representing BGR values.
+    The add_circles function adds circles to the image in the coordinates given by shape.
+    The function takes three arguments: img, shape and color.
+    The img argument is a numpy array representing an image, shape is a list of tuples containing
+    the coordinates for each circle in the form (x, y), radius is the radius for the circles, by default 2 pixels,
+    and color is a tuple representing BGR values.
 
     :param img: Pass the image to be processed
-    :param shape: Plot the points that represent the eyes
-    :param color: Change the color of the circles that are plotted in plot_eyes
+    :param shape: the coordinates for the circles
+    :param int radius: the radius of the circles
+    :param color: Change the color of the circles that are plotted in add_circles
     :return: The image with the eyes plotted
     :doc-author: baobab-soluciones
     """
     img_c = img.copy()
     for (x, y) in shape:
-        cv2.circle(img_c, (x, y), 2, color, -1)
+        cv2.circle(img_c, (x, y), radius, color, -1)
     cv2.imshow("Output", img_c)
     cv2.waitKey(0)
     return img_c
