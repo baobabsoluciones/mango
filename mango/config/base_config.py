@@ -4,7 +4,7 @@ This file contains the classes that are used to parse the configuration files
 import os
 import warnings
 from configparser import ConfigParser, NoOptionError, NoSectionError
-from typing import Union
+from typing import Union, List, Dict
 
 
 class ConfigParameter:
@@ -18,8 +18,8 @@ class ConfigParameter:
         self,
         name: str,
         value_type: callable,
-        default: Union[int, float, bool, str, list] = None,
-        validate: list = None,
+        default: Union[int, float, bool, str, List] = None,
+        validate: List = None,
         secondary_type: callable = None,
     ):
         """
@@ -41,7 +41,7 @@ class ConfigParameter:
 
     def parse(
         self, section: str, config_parser: ConfigParser
-    ) -> Union[int, float, bool, str, list]:
+    ) -> Union[int, float, bool, str, List]:
         """
         The parse function takes a section name and a ConfigParser object.
         It returns the value of the parameter with name `name` from that section.
@@ -98,7 +98,7 @@ class BaseConfig:
 
     __params = dict()
 
-    def __init__(self, file_name: str, extend_params: dict):
+    def __init__(self, file_name: str, extend_params: Dict):
         """
         The __init__ function is called when an instance of the class is created.
         It handles the initial parsing of the config file
