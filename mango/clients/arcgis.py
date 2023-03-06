@@ -1,3 +1,4 @@
+import logging
 import json
 import os
 import time
@@ -21,6 +22,7 @@ class ArcGisClient:
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = None
+        logging.getLogger("root")
 
     def connect(self):
         """
@@ -66,9 +68,12 @@ class ArcGisClient:
         try:
             location = response.json()["candidates"][0]["location"]
         except KeyError as e:
-            raise InvalidCredentials(
+            raise JobError(
                 f"There was an error on login into ArcGis: {response.json()}. Exception: {e}"
             )
+        except IndexError as e:
+            logging.warning(f"There was no candidates for address {address}")
+            return None, None
         return location["x"], location["y"]
 
     @validate_args(
@@ -81,7 +86,7 @@ class ArcGisClient:
         """
         Get the origin destination matrix for a list of origins and destinations.
 
-        :param list origins: a list of dictionaries with the origin information. Keys needed: "Name", "x", "y".
+        :param list origins: a list of dictionaries with the origin information. Keys needed: "name", "x", "y".
         :param list destinations: a list of dictionaries with the destination information.
         Keys needed: "Name", "x", "y".
         :param dict travel_mode:
@@ -126,22 +131,29 @@ class ArcGisClient:
         url = requests.Request("GET", url).prepare().url
 
         response = requests.get(url=url)
-        job_id = response.json()["jobId"]
+        try:
+            job_id = response.json()["jobId"]
+        except KeyError as e:
+            raise JobError(
+                f"The job was not submitted correctly and "
+                f"it did not give back an id: {response.json()}. Exception: {e}"
+            )
         timeout = 600
         start = datetime.utcnow()
         while (datetime.utcnow() - start).seconds < timeout:
             response = requests.get(
                 url=f"{ARCIS_ODMATRIX_JOB_URL}/jobs/{job_id}?f=json&returnMessages=True&token={self.token}"
             )
-            if response.json()["jobStatus"] == "esriJobSucceeded":
+            status = response.json()["jobStatus"]
+            if status == "esriJobSucceeded":
                 break
-            elif response.json()["jobStatus"] == "esriJobFailed":
+            elif status == "esriJobFailed":
                 raise JobError(f"ArcGis job has a failed status: {response.json()}")
-            elif response.json()["jobStatus"] == "esriJobCancelled":
+            elif status == "esriJobCancelled":
                 raise JobError(f"ArcGis job was cancelled: {response.json()}")
-            elif response.json()["jobStatus"] == "esriJobTimedOut":
+            elif status == "esriJobTimedOut":
                 raise JobError(f"ArcGis job timed out: {response.json()}")
-            elif response.json()["jobStatus"] == "esriJobCancelling":
+            elif status == "esriJobCancelling":
                 raise JobError(
                     f"ArcGis job is in the process of getting cancelled: {response.json()}"
                 )

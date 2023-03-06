@@ -8,3 +8,7 @@ class ValidationError(Exception):
 
 class JobError(Exception):
     pass
+
+
+class BadResponse(Exception):
+    pass
