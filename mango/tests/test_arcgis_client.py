@@ -46,7 +46,7 @@ class TestArcGisClient(TestCase):
         client = self.test_connect()
         result = client.get_geolocation("Some address somewhere")
         self.assertEqual(result, (1, 2))
-        mock_requests.get.asser_called_once()
+        mock_requests.get.assert_called_once()
 
     @mock.patch("mango.clients.arcgis.requests")
     def test_geo_location_no_candidates(self, mock_requests):
@@ -54,16 +54,14 @@ class TestArcGisClient(TestCase):
         client = self.test_connect()
         result = client.get_geolocation("Some address somewhere")
         self.assertEqual(result, (None, None))
-        mock_requests.get.asser_called_once()
+        mock_requests.get.assert_called_once()
 
     @mock.patch("mango.clients.arcgis.requests")
     def test_geo_location_no_candidates_key(self, mock_requests):
         mock_requests.get.return_value.json.return_value = {}
         client = self.test_connect()
-        self.assertRaises(
-            InvalidCredentials, client.get_geolocation, "Some address somewhere"
-        )
-        mock_requests.get.asser_called_once()
+        self.assertRaises(JobError, client.get_geolocation, "Some address somewhere")
+        mock_requests.get.assert_called_once()
 
     @mock.patch("mango.clients.arcgis.requests")
     def test_geo_location_no_location_key(self, mock_requests):
@@ -71,10 +69,8 @@ class TestArcGisClient(TestCase):
             "candidates": [{"other": 0}]
         }
         client = self.test_connect()
-        self.assertRaises(
-            InvalidCredentials, client.get_geolocation, "Some address somewhere"
-        )
-        mock_requests.get.asser_called_once()
+        self.assertRaises(JobError, client.get_geolocation, "Some address somewhere")
+        mock_requests.get.assert_called_once()
 
     @mock.patch("mango.clients.arcgis.requests")
     def test_get_distances(self, mock_requests):

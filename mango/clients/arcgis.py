@@ -68,8 +68,7 @@ class ArcGisClient:
         try:
             location = response.json()["candidates"][0]["location"]
         except KeyError as e:
-            # TODO: this does not have to be an InvalidCredentials Exception.
-            raise InvalidCredentials(
+            raise JobError(
                 f"There was an error on login into ArcGis: {response.json()}. Exception: {e}"
             )
         except IndexError as e:
