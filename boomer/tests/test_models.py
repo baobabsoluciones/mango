@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import numpy as np
-from mango.models import sigmoid, tanh, calculate_network_output
+from boomer.models import sigmoid, tanh, calculate_network_output
 
 
 class ActivationTests(TestCase):

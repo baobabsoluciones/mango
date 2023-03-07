@@ -1,6 +1,6 @@
 from unittest import TestCase
 import numpy as np
-from mango.images.images_functions import (
+from boomer.images.images_functions import (
     resize_img,
     resize_inv_crop,
     resize_img_max_size,

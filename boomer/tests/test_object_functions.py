@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import pandas as pd
-from mango.processing import (
+from boomer.processing import (
     pickle_copy,
     unique,
     reverse_dict,
@@ -14,7 +14,7 @@ from mango.processing import (
     load_excel,
     lead_list,
 )
-from mango.tests.const import normalize_path
+from boomer.tests.const import normalize_path
 
 
 class ObjectTests(TestCase):

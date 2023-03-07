@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from mango.shared import validate_args, ValidationError
-from mango.tests.const import VALIDATION_SCHEMA, normalize_path
+from boomer.shared import validate_args, ValidationError
+from boomer.tests.const import VALIDATION_SCHEMA, normalize_path
 
 
 class ValidationTests(TestCase):

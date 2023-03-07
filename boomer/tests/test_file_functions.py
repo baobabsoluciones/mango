@@ -1,7 +1,7 @@
 from unittest import TestCase
 import os
 import pandas as pd
-from mango.processing import (
+from boomer.processing import (
     list_files_directory,
     load_json,
     is_json_file,
@@ -15,7 +15,7 @@ from mango.processing import (
     write_csv,
     write_df_to_csv,
 )
-from mango.tests.const import normalize_path
+from boomer.tests.const import normalize_path
 
 
 class FileTests(TestCase):

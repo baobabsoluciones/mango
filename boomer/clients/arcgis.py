@@ -5,9 +5,9 @@ import time
 from datetime import datetime
 
 import requests
-from mango.processing import load_json
-from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
-from mango.shared.const import (
+from boomer.processing import load_json
+from boomer.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
+from boomer.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
     ARCGIS_CAR_TRAVEL_MODE,

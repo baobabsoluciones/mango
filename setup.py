@@ -37,13 +37,13 @@ extra_require = {
 
 
 setuptools.setup(
-    name="mango",
+    name="boomer",
     version="0.0.1",
     author="baobab soluciones",
     author_email="sistemas@baobabsoluciones.es",
     description="Library with a collection of useful classes and methods to DRY",
     long_description=long_description,
-    url="https://github.com/baobabsoluciones/mango",
+    url="https://github.com/baobabsoluciones/boomer",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

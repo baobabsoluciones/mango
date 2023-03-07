@@ -1,4 +1,4 @@
-name: mango unit testing
+name: boomer unit testing
 
 on:
   pull_request:
@@ -30,7 +30,7 @@ jobs:
         pip install -r requirements-dev.txt
     - name: Run unit testing
       run: |
-        coverage run --source=./mango/ -m unittest discover -s mango/tests
+        coverage run --source=./boomer/ -m unittest discover -s boomer/tests
         coverage report -m
         coverage xml
     - name: Upload coverage to Codecov

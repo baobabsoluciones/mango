@@ -1,8 +1,8 @@
 from configparser import NoOptionError
 from unittest import TestCase
 
-from mango.config import BaseConfig, ConfigParameter
-from mango.tests.const import normalize_path
+from boomer.config import BaseConfig, ConfigParameter
+from boomer.tests.const import normalize_path
 
 
 class TestConfig(BaseConfig):

@@ -3,8 +3,8 @@ import time
 from unittest import TestCase
 import logging as log
 
-from mango.logging import log_time, Chrono
-from mango.tests.const import normalize_path
+from boomer.logging import log_time, Chrono
+from boomer.tests.const import normalize_path
 
 
 class LoggingTests(TestCase):

@@ -1,7 +1,7 @@
 from unittest import TestCase, mock
 
-from mango.clients.arcgis import ArcGisClient
-from mango.shared.exceptions import InvalidCredentials, JobError
+from boomer.clients.arcgis import ArcGisClient
+from boomer.shared.exceptions import InvalidCredentials, JobError
 
 
 class TestArcGisClient(TestCase):
@@ -16,7 +16,7 @@ class TestArcGisClient(TestCase):
         client = ArcGisClient(self.client_id, self.client_secret)
         self.assertIsInstance(client, ArcGisClient)
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_connect(self, mock_requests):
         client = ArcGisClient(self.client_id, self.client_secret)
         client.connect()
@@ -24,21 +24,21 @@ class TestArcGisClient(TestCase):
         client.token = "SOMETOKEN"
         return client
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_bad_response_on_connect(self, mock_requests):
         mock_requests.post.return_value.json.return_value = {"error": "invalid_grant"}
         client = ArcGisClient(self.client_id, self.client_secret)
         self.assertRaises(InvalidCredentials, client.connect)
         mock_requests.post.assert_called_once()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_error_on_connect(self, mock_requests):
         mock_requests.post.side_effect = Exception("Error")
         client = ArcGisClient(self.client_id, self.client_secret)
         self.assertRaises(Exception, client.connect)
         mock_requests.post.assert_called_once()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_get_geo_location(self, mock_requests):
         mock_requests.get.return_value.json.return_value = {
             "candidates": [{"location": {"x": 1, "y": 2}}]
@@ -48,7 +48,7 @@ class TestArcGisClient(TestCase):
         self.assertEqual(result, (1, 2))
         mock_requests.get.assert_called_once()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_geo_location_no_candidates(self, mock_requests):
         mock_requests.get.return_value.json.return_value = {"candidates": []}
         client = self.test_connect()
@@ -56,14 +56,14 @@ class TestArcGisClient(TestCase):
         self.assertEqual(result, (None, None))
         mock_requests.get.assert_called_once()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_geo_location_no_candidates_key(self, mock_requests):
         mock_requests.get.return_value.json.return_value = {}
         client = self.test_connect()
         self.assertRaises(JobError, client.get_geolocation, "Some address somewhere")
         mock_requests.get.assert_called_once()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_geo_location_no_location_key(self, mock_requests):
         mock_requests.get.return_value.json.return_value = {
             "candidates": [{"other": 0}]
@@ -72,7 +72,7 @@ class TestArcGisClient(TestCase):
         self.assertRaises(JobError, client.get_geolocation, "Some address somewhere")
         mock_requests.get.assert_called_once()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_get_distances(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
@@ -126,7 +126,7 @@ class TestArcGisClient(TestCase):
             destinations=destinations,
         )
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_job_failed(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
@@ -147,7 +147,7 @@ class TestArcGisClient(TestCase):
 
         mock_requests.get.assert_called()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_job_cancelled(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
@@ -168,7 +168,7 @@ class TestArcGisClient(TestCase):
 
         mock_requests.get.assert_called()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_job_timed_out(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
@@ -189,7 +189,7 @@ class TestArcGisClient(TestCase):
 
         mock_requests.get.assert_called()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_job_cancelling(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
@@ -210,7 +210,7 @@ class TestArcGisClient(TestCase):
 
         mock_requests.get.assert_called()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_iterations_correct(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
@@ -254,7 +254,7 @@ class TestArcGisClient(TestCase):
 
         mock_requests.get.assert_called()
 
-    @mock.patch("mango.clients.arcgis.requests")
+    @mock.patch("boomer.clients.arcgis.requests")
     def test_job_id_missing(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
