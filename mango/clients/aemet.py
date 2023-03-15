@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 import requests
@@ -13,6 +14,11 @@ class Aemet:
     def __init__(self, *args, **kwargs):
         # TODO: Add checks for api_key. How to check if it is valid?
         self._api_key: str = kwargs.get("api_key")
+        self._all_stations = self.get_all_stations()
+
+    @property
+    def all_stations(self):
+        return self._all_stations
 
     def get_meteo_data(self, *args, **kwargs):
         """
@@ -71,7 +77,7 @@ class Aemet:
             station_codes = self.search_stations_province(province)
         else:
             # Search for all stations in Spain
-            station_codes = self.get_all_stations()
+            station_codes = self._all_stations
 
         if start_date and end_date:
             # Search for data between start_date and end_date
@@ -136,7 +142,7 @@ class Aemet:
         except Exception as e:
             print(e)
             print("Searching for closest station in all Spain")
-            all_stations = self.get_all_stations()
+            all_stations = self._all_stations
         lat_long = [
             (est["indicativo"], self.parse_lat_long((est["latitud"], est["longitud"])))
             for est in all_stations
@@ -157,7 +163,7 @@ class Aemet:
         :return: List with all the stations in the given province
         :doc-author: baobab soluciones
         """
-        all_stations = self.get_all_stations()
+        all_stations = self._all_stations
         stations = [
             stat
             for stat in all_stations
@@ -235,6 +241,7 @@ class Aemet:
             if not hist_data:  # Empty json
                 print("No data found for station: " + station)
             data.append(hist_data)
+            time.sleep(0.1)
         if not data:
             raise Exception("Failed for all stations")
         return data
@@ -271,6 +278,8 @@ class Aemet:
             if not live_data:  # Empty json
                 print("No data found for station: " + station)
             data.append(live_data)
-            if not data:
-                raise Exception("Failed for all stations")
-            return data
+            # Small sleep to avoid overloading the API
+            time.sleep(0.1)
+        if not data:
+            raise Exception("Failed for all stations")
+        return data
