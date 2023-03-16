@@ -6,6 +6,7 @@ cvlib
 dlib
 et-xmlfile
 fastjsonschema
+geopy
 google-cloud-storage
 idna
 imageio
@@ -22,5 +23,6 @@ pytz
 requests
 six
 tensorflow
+tqdm
 urllib3
 XlsxWriter
