@@ -3,6 +3,9 @@ from datetime import datetime
 
 import requests
 from geopy.distance import geodesic as geo_distance
+from tqdm import tqdm
+
+from mango.shared import ApiKeyError
 
 
 class Aemet:
@@ -10,20 +13,40 @@ class Aemet:
     This class will implement the AEMET API to make it easier to use meteorological data as input for
     machine learning models.
     """
-
-    def __init__(self, *args, **kwargs):
-        # TODO: Add checks for api_key. How to check if it is valid?
-        self._api_key: str = kwargs.get("api_key")
-        self._all_stations = self.get_all_stations()
+    __DEFAULT_WAIT_TIME = 1.25
+    def __init__(self, *, api_key: str, **kwargs):
+        self._api_key: str = api_key
+        self._wait_time: int = kwargs.get("wait_time", self.__DEFAULT_WAIT_TIME)
+        print(
+            "Aemet API has a limit of 50 requests per minute. Please be patient. Wait time is set to {} seconds.".format(
+                self._wait_time
+            )
+        )
+        if self._wait_time < self.__DEFAULT_WAIT_TIME:
+            print("Wait time is too low. API limits can be exceeded.")
+        # Allows to check if the api_key is valid and cache the stations
+        try:
+            self._all_stations = self.get_all_stations()
+        except ApiKeyError as e:
+            raise e
 
     @property
     def all_stations(self):
         return self._all_stations
 
-    def get_meteo_data(self, *args, **kwargs):
+    def get_meteo_data(
+        self,
+        indicativo: str = None,
+        lat: float = None,
+        long: float = None,
+        province: str = None,
+        start_date: datetime = None,
+        end_date: datetime = None,
+    ):
         """
         This function will get the meteorological data from the AEMET API. Possible parameters are:
 
+        - indicativo: meteorological station code
         - lat: latitude
         - long: longitude
         - province: province
@@ -42,19 +65,18 @@ class Aemet:
         If neither start_date nor end_date are provided, this method will search for live data following the rules
         described above. end_date needs start_date to be provided.
 
-        :param args:
-        :param kwargs:
+        :param str indicativo: meteorological station code
+        :param float lat: latitude
+        :param float long: longitude
+        :param str province: province
+        :param datetime start_date: start date
+        :param datetime end_date: end date
+        :return: a list of dictionaries with the meteorological data
         :doc-author: baobab soluciones
         """
-        # TODO: Add checks for parameters
-        # TODO: Improve error handling to avoid duplicate code
-        lat: float = kwargs.get("lat")
-        long: float = kwargs.get("long")
-        province: str = kwargs.get("province")
-        start_date: datetime = kwargs.get("start_date")
-        end_date: datetime = kwargs.get("end_date")
-
         # Check datatype
+        if indicativo and not isinstance(indicativo, str):
+            raise TypeError("indicativo must be a string")
         if lat and not isinstance(lat, float):
             raise TypeError("lat must be a float")
         if long and not isinstance(long, float):
@@ -67,17 +89,24 @@ class Aemet:
             raise TypeError("end_date must be a datetime")
 
         # Decision logic for search given parameters
-        if lat and long:
+        if indicativo:
+            station_codes = [indicativo]
+        elif lat and long:
             # Search for closest station
             # province None is handled in search_closest_station
             # Only one but to mantain consistency embed in list
-            station_codes = self.search_closest_station(lat, long, province)
+            station_codes = [
+                est["indicativo"]
+                for est in self.search_closest_station(lat, long, province)
+            ]
         elif province:
             # Search for all stations in province
-            station_codes = self.search_stations_province(province)
+            station_codes = [
+                est["indicativo"] for est in self.search_stations_province(province)
+            ]
         else:
             # Search for all stations in Spain
-            station_codes = self._all_stations
+            station_codes = [est["indicativo"] for est in self.all_stations]
 
         if start_date and end_date:
             # Search for data between start_date and end_date
@@ -135,7 +164,6 @@ class Aemet:
         :return: List with the closest station. Only one but to mantain consistency embedded in list
         :doc-author: baobab soluciones
         """
-        # TODO: Cache stations to avoid calling API every time
         try:
             # If province is None will raise exception also if province is not valid
             all_stations = self.search_stations_province(province)
@@ -189,6 +217,9 @@ class Aemet:
             "https://opendata.aemet.es/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones"
             "/?api_key=" + api_key
         ).json()
+        time.sleep(self._wait_time)
+        if estaciones_url_call["estado"] == 401:
+            raise ApiKeyError("Invalid API key")
         if estaciones_url_call["estado"] != 200:
             raise Exception(
                 "Error getting stations from AEMET API: "
@@ -198,6 +229,7 @@ class Aemet:
         if not estaciones_url.startswith("https://opendata.aemet.es"):
             raise Exception("Error in the url returned by AEMET " + estaciones_url)
         estaciones = requests.get(estaciones_url).json()
+        time.sleep(self._wait_time)
         if not estaciones:  # Empty json
             raise Exception("No stations found")
         return estaciones
@@ -213,7 +245,7 @@ class Aemet:
         """
         api_key = self._api_key
         data = []
-        for station in station_codes:
+        for station in tqdm(station_codes):
             # Make it in a loop to make it easier to debug errors in HTTP requests
             url = (
                 "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos/fechaini/"
@@ -226,6 +258,7 @@ class Aemet:
                 + api_key
             )
             hist_data_url_call = requests.get(url).json()
+            time.sleep(self._wait_time)
             if hist_data_url_call["estado"] != 200:
                 raise Exception(
                     "Error getting historical data from AEMET API: "
@@ -238,6 +271,7 @@ class Aemet:
                     + str(hist_data_url.get("datos"))
                 )
             hist_data = requests.get(hist_data_url).json()
+            time.sleep(self._wait_time)
             if not hist_data:  # Empty json
                 print("No data found for station: " + station)
             data.append(hist_data)
@@ -255,7 +289,7 @@ class Aemet:
         """
         api_key = self._api_key
         data = []
-        for station in station_codes:
+        for station in tqdm(station_codes):
             url = (
                 "https://opendata.aemet.es/opendata/api/observacion/convencional/datos/estacion/"
                 + station
@@ -263,10 +297,14 @@ class Aemet:
                 + api_key
             )
             live_data_url_call = requests.get(url).json()
+            time.sleep(self._wait_time)
+            if live_data_url_call["estado"] == 404:  # Empty json
+                print("No data found for station: " + station)
+                continue
             if live_data_url_call["estado"] != 200:
                 raise Exception(
                     "Error getting historical data from AEMET API: "
-                    + str(live_data_url_call["estado"])
+                    + str(live_data_url_call["descripcion"])
                 )
             live_data_url = live_data_url_call.get("datos")
             if not live_data_url.startswith("https://opendata.aemet.es"):
@@ -275,11 +313,18 @@ class Aemet:
                     + str(live_data_url.get("datos"))
                 )
             live_data = requests.get(live_data_url).json()
-            if not live_data:  # Empty json
-                print("No data found for station: " + station)
+            time.sleep(self._wait_time)
             data.append(live_data)
-            # Small sleep to avoid overloading the API
-            time.sleep(0.1)
         if not data:
             raise Exception("Failed for all stations")
         return data
+
+
+if __name__ == "__main__":
+    c = Aemet(
+        api_key="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbnRvbmlvLmdvbnphbGV6QGJhb2JhYnNvbHVjaW9uZXMuZXMiLCJqdGkiOiIzMWRk"
+        "NzJiNS1hYmFmLTQ2OWQtOTViZi1lNTkxN2U2OTcyNWIiLCJpc3MiOiJBRU1FVCIsImlhdCI6MTY3ODcyMDY3MCwidXNlcklkI"
+        "joiMzFkZDcyYjUtYWJhZi00NjlkLTk1YmYtZTU5MTdlNjk3MjViIiwicm9sZSI6IiJ9.0rMlgaNipG5T4rlfvyzmYMg6jGfWN"
+        "uLKCb0pnGfYzSw"
+    )
+    c.get_meteo_data()
