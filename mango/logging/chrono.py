@@ -1,7 +1,5 @@
 import time
-import logging
-
-logger = logging.getLogger("root")
+from .logger import get_basic_logger
 
 
 class Chrono:
@@ -9,18 +7,20 @@ class Chrono:
     Class to measure time
     """
 
-    def __init__(self, name: str, silent: bool = False, precision: int = 2):
+    def __init__(self, name: str, silent: bool = False, precision: int = 2, logger=get_basic_logger()):
         """
         Constructor of the class
 
         :param name: name of the chrono
         :param silent: if the chrono should be silent
         :param precision: number of decimals to round the time to
+        :param logger: logging logger object
         """
         self.silent = silent
         self.precision = precision
         self.start_time = {name: time.time()}
         self.end = {name: None}
+        self.logger=logger
 
     def new(self, name: str):
         """
@@ -31,7 +31,7 @@ class Chrono:
         self.start_time[name] = None
         self.end[name] = None
 
-    def start(self, name):
+    def start(self, name, silent=True):
         """
         Method to start a chrono
 
@@ -39,6 +39,8 @@ class Chrono:
         """
         self.new(name)
         self.start_time[name] = time.time()
+        if not silent:
+            self.logger.info(f"Operation {name} starts")
 
     def stop(self, name: str):
         """
@@ -51,7 +53,7 @@ class Chrono:
         self.end[name] = time.time()
         duration = self.end[name] - self.start_time[name]
         if not self.silent:
-            logger.info(
+            self.logger.info(
                 f"Operation {name} took: {round(duration, self.precision)} seconds"
             )
         return duration
@@ -79,7 +81,7 @@ class Chrono:
             if message is not None:
                 msg = f"{msg}. {message}"
 
-            logger.info(msg)
+            self.logger.info(msg)
 
             return self.end[name] - self.start_time[name]
         else:
@@ -91,7 +93,7 @@ class Chrono:
             if message is not None:
                 msg = f"{msg}. {message}"
 
-            logger.info(msg)
+            self.logger.info(msg)
 
             return duration
 
