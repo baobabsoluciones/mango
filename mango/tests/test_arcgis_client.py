@@ -43,6 +43,7 @@ class TestArcGisClient(TestCase):
         mock_requests.get.return_value.json.return_value = {
             "candidates": [{"location": {"x": 1, "y": 2}}]
         }
+        mock_requests.get.return_value.status_code = 200
         client = self.test_connect()
         result = client.get_geolocation("Some address somewhere")
         self.assertEqual(result, (1, 2))
@@ -51,6 +52,7 @@ class TestArcGisClient(TestCase):
     @mock.patch("mango.clients.arcgis.requests")
     def test_geo_location_no_candidates(self, mock_requests):
         mock_requests.get.return_value.json.return_value = {"candidates": []}
+        mock_requests.get.return_value.status_code = 200
         client = self.test_connect()
         result = client.get_geolocation("Some address somewhere")
         self.assertEqual(result, (None, None))
@@ -59,6 +61,7 @@ class TestArcGisClient(TestCase):
     @mock.patch("mango.clients.arcgis.requests")
     def test_geo_location_no_candidates_key(self, mock_requests):
         mock_requests.get.return_value.json.return_value = {}
+        mock_requests.get.return_value.status_code = 200
         client = self.test_connect()
         self.assertRaises(JobError, client.get_geolocation, "Some address somewhere")
         mock_requests.get.assert_called_once()
@@ -68,6 +71,7 @@ class TestArcGisClient(TestCase):
         mock_requests.get.return_value.json.return_value = {
             "candidates": [{"other": 0}]
         }
+        mock_requests.get.return_value.status_code = 200
         client = self.test_connect()
         self.assertRaises(JobError, client.get_geolocation, "Some address somewhere")
         mock_requests.get.assert_called_once()
@@ -96,11 +100,13 @@ class TestArcGisClient(TestCase):
                 }
             },
         ]
+        mock_requests.get.return_value.status_code = 200
 
         response = client.get_origin_destination_matrix(
             origins=origins, destinations=destinations
         )
 
+        # print(response.status_code)
         self.assertEqual(
             response,
             [
@@ -137,6 +143,7 @@ class TestArcGisClient(TestCase):
             {"jobStatus": "esriJobFailed"},
             {"jobStatus": "esriJobFailed"},
         ]
+        mock_requests.get.return_value.status_code = 200
 
         self.assertRaises(
             JobError,
@@ -158,6 +165,7 @@ class TestArcGisClient(TestCase):
             {"jobStatus": "esriJobCancelled"},
             {"jobStatus": "esriJobCancelled"},
         ]
+        mock_requests.get.return_value.status_code = 200
 
         self.assertRaises(
             JobError,
@@ -179,6 +187,7 @@ class TestArcGisClient(TestCase):
             {"jobStatus": "esriJobTimedOut"},
             {"jobStatus": "esriJobTimedOut"},
         ]
+        mock_requests.get.return_value.status_code = 200
 
         self.assertRaises(
             JobError,
@@ -200,6 +209,7 @@ class TestArcGisClient(TestCase):
             {"jobStatus": "esriJobCancelling"},
             {"jobStatus": "esriJobCancelling"},
         ]
+        mock_requests.get.return_value.status_code = 200
 
         self.assertRaises(
             JobError,
@@ -235,6 +245,7 @@ class TestArcGisClient(TestCase):
                 }
             },
         ]
+        mock_requests.get.return_value.status_code = 200
 
         response = client.get_origin_destination_matrix(
             origins=origins, destinations=destinations
@@ -264,6 +275,7 @@ class TestArcGisClient(TestCase):
             {"no_job_id": 100},
             {"no_job_id": 100},
         ]
+        mock_requests.get.return_value.status_code = 200
 
         self.assertRaises(
             JobError,
