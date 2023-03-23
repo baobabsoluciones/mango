@@ -389,6 +389,30 @@ class TestTable(TestCase):
         result = Table(df).full_join(df, by="dummy")
         self.assertEqual(len(result), len(df) ** 2)
 
+    def test_auto_join(self):
+        df = Table(self.default_data)
+        result = df.auto_join().order_by("Name_2")
+        self.assertEqual(len(result), len(df) ** 2)
+        expected = Table([
+            {"Name": "Albert", "Age": 20, "Name_2": "Albert", "Age_2": 20},
+            {"Name": "Bernard", "Age": 25, "Name_2": "Albert", "Age_2": 20},
+            {"Name": "Charlie", "Age": 30, "Name_2": "Albert", "Age_2": 20},
+            {"Name": "Daniel", "Age": 35, "Name_2": "Albert", "Age_2": 20},
+            {"Name": "Albert", "Age": 20, "Name_2": "Bernard", "Age_2": 25},
+            {"Name": "Bernard", "Age": 25, "Name_2": "Bernard", "Age_2": 25},
+            {"Name": "Charlie", "Age": 30, "Name_2": "Bernard", "Age_2": 25},
+            {"Name": "Daniel", "Age": 35, "Name_2": "Bernard", "Age_2": 25},
+            {"Name": "Albert", "Age": 20, "Name_2": "Charlie", "Age_2": 30},
+            {"Name": "Bernard", "Age": 25, "Name_2": "Charlie", "Age_2": 30},
+            {"Name": "Charlie", "Age": 30, "Name_2": "Charlie", "Age_2": 30},
+            {"Name": "Daniel", "Age": 35, "Name_2": "Charlie", "Age_2": 30},
+            {"Name": "Albert", "Age": 20, "Name_2": "Daniel", "Age_2": 35},
+            {"Name": "Bernard", "Age": 25, "Name_2": "Daniel", "Age_2": 35},
+            {"Name": "Charlie", "Age": 30, "Name_2": "Daniel", "Age_2": 35},
+            {"Name": "Daniel", "Age": 35, "Name_2": "Daniel", "Age_2": 35},
+        ])
+        self.assertEqual(result, expected)
+
     def test_filter(self):
         table = Table(self.default_data).filter(lambda v: v["Age"] == 20)
         expected = [
@@ -945,7 +969,7 @@ class TestTable(TestCase):
         os.remove(path)
 
     def test_dataset_from_json(self):
-        path = normalize_path(("./data/json_dataset.json"))
+        path = normalize_path("./data/json_dataset.json")
         result = Table.dataset_from_json(path)
         expected = dict(t1=Table(self.default_data), t2=Table(self.default_data2))
         self.assertEqual(result, expected)

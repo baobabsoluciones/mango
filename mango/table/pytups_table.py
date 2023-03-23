@@ -26,7 +26,7 @@ from .pytups_tools import (
     distinct,
     order_by,
     drop_nested,
-    group_by,
+    group_by, auto_join,
 )
 from .table_tools import is_subset
 from mango.processing import load_json, write_json, as_list
@@ -218,7 +218,7 @@ class Table(TupList):
         :param table2: 2nd table (Tuplist with dict)
         :param by: list, dict or None.
             If the columns have the same name in both tables, a list of keys/column to use for the join.
-            If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
+            If the columns have different names in both tables, a dict in the format {name_table1: name_table2}
             If by is None, use all the shared keys.
         :param suffix: if some columns have the same name in both tables but are not
          in "by", a suffix will be added to their names.
@@ -252,6 +252,23 @@ class Table(TupList):
         Shortcut to join(type="inner")
         """
         return Table(inner_join(self, table2, by=by, suffix=suffix, empty=empty))
+
+    def auto_join(self, by=None, suffix=None, empty=None) -> "Table":
+        """
+        Join a table with itself.
+        Useful to create combinations of values from columns of a table.
+
+        :param table: the table
+        :param by: list, dict or None.
+            If by is a list of keys/column, those columns will be used for the join.
+            If by is a dict in the format {name_table1: name_table2}, those columns will be used for the join.
+            If by is None, all combinations of rows will be created (join by dummy).
+        :param suffix: suffix to add to column to create different names.
+            Default is ("", "_2"). With default suffix, column id will appear as id and id_2.
+        :param empty: values to give to empty cells created by the join.
+        :return: a tuplist
+        """
+        return Table(auto_join(self, by=None, suffix=None, empty=None))
 
     def select(self, *args) -> "Table":
         """
