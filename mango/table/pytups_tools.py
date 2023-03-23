@@ -1,7 +1,7 @@
 from pytups import TupList, SuperDict
 from typing import Callable, Iterable
-from mango.table.table_tools import str_key,  to_len
-from mango.processing import as_list, flatten
+from mango.table.table_tools import str_key, to_len
+from mango.processing import as_list, flatten, reverse_dict, unique
 
 
 def mutate(table, _safe=True, **kwargs):
@@ -274,7 +274,10 @@ def left_join(table1, table2, by=None, suffix=None, empty=None):
 
     :param table1: 1st table (TupList with dict)
     :param table2: 2nd table (TupList with dict)
-    :param by: list of keys/column to use in the join.
+    :param by: list, dict or None.
+        If the columns have the same name in both tables, a list of keys/column to use for the join.
+        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
+        If by is None, use all the shared keys.
     :param suffix: if some columns have the same name in both tables but are not
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
@@ -292,7 +295,10 @@ def right_join(table1, table2, by=None, suffix=None, empty=None):
 
     :param table1: 1st table (TupList with dict)
     :param table2: 2nd table (TupList with dict)
-    :param by: list of keys/column to use in the join.
+    :param by: list, dict or None.
+        If the columns have the same name in both tables, a list of keys/column to use for the join.
+        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
+        If by is None, use all the shared keys.
     :param suffix: if some columns have the same name in both tables but are not
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
@@ -310,7 +316,10 @@ def full_join(table1, table2, by=None, suffix=None, empty=None):
 
     :param table1: 1st table (TupList with dict)
     :param table2: 2nd table (TupList with dict)
-    :param by: list of keys/column to use in the join.
+    :param by: list, dict or None.
+        If the columns have the same name in both tables, a list of keys/column to use for the join.
+        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
+        If by is None, use all the shared keys.
     :param suffix: if some columns have the same name in both tables but are not
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
@@ -328,7 +337,10 @@ def inner_join(table1, table2, by=None, suffix=None, empty=None):
 
     :param table1: 1st table (TupList with dict)
     :param table2: 2nd table (TupList with dict)
-    :param by: list of keys/column to use in the join.
+    :param by: list, dict or None.
+        If the columns have the same name in both tables, a list of keys/column to use for the join.
+        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
+        If by is None, use all the shared keys.
     :param suffix: if some columns have the same name in both tables but are not
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
@@ -373,7 +385,10 @@ def join(
 
     :param table1: 1st table (TupList with dict)
     :param table2: 2nd table (TupList with dict)
-    :param by: list of keys/column to use in the join. If by is None, use all the shared keys.
+    :param by: list, dict or None.
+        If the columns have the same name in both tables, a list of keys/column to use for the join.
+        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
+        If by is None, use all the shared keys.
     :param suffix: if some columns have the same name in both tables but are not
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
@@ -384,7 +399,7 @@ def join(
     :return: a TupList
     """
     assert isinstance(table1, TupList)
-    assert isinstance(table2, TupList)
+    assert isinstance(table2, list)
 
     join_types = ["full", "left", "right", "inner"]
     if jtype not in join_types:
@@ -408,7 +423,15 @@ def join(
     t1_keys = get_col_names(table1)
     t2_keys = get_col_names(table2)
     shared_keys = set(t1_keys).intersection(set(t2_keys))
-    by = shared_keys if by is None else as_list(by)
+    names_table2 = {}
+    if by is None:
+        by = shared_keys
+    elif isinstance(by, dict):
+        names_table2 = reverse_dict(by)
+        by = [k for k in by.keys()]
+        shared_keys = set(list(shared_keys) + by)
+    else:
+        by = as_list(by)
 
     if set(by) - shared_keys:
         raise ValueError(
@@ -424,11 +447,13 @@ def join(
         table2 = rename(
             table2, **{k: str(k) + suffix[1] for k in t2_keys if k in shared_but_not_by}
         )
-        t1_keys = get_col_names(table1)
-        t2_keys = get_col_names(table2)
+
+    # If by was a dict, rename table2 columns to coincides with table1
+    table2 = rename(table2, **{k: v for k, v in names_table2.items()})
+    t1_keys = get_col_names(table1)
+    t2_keys = get_col_names(table2)
 
     # Do the join
-    group_by(table1, by)
     tab1 = group_by(table1, by)
     tab2 = group_by(table2, by)
 

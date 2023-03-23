@@ -203,7 +203,10 @@ class Table(TupList):
         Inspired by R dplyr join functions.
 
         :param table2: 2nd table (Tuplist with dict)
-        :param by: list of keys/column to use in the join.
+        :param by: list, dict or None.
+            If the columns have the same name in both tables, a list of keys/column to use for the join.
+            If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
+            If by is None, use all the shared keys.
         :param suffix: if some columns have the same name in both tables but are not
          in "by", a suffix will be added to their names.
          With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"

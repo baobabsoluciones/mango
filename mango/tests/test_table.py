@@ -212,6 +212,21 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected)
 
+    def test_left_join_with_by_dict(self):
+        # test a left join with a repeated value.
+        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N")
+        df = Table(self.default_data2).left_join(df_id, by=dict(Name="N")).select("Name", "Id")
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected)
+
     def test_left_join_empty(self):
         # test a left join with empty = 0
         df_id = Table(self.df_id)
