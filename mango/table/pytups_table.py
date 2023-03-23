@@ -29,7 +29,7 @@ from .pytups_tools import (
     group_by,
 )
 from .table_tools import is_subset
-from mango.processing import load_json, write_json
+from mango.processing import load_json, write_json, as_list
 
 
 class Table(TupList):
@@ -69,21 +69,35 @@ class Table(TupList):
         return Table(super().vfilter(function))
 
     def unique(self) -> "Table":
-        return Table(super().unique())
+        try:
+            return Table(super().unique())
+        except:
+            raise NotImplementedError(
+                "Cannot apply unique to a list of dict. Use distinct instead"
+            )
 
     def unique2(self) -> "Table":
-        return Table(super().unique2())
+        try:
+            return Table(super().unique2())
+        except:
+            raise NotImplementedError(
+                "Cannot apply unique2 to a list of dict. Use distinct instead"
+            )
 
     def sorted(self, **kwargs) -> "Table":
-        raise NotImplementedError("A list of dict cannot be sorted. Use order_by instead")
+        raise NotImplementedError(
+            "A list of dict cannot be sorted. Use order_by instead"
+        )
 
-    def take(self, indices, use_numpy=False):
+    def take(self, indices, use_numpy=False) -> TupList:
         return TupList(self).take(indices, use_numpy)
 
     # New or modified methods
     def __str__(self):
         if self.len():
-            columns = len(self[0]) if self[0] is not None else 0
+            if not isinstance(self[0], dict):
+                return super.__str__(self)
+            columns = len(as_list(self[0])) if self[0] is not None else 0
             return f"Table ({self.len()} rows, {columns} columns):\n" + self.show_rows(
                 0, self.len()
             )
@@ -100,7 +114,7 @@ class Table(TupList):
         """
         if n2 is None:
             n2 = n1 + 1
-        return "".join(str(i) + str(self[i]) + "\n" for i in range(n1, n2))
+        return "".join(f"{i} {self[i]}\n" for i in range(n1, n2))
 
     def head(self, n=10):
         """
@@ -492,7 +506,7 @@ class Table(TupList):
         :param kwargs: values of the column in the format column_name=value
         :return: the table with added row.
         """
-        result= self + [{**kwargs}]
+        result = self + [{**kwargs}]
         return result.replace(replacement=None, to_replace=None)
 
     @staticmethod

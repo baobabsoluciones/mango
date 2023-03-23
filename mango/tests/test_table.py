@@ -1,11 +1,12 @@
-from unittest import TestCase, main
-
+import os
 import numpy as np
 import pandas as pd
-
+from pytups import TupList
+from unittest import TestCase
 from mango.table.pytups_table import Table
 from mango.table.table_tools import mean
 from mango.processing import row_number
+from mango.tests.const import normalize_path
 
 
 class TestTable(TestCase):
@@ -48,6 +49,39 @@ class TestTable(TestCase):
         {"Name": "Charlie", "variable": "Under_25", "value": False},
         {"Name": "Daniel", "variable": "Under_25", "value": False},
     ]
+
+    def test_tuplist_table(self):
+        # Test that the table still have tuplist method and stay a table.
+        table1 = Table(self.default_data).vapply(lambda v: {**v, **{"a": 1}})
+        self.assertIsInstance(table1, Table)
+        table2 = Table(self.default_data).kapply(lambda k: k)
+        self.assertIsInstance(table2, Table)
+        table3 = Table(self.default_data).kvapply(lambda k, v: {**v, **{"n": k}})
+        self.assertIsInstance(table3, Table)
+        table4 = Table(self.default_data).copy_shallow()
+        self.assertIsInstance(table4, Table)
+        table5 = Table(self.default_data).copy_deep()
+        self.assertIsInstance(table5, Table)
+        table6 = Table(self.default_data).vfilter(lambda v: v["Name"] == "Albert")
+        self.assertIsInstance(table6, Table)
+
+    def test_unique_error(self):
+        def unique_error():
+            return Table(self.default_data).unique()
+
+        def unique2_error():
+            return Table(self.default_data).unique2()
+
+        self.assertRaises(NotImplementedError, unique_error)
+        self.assertRaises(NotImplementedError, unique2_error)
+
+    def test_take(self):
+        result = Table(self.default_data).take(["Name", "Age"])
+        expected = TupList(
+            [("Albert", 20), ("Bernard", 25), ("Charlie", 30), ("Daniel", 35)]
+        )
+        self.assertIsInstance(result, TupList)
+        self.assertEqual(result, expected)
 
     def test_mutate_constant(self):
         # test mutate with a constant for the new column.
@@ -212,6 +246,20 @@ class TestTable(TestCase):
         col_names = Table(self.default_data2).rename(Points="Value").get_col_names()
         expected = ["Name", "Age", "Male", "Value", "Under_25"]
         self.assertEqual(col_names, expected)
+
+    def test_left_join_as_join(self):
+        # test a join with type="left".
+        df_id = Table(self.df_id)
+        df = Table(self.default_data2).join(df_id, jtype="left").select("Name", "Id")
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected)
 
     def test_left_join(self):
         # test a left join.
@@ -765,11 +813,11 @@ class TestTable(TestCase):
         message = table.peek(1)
         expected = (
             "Table (4 rows, , 2 columns):\n"
-            "0{'Name': 'Albert', 'Age': 20}\n"
+            "0 {'Name': 'Albert', 'Age': 20}\n"
             "...\n"
-            "1{'Name': 'Bernard', 'Age': 25}\n"
+            "1 {'Name': 'Bernard', 'Age': 25}\n"
             "...\n"
-            "3{'Name': 'Daniel', 'Age': 35}\n"
+            "3 {'Name': 'Daniel', 'Age': 35}\n"
         )
         self.assertEqual(message, expected)
 
@@ -863,40 +911,41 @@ class TestTable(TestCase):
 
     def test_format_dataset(self):
         data = dict(t1=self.default_data, t2=self.default_data2, p1=dict(a=3, b=5))
-        result=Table.format_dataset(data)
+        result = Table.format_dataset(data)
         self.assertIsInstance(result, dict)
         self.assertIsInstance(result["t1"], Table)
         self.assertIsInstance(result["t2"], Table)
         self.assertIsInstance(result["p1"], dict)
 
     def test_from_pandas(self):
-        df=pd.DataFrame.from_records(self.default_data2)
-        result=Table.from_pandas(df)
+        df = pd.DataFrame.from_records(self.default_data2)
+        result = Table.from_pandas(df)
         self.assertEqual(result, self.default_data2)
 
     def test_to_pandas(self):
-        table=Table(self.default_data2)
-        result=table.to_pandas()
+        table = Table(self.default_data2)
+        result = table.to_pandas()
         expected = pd.DataFrame.from_records(self.default_data2)
         pd.testing.assert_frame_equal(result, expected)
 
     def test_to_from_json(self):
-        path="./data/table_to_json.json"
-        table=Table(self.default_data2)
+        path = normalize_path("./data/table_to_json.json")
+        table = Table(self.default_data2)
         table.to_json(path)
-        table2=Table.from_json(path)
+        table2 = Table.from_json(path)
         self.assertEqual(table, table2)
+        os.remove(path)
 
     def test_to_from_pk(self):
-        path="./data/table_to_pk"
-        table=Table(self.default_data2)
+        path = normalize_path("./data/table_to_pk.pickle")
+        table = Table(self.default_data2)
         table.pk_save(path)
-        table2=Table.pk_load(path)
+        table2 = Table.pk_load(path)
         self.assertEqual(table, table2)
+        os.remove(path)
 
     def test_dataset_from_json(self):
-        path = "./data/json_dataset.json"
-        result=Table.dataset_from_json(path)
+        path = normalize_path(("./data/json_dataset.json"))
+        result = Table.dataset_from_json(path)
         expected = dict(t1=Table(self.default_data), t2=Table(self.default_data2))
         self.assertEqual(result, expected)
-        
