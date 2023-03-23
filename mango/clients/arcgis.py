@@ -66,6 +66,9 @@ class ArcGisClient:
         url = f"{ARCGIS_GEOCODE_URL}?f=json&token={self.token}&singleLine={address}&sourceCountry=ESP&forStorage=false"
         response = requests.get(url=url)
 
+        if response.status_code != 200:
+            raise Exception(f"Wrong status: {response.status_code}")
+
         try:
             location = response.json()["candidates"][0]["location"]
         except KeyError as e:
