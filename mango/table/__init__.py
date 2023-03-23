@@ -1,1 +1,1 @@
-from pytups_table import Table
+from .pytups_table import Table
