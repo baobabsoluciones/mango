@@ -75,8 +75,7 @@ class Table(TupList):
         return Table(super().unique2())
 
     def sorted(self, **kwargs) -> "Table":
-        # TODO: check if that works
-        return Table(super().sorted(**kwargs))
+        raise NotImplementedError("A list of dict cannot be sorted. Use order_by instead")
 
     def take(self, indices, use_numpy=False):
         return TupList(self).take(indices, use_numpy)
@@ -110,10 +109,10 @@ class Table(TupList):
         :param n: Number of rows to show (default:10).
         :return: set_a table with n rows or less.
         """
-        if self.len() < 10:
+        if self.len() < n:
             return self
         else:
-            return self[:10]
+            return self[:n]
 
     def peek(self, n=3):
         """
@@ -418,7 +417,7 @@ class Table(TupList):
 
     def drop_nested(self) -> "Table":
         """
-        Drop any nested value from a table.
+        Drop any nested column from a table.
         Nested value are dict or lists nested as dict values in the table.
         This function assume df structure is homogenous and only look at the first row to find nested values.
 
@@ -485,6 +484,17 @@ class Table(TupList):
         len_unique = self.distinct(columns).len()
         return len_unique == self.len()
 
+    def add_row(self, **kwargs):
+        """
+        Add a row to the table.
+        Missing columns are filled with value None.
+
+        :param kwargs: values of the column in the format column_name=value
+        :return: the table with added row.
+        """
+        result= self + [{**kwargs}]
+        return result.replace(replacement=None, to_replace=None)
+
     @staticmethod
     def format_dataset(dataset):
         """
@@ -498,6 +508,17 @@ class Table(TupList):
             k: Table(str_key_tl(v)) if isinstance(v, list) else v
             for k, v in dataset.items()
         }
+
+    @classmethod
+    def dataset_from_json(self, path):
+        """
+        Load a json file and format it applying Table() to every table.
+
+        :param path: path of the json file
+        :return: a dict of Tables
+        """
+        data = load_json(path)
+        return self.format_dataset(data)
 
     # Save and load functions
     @staticmethod
@@ -522,7 +543,6 @@ class Table(TupList):
 
         :return: a pandas dataframe.
         """
-        # TODO: this is not tested yet
         try:
             import pandas as pd
         except ImportError:
@@ -575,9 +595,9 @@ class Table(TupList):
     @staticmethod
     def from_json(path):
         """
-        :param path: path to json file
+        Create a table from a json file.
 
+        :param path: path to json file
         :return: a Table containing the data.
         """
         return Table(load_json(path))
-

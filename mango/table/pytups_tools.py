@@ -551,6 +551,7 @@ def drop_empty(tl, cols=None):
     else:
         cols = as_list(cols)
     tl2 = replace(tl, replacement=None, to_replace=None)
+
     return tl2.vfilter(lambda v: not any(k not in v or pd.isnull(v[k]) for k in cols))
 
 

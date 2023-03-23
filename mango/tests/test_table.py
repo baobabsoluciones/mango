@@ -1,4 +1,8 @@
 from unittest import TestCase, main
+
+import numpy as np
+import pandas as pd
+
 from mango.table.pytups_table import Table
 from mango.table.table_tools import mean
 from mango.processing import row_number
@@ -100,13 +104,39 @@ class TestTable(TestCase):
 
     def test_mutate_multiple(self):
         # test mutate with a function for an existing column.
-        df = Table(self.default_data).mutate(Male=True, Points=[5,8,4,6], Under_25=lambda v: v["Age"] <= 25)
+        df = Table(self.default_data).mutate(
+            Male=True, Points=[5, 8, 4, 6], Under_25=lambda v: v["Age"] <= 25
+        )
         expected = Table(
             [
-                {'Name': 'Albert', 'Age': 20, 'Male': True, 'Points': 5, 'Under_25': True},
-                 {'Name': 'Bernard', 'Age': 25, 'Male': True, 'Points': 8, 'Under_25': True},
-                 {'Name': 'Charlie', 'Age': 30, 'Male': True, 'Points': 4, 'Under_25': False},
-                 {'Name': 'Daniel', 'Age': 35, 'Male': True, 'Points': 6, 'Under_25': False}
+                {
+                    "Name": "Albert",
+                    "Age": 20,
+                    "Male": True,
+                    "Points": 5,
+                    "Under_25": True,
+                },
+                {
+                    "Name": "Bernard",
+                    "Age": 25,
+                    "Male": True,
+                    "Points": 8,
+                    "Under_25": True,
+                },
+                {
+                    "Name": "Charlie",
+                    "Age": 30,
+                    "Male": True,
+                    "Points": 4,
+                    "Under_25": False,
+                },
+                {
+                    "Name": "Daniel",
+                    "Age": 35,
+                    "Male": True,
+                    "Points": 6,
+                    "Under_25": False,
+                },
             ]
         )
         self.assertEqual(df, expected)
@@ -215,7 +245,11 @@ class TestTable(TestCase):
     def test_left_join_with_by_dict(self):
         # test a left join with a repeated value.
         df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N")
-        df = Table(self.default_data2).left_join(df_id, by=dict(Name="N")).select("Name", "Id")
+        df = (
+            Table(self.default_data2)
+            .left_join(df_id, by=dict(Name="N"))
+            .select("Name", "Id")
+        )
         expected = Table(
             [
                 {"Name": "Albert", "Id": 1},
@@ -307,6 +341,21 @@ class TestTable(TestCase):
         result = Table(df).full_join(df, by="dummy")
         self.assertEqual(len(result), len(df) ** 2)
 
+    def test_filter(self):
+        table = Table(self.default_data).filter(lambda v: v["Age"] == 20)
+        expected = [
+            {
+                "Name": "Albert",
+                "Age": 20,
+            }
+        ]
+        self.assertEqual(table, expected)
+
+    def test_get_col_names(self):
+        result = Table(self.default_data).get_col_names()
+        expected = ["Name", "Age"]
+        self.assertEqual(result, expected)
+
     def test_to_columns(self):
         # test pivoting to a column dict
         df = Table(self.default_data2).to_columns()
@@ -332,6 +381,50 @@ class TestTable(TestCase):
         expected = Table(self.default_data2)
         self.assertEqual(df, expected)
 
+    def test_get_index(self):
+        result = Table(self.default_data).get_index(lambda v: v["Age"] <= 25)
+        expected = [0, 1]
+        self.assertEqual(result, expected)
+
+    def test_get_index_empty(self):
+        result = Table(self.default_data).get_index(lambda v: v["Age"] == 24)
+        expected = []
+        self.assertEqual(result, expected)
+
+    def test_replace(self):
+        result = Table(self.default_data).replace(replacement="20", to_replace=20)
+        expected = [
+            {"Name": "Albert", "Age": "20"},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+        ]
+        self.assertEqual(result, expected)
+
+    def test_replace_empty(self):
+        table = Table(self.default_data) + [{"Name": "Elisa"}]
+        result = table.replace_empty(0)
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "Elisa", "Age": 0},
+        ]
+        self.assertEqual(result, expected)
+
+    def test_replace_nan(self):
+        table = Table(self.default_data) + [{"Name": "Elisa", "Age": np.nan}]
+        result = table.replace_nan(0)
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "Elisa", "Age": 0},
+        ]
+        self.assertEqual(result, expected)
+
     def test_pivot_longer(self):
         # test pivoting to a long df
         df = Table(self.default_data2).pivot_longer(
@@ -345,6 +438,15 @@ class TestTable(TestCase):
         df = Table(self.long_df).pivot_wider(names_from="variable", value_from="value")
         expected = Table(self.default_data2)
         self.assertEqual(df, expected)
+
+    def test_drop_empty(self):
+        result = Table(self.default_data).mutate(Age=[20, 25, None, 35]).drop_empty()
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Daniel", "Age": 35},
+        ]
+        self.assertEqual(result, expected)
 
     def test_group_mutate(self):
         # test a group mutate
@@ -600,6 +702,19 @@ class TestTable(TestCase):
         ]
         self.assertEqual(df, expected)
 
+    def test_drop_nested(self):
+        table = Table(self.default_data).mutate(
+            nest=[[dict(a=1)], [dict(a=2)], [dict(a=3)], [dict(a=4)]]
+        )
+        result = table.drop_nested()
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+        ]
+        self.assertEqual(result, expected)
+
     def test_empty_table(self):
         # test creation of empty table
         self.assertEqual(Table([]), [])
@@ -623,3 +738,165 @@ class TestTable(TestCase):
     def test_use_empty_table(self):
         table = Table().mutate(lambda v: v["a"] + v["b"]).summarise("a").sum_all("b")
         self.assertEqual(table.len(), 0)
+
+    def test_add_row(self):
+        table = Table(self.default_data)
+        table2 = table.add_row(Name="new")
+
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "new", "Age": None},
+        ]
+        self.assertEqual(table2, expected)
+
+    def test_sorted_exception(self):
+        table = Table(self.default_data)
+
+        def sort_table():
+            return table.sorted()
+
+        self.assertRaises(NotImplementedError, sort_table)
+
+    def test_peek(self):
+        table = Table(self.default_data)
+        message = table.peek(1)
+        expected = (
+            "Table (4 rows, , 2 columns):\n"
+            "0{'Name': 'Albert', 'Age': 20}\n"
+            "...\n"
+            "1{'Name': 'Bernard', 'Age': 25}\n"
+            "...\n"
+            "3{'Name': 'Daniel', 'Age': 35}\n"
+        )
+        self.assertEqual(message, expected)
+
+    def test_head(self):
+        table = Table(self.default_data)
+        result = table.head(2)
+        expected = [{"Name": "Albert", "Age": 20}, {"Name": "Bernard", "Age": 25}]
+        self.assertEqual(result, expected)
+
+    def test_group_by(self):
+        result = Table(self.default_data2).group_by("Under_25")
+        expected = {
+            True: [
+                {
+                    "Name": "Albert",
+                    "Age": 20,
+                    "Male": True,
+                    "Points": 5,
+                    "Under_25": True,
+                },
+                {
+                    "Name": "Bernard",
+                    "Age": 25,
+                    "Male": True,
+                    "Points": 8,
+                    "Under_25": True,
+                },
+            ],
+            False: [
+                {
+                    "Name": "Charlie",
+                    "Age": 30,
+                    "Male": True,
+                    "Points": 4,
+                    "Under_25": False,
+                },
+                {
+                    "Name": "Daniel",
+                    "Age": 35,
+                    "Male": True,
+                    "Points": 6,
+                    "Under_25": False,
+                },
+            ],
+        }
+        self.assertEqual(result, expected)
+
+    def test_sum_all(self):
+        result = Table(self.default_data2).drop("Name").sum_all("Under_25")
+        expected = [
+            {"Age": 45, "Male": 2, "Points": 13, "Under_25": True},
+            {"Age": 65, "Male": 2, "Points": 10, "Under_25": False},
+        ]
+        self.assertEqual(result, expected)
+
+    def test_to_set2(self):
+        result1 = Table(self.default_data2).to_set2("Points")
+        expected1 = [8, 4, 5, 6]
+        result2 = Table(self.default_data2).to_set2(["Age", "Points"])
+        expected2 = [(20, 5), (30, 4), (25, 8), (35, 6)]
+        self.assertEqual(result1, expected1)
+        self.assertEqual(result2, expected2)
+
+    def test_to_param(self):
+        result1 = Table(self.default_data2).to_param("Name", "Points")
+        expected1 = {"Albert": 5, "Bernard": 8, "Charlie": 4, "Daniel": 6}
+        result2 = Table(self.default_data2).to_param(
+            ["Male", "Under_25"], "Name", is_list=True
+        )
+        expected2 = {
+            (True, True): ["Albert", "Bernard"],
+            (True, False): ["Charlie", "Daniel"],
+        }
+
+        def to_param_error():
+            return Table(self.default_data2).to_param(
+                ["Male", "Under_25"], "Name", is_list=False
+            )
+
+        self.assertEqual(result1, expected1)
+        self.assertEqual(result2, expected2)
+        self.assertRaises(ValueError, to_param_error)
+
+    def test_is_unique_true(self):
+        result = Table(self.default_data2).is_unique("Name")
+        self.assertTrue(result)
+
+    def test_is_unique_false(self):
+        result = Table(self.default_data2).is_unique("Under_25")
+        self.assertFalse(result)
+
+    def test_format_dataset(self):
+        data = dict(t1=self.default_data, t2=self.default_data2, p1=dict(a=3, b=5))
+        result=Table.format_dataset(data)
+        self.assertIsInstance(result, dict)
+        self.assertIsInstance(result["t1"], Table)
+        self.assertIsInstance(result["t2"], Table)
+        self.assertIsInstance(result["p1"], dict)
+
+    def test_from_pandas(self):
+        df=pd.DataFrame.from_records(self.default_data2)
+        result=Table.from_pandas(df)
+        self.assertEqual(result, self.default_data2)
+
+    def test_to_pandas(self):
+        table=Table(self.default_data2)
+        result=table.to_pandas()
+        expected = pd.DataFrame.from_records(self.default_data2)
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_to_from_json(self):
+        path="./data/table_to_json.json"
+        table=Table(self.default_data2)
+        table.to_json(path)
+        table2=Table.from_json(path)
+        self.assertEqual(table, table2)
+
+    def test_to_from_pk(self):
+        path="./data/table_to_pk"
+        table=Table(self.default_data2)
+        table.pk_save(path)
+        table2=Table.pk_load(path)
+        self.assertEqual(table, table2)
+
+    def test_dataset_from_json(self):
+        path = "./data/json_dataset.json"
+        result=Table.dataset_from_json(path)
+        expected = dict(t1=Table(self.default_data), t2=Table(self.default_data2))
+        self.assertEqual(result, expected)
+        
