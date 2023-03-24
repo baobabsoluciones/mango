@@ -912,10 +912,10 @@ class TestTable(TestCase):
         table = Table(self.default_data)
 
         def try_peek():
-            return table.peek(1)
+            return table.peek(1, "test_peek")
 
         expected = (
-            "Table (4 rows, , 2 columns):\n"
+            "test_peek: Table (4 rows, , 2 columns):\n"
             "0 {'Name': 'Albert', 'Age': 20}\n"
             "...\n"
             "1 {'Name': 'Bernard', 'Age': 25}\n"
@@ -939,6 +939,42 @@ class TestTable(TestCase):
         "3 {'Name': 'Daniel', 'Age': 35}\n\n"
         )
         self.assertStdout(try_peek, expected, msg=msg)
+
+    def test_peek_empty(self):
+        msg = "peek on empty table"
+        table = Table()
+
+        def try_peek():
+            return table.peek(3)
+
+        expected ="Empty table\n"
+        self.assertStdout(try_peek, expected, msg=msg)
+
+    def test_print(self):
+        msg = "print a table"
+        table = Table(self.default_data)
+
+        def try_print():
+            print(table)
+
+        expected = (
+            "Table (4 rows, 2 columns):\n"
+            "0 {'Name': 'Albert', 'Age': 20}\n"
+            "1 {'Name': 'Bernard', 'Age': 25}\n"
+            "2 {'Name': 'Charlie', 'Age': 30}\n"
+            "3 {'Name': 'Daniel', 'Age': 35}\n\n"
+        )
+        self.assertStdout(try_print, expected, msg=msg)
+
+    def test_print_list(self):
+        msg = "print a table"
+        table = Table([1,2,3])
+
+        def try_print():
+            print(table)
+
+        expected = "[1, 2, 3]\n"
+        self.assertStdout(try_print, expected, msg=msg)
 
     def test_show_row(self):
         msg="show row show one row if n2=None"

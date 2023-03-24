@@ -128,20 +128,25 @@ class Table(TupList):
         else:
             return self[:n]
 
-    def peek(self, n=3):
+    def peek(self, n=3, name=None):
         """
         Show the first, middle and last n rows of the table.
 
         :param n: number of rows to show in each part.
+        :param name: name or message to print with the table
         :return: the printed string
         """
+        if name is None:
+            name=""
+        else:
+            name = name +": "
         if self.len() < 3 * n:
-            print(self)
+            print(f"{name}{self}")
             return self
         else:
             middle = (self.len() - n) // 2
             message = (
-                f"Table ({self.len()} rows, , {len(self[0])} columns):\n"
+                f"{name}Table ({self.len()} rows, , {len(self[0])} columns):\n"
                 + self.show_rows(0, n)
                 + "...\n"
                 + self.show_rows(middle, middle + n)
