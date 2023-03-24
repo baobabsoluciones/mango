@@ -1,4 +1,7 @@
 from unittest import TestCase
+
+from pytups import TupList
+
 from mango.processing import (
     unique,
     row_number,
@@ -15,6 +18,8 @@ from mango.table.table_tools import (
     to_len,
     join_lists,
     cumsum,
+    invert_dict_list,
+    simplify,
 )
 
 
@@ -119,3 +124,15 @@ class TestTools(TestCase):
         expected2 = [None, None, None, 1, 2, 3]
         self.assertEqual(result1, expected1)
         self.assertEqual(result2, expected2)
+
+    def test_invert_dict_list(self):
+        dl = TupList([{"a": 1, "b": 2}, {"a": 2, "b": 3}])
+        result = invert_dict_list(dl)
+        expected = {"a": [1, 2], "b": [2, 3]}
+        self.assertEqual(result, expected)
+
+    def test_simplify(self):
+        self.assertEqual(simplify([1]), 1)
+        self.assertEqual(simplify([1, 2]), [1, 2])
+        self.assertEqual(simplify([1, 1, 2]), [1, 2])
+        self.assertEqual(simplify(1), 1)

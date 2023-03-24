@@ -137,7 +137,7 @@ class Table(TupList):
         """
         if self.len() < 3 * n:
             print(self)
-            return str(self)
+            return self
         else:
             middle = (self.len() - n) // 2
             message = (
@@ -149,10 +149,9 @@ class Table(TupList):
                 + self.show_rows(self.len() - n, self.len())
             )
             print(message)
-            # TODO: return the table?
-            return message
+            return self
 
-    def mutate(self, _safe=True, **kwargs) -> "Table":
+    def mutate(self, **kwargs) -> "Table":
         """
         Add or modify a column in a table.
 
@@ -161,7 +160,6 @@ class Table(TupList):
 
         Note: all changes are applied over the input table and do not take into account the other changes.
 
-        :param _safe: if True, make a copy of the table before applying any change.
         :param kwargs: named arguments with the changes to apply.
         The values can be:
          - a single value which will be applied to each row
@@ -169,7 +167,7 @@ class Table(TupList):
          - a function to apply to the row.
         :return: a table
         """
-        return Table(mutate(self, _safe=True, **kwargs))
+        return Table(mutate(self, **kwargs))
 
     def group_by(self, col) -> SuperDict:
         """

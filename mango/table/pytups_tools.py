@@ -1,10 +1,10 @@
 from pytups import TupList, SuperDict
 from typing import Callable, Iterable
-from mango.table.table_tools import str_key, to_len
+from mango.table.table_tools import str_key, to_len, invert_dict_list
 from mango.processing import as_list, flatten, reverse_dict, unique
 
 
-def mutate(table, _safe=True, **kwargs):
+def mutate(table, **kwargs):
     """
     Add or modify a column in a table.
 
@@ -18,7 +18,6 @@ def mutate(table, _safe=True, **kwargs):
     Note: all changes are applied in the order of the arguments.
 
     :param table: TupList
-    :param _safe: if True, make a copy of the table before applying any change.
     :param kwargs: named arguments with the changes to apply.
     The values can be:
      - a single value which will be applied to each row. ex: a=3
@@ -32,11 +31,8 @@ def mutate(table, _safe=True, **kwargs):
         print("Warning: applying mutate on an empty table")
         return table
 
-    # Copy input table in order to avoid changing it.
-    if _safe:
-        table2 = table.copy_deep()
-    else:
-        table2 = table
+    # Copy deep of table has been removed.
+    table2 = table
 
     # Transform TupList in list of dict
     if isinstance(table2[0], tuple):
@@ -168,40 +164,6 @@ def group_mutate(table, group_by, **func):
     )
     mutated = mutate(grouped, **func).vapply(lambda v: to_dictlist(v))
     return TupList(flatten(mutated))
-
-
-def invert_dict_list(dictlist, unique=True):
-    """
-    Transform a list of dict into a dict of lists.
-    [{a:1, b:2}, {a=2, b=3}] -> {a:[1,2], b:[2,3]}
-
-    :param dictlist: a TupList (with dict and not tuples)
-    :param unique: remove duplicates in the lists.
-    :return: a dict
-    """
-    assert isinstance(dictlist, TupList)
-
-    inverted = {k: [d[k] for d in dictlist] for k in dictlist[0].keys()}
-    if unique:
-        return {k: simplify(v) for k, v in inverted.items()}
-    else:
-        return inverted
-
-
-def simplify(x):
-    """
-    Remove duplicates and replace lists of size 1 by x[0]
-
-    :param x: a list
-    :return: a simplified list.
-    """
-    if isinstance(x, list):
-        x1 = list(set(x))
-        if len(x1) == 1:
-            return x1[0]
-        else:
-            return x1
-    return x
 
 
 def select(table, *args):

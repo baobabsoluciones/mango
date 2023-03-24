@@ -1,4 +1,7 @@
 import warnings
+
+from pytups import TupList
+
 from mango.processing import as_list, flatten, lag_list, lead_list
 
 
@@ -85,4 +88,37 @@ def cumsum(x):
     """
     return [sum(x[: (i + 1)]) for i in range(len(x))]
 
+
+def invert_dict_list(dictlist, unique=True):
+    """
+    Transform a list of dict into a dict of lists.
+    [{a:1, b:2}, {a=2, b=3}] -> {a:[1,2], b:[2,3]}
+
+    :param dictlist: a TupList (with dict and not tuples)
+    :param unique: remove duplicates in the lists.
+    :return: a dict
+    """
+    assert isinstance(dictlist, TupList)
+
+    inverted = {k: [d[k] for d in dictlist] for k in dictlist[0].keys()}
+    if unique:
+        return {k: simplify(v) for k, v in inverted.items()}
+    else:
+        return inverted
+
+
+def simplify(x):
+    """
+    Remove duplicates and replace lists of size 1 by x[0]
+
+    :param x: a list
+    :return: a simplified list.
+    """
+    if isinstance(x, list):
+        x1 = list(set(x))
+        if len(x1) == 1:
+            return x1[0]
+        else:
+            return x1
+    return x
 
