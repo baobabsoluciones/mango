@@ -16,6 +16,7 @@ openpyxl
 pandas
 Pillow
 plotly
+pytups
 progressbar
 python-dateutil
 pytz
