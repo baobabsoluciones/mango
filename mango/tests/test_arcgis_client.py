@@ -106,7 +106,6 @@ class TestArcGisClient(TestCase):
             origins=origins, destinations=destinations
         )
 
-        # print(response.status_code)
         self.assertEqual(
             response,
             [

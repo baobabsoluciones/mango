@@ -7,7 +7,11 @@ class Chrono:
     Class to measure time
     """
 
-    def __init__(self, name: str, silent: bool = False, precision: int = 2, logger=get_basic_logger()):
+    basic_logger = get_basic_logger()
+
+    def __init__(
+        self, name: str, silent: bool = False, precision: int = 2, logger=basic_logger
+    ):
         """
         Constructor of the class
 
@@ -20,7 +24,7 @@ class Chrono:
         self.precision = precision
         self.start_time = {name: time.time()}
         self.end = {name: None}
-        self.logger=logger
+        self.logger = logger
 
     def new(self, name: str):
         """
