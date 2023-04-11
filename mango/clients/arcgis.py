@@ -11,6 +11,7 @@ from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
     ARCGIS_CAR_TRAVEL_MODE,
+    ARCGIS_TRUCK_TRAVEL_MODE
 )
 
 this_dir, file = os.path.split(__file__)
@@ -65,6 +66,9 @@ class ArcGisClient:
         url = f"{ARCGIS_GEOCODE_URL}?f=json&token={self.token}&singleLine={address}&sourceCountry=ESP&forStorage=false"
         response = requests.get(url=url)
 
+        if response.status_code != 200:
+            raise Exception(f"Wrong status: {response.status_code}")
+
         try:
             location = response.json()["candidates"][0]["location"]
         except KeyError as e:
@@ -81,7 +85,7 @@ class ArcGisClient:
         destinations=schema,
     )
     def get_origin_destination_matrix(
-        self, *, origins: list, destinations: list, travel_mode: dict = None
+        self, *, origins: list, destinations: list, travel_mode: dict = None, sleep_time=2
     ) -> list:
         """
         Get the origin destination matrix for a list of origins and destinations.
@@ -131,6 +135,10 @@ class ArcGisClient:
         url = requests.Request("GET", url).prepare().url
 
         response = requests.get(url=url)
+
+        if response.status_code != 200:
+            raise Exception(f"Wrong status: {response.status_code}")
+
         try:
             job_id = response.json()["jobId"]
         except KeyError as e:
@@ -158,7 +166,7 @@ class ArcGisClient:
                     f"ArcGis job is in the process of getting cancelled: {response.json()}"
                 )
             else:
-                time.sleep(2)
+                time.sleep(sleep_time)
 
         matrix = requests.get(
             url=f"{ARCIS_ODMATRIX_JOB_URL}/jobs/{job_id}/results/output_origin_destination_lines?"
