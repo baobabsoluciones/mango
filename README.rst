@@ -6,8 +6,11 @@ The functions are divided into different modules so even though everything is im
 INSTALLATION:
 
 pip install mango-library 
+
 #latest version is 0.2.0
+
 \project\mango-library\
 
 mango-library
+
 It's a library for the Modular Python Agent Framework MANGO.
