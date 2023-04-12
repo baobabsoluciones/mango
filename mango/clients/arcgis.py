@@ -304,7 +304,7 @@ class ArcGisClient:
                             * 60,
                         }
                     )
-                except KeyError as e:
+                except KeyError:
                     warnings.warn(
                         f"The calculation for {origin['attributes']['Name']} and {destination['attributes']['Name']} "
                         f"was not available"
