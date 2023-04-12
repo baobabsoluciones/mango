@@ -103,7 +103,7 @@ class TestArcGisClient(TestCase):
         mock_requests.get.return_value.status_code = 200
 
         response = client.get_origin_destination_matrix(
-            origins=origins, destinations=destinations
+            mode="async", origins=origins, destinations=destinations
         )
 
         self.assertEqual(
@@ -149,6 +149,7 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
@@ -171,6 +172,7 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
@@ -193,6 +195,7 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
@@ -215,6 +218,7 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
@@ -247,7 +251,9 @@ class TestArcGisClient(TestCase):
         mock_requests.get.return_value.status_code = 200
 
         response = client.get_origin_destination_matrix(
-            origins=origins, destinations=destinations
+            origins=origins,
+            destinations=destinations,
+            mode="async",
         )
 
         self.assertEqual(
@@ -281,5 +287,6 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
         mock_requests.get.assert_called_once()

@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import time
+import warnings
 from datetime import datetime
 
 import requests
@@ -11,7 +12,7 @@ from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
     ARCGIS_CAR_TRAVEL_MODE,
-    ARCGIS_TRUCK_TRAVEL_MODE
+    ARCGIS_ODMATRIX_DIRECT_URL,
 )
 
 this_dir, file = os.path.split(__file__)
@@ -85,46 +86,107 @@ class ArcGisClient:
         destinations=schema,
     )
     def get_origin_destination_matrix(
-        self, *, origins: list, destinations: list, travel_mode: dict = None, sleep_time=2
+        self,
+        *,
+        mode: str = "sync",
+        origins: list,
+        destinations: list,
+        travel_mode: dict = None,
+        sleep_time: int = 2,
     ) -> list:
         """
         Get the origin destination matrix for a list of origins and destinations.
 
+        :param str mode: the mode to get the matrix. It can be "sync" or "async".
         :param list origins: a list of dictionaries with the origin information. Keys needed: "name", "x", "y".
         :param list destinations: a list of dictionaries with the destination information.
         Keys needed: "Name", "x", "y".
-        :param dict travel_mode:
+        :param dict travel_mode: a dictionary with the configuration for the travel mode
+        :param int sleep_time: the time to wait for the response in asynchronous mode
         :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
         :rtype: list
         :doc-author: baobab soluciones
         """
+        if mode is None:
+            mode = "sync"
+        elif mode != "sync" and mode != "async":
+            warnings.warn(f"The selected mode {mode} is not valid. Using sync mode.")
+            mode = "sync"
+
         if travel_mode is None:
             travel_mode = ARCGIS_CAR_TRAVEL_MODE
 
-        # TODO: based on the size of the matrix attack the direct API or the job API.
         if len(origins) > 1000 or len(destinations) > 1000:
             raise NotImplementedError(
                 "The size of the matrix is too big. Maximum number of origins or destinations is 1000."
             )
 
+        if (len(origins) > 10 or len(destinations) > 10) and mode == "sync":
+            warnings.warn(
+                "The size of the matrix is too big for sync mode. Changing to async mode"
+            )
+            mode = "async"
+
         origins = {
             "features": [
                 {
                     "geometry": {"x": el["x"], "y": el["y"]},
-                    "attributes": {"Name": el["name"]},
+                    "attributes": {
+                        "Name": el["name"],
+                        "ObjectID": pos + 11,
+                    },
                 }
-                for el in origins
+                for pos, el in enumerate(origins)
             ]
         }
         destinations = {
             "features": [
                 {
                     "geometry": {"x": el["x"], "y": el["y"]},
-                    "attributes": {"Name": el["name"]},
+                    "attributes": {
+                        "Name": el["name"],
+                        "ObjectID": pos + 101,
+                    },
                 }
-                for el in destinations
+                for pos, el in enumerate(destinations)
             ]
         }
+
+        if mode == "sync":
+            return self._get_origin_destination_matrix_sync(
+                origins=origins, destinations=destinations, travel_mode=travel_mode
+            )
+        elif mode == "async":
+            return self._get_origin_destination_matrix_async(
+                origins=origins,
+                destinations=destinations,
+                travel_mode=travel_mode,
+                sleep_time=sleep_time,
+            )
+        else:
+            raise ValueError(f"The mode {mode} is not valid.")
+
+    def _get_origin_destination_matrix_async(
+        self,
+        *,
+        origins: dict,
+        destinations: dict,
+        travel_mode: dict = None,
+        sleep_time: int = 2,
+    ):
+        """
+        Get the origin destination matrix for a list of origins and destinations in async mode
+        For more information about the request and the parameters, see:
+        https://developers.arcgis.com/rest/network/api-reference/origin-destination-cost-matrix-service.htm
+
+        :param dict origins: a dict with the features and attributes of the origins
+        :param dict destinations: a dict with the features and attributes of the destinations
+        :param dict travel_mode:
+        :param int sleep_time: the time to wait for the response in asynchronous mode
+        :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
+        :rtype: list
+        :doc-author: baobab soluciones
+        """
 
         url = (
             f"{ARCIS_ODMATRIX_JOB_URL}/submitJob?f=json&token={self.token}&distance_units=Meters&time_units=Seconds"
@@ -182,5 +244,70 @@ class ArcGisClient:
             }
             for el in matrix.json()["value"]["features"]
         ]
+
+        return results
+
+    def _get_origin_destination_matrix_sync(
+        self,
+        *,
+        origins: dict,
+        destinations: dict,
+        travel_mode: dict = None,
+        sleep: int = 2,
+    ):
+        """
+        Get the origin destination matrix for a list of origins and destinations in sync mode.
+        For more information about the request and the parameters, see:
+        https://developers.arcgis.com/rest/network/api-reference/origin-destination-cost-matrix-synchronous-service.htm
+
+        :param dict origins: a dict with the features and attributes of the origins
+        :param dict destinations: a dict with the features and attributes of the destinations
+        :param dict travel_mode: the travel mode configuration
+        :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
+        :rtype: list
+        :doc-author: baobab soluciones
+        """
+        url = (
+            f"{ARCGIS_ODMATRIX_DIRECT_URL}?f=json&token={self.token}"
+            f"&origins={json.dumps(origins, separators=(',', ':'))}"
+            f"&destinations={json.dumps(destinations, separators=(',', ':'))}"
+            f"&travelMode={json.dumps(travel_mode, separators=(',', ':'))}"
+            f"&impedanceAttributeName=Minutes"
+        ).replace("%3A", ":")
+
+        url = requests.Request("GET", url).prepare().url
+
+        response = requests.get(url=url)
+        if response.status_code != 200:
+            raise Exception(f"Wrong status: {response.status_code}")
+
+        if "error" in response.json().keys():
+            raise Exception(f"Error on calculation: {response.json()['error']}")
+
+        data = response.json()["odCostMatrix"]
+        results = []
+
+        for origin in origins["features"]:
+            for destination in destinations["features"]:
+                try:
+                    results.append(
+                        {
+                            "origin": origin["attributes"]["Name"],
+                            "destination": destination["attributes"]["Name"],
+                            "distance": data[str(origin["attributes"]["ObjectID"])][
+                                str(destination["attributes"]["ObjectID"])
+                            ][2]
+                            * 1000,
+                            "time": data[str(origin["attributes"]["ObjectID"])][
+                                str(destination["attributes"]["ObjectID"])
+                            ][0]
+                            * 60,
+                        }
+                    )
+                except KeyError as e:
+                    warnings.warn(
+                        f"The calculation for {origin['attributes']['Name']} and {destination['attributes']['Name']} "
+                        f"was not available"
+                    )
 
         return results
