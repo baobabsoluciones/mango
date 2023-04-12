@@ -77,7 +77,7 @@ class TestArcGisClient(TestCase):
         mock_requests.get.assert_called_once()
 
     @mock.patch("mango.clients.arcgis.requests")
-    def test_get_distances(self, mock_requests):
+    def test_get_distances_async(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -103,7 +103,7 @@ class TestArcGisClient(TestCase):
         mock_requests.get.return_value.status_code = 200
 
         response = client.get_origin_destination_matrix(
-            origins=origins, destinations=destinations
+            mode="async", origins=origins, destinations=destinations
         )
 
         self.assertEqual(
@@ -120,7 +120,7 @@ class TestArcGisClient(TestCase):
 
         mock_requests.get.assert_called()
 
-    def test_too_many_origins(self):
+    def test_too_many_origins_async(self):
         origins = [{"x": 1, "y": 1, "name": "First location"}] * 1001
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -132,7 +132,7 @@ class TestArcGisClient(TestCase):
         )
 
     @mock.patch("mango.clients.arcgis.requests")
-    def test_job_failed(self, mock_requests):
+    def test_job_failed_async(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -149,12 +149,13 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
 
     @mock.patch("mango.clients.arcgis.requests")
-    def test_job_cancelled(self, mock_requests):
+    def test_job_cancelled_async(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -171,12 +172,13 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
 
     @mock.patch("mango.clients.arcgis.requests")
-    def test_job_timed_out(self, mock_requests):
+    def test_job_timed_out_async(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -193,12 +195,13 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
 
     @mock.patch("mango.clients.arcgis.requests")
-    def test_job_cancelling(self, mock_requests):
+    def test_job_cancelling_async(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -215,12 +218,13 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
 
         mock_requests.get.assert_called()
 
     @mock.patch("mango.clients.arcgis.requests")
-    def test_iterations_correct(self, mock_requests):
+    def test_iterations_correct_async(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -247,7 +251,9 @@ class TestArcGisClient(TestCase):
         mock_requests.get.return_value.status_code = 200
 
         response = client.get_origin_destination_matrix(
-            origins=origins, destinations=destinations
+            origins=origins,
+            destinations=destinations,
+            mode="async",
         )
 
         self.assertEqual(
@@ -265,7 +271,7 @@ class TestArcGisClient(TestCase):
         mock_requests.get.assert_called()
 
     @mock.patch("mango.clients.arcgis.requests")
-    def test_job_id_missing(self, mock_requests):
+    def test_job_id_missing_async(self, mock_requests):
         origins = [{"x": 1, "y": 1, "name": "First location"}]
         destinations = [{"x": 2, "y": 2, "name": "Second location"}]
         client = self.test_connect()
@@ -281,5 +287,80 @@ class TestArcGisClient(TestCase):
             client.get_origin_destination_matrix,
             origins=origins,
             destinations=destinations,
+            mode="async",
         )
         mock_requests.get.assert_called_once()
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_get_distances_sync(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.status_code = 200
+        mock_requests.get.return_value.json.side_effect = [
+            {"keys": ["odCostMatrix"]},
+            {
+                "requestID": "45677c50-593e-4591-8dcf-4902f1dd6cdd",
+                "odCostMatrix": {
+                    "costAttributeNames": ["TravelTime", "Miles", "Kilometers"],
+                    "1001": {
+                        "10001": [
+                            1,
+                            1,
+                            1,
+                        ]
+                    },
+                },
+                "messages": [],
+            },
+        ]
+
+        response = client.get_origin_destination_matrix(
+            mode="sync", origins=origins, destinations=destinations
+        )
+
+        self.assertEqual(
+            response,
+            [
+                {
+                    "origin": "First location",
+                    "destination": "Second location",
+                    "distance": 1000,
+                    "time": 60,
+                }
+            ],
+        )
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_get_distances_sync_error(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.status_code = 400
+        self.assertRaises(
+            Exception,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+            mode="sync",
+        )
+
+    @mock.patch("mango.clients.arcgis.requests")
+    def test_get_distances_sync_error_message(self, mock_requests):
+        origins = [{"x": 1, "y": 1, "name": "First location"}]
+        destinations = [{"x": 2, "y": 2, "name": "Second location"}]
+        client = self.test_connect()
+
+        mock_requests.get.return_value.status_code = 200
+        mock_requests.get.return_value.json.side_effect = [
+            {"keys": ["odCostMatrix"]},
+        ]
+        self.assertRaises(
+            Exception,
+            client.get_origin_destination_matrix,
+            origins=origins,
+            destinations=destinations,
+            mode="sync",
+        )
