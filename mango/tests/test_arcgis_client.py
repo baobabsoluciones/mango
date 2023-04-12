@@ -304,8 +304,8 @@ class TestArcGisClient(TestCase):
                 "requestID": "45677c50-593e-4591-8dcf-4902f1dd6cdd",
                 "odCostMatrix": {
                     "costAttributeNames": ["TravelTime", "Miles", "Kilometers"],
-                    "11": {
-                        "101": [
+                    "1001": {
+                        "10001": [
                             1,
                             1,
                             1,
