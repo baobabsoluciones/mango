@@ -133,7 +133,7 @@ class ArcGisClient:
                     "geometry": {"x": el["x"], "y": el["y"]},
                     "attributes": {
                         "Name": el["name"],
-                        "ObjectID": pos + 11,
+                        "ObjectID": pos + 1001,
                     },
                 }
                 for pos, el in enumerate(origins)
@@ -145,7 +145,7 @@ class ArcGisClient:
                     "geometry": {"x": el["x"], "y": el["y"]},
                     "attributes": {
                         "Name": el["name"],
-                        "ObjectID": pos + 101,
+                        "ObjectID": pos + 10001,
                     },
                 }
                 for pos, el in enumerate(destinations)
@@ -290,18 +290,14 @@ class ArcGisClient:
         for origin in origins["features"]:
             for destination in destinations["features"]:
                 try:
+                    origin_id = str(origin["attributes"]["ObjectID"])
+                    destination_id = str(destination["attributes"]["ObjectID"])
                     results.append(
                         {
                             "origin": origin["attributes"]["Name"],
                             "destination": destination["attributes"]["Name"],
-                            "distance": data[str(origin["attributes"]["ObjectID"])][
-                                str(destination["attributes"]["ObjectID"])
-                            ][2]
-                            * 1000,
-                            "time": data[str(origin["attributes"]["ObjectID"])][
-                                str(destination["attributes"]["ObjectID"])
-                            ][0]
-                            * 60,
+                            "distance": data[origin_id][destination_id][2] * 1000,
+                            "time": data[origin_id][destination_id][0] * 60,
                         }
                     )
                 except KeyError:
