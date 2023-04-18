@@ -69,6 +69,8 @@ class Chrono:
         Method to stop all chronos and get back a dict with their durations
 
         :param bool report: if the chronos should be reported. True by default
+        :return: a dict with the name of the chronos as key and the durations as value
+        :rtype: dict
         """
         durations = dict()
         for name in self.start_time.keys():
@@ -83,6 +85,8 @@ class Chrono:
 
         :param str name: name of the chrono
         :param str message: additional message to display in the log
+        :return: the time elapsed for the specific chrono
+        :rtype: float
         """
 
         if self.end[name] is not None:
@@ -109,6 +113,9 @@ class Chrono:
     def report_all(self):
         """
         Method to report the time of all chronos and get back a dict with all the durations
+
+        :return: a dict with the name of the chronos as key and the durations as value
+        :rtype: dict
         """
         durations = dict()
         for name in self.start_time.keys():
