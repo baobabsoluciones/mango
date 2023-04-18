@@ -39,37 +39,43 @@ class Chrono:
         """
         Method to start a chrono
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param bool silent: if the chrono should be silent. True by default
         """
         self.new(name)
         self.start_time[name] = time.time()
         if not silent:
             self.logger.info(f"Operation {name} starts")
 
-    def stop(self, name: str):
+    def stop(self, name: str, report: bool = True):
         """
         Method to stop a chrono and get back its duration
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param bool report: if the chrono should be reported. True by default
         :return: the time elapsed for the specific chrono
         :rtype: float
         """
         self.end[name] = time.time()
         duration = self.end[name] - self.start_time[name]
-        if not self.silent:
+        if not self.silent or report:
             self.logger.info(
                 f"Operation {name} took: {round(duration, self.precision)} seconds"
             )
         return duration
 
-    def stop_all(self):
+    def stop_all(self, report: bool = True):
         """
         Method to stop all chronos and get back a dict with their durations
+
+        :param bool report: if the chronos should be reported. True by default
+        :return: a dict with the name of the chronos as key and the durations as value
+        :rtype: dict
         """
         durations = dict()
         for name in self.start_time.keys():
             if self.end[name] is None:
-                durations[name] = self.stop(name)
+                durations[name] = self.stop(name, report)
 
         return durations
 
@@ -77,7 +83,10 @@ class Chrono:
         """
         Method to report the time of a chrono and get back its duration
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param str message: additional message to display in the log
+        :return: the time elapsed for the specific chrono
+        :rtype: float
         """
 
         if self.end[name] is not None:
@@ -104,6 +113,9 @@ class Chrono:
     def report_all(self):
         """
         Method to report the time of all chronos and get back a dict with all the durations
+
+        :return: a dict with the name of the chronos as key and the durations as value
+        :rtype: dict
         """
         durations = dict()
         for name in self.start_time.keys():
@@ -112,7 +124,7 @@ class Chrono:
 
     def __call__(self, func: callable, *args, **kwargs):
         """
-        Method to decorate a function
+        Method to use the chrono as a callable with a function inside
 
         :param func: function to decorate
         :param args: arguments to pass to the function
@@ -121,6 +133,6 @@ class Chrono:
         """
         self.start(func.__name__)
         result = func(*args, **kwargs)
-        self.stop(func.__name__)
+        self.stop(func.__name__, False)
         self.report(func.__name__)
         return result
