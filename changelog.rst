@@ -1,3 +1,12 @@
+version 0.0.3
+--------------
+
+- **released**: 2023-04-18
+- **description**: minor changes to logging class Chrono and to the default logger
+- **changelog**:
+    - minor changes to logging class Chrono: stop now reports the duration
+    - default logger has a info level set up
+
 version 0.0.2
 --------------
 

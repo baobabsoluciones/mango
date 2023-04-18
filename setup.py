@@ -44,7 +44,7 @@ extra_require = {
 
 setuptools.setup(
     name="mango",
-    version="0.0.2",
+    version="0.0.3",
     author="baobab soluciones",
     author_email="sistemas@baobabsoluciones.es",
     description="Library with a collection of useful classes and methods to DRY",
