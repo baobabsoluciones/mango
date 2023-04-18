@@ -39,24 +39,26 @@ class Chrono:
         """
         Method to start a chrono
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param bool silent: if the chrono should be silent. True by default
         """
         self.new(name)
         self.start_time[name] = time.time()
         if not silent:
             self.logger.info(f"Operation {name} starts")
 
-    def stop(self, name: str):
+    def stop(self, name: str, report: bool = True):
         """
         Method to stop a chrono and get back its duration
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param bool report: if the chrono should be reported. True by default
         :return: the time elapsed for the specific chrono
         :rtype: float
         """
         self.end[name] = time.time()
         duration = self.end[name] - self.start_time[name]
-        if not self.silent:
+        if not self.silent or report:
             self.logger.info(
                 f"Operation {name} took: {round(duration, self.precision)} seconds"
             )
@@ -77,7 +79,8 @@ class Chrono:
         """
         Method to report the time of a chrono and get back its duration
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param str message: additional message to display in the log
         """
 
         if self.end[name] is not None:
