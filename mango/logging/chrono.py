@@ -64,14 +64,16 @@ class Chrono:
             )
         return duration
 
-    def stop_all(self):
+    def stop_all(self, report: bool = True):
         """
         Method to stop all chronos and get back a dict with their durations
+
+        :param bool report: if the chronos should be reported. True by default
         """
         durations = dict()
         for name in self.start_time.keys():
             if self.end[name] is None:
-                durations[name] = self.stop(name)
+                durations[name] = self.stop(name, report)
 
         return durations
 
@@ -115,7 +117,7 @@ class Chrono:
 
     def __call__(self, func: callable, *args, **kwargs):
         """
-        Method to decorate a function
+        Method to use the chrono as a callable with a function inside
 
         :param func: function to decorate
         :param args: arguments to pass to the function
@@ -124,6 +126,6 @@ class Chrono:
         """
         self.start(func.__name__)
         result = func(*args, **kwargs)
-        self.stop(func.__name__)
+        self.stop(func.__name__, False)
         self.report(func.__name__)
         return result

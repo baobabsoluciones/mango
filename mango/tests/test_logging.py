@@ -42,7 +42,7 @@ class LoggingTests(TestCase):
         chrono.report_all()
         chrono.start("second test")
         time.sleep(0.1)
-        chrono.stop_all()
+        chrono.stop_all(False)
         chrono.report_all()
         with open(normalize_path("./data/temp.log"), "r") as f:
             lines = f.readlines()
@@ -58,6 +58,37 @@ class LoggingTests(TestCase):
             self.assertIn("second test", lines[2])
             self.assertIn("INFO", lines[2])
             self.assertIn("took", lines[2])
+
+    def test_chrono_class_stop_report(self):
+        chrono = Chrono("first test", silent=True)
+        time.sleep(0.1)
+        chrono.report_all()
+        chrono.start("second test")
+        time.sleep(0.1)
+        chrono.stop_all(True)
+        chrono.report_all()
+        with open(normalize_path("./data/temp.log"), "r") as f:
+            lines = f.readlines()
+            self.assertEqual(len(lines), 5)
+            self.assertIn("first test", lines[0])
+            self.assertIn("INFO", lines[0])
+            self.assertIn("running", lines[0])
+
+            self.assertIn("first test", lines[1])
+            self.assertIn("INFO", lines[1])
+            self.assertIn("took", lines[1])
+
+            self.assertIn("second test", lines[2])
+            self.assertIn("INFO", lines[2])
+            self.assertIn("took", lines[2])
+
+            self.assertIn("first test", lines[3])
+            self.assertIn("INFO", lines[3])
+            self.assertIn("took", lines[3])
+
+            self.assertIn("second test", lines[4])
+            self.assertIn("INFO", lines[4])
+            self.assertIn("took", lines[4])
 
     def test_chrono_not_silent(self):
         chrono = Chrono("first test", silent=False)
@@ -80,7 +111,7 @@ class LoggingTests(TestCase):
     def test_chrono_callable(self):
         chrono = Chrono("first test", silent=True)
         chrono(time.sleep, 0.1)
-        chrono.stop_all()
+        chrono.stop_all(False)
         chrono.report_all()
         with open(normalize_path("./data/temp.log"), "r") as f:
             lines = f.readlines()
@@ -102,7 +133,7 @@ class LoggingTests(TestCase):
         time.sleep(0.1)
         chrono.report("first test", "custom message")
         time.sleep(0.1)
-        chrono.stop_all()
+        chrono.stop_all(False)
         chrono.report_all()
         with open(normalize_path("./data/temp.log"), "r") as f:
             lines = f.readlines()
