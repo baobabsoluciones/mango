@@ -1,7 +1,7 @@
 import logging
 
 
-LOG_FORMAT = "%(asctime)s: %(levelname)s %(message)s"
+LOG_FORMAT = "%(asctime)s: %(levelname)s - %(message)s"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
@@ -12,7 +12,7 @@ def get_basic_logger(
     log_format=LOG_FORMAT,
     date_format=DATE_FORMAT,
     logger_name="root",
-    clear=True
+    clear=True,
 ):
     """
     Create a basic logger to log messages in console and/or file.
