@@ -2,7 +2,15 @@ import time
 from functools import wraps
 import logging
 
+
 def log_time(logger: str = "root"):
+    """
+    The log_time functions is a decorator that can receive a logger name as a parameter and returns the actual
+    wraper for the function that is going to be executed
+
+    :param str logger: the name of the logger to use
+    :return: the log_decorator function
+    """
     logger = logging.getLogger(logger)
 
     def log_decorator(func):

@@ -17,7 +17,7 @@ class Chrono:
         :param name: name of the chrono
         :param silent: if the chrono should be silent
         :param precision: number of decimals to round the time to
-        :param str logger: the name of the logger
+        :param str logger: the name of the logger to use. It defaults to root
         """
         self.silent = silent
         self.precision = precision
