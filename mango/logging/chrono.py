@@ -1,3 +1,4 @@
+import logging
 import time
 from .logger import get_basic_logger
 
@@ -7,10 +8,8 @@ class Chrono:
     Class to measure time
     """
 
-    basic_logger = get_basic_logger()
-
     def __init__(
-        self, name: str, silent: bool = False, precision: int = 2, logger=basic_logger
+        self, name: str, silent: bool = False, precision: int = 2, logger: str = "root"
     ):
         """
         Constructor of the class
@@ -18,13 +17,13 @@ class Chrono:
         :param name: name of the chrono
         :param silent: if the chrono should be silent
         :param precision: number of decimals to round the time to
-        :param logger: logging logger object
+        :param str logger: the name of the logger to use. It defaults to root
         """
         self.silent = silent
         self.precision = precision
         self.start_time = {name: time.time()}
         self.end = {name: None}
-        self.logger = logger
+        self.logger = logging.getLogger(logger)
 
     def new(self, name: str):
         """
