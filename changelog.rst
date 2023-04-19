@@ -5,7 +5,7 @@ version 0.0.4
 - **description**: logger classes and methods now can receive a logger name to be used
 - **changelog**:
     - Chrono class now receives a logger name to be used
-    - :python:`log_time` decorator now receives a logger name to be used
+    - `log_time` decorator now receives a logger name to be used
 
 version 0.0.3
 --------------
