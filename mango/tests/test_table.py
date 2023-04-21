@@ -116,6 +116,16 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected, msg=msg)
 
+    def test_mutate_constant_len_1(self):
+        msg = "mutate with a constant for the new column."
+        df = Table([{"Name": "Albert", "Age": 20}]).mutate(const=5)
+        expected = Table(
+            [
+                {"Name": "Albert", "Age": 20, "const": 5},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
     def test_mutate_vect(self):
         msg = "mutate with a vector for the new column."
         points = [5, 8, 4, 6]
@@ -226,6 +236,16 @@ class TestTable(TestCase):
         )
         expected = Table(
             [{"Points": 13, "Under_25": True}, {"Points": 10, "Under_25": False}]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_summarise_group_by_none(self):
+        msg = "summarise with group_by = None"
+        df = Table(self.default_data2).summarise(
+            group_by=None, Points=sum, default=None
+        )
+        expected = Table(
+            [{"Points": 23}]
         )
         self.assertEqual(df, expected, msg=msg)
 
@@ -1037,6 +1057,14 @@ class TestTable(TestCase):
         expected = [
             {"Age": 45, "Male": 2, "Points": 13, "Under_25": True},
             {"Age": 65, "Male": 2, "Points": 10, "Under_25": False},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_sum_all_no_group(self):
+        msg = "sum_all sum every columns"
+        result = Table(self.default_data2).drop("Name").sum_all(None)
+        expected = [
+            {"Age": 110, "Male": 4, "Points": 23, "Under_25": 2},
         ]
         self.assertEqual(result, expected, msg=msg)
 

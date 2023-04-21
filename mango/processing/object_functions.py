@@ -136,7 +136,7 @@ def as_list(x):
     :param x: an object
     :return: a list
     """
-    if isinstance(x, Iterable) and not isinstance(x, str):
+    if isinstance(x, Iterable) and not isinstance(x, str) and not isinstance(x, dict):
         return list(x)
     else:
         return [x]

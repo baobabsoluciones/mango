@@ -43,17 +43,17 @@ def mutate(table, **kwargs):
     for k, v in kwargs.items():
         if isinstance(v, Callable):
             table2 = [{**row, **{k: v(row)}} for row in table2]
-        elif len(as_list(v)) == nrow:
-            table2 = [{**row, **{k: v[i]}} for i, row in enumerate(table2)]
         elif v is None or len(as_list(v)) == 1:
             table2 = [{**row, **{k: v}} for row in table2]
+        elif len(as_list(v)) == nrow:
+            table2 = [{**row, **{k: v[i]}} for i, row in enumerate(table2)]
         else:
             raise TypeError(f"Unexpected argument to mutate {v}")
 
     return TupList(table2)
 
 
-def sum_all(table, group_by):
+def sum_all(table, group_by=None):
     """
     Group by the given columns and sum the others.
 
@@ -69,6 +69,8 @@ def sum_all(table, group_by):
     assert isinstance(table, TupList)
     if len(table) == 0:
         return table
+    if group_by is None:
+        group_by=[]
 
     return (
         table.to_dict(indices=group_by, result_col=None, is_list=True)
@@ -90,7 +92,7 @@ def group_by(table, col):
     return table.to_dict(indices=col, result_col=None, is_list=True)
 
 
-def summarise(table, group_by, default: [None, Callable] = sum, **func):
+def summarise(table, group_by, default: [None, Callable] = None, **func):
     """
     Group by the given columns and apply the given functions to the others.
 
@@ -109,7 +111,8 @@ def summarise(table, group_by, default: [None, Callable] = sum, **func):
     # todo: should it create an error?
     if len(table) == 0:
         return table
-
+    if group_by is None:
+        group_by=[]
     if default is not None:
         apply_func = {k: default for k in table[0] if k not in group_by}
     else:
