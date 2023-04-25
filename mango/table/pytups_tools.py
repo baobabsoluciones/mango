@@ -179,6 +179,10 @@ def select(table, *args):
     """
     assert isinstance(table, TupList)
 
+    if not len(table):
+        print("Warning: applying select on an empty table")
+        return TupList()
+
     keep = as_list(args)
     missing = [k for k in keep if k not in get_col_names(table)]
     if len(missing):

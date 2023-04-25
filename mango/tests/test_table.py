@@ -271,6 +271,12 @@ class TestTable(TestCase):
         self.assertRaises(ValueError, try_select)
 
 
+    def test_select_empty(self):
+        msg = "select on empty table return empty table"
+        df = Table().select("Name")
+        self.assertEqual(df, Table())
+
+
     def test_drop(self):
         msg = "drop 3 columns"
         df = Table(self.default_data2).drop("Under_25", "Points", "Male")
@@ -497,6 +503,12 @@ class TestTable(TestCase):
             }
         ]
         self.assertEqual(table, expected, msg=msg)
+
+    def test_filter_empty(self):
+        msg = "filter an empty table"
+        df = Table().filter(lambda v: v["Age"] == 20)
+        expected = Table()
+        self.assertEqual(df, expected, msg=msg)
 
     def test_get_col_names(self):
         msg = "get column names with get_col_names"
