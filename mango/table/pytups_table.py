@@ -97,7 +97,7 @@ class Table(TupList):
         if self.len():
             if not isinstance(self[0], dict):
                 return super.__str__(self)
-            columns = len(as_list(self[0])) if self[0] is not None else 0
+            columns = len(self[0]) if self[0] is not None else 0
             return f"Table ({self.len()} rows, {columns} columns):\n" + self.show_rows(
                 0, self.len()
             )
@@ -193,7 +193,7 @@ class Table(TupList):
         """
         return Table(group_mutate(self, group_by, **func))
 
-    def sum_all(self, group_by) -> "Table":
+    def sum_all(self, group_by=None) -> "Table":
         """
         Group by the given columns and sum the others.
 
@@ -202,12 +202,12 @@ class Table(TupList):
         """
         return Table(sum_all(self, group_by))
 
-    def summarise(self, group_by, default: Callable = sum, **func) -> "Table":
+    def summarise(self, group_by=None, default: Callable = None, **func) -> "Table":
         """
         Group by the given columns and apply the given functions to the others.
 
         :param group_by: name of the columns to group.
-        :param default: default function to apply to non grouped columns.
+        :param default: default function to apply to non-grouped columns.
         :param func: function to apply to the named column. ex: a = first, b = mean
         :return: a table (Tuplist of dict).
         """
