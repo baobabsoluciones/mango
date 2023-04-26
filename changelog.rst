@@ -6,7 +6,7 @@ version 0.0.5
 - **changelog**:
     - fixed error on mutate when table had one row.
     - allow group by None in sum_all and summarise
-    - as_list applied on a dcit returns a list of the dict instead of the keys.
+    - as_list applied on a dict returns a list of the dict instead of the keys.
 
 version 0.0.4
 --------------
