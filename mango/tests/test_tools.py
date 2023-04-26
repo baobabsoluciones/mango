@@ -62,6 +62,7 @@ class TestTools(TestCase):
         self.assertEqual(as_list((1, 2)), [1, 2])
         self.assertEqual(as_list([1, 2]), [1, 2])
         self.assertEqual(as_list({1, 2}), [1, 2])
+        self.assertEqual(as_list({"a":2}), [{"a":2}])
 
     def test_str_key(self):
         self.assertEqual(str_key({}), {})
