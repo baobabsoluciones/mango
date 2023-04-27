@@ -529,6 +529,15 @@ class Table(TupList):
         result = self + [{**kwargs}]
         return result.replace(replacement=None, to_replace=None)
 
+    def rbind(self, table: TupList):
+        """
+        Bind two tables by rows.
+
+        :param table: another table
+        :return: the complete table.
+        """
+        return (self + Table(table)).replace(replacement=None, to_replace=None)
+
     @staticmethod
     def format_dataset(dataset):
         """
@@ -635,3 +644,15 @@ class Table(TupList):
         :return: a Table containing the data.
         """
         return Table(load_json(path))
+
+    def apply(self, func:Callable, *args, **kwargs):
+        """
+        Apply a function to the entire table.
+        Useful to chain varius functions applied to the entire table.
+        
+        :param func: a function which take the table as a first argument.
+        :param args: args of the function
+        :param kwargs: kwargs of the function
+        :return: what the function returns.
+        """
+        return func(self, *args, **kwargs)

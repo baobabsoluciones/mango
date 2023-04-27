@@ -250,7 +250,6 @@ class TestTable(TestCase):
 
         self.assertRaises(ValueError, try_select)
 
-
     def test_drop(self):
         msg = "drop 3 columns"
         df = Table(self.default_data2).drop("Under_25", "Points", "Male")
@@ -263,6 +262,12 @@ class TestTable(TestCase):
             ]
         )
         self.assertEqual(df, expected, msg=msg)
+
+    def test_drop_empty_table(self):
+        msg = "drop on empty table"
+        df = Table().drop("Under_25", "Points", "Male")
+
+        self.assertEqual(df, Table(), msg=msg)
 
     def test_rename(self):
         msg = "rename a column"
@@ -533,7 +538,7 @@ class TestTable(TestCase):
         self.assertEqual(result, expected, msg=msg)
 
     def test_replace_empty(self):
-        msg = "replace missing values with 0 with repalce_empty"
+        msg = "replace missing values with 0 with replace_empty"
         table = Table(self.default_data) + [{"Name": "Elisa"}]
         result = table.replace_empty(0)
         expected = [
@@ -542,6 +547,32 @@ class TestTable(TestCase):
             {"Name": "Charlie", "Age": 30},
             {"Name": "Daniel", "Age": 35},
             {"Name": "Elisa", "Age": 0},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_replace_empty_dict(self):
+        msg = "replace missing values on selected columns with replace_empty"
+        table = Table(self.default_data) + [{}]
+        result = table.replace_empty({"Name": "Elisa"})
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "Elisa"},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_replace_empty_dict2(self):
+        msg = "replace missing values on selected columns with replace_empty"
+        table = Table(self.default_data) + [{}]
+        result = table.replace_empty({"Name": "Elisa", "Age":5})
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "Elisa", "Age": 5},
         ]
         self.assertEqual(result, expected, msg=msg)
 
