@@ -576,6 +576,20 @@ class TestTable(TestCase):
         ]
         self.assertEqual(result, expected, msg=msg)
 
+    def test_replace_empty_dict3(self):
+        msg = "replace missing values on selected columns with replace_empty"
+        table = Table(self.default_data) + [{"Name":None, "Age":None}]
+        result = table.replace_empty({"Name": "Elisa"})
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "Elisa", "Age": None},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+
     def test_replace_nan(self):
         msg = "replace nan with 0 with repalce_nan"
         table = Table(self.default_data) + [{"Name": "Elisa", "Age": np.nan}]

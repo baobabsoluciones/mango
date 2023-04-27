@@ -480,10 +480,18 @@ def replace(tl, replacement=None, to_replace=None):
 
     :return: a tuplist with missing values filled.
     """
-    if not isinstance(replacement, dict):
+    apply_to_col = []
+    if isinstance(replacement, dict):
+        apply_to_col += [i for i in replacement.keys()]
+    else:
         replacement = {k: replacement for k in get_col_names(tl)}
-    if to_replace is None or not isinstance(to_replace, dict):
+    if isinstance(to_replace, dict):
+        apply_to_col += [i for i in to_replace.keys()]
+    else:
         to_replace = {k: to_replace for k in get_col_names(tl)}
+    if not len(apply_to_col):
+        apply_to_col = get_col_names(tl)
+
     return TupList(
         [
             {
@@ -491,7 +499,7 @@ def replace(tl, replacement=None, to_replace=None):
                 **{
                     k: v
                     for k, v in dic.items()
-                    if not k in to_replace or v != to_replace[k]
+                    if k not in apply_to_col or v != to_replace[k]
                 },
             }
             for dic in tl
