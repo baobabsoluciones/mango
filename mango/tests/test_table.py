@@ -589,7 +589,6 @@ class TestTable(TestCase):
         ]
         self.assertEqual(result, expected, msg=msg)
 
-
     def test_replace_nan(self):
         msg = "replace nan with 0 with repalce_nan"
         table = Table(self.default_data) + [{"Name": "Elisa", "Age": np.nan}]
@@ -943,6 +942,20 @@ class TestTable(TestCase):
         ]
         self.assertEqual(table2, expected, msg=msg)
 
+    def test_add_row_empty(self):
+        msg = "add an empty row with add_row"
+        table = Table(self.default_data)
+        table2 = table.add_row()
+
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": None, "Age": None},
+        ]
+        self.assertEqual(table2, expected, msg=msg)
+
     def test_sorted_exception(self):
         msg = "sorted raise error"
         table = Table(self.default_data)
@@ -1176,3 +1189,10 @@ class TestTable(TestCase):
         result = Table.dataset_from_json(path)
         expected = dict(t1=Table(self.default_data), t2=Table(self.default_data2))
         self.assertEqual(result, expected, msg=msg)
+
+    def test_apply(self):
+        msg = "apply a function to a table"
+        result = Table(self.default_data2).apply(len)
+        expected=len(Table(self.default_data2))
+        self.assertEqual(result, expected, msg=msg)
+        
