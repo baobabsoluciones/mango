@@ -307,6 +307,9 @@ class Table(TupList):
         :param func: function to use to filter
         :return: the filtered table.
         """
+        if not self.len():
+            return self
+
         return Table(self.vfilter(func))
 
     def get_col_names(self) -> "Table":

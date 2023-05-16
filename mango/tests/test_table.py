@@ -483,6 +483,12 @@ class TestTable(TestCase):
         ]
         self.assertEqual(table, expected, msg=msg)
 
+    def test_filter_empty(self):
+        msg = "filter an empty table"
+        table = Table().filter(lambda v: v["Age"] == 20)
+        expected = Table()
+        self.assertEqual(table, expected, msg=msg)
+
     def test_get_col_names(self):
         msg = "get column names with get_col_names"
         result = Table(self.default_data).get_col_names()
@@ -1195,4 +1201,3 @@ class TestTable(TestCase):
         result = Table(self.default_data2).apply(len)
         expected=len(Table(self.default_data2))
         self.assertEqual(result, expected, msg=msg)
-        
