@@ -339,7 +339,7 @@ def get_join_keys(tab1, tab2, jtype):
 
 
 def join(
-    table1, table2, by=None, suffix=None, jtype="full", empty=None, drop_if_nested=True
+    table1, table2, by=None, suffix=None, jtype="full", empty=None, drop_if_nested=False
 ):
     """
     Join to tables.

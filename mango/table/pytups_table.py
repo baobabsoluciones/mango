@@ -26,7 +26,8 @@ from .pytups_tools import (
     distinct,
     order_by,
     drop_nested,
-    group_by, auto_join,
+    group_by,
+    auto_join,
 )
 from .table_tools import is_subset
 from mango.processing import load_json, write_json, as_list
@@ -137,9 +138,9 @@ class Table(TupList):
         :return: the printed string
         """
         if name is None:
-            name=""
+            name = ""
         else:
-            name = name +": "
+            name = name + ": "
         if self.len() < 3 * n:
             print(f"{name}{self}")
             return self
@@ -328,8 +329,8 @@ class Table(TupList):
         """
         if self.len() == 0:
             return SuperDict()
-
-        return SuperDict({col: self.take(col) for col in self.get_col_names()})
+        table = self.replace_empty(None)
+        return SuperDict({col: table.take(col) for col in self.get_col_names()})
 
     @staticmethod
     def from_columns(dct) -> "Table":
@@ -648,11 +649,11 @@ class Table(TupList):
         """
         return Table(load_json(path))
 
-    def apply(self, func:Callable, *args, **kwargs):
+    def apply(self, func: Callable, *args, **kwargs):
         """
         Apply a function to the entire table.
         Useful to chain varius functions applied to the entire table.
-        
+
         :param func: a function which take the table as a first argument.
         :param args: args of the function
         :param kwargs: kwargs of the function
