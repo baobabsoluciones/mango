@@ -2,7 +2,7 @@ import os
 import io
 import numpy as np
 import pandas as pd
-from pytups import TupList
+from pytups import TupList, SuperDict
 from unittest import TestCase, mock
 from mango.table.pytups_table import Table
 from mango.table.table_tools import mean
@@ -1135,6 +1135,10 @@ class TestTable(TestCase):
         self.assertEqual(result1, expected1, msg=msg1)
         self.assertEqual(result2, expected2, msg=msg2)
         self.assertRaises(ValueError, to_param_error)
+
+    def test_to_param_empty(self):
+        msg = "to_param on empty table return empty dict"
+        self.assertEqual(Table().to_param("Name", "Points"), SuperDict(), msg=msg)
 
     def test_is_unique_true(self):
         msg = "is_unique returns True if all values of the column are unique"

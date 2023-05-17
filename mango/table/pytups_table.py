@@ -351,7 +351,7 @@ class Table(TupList):
         """
         Get row number for rows which respect a condition.
 
-        :param cond: codition/filter to apply to the rows
+        :param cond: condition/filter to apply to the rows
         :return: a list of row numbers
         """
         return [i for i, v in enumerate(self) if cond(v)]
@@ -502,6 +502,9 @@ class Table(TupList):
         :param is_list: True if the values are a list instead of a single value.
         :return: a superdict indexed by the given keys.
         """
+        if not self.len():
+            return SuperDict()
+
         table_col = set(self[0].keys())
         if not is_subset(keys, table_col):
             raise KeyError(f"key(s) {keys} are not in table.")

@@ -28,7 +28,8 @@ def mutate(table, **kwargs):
     assert isinstance(table, TupList)
 
     if len(table) == 0:
-        print("Warning: applying mutate on an empty table")
+        # TODO: put that in a debug log
+        # print("Warning: applying mutate on an empty table")
         return table
 
     # Copy deep of table has been removed.
