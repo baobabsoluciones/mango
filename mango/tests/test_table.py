@@ -116,6 +116,16 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected, msg=msg)
 
+    def test_mutate_constant_len_1(self):
+        msg = "mutate with a constant for the new column."
+        df = Table([{"Name": "Albert", "Age": 20}]).mutate(const=5)
+        expected = Table(
+            [
+                {"Name": "Albert", "Age": 20, "const": 5},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
     def test_mutate_vect(self):
         msg = "mutate with a vector for the new column."
         points = [5, 8, 4, 6]
@@ -229,6 +239,16 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected, msg=msg)
 
+    def test_summarise_group_by_none(self):
+        msg = "summarise with group_by = None"
+        df = Table(self.default_data2).summarise(
+            group_by=None, Points=sum, default=None
+        )
+        expected = Table(
+            [{"Points": 23}]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
     def test_select(self):
         msg = "select 2 columns"
         df = Table(self.default_data2).select("Name", "Points")
@@ -249,6 +269,12 @@ class TestTable(TestCase):
             return Table(self.default_data2).select("unknown", "Points")
 
         self.assertRaises(ValueError, try_select)
+
+    def test_select_empty(self):
+        msg = "select on empty table return empty table"
+        df = Table().select("Name")
+        self.assertEqual(df, Table())
+
 
     def test_drop(self):
         msg = "drop 3 columns"
@@ -485,9 +511,9 @@ class TestTable(TestCase):
 
     def test_filter_empty(self):
         msg = "filter an empty table"
-        table = Table().filter(lambda v: v["Age"] == 20)
+        df = Table().filter(lambda v: v["Age"] == 20)
         expected = Table()
-        self.assertEqual(table, expected, msg=msg)
+        self.assertEqual(df, expected, msg=msg)
 
     def test_get_col_names(self):
         msg = "get column names with get_col_names"
@@ -1101,6 +1127,14 @@ class TestTable(TestCase):
         expected = [
             {"Age": 45, "Male": 2, "Points": 13, "Under_25": True},
             {"Age": 65, "Male": 2, "Points": 10, "Under_25": False},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_sum_all_no_group(self):
+        msg = "sum_all sum every columns"
+        result = Table(self.default_data2).drop("Name").sum_all(None)
+        expected = [
+            {"Age": 110, "Male": 4, "Points": 23, "Under_25": 2},
         ]
         self.assertEqual(result, expected, msg=msg)
 
