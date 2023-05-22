@@ -244,9 +244,7 @@ class TestTable(TestCase):
         df = Table(self.default_data2).summarise(
             group_by=None, Points=sum, default=None
         )
-        expected = Table(
-            [{"Points": 23}]
-        )
+        expected = Table([{"Points": 23}])
         self.assertEqual(df, expected, msg=msg)
 
     def test_select(self):
@@ -274,7 +272,6 @@ class TestTable(TestCase):
         msg = "select on empty table return empty table"
         df = Table().select("Name")
         self.assertEqual(df, Table())
-
 
     def test_drop(self):
         msg = "drop 3 columns"
@@ -320,7 +317,7 @@ class TestTable(TestCase):
         df_id = Table(self.df_id)
 
         def try_join():
-            return  Table(self.default_data2).join(df_id, jtype="up")
+            return Table(self.default_data2).join(df_id, jtype="up")
 
         self.assertRaises(ValueError, try_join)
 
@@ -355,7 +352,7 @@ class TestTable(TestCase):
         def try_left_join():
             return Table(self.default_data2).left_join(df_id, by="Id")
 
-        self.assertRaises(ValueError,try_left_join)
+        self.assertRaises(ValueError, try_left_join)
 
     def test_left_join2(self):
         msg = "left join with a repeated value"
@@ -405,8 +402,28 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected, msg=msg)
 
+    def test_left_join_none(self):
+        msg = "left join with None values as keys"
+        df_id = Table(self.df_id).add_row(Name=None, Id=5)
+        df = (
+            Table(self.default_data2)
+            .add_row(Name=None)
+            .left_join(df_id, by="Name")
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+                {"Name": None, "Id": None},
+            ]
+        )
+        self.assertEqual(expected, df, msg=msg)
+
     def test_right_join(self):
-        msg = "right join with toher table"
+        msg = "right join with other table"
         df_id = Table(self.df_id)
         df = Table(self.default_data2).right_join(df_id).select("Name", "Id")
         expected = Table(
@@ -598,7 +615,7 @@ class TestTable(TestCase):
     def test_replace_empty_dict2(self):
         msg = "replace missing values on selected columns with replace_empty"
         table = Table(self.default_data) + [{}]
-        result = table.replace_empty({"Name": "Elisa", "Age":5})
+        result = table.replace_empty({"Name": "Elisa", "Age": 5})
         expected = [
             {"Name": "Albert", "Age": 20},
             {"Name": "Bernard", "Age": 25},
@@ -610,7 +627,7 @@ class TestTable(TestCase):
 
     def test_replace_empty_dict3(self):
         msg = "replace missing values on selected columns with replace_empty"
-        table = Table(self.default_data) + [{"Name":None, "Age":None}]
+        table = Table(self.default_data) + [{"Name": None, "Age": None}]
         result = table.replace_empty({"Name": "Elisa"})
         expected = [
             {"Name": "Albert", "Age": 20},
@@ -1021,12 +1038,12 @@ class TestTable(TestCase):
         def try_peek():
             return table.peek(3)
 
-        expected =(
-        "Table (4 rows, 2 columns):\n"
-        "0 {'Name': 'Albert', 'Age': 20}\n"
-        "1 {'Name': 'Bernard', 'Age': 25}\n"
-        "2 {'Name': 'Charlie', 'Age': 30}\n"
-        "3 {'Name': 'Daniel', 'Age': 35}\n\n"
+        expected = (
+            "Table (4 rows, 2 columns):\n"
+            "0 {'Name': 'Albert', 'Age': 20}\n"
+            "1 {'Name': 'Bernard', 'Age': 25}\n"
+            "2 {'Name': 'Charlie', 'Age': 30}\n"
+            "3 {'Name': 'Daniel', 'Age': 35}\n\n"
         )
         self.assertStdout(try_peek, expected, msg=msg)
 
@@ -1037,7 +1054,7 @@ class TestTable(TestCase):
         def try_peek():
             return table.peek(3)
 
-        expected ="Empty table\n"
+        expected = "Empty table\n"
         self.assertStdout(try_peek, expected, msg=msg)
 
     def test_print(self):
@@ -1058,7 +1075,7 @@ class TestTable(TestCase):
 
     def test_print_list(self):
         msg = "print a table"
-        table = Table([1,2,3])
+        table = Table([1, 2, 3])
 
         def try_print():
             print(table)
@@ -1067,10 +1084,10 @@ class TestTable(TestCase):
         self.assertStdout(try_print, expected, msg=msg)
 
     def test_show_row(self):
-        msg="show row show one row if n2=None"
+        msg = "show row show one row if n2=None"
         table = Table(self.default_data)
-        result=table.show_rows(1)
-        expected="1 {'Name': 'Bernard', 'Age': 25}\n"
+        result = table.show_rows(1)
+        expected = "1 {'Name': 'Bernard', 'Age': 25}\n"
         self.assertEqual(result, expected, msg)
 
     def test_head(self):
@@ -1079,7 +1096,7 @@ class TestTable(TestCase):
         result = table.head(2)
         expected = [{"Name": "Albert", "Age": 20}, {"Name": "Bernard", "Age": 25}]
         self.assertEqual(result, expected, msg=msg)
-        msg2="head return the entire table if n > len(table)"
+        msg2 = "head return the entire table if n > len(table)"
         self.assertEqual(table.head(100), table, msg=msg2)
 
     def test_group_by(self):
@@ -1237,5 +1254,5 @@ class TestTable(TestCase):
     def test_apply(self):
         msg = "apply a function to a table"
         result = Table(self.default_data2).apply(len)
-        expected=len(Table(self.default_data2))
+        expected = len(Table(self.default_data2))
         self.assertEqual(result, expected, msg=msg)

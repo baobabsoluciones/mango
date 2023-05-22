@@ -71,7 +71,7 @@ def sum_all(table, group_by=None):
     if len(table) == 0:
         return table
     if group_by is None:
-        group_by=[]
+        group_by = []
 
     return (
         table.to_dict(indices=group_by, result_col=None, is_list=True)
@@ -113,7 +113,7 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
     if len(table) == 0:
         return table
     if group_by is None:
-        group_by=[]
+        group_by = []
     if default is not None:
         apply_func = {k: default for k in table[0] if k not in group_by}
     else:
@@ -342,8 +342,46 @@ def get_join_keys(tab1, tab2, jtype):
     else:
         raise ValueError("jtype must be full, inner, right or left")
 
-    result = TupList(join_keys).unique2()
-    result.sort()
+    result = (
+        TupList(join_keys)
+        .vfilter(lambda v: all(i is not None for i in as_list(v)))
+        .unique2()
+        .sorted()
+    )
+    return result
+
+
+def manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype):
+    """
+    None values should never join with other None.
+    Depending on the type of join, return the relevant rows with None values in keys.
+    TODO: there should be a simpler way to do that.
+    :param tab1:
+    :param tab2:
+    :param empty:
+    :param t1_keys:
+    :param t2_keys:
+    :param by:
+    :param jtype:
+    :return:
+    """
+    result = []
+    if jtype == "left":
+        for i in tab1:
+            if any(v is None for v in as_list(i)):
+                tab2[i] = [{k: empty for k in t2_keys if k not in by}]
+                result += [{**d1, **d2} for d1 in tab1[i] for d2 in tab2[i]]
+    elif jtype == "right":
+        result = manage_join_none(tab2, tab1, empty, t2_keys, t1_keys, by, jtype="left")
+    elif jtype == "full":
+        result = manage_join_none(
+            tab1, tab2, empty, t1_keys, t2_keys, by, jtype="left"
+        ) + manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype="right")
+    elif jtype == "inner":
+        return TupList()
+    else:
+        raise ValueError("jtype must be full, inner, right or left")
+
     return result
 
 
@@ -439,7 +477,9 @@ def join(
             tab2[i] = [{k: empty for k in t2_keys if k not in by}]
         result += [{**d1, **d2} for d1 in tab1[i] for d2 in tab2[i]]
 
-    return TupList(result)
+    return TupList(result) + manage_join_none(
+        tab1, tab2, empty, t1_keys, t2_keys, by, jtype
+    )
 
 
 def auto_join(table, by=None, suffix=None, empty=None):
