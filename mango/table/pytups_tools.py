@@ -204,7 +204,7 @@ def drop(table, *args):
 
     remove = as_list(args)
     keep = [k for k in get_col_names(table) if k not in remove]
-    return table.vapply(lambda v: {k: v[k] for k in keep})
+    return table.vapply(lambda v: {k: v[k] for k in keep if k in v})
 
 
 def rename(table, **kwargs):
