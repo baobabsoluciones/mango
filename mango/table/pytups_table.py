@@ -91,6 +91,10 @@ class Table(TupList):
         )
 
     def take(self, indices, use_numpy=False) -> TupList:
+        indices = as_list(indices)
+        if len(indices) == 1:
+            indices = indices[0]
+
         return TupList(self).take(indices, use_numpy)
 
     # New or modified methods

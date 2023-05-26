@@ -97,6 +97,14 @@ class TestTable(TestCase):
         self.assertIsInstance(result, TupList, msg="take create a TupList")
         self.assertEqual(result, expected, msg="take works as expected")
 
+    def test_take_tup(self):
+        result = Table(self.default_data).take(("Name", "Age"))
+        expected = TupList(
+            [("Albert", 20), ("Bernard", 25), ("Charlie", 30), ("Daniel", 35)]
+        )
+        self.assertIsInstance(result, TupList, msg="take create a TupList")
+        self.assertEqual(result, expected, msg="take works as expected")
+
     def test_mutate_on_tuplist(self):
         msg = "mutate transform a list of tuple into a list of dict"
         result = Table([(1, 2), (3, 4), (5, 6)]).mutate(a=5)
