@@ -449,16 +449,20 @@ def join(
 
     # Add suffixes if some shared keys are not in by
     shared_but_not_by = set(by) ^ shared_keys
-    if shared_but_not_by:
-        table1 = rename(
-            table1, **{k: str(k) + suffix[0] for k in t1_keys if k in shared_but_not_by}
-        )
-        table2 = rename(
-            table2, **{k: str(k) + suffix[1] for k in t2_keys if k in shared_but_not_by}
-        )
-
+    table1 = rename(
+        table1, **{k: str(k) + suffix[0] for k in t1_keys if k in shared_but_not_by}
+    )
+    table2 = rename(
+        table2,
+        **{
+            k: str(k) + suffix[1]
+            for k in t2_keys
+            if (k in shared_but_not_by and k not in names_table2.keys()) or k in names_table2.values()
+        },
+    )
     # If by was a dict, rename table2 columns to coincides with table1
     table2 = rename(table2, **{k: v for k, v in names_table2.items()})
+
     t1_keys = get_col_names(table1)
     t2_keys = get_col_names(table2)
 

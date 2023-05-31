@@ -396,6 +396,64 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected, msg=msg)
 
+    def test_left_join_with_by_dict2(self):
+        msg = "left join with by as a dict and common keys"
+        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N")
+        df = (
+            Table(self.default_data2)
+            .mutate(N=1)
+            .left_join(df_id, by=dict(Name="N"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_left_join_with_by_dict3(self):
+        msg = "left join with by as a dict and common keys"
+        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N").mutate(Name="a")
+        df = (
+            Table(self.default_data2)
+            .left_join(df_id, by=dict(Name="N"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_left_join_with_by_dict_with_suffix(self):
+        msg = "left join with by as a dict and common keys"
+        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N").mutate(Name="a")
+        df = (
+            Table(self.default_data2)
+            .left_join(df_id, by=dict(Name="N"), suffix=("_1", "_2"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
     def test_left_join_empty(self):
         msg = "left join with empty = 0"
         df_id = Table(self.df_id)
