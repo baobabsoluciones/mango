@@ -1,3 +1,9 @@
+version 0.0.6
+--------------
+
+- **released**: 2023-05-31
+- **description**: improvements to Table class
+
 version 0.0.5
 --------------
 
