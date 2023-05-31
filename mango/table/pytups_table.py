@@ -26,7 +26,8 @@ from .pytups_tools import (
     distinct,
     order_by,
     drop_nested,
-    group_by, auto_join,
+    group_by,
+    auto_join,
 )
 from .table_tools import is_subset
 from mango.processing import load_json, write_json, as_list
@@ -90,6 +91,10 @@ class Table(TupList):
         )
 
     def take(self, indices, use_numpy=False) -> TupList:
+        indices = as_list(indices)
+        if len(indices) == 1:
+            indices = indices[0]
+
         return TupList(self).take(indices, use_numpy)
 
     # New or modified methods
@@ -137,9 +142,9 @@ class Table(TupList):
         :return: the printed string
         """
         if name is None:
-            name=""
+            name = ""
         else:
-            name = name +": "
+            name = name + ": "
         if self.len() < 3 * n:
             print(f"{name}{self}")
             return self
@@ -307,6 +312,9 @@ class Table(TupList):
         :param func: function to use to filter
         :return: the filtered table.
         """
+        if not self.len():
+            return self
+
         return Table(self.vfilter(func))
 
     def get_col_names(self) -> "Table":
@@ -325,8 +333,8 @@ class Table(TupList):
         """
         if self.len() == 0:
             return SuperDict()
-
-        return SuperDict({col: self.take(col) for col in self.get_col_names()})
+        table = self.replace_empty(None)
+        return SuperDict({col: table.take(col) for col in self.get_col_names()})
 
     @staticmethod
     def from_columns(dct) -> "Table":
@@ -347,7 +355,7 @@ class Table(TupList):
         """
         Get row number for rows which respect a condition.
 
-        :param cond: codition/filter to apply to the rows
+        :param cond: condition/filter to apply to the rows
         :return: a list of row numbers
         """
         return [i for i, v in enumerate(self) if cond(v)]
@@ -498,6 +506,9 @@ class Table(TupList):
         :param is_list: True if the values are a list instead of a single value.
         :return: a superdict indexed by the given keys.
         """
+        if not self.len():
+            return SuperDict()
+
         table_col = set(self[0].keys())
         if not is_subset(keys, table_col):
             raise KeyError(f"key(s) {keys} are not in table.")
@@ -528,6 +539,15 @@ class Table(TupList):
         """
         result = self + [{**kwargs}]
         return result.replace(replacement=None, to_replace=None)
+
+    def rbind(self, table: TupList):
+        """
+        Bind two tables by rows.
+
+        :param table: another table
+        :return: the complete table.
+        """
+        return (self + Table(table)).replace(replacement=None, to_replace=None)
 
     @staticmethod
     def format_dataset(dataset):
@@ -635,3 +655,15 @@ class Table(TupList):
         :return: a Table containing the data.
         """
         return Table(load_json(path))
+
+    def apply(self, func: Callable, *args, **kwargs):
+        """
+        Apply a function to the entire table.
+        Useful to chain varius functions applied to the entire table.
+
+        :param func: a function which take the table as a first argument.
+        :param args: args of the function
+        :param kwargs: kwargs of the function
+        :return: what the function returns.
+        """
+        return func(self, *args, **kwargs)

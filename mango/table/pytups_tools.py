@@ -28,7 +28,8 @@ def mutate(table, **kwargs):
     assert isinstance(table, TupList)
 
     if len(table) == 0:
-        print("Warning: applying mutate on an empty table")
+        # TODO: put that in a debug log
+        # print("Warning: applying mutate on an empty table")
         return table
 
     # Copy deep of table has been removed.
@@ -70,7 +71,7 @@ def sum_all(table, group_by=None):
     if len(table) == 0:
         return table
     if group_by is None:
-        group_by=[]
+        group_by = []
 
     return (
         table.to_dict(indices=group_by, result_col=None, is_list=True)
@@ -112,7 +113,7 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
     if len(table) == 0:
         return table
     if group_by is None:
-        group_by=[]
+        group_by = []
     if default is not None:
         apply_func = {k: default for k in table[0] if k not in group_by}
     else:
@@ -180,7 +181,8 @@ def select(table, *args):
     assert isinstance(table, TupList)
 
     if not len(table):
-        print("Warning: applying select on an empty table")
+        # TODO: put that in a debug log
+        # print("Warning: applying select on an empty table")
         return TupList()
 
     keep = as_list(args)
@@ -202,7 +204,7 @@ def drop(table, *args):
 
     remove = as_list(args)
     keep = [k for k in get_col_names(table) if k not in remove]
-    return table.vapply(lambda v: {k: v[k] for k in keep})
+    return table.vapply(lambda v: {k: v[k] for k in keep if k in v})
 
 
 def rename(table, **kwargs):
@@ -340,13 +342,51 @@ def get_join_keys(tab1, tab2, jtype):
     else:
         raise ValueError("jtype must be full, inner, right or left")
 
-    result = TupList(join_keys).unique2()
-    result.sort()
+    result = (
+        TupList(join_keys)
+        .vfilter(lambda v: all(i is not None for i in as_list(v)))
+        .unique2()
+        .sorted()
+    )
+    return result
+
+
+def manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype):
+    """
+    None values should never join with other None.
+    Depending on the type of join, return the relevant rows with None values in keys.
+    TODO: there should be a simpler way to do that.
+    :param tab1:
+    :param tab2:
+    :param empty:
+    :param t1_keys:
+    :param t2_keys:
+    :param by:
+    :param jtype:
+    :return:
+    """
+    result = []
+    if jtype == "left":
+        for i in tab1:
+            if any(v is None for v in as_list(i)):
+                tab2[i] = [{k: empty for k in t2_keys if k not in by}]
+                result += [{**d1, **d2} for d1 in tab1[i] for d2 in tab2[i]]
+    elif jtype == "right":
+        result = manage_join_none(tab2, tab1, empty, t2_keys, t1_keys, by, jtype="left")
+    elif jtype == "full":
+        result = manage_join_none(
+            tab1, tab2, empty, t1_keys, t2_keys, by, jtype="left"
+        ) + manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype="right")
+    elif jtype == "inner":
+        return TupList()
+    else:
+        raise ValueError("jtype must be full, inner, right or left")
+
     return result
 
 
 def join(
-    table1, table2, by=None, suffix=None, jtype="full", empty=None, drop_if_nested=True
+    table1, table2, by=None, suffix=None, jtype="full", empty=None, drop_if_nested=False
 ):
     """
     Join to tables.
@@ -437,7 +477,9 @@ def join(
             tab2[i] = [{k: empty for k in t2_keys if k not in by}]
         result += [{**d1, **d2} for d1 in tab1[i] for d2 in tab2[i]]
 
-    return TupList(result)
+    return TupList(result) + manage_join_none(
+        tab1, tab2, empty, t1_keys, t2_keys, by, jtype
+    )
 
 
 def auto_join(table, by=None, suffix=None, empty=None):
@@ -487,10 +529,18 @@ def replace(tl, replacement=None, to_replace=None):
 
     :return: a tuplist with missing values filled.
     """
-    if not isinstance(replacement, dict):
+    apply_to_col = []
+    if isinstance(replacement, dict):
+        apply_to_col += [i for i in replacement.keys()]
+    else:
         replacement = {k: replacement for k in get_col_names(tl)}
-    if to_replace is None or not isinstance(to_replace, dict):
+    if isinstance(to_replace, dict):
+        apply_to_col += [i for i in to_replace.keys()]
+    else:
         to_replace = {k: to_replace for k in get_col_names(tl)}
+    if not len(apply_to_col):
+        apply_to_col = get_col_names(tl)
+
     return TupList(
         [
             {
@@ -498,7 +548,7 @@ def replace(tl, replacement=None, to_replace=None):
                 **{
                     k: v
                     for k, v in dic.items()
-                    if not k in to_replace or v != to_replace[k]
+                    if k not in apply_to_col or v != to_replace[k]
                 },
             }
             for dic in tl
