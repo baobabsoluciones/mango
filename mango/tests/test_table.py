@@ -344,20 +344,25 @@ class TestTable(TestCase):
         self.assertEqual(df, expected, msg=msg)
 
     def test_left_join_empty_table(self):
-        msg = "left join with empty table"
+        msg = "left join with empty table 2"
         empty_table = Table()
         df1 = Table(self.default_data2).left_join(empty_table)
         expected1 = self.default_data2
         self.assertEqual(df1, expected1, msg=msg)
+        msg = "left join with empty table 1"
         df2 = Table(empty_table).left_join(self.default_data2)
-        expected2 = self.default_data2
+        expected2 = Table()
         self.assertEqual(df2, expected2, msg=msg)
 
-    def test_left_join_empty_table_if_empty(self):
-        msg = "left join with empty table"
+    def test_left_join_if_empty_table(self):
+        msg = "left join with empty table 2 and if_empty_table_2 argument"
         empty_table = Table()
-        if_empty = {"Name":None, "Id":None}
-        df1 = Table(self.default_data2).left_join(empty_table, if_empty_table=if_empty).select("Name", "Id")
+        if_empty_2 = {"Name": None, "Id": None}
+        df1 = (
+            Table(self.default_data2)
+            .left_join(empty_table, if_empty_table_2=if_empty_2)
+            .select("Name", "Id")
+        )
         expected = Table(
             [
                 {"Name": "Albert", "Id": None},
@@ -367,11 +372,11 @@ class TestTable(TestCase):
             ]
         )
         self.assertEqual(df1, expected, msg=msg)
-
-        #
-        # df2 = Table(empty_table).left_join(self.default_data2)
-        # expected2 = self.default_data2
-        # self.assertEqual(df2, expected2, msg=msg)
+        msg = "left join with empty table 1 and if_empty_table_1 argument"
+        if_empty_1 = {"Name": None}
+        df2 = Table(empty_table).left_join(self.default_data2, if_empty_table_1=if_empty_1)
+        expected2 = Table()
+        self.assertEqual(df2, expected2, msg=msg)
 
     def test_left_join_wrong_by(self):
         msg = "error when left join with wrong by value"
@@ -438,7 +443,11 @@ class TestTable(TestCase):
 
     def test_left_join_with_by_dict3(self):
         msg = "left join with by as a dict and common keys"
-        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N").mutate(Name="a")
+        df_id = (
+            Table(self.df_id + [{"Name": "Albert", "Id": 5}])
+            .rename(Name="N")
+            .mutate(Name="a")
+        )
         df = (
             Table(self.default_data2)
             .left_join(df_id, by=dict(Name="N"))
@@ -457,7 +466,11 @@ class TestTable(TestCase):
 
     def test_left_join_with_by_dict_with_suffix(self):
         msg = "left join with by as a dict and common keys"
-        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N").mutate(Name="a")
+        df_id = (
+            Table(self.df_id + [{"Name": "Albert", "Id": 5}])
+            .rename(Name="N")
+            .mutate(Name="a")
+        )
         df = (
             Table(self.default_data2)
             .left_join(df_id, by=dict(Name="N"), suffix=("_1", "_2"))

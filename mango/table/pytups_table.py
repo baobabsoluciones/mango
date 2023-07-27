@@ -218,7 +218,16 @@ class Table(TupList):
         """
         return Table(summarise(self, group_by, default=default, **func))
 
-    def join(self, table2, by=None, suffix=None, jtype="full", empty=None) -> "Table":
+    def join(
+        self,
+        table2,
+        by=None,
+        suffix=None,
+        jtype="full",
+        empty=None,
+        if_empty_table_1=None,
+        if_empty_table_2=None,
+    ) -> "Table":
         """
         Join to tables.
         Inspired by R dplyr join functions.
@@ -235,31 +244,114 @@ class Table(TupList):
         :param empty: values to give to empty cells created by the join.
         :return: a Table
         """
-        return Table(join(self, table2, by=by, suffix=suffix, jtype=jtype, empty=empty))
+        return Table(
+            join(
+                self,
+                table2,
+                by=by,
+                suffix=suffix,
+                jtype=jtype,
+                empty=empty,
+                if_empty_table_1=if_empty_table_1,
+                if_empty_table_2=if_empty_table_2,
+            )
+        )
 
-    def left_join(self, table2, by=None, suffix=None, empty=None, if_empty_table=None) -> "Table":
+    def left_join(
+        self,
+        table2,
+        by=None,
+        suffix=None,
+        empty=None,
+        if_empty_table_1=None,
+        if_empty_table_2=None,
+    ) -> "Table":
         """
         Shortcut to join(type="left")
         """
-        return Table(left_join(self, table2, by=by, suffix=suffix, empty=empty, if_empty_table=if_empty_table))
+        return Table(
+            left_join(
+                self,
+                table2,
+                by=by,
+                suffix=suffix,
+                empty=empty,
+                if_empty_table_1=if_empty_table_1,
+                if_empty_table_2=if_empty_table_2,
+            )
+        )
 
-    def right_join(self, table2, by=None, suffix=None, empty=None) -> "Table":
+    def right_join(
+        self,
+        table2,
+        by=None,
+        suffix=None,
+        empty=None,
+        if_empty_table_1=None,
+        if_empty_table_2=None,
+    ) -> "Table":
         """
         Shortcut to join(type="right")
         """
-        return Table(right_join(self, table2, by=by, suffix=suffix, empty=empty))
+        return Table(
+            right_join(
+                self,
+                table2,
+                by=by,
+                suffix=suffix,
+                empty=empty,
+                if_empty_table_1=if_empty_table_1,
+                if_empty_table_2=if_empty_table_2,
+            )
+        )
 
-    def full_join(self, table2, by=None, suffix=None, empty=None) -> "Table":
+    def full_join(
+        self,
+        table2,
+        by=None,
+        suffix=None,
+        empty=None,
+        if_empty_table_1=None,
+        if_empty_table_2=None,
+    ) -> "Table":
         """
         Shortcut to join(type="full")
         """
-        return Table(full_join(self, table2, by=by, suffix=suffix, empty=empty))
+        return Table(
+            full_join(
+                self,
+                table2,
+                by=by,
+                suffix=suffix,
+                empty=empty,
+                if_empty_table_1=if_empty_table_1,
+                if_empty_table_2=if_empty_table_2,
+            )
+        )
 
-    def inner_join(self, table2, by=None, suffix=None, empty=None) -> "Table":
+    def inner_join(
+        self,
+        table2,
+        by=None,
+        suffix=None,
+        empty=None,
+        if_empty_table_1=None,
+        if_empty_table_2=None,
+    ) -> "Table":
         """
         Shortcut to join(type="inner")
         """
-        return Table(inner_join(self, table2, by=by, suffix=suffix, empty=empty))
+        return Table(
+            inner_join(
+                self,
+                table2,
+                by=by,
+                suffix=suffix,
+                empty=empty,
+                if_empty_table_1=if_empty_table_1,
+                if_empty_table_2=if_empty_table_2,
+            )
+        )
 
     def auto_join(self, by=None, suffix=None, empty=None) -> "Table":
         """
@@ -276,7 +368,7 @@ class Table(TupList):
         :param empty: values to give to empty cells created by the join.
         :return: a tuplist
         """
-        return Table(auto_join(self, by=None, suffix=None, empty=None))
+        return Table(auto_join(self, by=by, suffix=suffix, empty=empty))
 
     def select(self, *args) -> "Table":
         """
