@@ -353,6 +353,26 @@ class TestTable(TestCase):
         expected2 = self.default_data2
         self.assertEqual(df2, expected2, msg=msg)
 
+    def test_left_join_empty_table_if_empty(self):
+        msg = "left join with empty table"
+        empty_table = Table()
+        if_empty = {"Name":None, "Id":None}
+        df1 = Table(self.default_data2).left_join(empty_table, if_empty_table=if_empty).select("Name", "Id")
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": None},
+                {"Name": "Bernard", "Id": None},
+                {"Name": "Charlie", "Id": None},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df1, expected, msg=msg)
+
+        #
+        # df2 = Table(empty_table).left_join(self.default_data2)
+        # expected2 = self.default_data2
+        # self.assertEqual(df2, expected2, msg=msg)
+
     def test_left_join_wrong_by(self):
         msg = "error when left join with wrong by value"
         df_id = Table(self.df_id)

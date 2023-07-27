@@ -237,11 +237,11 @@ class Table(TupList):
         """
         return Table(join(self, table2, by=by, suffix=suffix, jtype=jtype, empty=empty))
 
-    def left_join(self, table2, by=None, suffix=None, empty=None) -> "Table":
+    def left_join(self, table2, by=None, suffix=None, empty=None, if_empty_table=None) -> "Table":
         """
         Shortcut to join(type="left")
         """
-        return Table(left_join(self, table2, by=by, suffix=suffix, empty=empty))
+        return Table(left_join(self, table2, by=by, suffix=suffix, empty=empty, if_empty_table=if_empty_table))
 
     def right_join(self, table2, by=None, suffix=None, empty=None) -> "Table":
         """

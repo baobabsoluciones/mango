@@ -237,7 +237,7 @@ def get_col_names(table):
     return [k for k in table[0].keys()]
 
 
-def left_join(table1, table2, by=None, suffix=None, empty=None):
+def left_join(table1, table2, by=None, suffix=None, empty=None, if_empty_table=None):
     """
     Join two tables with a left join.
     Shortcut to join(type="left")
@@ -255,7 +255,7 @@ def left_join(table1, table2, by=None, suffix=None, empty=None):
     :param empty: values to give to empty cells created by the join.
     :return: a TupList
     """
-    return join(table1, table2, by=by, suffix=suffix, jtype="left", empty=empty)
+    return join(table1, table2, by=by, suffix=suffix, jtype="left", empty=empty, if_empty_table=if_empty_table)
 
 
 def right_join(table1, table2, by=None, suffix=None, empty=None):
@@ -386,7 +386,7 @@ def manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype):
 
 
 def join(
-    table1, table2, by=None, suffix=None, jtype="full", empty=None, drop_if_nested=False
+    table1, table2, by=None, suffix=None, jtype="full", empty=None, drop_if_nested=False, if_empty_table=None
 ):
     """
     Join to tables.
@@ -420,7 +420,10 @@ def join(
 
     # If a table is empty return the other one
     if len(table2) == 0:
-        return table1
+        if if_empty_table is None:
+            return table1
+        else:
+            table2 = TupList(as_list(if_empty_table))
     if len(table1) == 0:
         return table2
 
