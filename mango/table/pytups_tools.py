@@ -237,7 +237,15 @@ def get_col_names(table):
     return [k for k in table[0].keys()]
 
 
-def left_join(table1, table2, by=None, suffix=None, empty=None):
+def left_join(
+    table1,
+    table2,
+    by=None,
+    suffix=None,
+    empty=None,
+    if_empty_table_1=None,
+    if_empty_table_2=None,
+):
     """
     Join two tables with a left join.
     Shortcut to join(type="left")
@@ -253,12 +261,31 @@ def left_join(table1, table2, by=None, suffix=None, empty=None):
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
-    return join(table1, table2, by=by, suffix=suffix, jtype="left", empty=empty)
+    return join(
+        table1,
+        table2,
+        by=by,
+        suffix=suffix,
+        jtype="left",
+        empty=empty,
+        if_empty_table_1=if_empty_table_1,
+        if_empty_table_2=if_empty_table_2,
+    )
 
 
-def right_join(table1, table2, by=None, suffix=None, empty=None):
+def right_join(
+    table1,
+    table2,
+    by=None,
+    suffix=None,
+    empty=None,
+    if_empty_table_1=None,
+    if_empty_table_2=None,
+):
     """
     Join two tables with a right join.
     Shortcut to join(type="right")
@@ -274,12 +301,31 @@ def right_join(table1, table2, by=None, suffix=None, empty=None):
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
-    return join(table1, table2, by=by, suffix=suffix, jtype="right", empty=empty)
+    return join(
+        table1,
+        table2,
+        by=by,
+        suffix=suffix,
+        jtype="right",
+        empty=empty,
+        if_empty_table_1=if_empty_table_1,
+        if_empty_table_2=if_empty_table_2,
+    )
 
 
-def full_join(table1, table2, by=None, suffix=None, empty=None):
+def full_join(
+    table1,
+    table2,
+    by=None,
+    suffix=None,
+    empty=None,
+    if_empty_table_1=None,
+    if_empty_table_2=None,
+):
     """
     Join two tables with a full join.
     Shortcut to join(type="full")
@@ -295,12 +341,31 @@ def full_join(table1, table2, by=None, suffix=None, empty=None):
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
-    return join(table1, table2, by=by, suffix=suffix, jtype="full", empty=empty)
+    return join(
+        table1,
+        table2,
+        by=by,
+        suffix=suffix,
+        jtype="full",
+        empty=empty,
+        if_empty_table_1=if_empty_table_1,
+        if_empty_table_2=if_empty_table_2,
+    )
 
 
-def inner_join(table1, table2, by=None, suffix=None, empty=None):
+def inner_join(
+    table1,
+    table2,
+    by=None,
+    suffix=None,
+    empty=None,
+    if_empty_table_1=None,
+    if_empty_table_2=None,
+):
     """
     Join two tables with a left join.
     Shortcut to join(type="inner")
@@ -316,9 +381,20 @@ def inner_join(table1, table2, by=None, suffix=None, empty=None):
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
-    return join(table1, table2, by=by, suffix=suffix, jtype="inner", empty=empty)
+    return join(
+        table1,
+        table2,
+        by=by,
+        suffix=suffix,
+        jtype="inner",
+        empty=empty,
+        if_empty_table_1=if_empty_table_1,
+        if_empty_table_2=if_empty_table_2,
+    )
 
 
 def get_join_keys(tab1, tab2, jtype):
@@ -386,8 +462,16 @@ def manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype):
 
 
 def join(
-    table1, table2, by=None, suffix=None, jtype="full", empty=None, drop_if_nested=False
-):
+    table1,
+    table2,
+    by=None,
+    suffix=None,
+    jtype="full",
+    empty=None,
+    drop_if_nested=False,
+    if_empty_table_1=None,
+    if_empty_table_2=None,
+) -> TupList:
     """
     Join to tables.
     Inspired by R dplyr join functions.
@@ -405,10 +489,13 @@ def join(
     :param empty: values to give to empty cells created by the join.
     :param drop_if_nested: drop any nested dict from the table (columns containing list or dicts instead of scalars)
     drop_if_nested=False may generate and error o unexpected result.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
     assert isinstance(table1, TupList)
     assert isinstance(table2, list)
+    table2 = TupList(table2)
 
     join_types = ["full", "left", "right", "inner"]
     if jtype not in join_types:
@@ -420,9 +507,19 @@ def join(
 
     # If a table is empty return the other one
     if len(table2) == 0:
-        return table1
+        if jtype in ["inner", "right"]:
+            return TupList()
+        elif if_empty_table_2 is None:
+            return table1
+        else:
+            table2 = TupList(as_list(if_empty_table_2))
     if len(table1) == 0:
-        return table2
+        if jtype in ["inner", "left"]:
+            return TupList()
+        elif if_empty_table_1 is None:
+            return table2
+        else:
+            table1 = TupList(as_list(if_empty_table_1))
 
     # TODO: check if that always work
     if drop_if_nested:
@@ -449,16 +546,21 @@ def join(
 
     # Add suffixes if some shared keys are not in by
     shared_but_not_by = set(by) ^ shared_keys
-    if shared_but_not_by:
-        table1 = rename(
-            table1, **{k: str(k) + suffix[0] for k in t1_keys if k in shared_but_not_by}
-        )
-        table2 = rename(
-            table2, **{k: str(k) + suffix[1] for k in t2_keys if k in shared_but_not_by}
-        )
-
+    table1 = rename(
+        table1, **{k: str(k) + suffix[0] for k in t1_keys if k in shared_but_not_by}
+    )
+    table2 = rename(
+        table2,
+        **{
+            k: str(k) + suffix[1]
+            for k in t2_keys
+            if (k in shared_but_not_by and k not in names_table2.keys())
+            or k in names_table2.values()
+        },
+    )
     # If by was a dict, rename table2 columns to coincides with table1
     table2 = rename(table2, **{k: v for k, v in names_table2.items()})
+
     t1_keys = get_col_names(table1)
     t2_keys = get_col_names(table2)
 
