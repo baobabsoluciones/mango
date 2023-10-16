@@ -261,6 +261,8 @@ def left_join(
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
     return join(
@@ -299,6 +301,8 @@ def right_join(
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
     return join(
@@ -337,6 +341,8 @@ def full_join(
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
     return join(
@@ -375,6 +381,8 @@ def inner_join(
      in "by", a suffix will be added to their names.
      With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
     :param empty: values to give to empty cells created by the join.
+    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
     :return: a TupList
     """
     return join(

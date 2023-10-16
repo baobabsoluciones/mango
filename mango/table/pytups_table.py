@@ -242,6 +242,8 @@ class Table(TupList):
          With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
         :param jtype: type of join: "full"
         :param empty: values to give to empty cells created by the join.
+        :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+        :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
         :return: a Table
         """
         return Table(
@@ -268,6 +270,19 @@ class Table(TupList):
     ) -> "Table":
         """
         Shortcut to join(type="left")
+
+        :param table2: 2nd table (Tuplist with dict)
+        :param by: list, dict or None.
+            If the columns have the same name in both tables, a list of keys/column to use for the join.
+            If the columns have different names in both tables, a dict in the format {name_table1: name_table2}
+            If by is None, use all the shared keys.
+        :param suffix: if some columns have the same name in both tables but are not
+         in "by", a suffix will be added to their names.
+         With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
+        :param empty: values to give to empty cells created by the join.
+        :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+        :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
+        :return: a Table
         """
         return Table(
             left_join(
@@ -292,6 +307,19 @@ class Table(TupList):
     ) -> "Table":
         """
         Shortcut to join(type="right")
+
+        :param table2: 2nd table (Tuplist with dict)
+        :param by: list, dict or None.
+            If the columns have the same name in both tables, a list of keys/column to use for the join.
+            If the columns have different names in both tables, a dict in the format {name_table1: name_table2}
+            If by is None, use all the shared keys.
+        :param suffix: if some columns have the same name in both tables but are not
+         in "by", a suffix will be added to their names.
+         With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
+        :param empty: values to give to empty cells created by the join.
+        :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+        :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
+        :return: a Table
         """
         return Table(
             right_join(
@@ -316,6 +344,19 @@ class Table(TupList):
     ) -> "Table":
         """
         Shortcut to join(type="full")
+
+        :param table2: 2nd table (Tuplist with dict)
+        :param by: list, dict or None.
+            If the columns have the same name in both tables, a list of keys/column to use for the join.
+            If the columns have different names in both tables, a dict in the format {name_table1: name_table2}
+            If by is None, use all the shared keys.
+        :param suffix: if some columns have the same name in both tables but are not
+         in "by", a suffix will be added to their names.
+         With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
+        :param empty: values to give to empty cells created by the join.
+        :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+        :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
+        :return: a Table
         """
         return Table(
             full_join(
@@ -340,6 +381,19 @@ class Table(TupList):
     ) -> "Table":
         """
         Shortcut to join(type="inner")
+
+        :param table2: 2nd table (Tuplist with dict)
+        :param by: list, dict or None.
+            If the columns have the same name in both tables, a list of keys/column to use for the join.
+            If the columns have different names in both tables, a dict in the format {name_table1: name_table2}
+            If by is None, use all the shared keys.
+        :param suffix: if some columns have the same name in both tables but are not
+         in "by", a suffix will be added to their names.
+         With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
+        :param empty: values to give to empty cells created by the join.
+        :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
+        :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
+        :return: a Table
         """
         return Table(
             inner_join(
