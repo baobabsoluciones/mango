@@ -344,13 +344,38 @@ class TestTable(TestCase):
         self.assertEqual(df, expected, msg=msg)
 
     def test_left_join_empty_table(self):
-        msg = "left join with empty table"
+        msg = "left join with empty table 2"
         empty_table = Table()
         df1 = Table(self.default_data2).left_join(empty_table)
         expected1 = self.default_data2
         self.assertEqual(df1, expected1, msg=msg)
+        msg = "left join with empty table 1"
         df2 = Table(empty_table).left_join(self.default_data2)
-        expected2 = self.default_data2
+        expected2 = Table()
+        self.assertEqual(df2, expected2, msg=msg)
+
+    def test_left_join_if_empty_table(self):
+        msg = "left join with empty table 2 and if_empty_table_2 argument"
+        empty_table = Table()
+        if_empty_2 = {"Name": None, "Id": None}
+        df1 = (
+            Table(self.default_data2)
+            .left_join(empty_table, if_empty_table_2=if_empty_2)
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": None},
+                {"Name": "Bernard", "Id": None},
+                {"Name": "Charlie", "Id": None},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df1, expected, msg=msg)
+        msg = "left join with empty table 1 and if_empty_table_1 argument"
+        if_empty_1 = {"Name": None}
+        df2 = Table(empty_table).left_join(self.default_data2, if_empty_table_1=if_empty_1)
+        expected2 = Table()
         self.assertEqual(df2, expected2, msg=msg)
 
     def test_left_join_wrong_by(self):
@@ -383,6 +408,72 @@ class TestTable(TestCase):
         df = (
             Table(self.default_data2)
             .left_join(df_id, by=dict(Name="N"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_left_join_with_by_dict2(self):
+        msg = "left join with by as a dict and common keys"
+        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N")
+        df = (
+            Table(self.default_data2)
+            .mutate(N=1)
+            .left_join(df_id, by=dict(Name="N"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_left_join_with_by_dict3(self):
+        msg = "left join with by as a dict and common keys"
+        df_id = (
+            Table(self.df_id + [{"Name": "Albert", "Id": 5}])
+            .rename(Name="N")
+            .mutate(Name="a")
+        )
+        df = (
+            Table(self.default_data2)
+            .left_join(df_id, by=dict(Name="N"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_left_join_with_by_dict_with_suffix(self):
+        msg = "left join with by as a dict and common keys"
+        df_id = (
+            Table(self.df_id + [{"Name": "Albert", "Id": 5}])
+            .rename(Name="N")
+            .mutate(Name="a")
+        )
+        df = (
+            Table(self.default_data2)
+            .left_join(df_id, by=dict(Name="N"), suffix=("_1", "_2"))
             .select("Name", "Id")
         )
         expected = Table(
