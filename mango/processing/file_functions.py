@@ -1,6 +1,6 @@
 import json
 from os import listdir
-from typing import Union
+from typing import Union, Literal
 
 import pandas as pd
 
@@ -107,11 +107,23 @@ def load_excel_sheet(path: str, sheet: str, **kwargs):
     return pd.read_excel(path, sheet_name=sheet, **kwargs)
 
 
-def load_excel(path):
+def load_excel(
+    path,
+    dtype="object",
+    output: Literal[
+        "df", "dict", "list", "series", "split", "tight", "records", "index"
+    ] = "df",
+    **kwargs,
+):
     """
     The load_excel function loads an Excel file and returns it as a dictionary of DataFrames.
 
-    :param path: Specify the path of the file to be loaded
+    :param path: Specify the path of the file to be loaded.
+    :param dtype: pandas parameter dtype. Data type for data or columns. E.g. {‘a’: np.float64, ‘b’: np.int32}.
+     Use object to preserve data as stored in Excel and not interpret dtype.
+    :param output: data output type. Default is "df" for a dict of pandas dataframes.
+    Other options are the orient argument for transforming the dataframe with to_dict. (list of dict is "records").
+    :param kwargs: other parameters to pass pandas read_excel.
     :return: A dictionary of DataFrames
     :doc-author: baobab soluciones
     """
@@ -119,7 +131,11 @@ def load_excel(path):
         raise FileNotFoundError(
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
         )
-    return pd.read_excel(path, sheet_name=None)
+    data = pd.read_excel(path, sheet_name=None, dtype=dtype, **kwargs)
+    if output == "df":
+        return data
+    else:
+        return {k: v.to_dict(orient=output) for k, v in data.items()}
 
 
 def write_excel(path, data):
@@ -138,7 +154,9 @@ def write_excel(path, data):
 
     with pd.ExcelWriter(path) as writer:
         for sheet_name, content in data.items():
-            if isinstance(content, list):
+            if isinstance(content, pd.DataFrame):
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+            elif isinstance(content, list):
                 df = pd.DataFrame.from_records(content)
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
             elif isinstance(content, dict):
