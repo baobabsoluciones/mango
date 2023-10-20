@@ -1,7 +1,6 @@
 import os
 import io
 import numpy as np
-import pandas as pd
 from pytups import TupList, SuperDict
 from unittest import TestCase, mock
 from mango.table.pytups_table import Table
@@ -1312,6 +1311,10 @@ class TestTable(TestCase):
         )
 
     def test_from_pandas(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            return True
         msg = "from_pandas create a Table from a pandas df"
         df = pd.DataFrame.from_records(self.default_data2)
         result = Table.from_pandas(df)
@@ -1319,6 +1322,10 @@ class TestTable(TestCase):
         self.assertIsInstance(result, Table)
 
     def test_to_pandas(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            return True
         msg = "to_pandas create a pandas df"
         table = Table(self.default_data2)
         result = table.to_pandas()

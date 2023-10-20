@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-import pandas as pd
+# import pandas as pd
 from mango.processing import (
     pickle_copy,
     unique,
@@ -68,6 +68,10 @@ class ObjectTests(TestCase):
         self.assertEqual(flatten_data, [1, 2, 3, 4])
 
     def test_data_frame_to_list(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            return True
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         lst = df_to_list(df)
         self.assertEqual(lst, [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}])
