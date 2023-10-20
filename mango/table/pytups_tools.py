@@ -2,6 +2,7 @@ from pytups import TupList, SuperDict
 from typing import Callable, Iterable
 from mango.table.table_tools import str_key, to_len, invert_dict_list
 from mango.processing import as_list, flatten, reverse_dict, unique
+from numpy import isnan, isnat
 
 
 def mutate(table, **kwargs):
@@ -677,10 +678,8 @@ def replace_nan(tl, replacement=None):
     :param replacement: the value to replace nan.
     :return: a tuplist with nan values filled.
     """
-    import pandas as pd
-
     return TupList(
-        [{k: replacement if pd.isnull(v) else v for k, v in dic.items()} for dic in tl]
+        [{k: replacement if is_null(v) else v for k, v in dic.items()} for dic in tl]
     )
 
 
@@ -692,15 +691,28 @@ def drop_empty(tl, cols=None):
     :param cols: list of column names or single name.
     :return: a tuplist with empty values dropped.
     """
-    import pandas as pd
-
     if cols is None:
         cols = get_col_names(tl)
     else:
         cols = as_list(cols)
     tl2 = replace(tl, replacement=None, to_replace=None)
 
-    return tl2.vfilter(lambda v: not any(k not in v or pd.isnull(v[k]) for k in cols))
+    return tl2.vfilter(lambda v: not any(k not in v or is_null(v[k]) for k in cols))
+
+
+def is_null(v):
+    """
+    Return True if the value is None, NaN or NaT
+
+    :param v: a scalar value
+    :return: boolean
+    """
+    # try:
+    #     import pandas as pd
+    #     return pd.isnull(v)
+    # except ImportError:
+    #     pass
+    return v is None or isnan(v) or isnat(v)
 
 
 def pivot_longer(tl, cols, names_to="variable", value_to="value"):
