@@ -3,12 +3,15 @@ import setuptools
 with open("README.rst") as fh:
     long_description = fh.read()
 
-required = []
+requirements_file = []
 with open("requirements.txt", "r") as fh:
-    required.append(fh.read().splitlines())
+    requirements_file.append(fh.read().splitlines())
+
+requirements_file = requirements_file[0]
+
 required = [
     el
-    for el in required[0]
+    for el in requirements_file
     if not el.startswith("#")
     and not el.startswith("pandas")
     and not el.startswith("plotly")
@@ -17,23 +20,21 @@ required = [
     and not el == ""
 ]
 
+gcloud = ["google-cloud-storage"]
+data = ["pandas"]
+plot = ["beautifulsoup4", "pandas", "plotly"]
+processing = ["pandas"]
+table = ["pandas"]
 
 extra_require = {
-    "gcloud": ["google-cloud-storage"],
-    "data": ["pandas"],
-    "plot": [
-        "beautifulsoup4",
-        "pandas",
-        "plotly",
-    ],
+    "gcloud": [el for el in requirements_file for lib in gcloud if el.startswith(lib)],
+    "data": [el for el in requirements_file for lib in data if el.startswith(lib)],
+    "plot": [el for el in requirements_file for lib in plot if el.startswith(lib)],
     "processing": [
-        "pandas",
+        el for el in requirements_file for lib in processing if el.startswith(lib)
     ],
-    "table": [
-        "pandas",
-    ],
+    "table": [el for el in requirements_file for lib in table if el.startswith(lib)],
 }
-
 
 setuptools.setup(
     name="mango",
