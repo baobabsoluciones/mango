@@ -1,6 +1,6 @@
 from unittest import TestCase
 import os
-import pandas as pd
+import warnings
 from mango.processing import (
     list_files_directory,
     load_json,
@@ -71,6 +71,11 @@ class FileTests(TestCase):
         self.assertFalse(is_excel_file(file + ".txt"))
 
     def test_load_excel_sheet(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         file = normalize_path("./data/test.xlsx")
         data = load_excel_sheet(file, sheet="Sheet1")
         self.assertIsInstance(data, pd.DataFrame)
@@ -80,8 +85,13 @@ class FileTests(TestCase):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file)
         self.assertIn("Sheet1", data.keys())
-        self.assertIsInstance(data["Sheet1"], pd.DataFrame)
-        self.assertEqual(data["Sheet1"].shape, (2, 2))
+        try:
+            import pandas as pd
+            self.assertIsInstance(data["Sheet1"], pd.DataFrame)
+            self.assertEqual(data["Sheet1"].shape, (2, 2))
+        except ImportError:
+            self.assertIsInstance(data["Sheet1"], list)
+            self.assertEqual(data["Sheet1"], [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}])
 
     def test_excel_file_to_dict(self):
         file = normalize_path("./data/test.xlsx")
@@ -103,6 +113,11 @@ class FileTests(TestCase):
         os.remove(file)
 
     def test_write_df_to_excel(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )
@@ -113,6 +128,11 @@ class FileTests(TestCase):
         os.remove(file)
 
     def test_write_df_to_excel_bad_extension(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )
@@ -130,6 +150,11 @@ class FileTests(TestCase):
         self.assertRaises(FileNotFoundError, load_excel_sheet, file, None)
 
     def test_read_csv_file(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         file = normalize_path("./data/test.csv")
         data = load_csv(file)
         self.assertIsInstance(data, pd.DataFrame)
@@ -158,6 +183,11 @@ class FileTests(TestCase):
         self.assertRaises(FileNotFoundError, write_csv, file, data)
 
     def test_write_df_to_csv(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )
@@ -168,6 +198,11 @@ class FileTests(TestCase):
         os.remove(file)
 
     def test_write_df_to_csv_bad_extension(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )

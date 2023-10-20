@@ -1,8 +1,8 @@
 import json
+import warnings
 from os import listdir
 from typing import Union, Literal
 
-import pandas as pd
 import openpyxl as xl
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
 from pytups import TupList
@@ -103,6 +103,11 @@ def load_excel_sheet(path: str, sheet: str, **kwargs):
     :return: A DataFrame
     :doc-author: baobab soluciones
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise NotImplementedError("function not yet implemented without pandas")
+
     if not is_excel_file(path):
         raise FileNotFoundError(
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
@@ -131,6 +136,14 @@ def load_excel(
     :return: A dictionary of DataFrames
     :doc-author: baobab soluciones
     """
+    try:
+        import pandas as pd
+    except ImportError:
+        warnings.warn(
+            "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts."
+        )
+        return load_excel_open(path)
+
     if not is_excel_file(path):
         raise FileNotFoundError(
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
@@ -151,6 +164,12 @@ def write_excel(path, data):
     :return: None
     :doc-author: baobab soluciones
     """
+    try:
+        import pandas as pd
+    except ImportError:
+        warnings.warn("pandas is not installed so write_excel_open will be used.")
+        return load_excel_open(path)
+
     if not is_excel_file(path):
         raise FileNotFoundError(
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
@@ -178,6 +197,11 @@ def write_df_to_excel(path, data, **kwargs):
     :return: None
     :doc-author: baobab soluciones
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise NotImplementedError("function not yet implemented without pandas")
+
     if not is_excel_file(path):
         raise FileNotFoundError(
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
@@ -195,6 +219,12 @@ def load_csv(path, **kwargs):
     :return: A DataFrame
     :doc-author: baobab soluciones
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise NotImplementedError("function not yet implemented without pandas")
+
+
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
@@ -210,6 +240,11 @@ def write_csv(path, data, **kwargs):
     :return: None
     :doc-author: baobab soluciones
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise NotImplementedError("function not yet implemented without pandas")
+
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
@@ -236,7 +271,7 @@ def write_df_to_csv(path, data, **kwargs):
     data.to_csv(path, **kwargs, index=False)
 
 
-def adjust_excel_col_width(writer, df: pd.DataFrame, table_name: str, min_len: int = 7):
+def adjust_excel_col_width(writer, df, table_name: str, min_len: int = 7):
     """
     Adjusts the width of the column on the Excel file
 
@@ -245,6 +280,11 @@ def adjust_excel_col_width(writer, df: pd.DataFrame, table_name: str, min_len: i
     :param str table_name:
     :param int min_len:
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise NotImplementedError("function not yet implemented without pandas")
+
     for column in df:
         content_len = df[column].astype(str).map(len).max()
         column_width = max(content_len, len(str(column)), min_len) + 2
@@ -252,7 +292,7 @@ def adjust_excel_col_width(writer, df: pd.DataFrame, table_name: str, min_len: i
         writer.sheets[table_name].set_column(col_idx, col_idx, column_width)
 
 
-def load_excel_2(path):
+def load_excel_open(path):
     """
     The load_excel function loads an Excel file and returns it as a dictionary of DataFrames.
     It doesn't use pandas.
@@ -278,7 +318,7 @@ def load_excel_2(path):
     return dataset
 
 
-def write_excel_2(path, data):
+def write_excel_open(path, data):
     """
     The write_excel function writes a dictionary of DataFrames to an Excel file.
 
@@ -366,8 +406,3 @@ def get_column_widths(ws):
         letter = get_column_letter(column_cells[0].column)
         result[letter] = width * 1.2
     return result
-
-
-# data = load_excel_2("./test.xlsx")
-#
-# write_excel_2("./test2.xlsx", data)

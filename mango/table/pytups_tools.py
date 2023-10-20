@@ -707,11 +707,6 @@ def is_null(v):
     :param v: a scalar value
     :return: boolean
     """
-    # try:
-    #     import pandas as pd
-    #     return pd.isnull(v)
-    # except ImportError:
-    #     pass
     return v is None or isnan(v) or isnat(v)
 
 
