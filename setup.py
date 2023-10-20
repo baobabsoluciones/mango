@@ -4,40 +4,33 @@ with open("README.rst") as fh:
     long_description = fh.read()
 
 required = []
-# with open("requirements.txt", "r") as fh:
-#     required.append(fh.read().splitlines())
+with open("requirements.txt", "r") as fh:
+    required.append(fh.read().splitlines())
+required = [
+    el
+    for el in required[0]
+    if not el.startswith("#")
+    and not el.startswith("pandas")
+    and not el.startswith("plotly")
+    and not el.startswith("beautifulsoup4")
+    and not el.startswith("google-cloud-storage")
+    and not el == ""
+]
+
 
 extra_require = {
-    "arcgis": ["fastjsonschema"],
-    "email": [],
     "gcloud": ["google-cloud-storage"],
-    "config": [],
     "data": ["pandas"],
-    "images": [
-        "cvlib",
-        "dlib",
-        "imutils",
-        "opencv_python",
-        "tensorflow",
-    ],
-    "logging": [],
-    "model": ["numpy"],
     "plot": [
         "beautifulsoup4",
         "pandas",
         "plotly",
     ],
     "processing": [
-        "numpy",
         "pandas",
-        "xlsxwriter",
     ],
-    "shared": ["fastjsonschema"],
     "table": [
-        "pytups",
-        "numpy",
         "pandas",
-        "xlsxwriter",
     ],
 }
 
