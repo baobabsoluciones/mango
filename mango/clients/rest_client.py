@@ -17,11 +17,11 @@ class RestClient(ABC):
 
     @staticmethod
     def _request_handler(
-            url: str,
-            params: dict,
-            wait_time: Union[float, int] = 0.5,
-            if_error: Literal["raise", "warn", "ignore"] = "raise",
-            expected_schema: Type[BaseModel] = None,
+        url: str,
+        params: dict,
+        wait_time: Union[float, int] = 0.5,
+        if_error: Literal["raise", "warn", "ignore"] = "raise",
+        expected_schema: Type[BaseModel] = None,
     ) -> Union[dict, list[dict]]:
         """
         This function will handle the request to a URL, implements the wait time and checks for errors.

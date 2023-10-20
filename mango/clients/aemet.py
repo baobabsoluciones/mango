@@ -30,6 +30,7 @@ class FetchStationsElement(BaseModel):
 class FetchStationsResponse(RootModel):
     root: List[FetchStationsElement]
 
+
 class FetchHistoricElement(BaseModel):
     fecha: date
     indicativo: str
@@ -52,7 +53,18 @@ class FetchHistoricElement(BaseModel):
     presMin: float
     horaPresMin: str
 
-    @field_validator("tmed", "prec", "tmin", "tmax", "velmedia", "racha", "sol", "presMax", "presMin", mode="before")
+    @field_validator(
+        "tmed",
+        "prec",
+        "tmin",
+        "tmax",
+        "velmedia",
+        "racha",
+        "sol",
+        "presMax",
+        "presMin",
+        mode="before",
+    )
     @classmethod
     def _parse_float(cls, v: str, info: ValidationInfo) -> float:
         try:
@@ -63,6 +75,7 @@ class FetchHistoricElement(BaseModel):
 
 class FetchHistoricResponse(RootModel):
     root: List[FetchHistoricElement]
+
 
 class FetchLiveDataElement(BaseModel):
     idema: str
@@ -92,8 +105,10 @@ class FetchLiveDataElement(BaseModel):
     pacutp: float
     tss20cm: float
 
+
 class FetchLiveDataResponse(RootModel):
     root: List[FetchLiveDataElement]
+
 
 class AemetClient(RestClient):
     """
@@ -183,7 +198,13 @@ class AemetClient(RestClient):
         tmp = []
         for m in value:
             m["codigo postal"] = m["id"].lstrip("id")
-            tmp.append({k: v for k, v in m.items() if k in ["codigo postal", "nombre","longitud_dec", "latitud_dec"]})
+            tmp.append(
+                {
+                    k: v
+                    for k, v in m.items()
+                    if k in ["codigo postal", "nombre", "longitud_dec", "latitud_dec"]
+                }
+            )
         self._municipios = tmp
 
     @staticmethod
@@ -223,12 +244,12 @@ class AemetClient(RestClient):
         sign_dict = {"N": 1, "S": -1, "E": 1, "W": -1}
         # Is written in degrees, minutes and seconds concatenated
         lat = sign_dict[lat[-1]] * (
-                float(lat[:2]) + float(lat[2:4]) / 60 + float(lat[4:6]) / 3600
+            float(lat[:2]) + float(lat[2:4]) / 60 + float(lat[4:6]) / 3600
         )
         long = (
-                sign_dict[long[-1]] * float(long[:2])
-                + float(long[2:4]) / 60
-                + float(long[4:6]) / 3600
+            sign_dict[long[-1]] * float(long[:2])
+            + float(long[2:4]) / 60
+            + float(long[4:6]) / 3600
         )
         return lat, long
 
@@ -238,22 +259,25 @@ class AemetClient(RestClient):
         :return: List with all the municipios in Spain
         :doc-author: baobab soluciones
         """
-        municipios= self._request_handler(
+        municipios = self._request_handler(
             self._FETCH_MUNICIPIOS_URL,
             params={"api_key": self._api_key},
             wait_time=self._wait_time,
         )
         return municipios
+
     def _get_stations_filtered(
-            self,
-            station_code=None,
-            lat=None,
-            long=None,
-            province=None,
+        self,
+        station_code=None,
+        lat=None,
+        long=None,
+        province=None,
     ):
         if station_code:
             print("Selecting only station: " + station_code)
-            assert station_code in [s["indicativo"] for s in self.all_stations], "Station not found"
+            assert station_code in [
+                s["indicativo"] for s in self.all_stations
+            ], "Station not found"
             # Use list for consistency in code
             station_codes = [station_code]
         elif lat and long:
@@ -351,7 +375,10 @@ class AemetClient(RestClient):
         all_station_res_url = all_stations_call.get("datos")
         # Fetch the data
         stations = self._request_handler(
-            all_station_res_url, params={}, wait_time=self._wait_time, expected_schema=FetchStationsResponse
+            all_station_res_url,
+            params={},
+            wait_time=self._wait_time,
+            expected_schema=FetchStationsResponse,
         )
         return stations
 
@@ -385,7 +412,11 @@ class AemetClient(RestClient):
                 )
                 continue
             hist_data = self._request_handler(
-                hist_data_url, params={}, wait_time=self._wait_time, if_error="warn", expected_schema=FetchHistoricResponse
+                hist_data_url,
+                params={},
+                wait_time=self._wait_time,
+                if_error="warn",
+                expected_schema=FetchHistoricResponse,
             )
             if not hist_data:  # Empty json
                 print("No data found for station: " + station)
@@ -416,7 +447,11 @@ class AemetClient(RestClient):
                 warnings.warn(f"No data found for station: {station}")
                 continue
             live_data = self._request_handler(
-                live_data_url, params={}, wait_time=self._wait_time, if_error="warn", expected_schema=FetchLiveDataResponse
+                live_data_url,
+                params={},
+                wait_time=self._wait_time,
+                if_error="warn",
+                expected_schema=FetchLiveDataResponse,
             )
             data.append(live_data)
         if not data:
@@ -433,14 +468,14 @@ class AemetClient(RestClient):
         return data
 
     def get_meteo_data(
-            self,
-            station_code: str = None,
-            lat: float = None,
-            long: float = None,
-            province: str = None,
-            start_date: datetime = None,
-            end_date: datetime = None,
-            output_format: Literal["dataframe", "raw"] = "raw",
+        self,
+        station_code: str = None,
+        lat: float = None,
+        long: float = None,
+        province: str = None,
+        start_date: datetime = None,
+        end_date: datetime = None,
+        output_format: Literal["dataframe", "raw"] = "raw",
     ):
         """
         Main method of the class. This method will return the meteorological data from the meteorological stations in
@@ -518,7 +553,9 @@ class AemetClient(RestClient):
 
     def get_forecast_data(self, postal_code: str = None):
         if postal_code:
-            assert postal_code in [m["codigo postal"] for m in self.municipios], "Municipio not found"
+            assert postal_code in [
+                m["codigo postal"] for m in self.municipios
+            ], "Municipio not found"
             postal_codes = [postal_code]
         else:
             postal_codes = [m["codigo postal"] for m in self.municipios]
@@ -538,9 +575,15 @@ class AemetClient(RestClient):
             forecast_data = self._request_handler(
                 forecast_url, params={}, wait_time=self._wait_time, if_error="warn"
             )
-            data.append({k:v for k,v in forecast_data[0].items() if k in ["nombre", "provincia","elaborado","prediccion"]})
+            data.append(
+                {
+                    k: v
+                    for k, v in forecast_data[0].items()
+                    if k in ["nombre", "provincia", "elaborado", "prediccion"]
+                }
+            )
 
-    def custom_endpoint(self, endpoint:str):
+    def custom_endpoint(self, endpoint: str):
         custom_enpoint_url_call = self._request_handler(
             "https://opendata.aemet.es/opendata" + endpoint,
             params={"api_key": self._api_key},
@@ -556,14 +599,3 @@ class AemetClient(RestClient):
             custom_enpoint_url, params={}, wait_time=self._wait_time, if_error="warn"
         )
         return custom_enpoint_data
-
-if __name__ == "__main__":
-    client = AemetClient(
-        api_key="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbnRvbmlvLmdvbnphbGV6QGJhb2JhYnNvbHVjaW9uZXMuZXMiLCJqdGkiOiIzMWRk"
-                "NzJiNS1hYmFmLTQ2OWQtOTViZi1lNTkxN2U2OTcyNWIiLCJpc3MiOiJBRU1FVCIsImlhdCI6MTY3ODcyMDY3MCwidXNlcklkI"
-                "joiMzFkZDcyYjUtYWJhZi00NjlkLTk1YmYtZTU5MTdlNjk3MjViIiwicm9sZSI6IiJ9.0rMlgaNipG5T4rlfvyzmYMg6jGfWN"
-                "uLKCb0pnGfYzSw",
-    )
-    client.connect()
-    # data = client.get_meteo_data(station_code="3194U")
-    print(client.get_forecast_data())
