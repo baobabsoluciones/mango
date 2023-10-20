@@ -677,6 +677,7 @@ def replace_nan(tl, replacement=None):
     :param replacement: the value to replace nan.
     :return: a tuplist with nan values filled.
     """
+    # TODO: see if we need pandas here
     import pandas as pd
 
     return TupList(
@@ -692,6 +693,7 @@ def drop_empty(tl, cols=None):
     :param cols: list of column names or single name.
     :return: a tuplist with empty values dropped.
     """
+    # TODO: see if we need pandas here
     import pandas as pd
 
     if cols is None:
