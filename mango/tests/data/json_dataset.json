@@ -1,0 +1,14 @@
+{
+    "t1": [
+        {"Name": "Albert", "Age": 20},
+        {"Name": "Bernard", "Age": 25},
+        {"Name": "Charlie", "Age": 30},
+        {"Name": "Daniel", "Age": 35}
+    ],
+    "t2": [
+        {"Name": "Albert", "Age": 20, "Male": true, "Points": 5, "Under_25": true},
+        {"Name": "Bernard", "Age": 25, "Male": true, "Points": 8, "Under_25": true},
+        {"Name": "Charlie", "Age": 30, "Male": true, "Points": 4, "Under_25": false},
+        {"Name": "Daniel", "Age": 35, "Male": true, "Points": 6, "Under_25": false}
+    ]
+}

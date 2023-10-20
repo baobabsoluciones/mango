@@ -95,7 +95,7 @@ def flatten(lst: list) -> list:
     :return: a flattened list
     :doc-author: baobab soluciones
     """
-    return [item for sublist in lst for item in sublist]
+    return [item for sublist in lst for item in as_list(sublist)]
 
 
 def df_to_list(df: pandas.DataFrame) -> list:
@@ -136,7 +136,7 @@ def as_list(x):
     :param x: an object
     :return: a list
     """
-    if isinstance(x, Iterable) and not isinstance(x, str):
+    if isinstance(x, Iterable) and not isinstance(x, str) and not isinstance(x, dict):
         return list(x)
     else:
         return [x]

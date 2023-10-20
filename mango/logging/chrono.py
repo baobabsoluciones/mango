@@ -1,7 +1,6 @@
-import time
 import logging
-
-logger = logging.getLogger("root")
+import time
+from .logger import get_basic_logger
 
 
 class Chrono:
@@ -9,18 +8,22 @@ class Chrono:
     Class to measure time
     """
 
-    def __init__(self, name: str, silent: bool = False, precision: int = 2):
+    def __init__(
+        self, name: str, silent: bool = False, precision: int = 2, logger: str = "root"
+    ):
         """
         Constructor of the class
 
         :param name: name of the chrono
         :param silent: if the chrono should be silent
         :param precision: number of decimals to round the time to
+        :param str logger: the name of the logger to use. It defaults to root
         """
         self.silent = silent
         self.precision = precision
         self.start_time = {name: time.time()}
         self.end = {name: None}
+        self.logger = logging.getLogger(logger)
 
     def new(self, name: str):
         """
@@ -31,39 +34,47 @@ class Chrono:
         self.start_time[name] = None
         self.end[name] = None
 
-    def start(self, name):
+    def start(self, name, silent=True):
         """
         Method to start a chrono
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param bool silent: if the chrono should be silent. True by default
         """
         self.new(name)
         self.start_time[name] = time.time()
+        if not silent:
+            self.logger.info(f"Operation {name} starts")
 
-    def stop(self, name: str):
+    def stop(self, name: str, report: bool = True):
         """
         Method to stop a chrono and get back its duration
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param bool report: if the chrono should be reported. True by default
         :return: the time elapsed for the specific chrono
         :rtype: float
         """
         self.end[name] = time.time()
         duration = self.end[name] - self.start_time[name]
-        if not self.silent:
-            logger.info(
+        if not self.silent or report:
+            self.logger.info(
                 f"Operation {name} took: {round(duration, self.precision)} seconds"
             )
         return duration
 
-    def stop_all(self):
+    def stop_all(self, report: bool = True):
         """
         Method to stop all chronos and get back a dict with their durations
+
+        :param bool report: if the chronos should be reported. True by default
+        :return: a dict with the name of the chronos as key and the durations as value
+        :rtype: dict
         """
         durations = dict()
         for name in self.start_time.keys():
             if self.end[name] is None:
-                durations[name] = self.stop(name)
+                durations[name] = self.stop(name, report)
 
         return durations
 
@@ -71,7 +82,10 @@ class Chrono:
         """
         Method to report the time of a chrono and get back its duration
 
-        :param name: name of the chrono
+        :param str name: name of the chrono
+        :param str message: additional message to display in the log
+        :return: the time elapsed for the specific chrono
+        :rtype: float
         """
 
         if self.end[name] is not None:
@@ -79,7 +93,7 @@ class Chrono:
             if message is not None:
                 msg = f"{msg}. {message}"
 
-            logger.info(msg)
+            self.logger.info(msg)
 
             return self.end[name] - self.start_time[name]
         else:
@@ -91,13 +105,16 @@ class Chrono:
             if message is not None:
                 msg = f"{msg}. {message}"
 
-            logger.info(msg)
+            self.logger.info(msg)
 
             return duration
 
     def report_all(self):
         """
         Method to report the time of all chronos and get back a dict with all the durations
+
+        :return: a dict with the name of the chronos as key and the durations as value
+        :rtype: dict
         """
         durations = dict()
         for name in self.start_time.keys():
@@ -106,7 +123,7 @@ class Chrono:
 
     def __call__(self, func: callable, *args, **kwargs):
         """
-        Method to decorate a function
+        Method to use the chrono as a callable with a function inside
 
         :param func: function to decorate
         :param args: arguments to pass to the function
@@ -115,6 +132,6 @@ class Chrono:
         """
         self.start(func.__name__)
         result = func(*args, **kwargs)
-        self.stop(func.__name__)
+        self.stop(func.__name__, False)
         self.report(func.__name__)
         return result

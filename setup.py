@@ -33,12 +33,18 @@ extra_require = {
         "xlsxwriter",
     ],
     "shared": ["fastjsonschema"],
+    "table": [
+        "pytups",
+        "numpy",
+        "pandas",
+        "xlsxwriter",
+    ],
 }
 
 
 setuptools.setup(
     name="mango",
-    version="0.0.1",
+    version="0.0.6",
     author="baobab soluciones",
     author_email="sistemas@baobabsoluciones.es",
     description="Library with a collection of useful classes and methods to DRY",
