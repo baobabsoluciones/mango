@@ -1,9 +1,11 @@
+from collections.abc import Mapping
 from functools import wraps
 
 from fastjsonschema import compile
 from fastjsonschema.exceptions import JsonSchemaValueException
 from mango.processing import load_json
 from .exceptions import ValidationError
+from pydantic_core import ValidationError as ValidationErrorPydantic
 
 
 def validate_args(**schemas):
@@ -34,6 +36,36 @@ def validate_args(**schemas):
                     raise ValidationError(
                         f"Error validating {key}: {e.message}"
                     ) from None
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def pydantic_validation(**validators):
+    def decorator(func: callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            """
+            The wrapper function validates the arguments against a schema and then calls
+            the original function.
+
+            :param args: Pass a non-keyworded, variable-length argument list to the function
+            :param kwargs: Pass the arguments to the function
+            :return: The same as the original function
+            :doc-author: baobab soluciones
+            """
+            try:
+                for key, value in validators.items():
+                    if isinstance(kwargs[key], Mapping):
+                        value(**kwargs[key])
+                    else:
+                        value(kwargs[key])
+            except ValidationErrorPydantic as e:
+                raise ValidationError(
+                    f"There is {e.error_count()} validation errors"
+                ) from None
             return func(*args, **kwargs)
 
         return wrapper
