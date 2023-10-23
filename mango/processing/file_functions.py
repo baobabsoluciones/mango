@@ -1,5 +1,6 @@
 import json
 import warnings
+import csv
 from os import listdir
 from typing import Union, Literal
 
@@ -103,6 +104,7 @@ def load_excel_sheet(path: str, sheet: str, **kwargs):
     :return: A DataFrame
     :doc-author: baobab soluciones
     """
+    # TODO implement open version
     try:
         import pandas as pd
     except ImportError as e:
@@ -142,7 +144,7 @@ def load_excel(
         warnings.warn(
             "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts."
         )
-        return load_excel_open(path)
+        return load_excel_light(path)
 
     if not is_excel_file(path):
         raise FileNotFoundError(
@@ -168,7 +170,7 @@ def write_excel(path, data):
         import pandas as pd
     except ImportError:
         warnings.warn("pandas is not installed so write_excel_open will be used.")
-        return load_excel_open(path)
+        return write_excel_light(path, data)
 
     if not is_excel_file(path):
         raise FileNotFoundError(
@@ -222,12 +224,40 @@ def load_csv(path, **kwargs):
     try:
         import pandas as pd
     except ImportError as e:
-        raise NotImplementedError("function not yet implemented without pandas")
+        warnings.warn("pandas is not installed so load_csv_light will be used.")
+        return load_csv_light(path)
 
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
     return pd.read_csv(path, **kwargs)
+
+
+def load_csv_light(path, sep=None, encoding=None):
+    """
+    Read csv data from path using csv library.
+
+    :param path: path of the csv file.
+    :param sep: column separator in the csv file. (detected automatically if None).
+    :param encoding: encoding.
+    :return: data as a list of dict.
+    """
+    if not check_extension(path, ".csv"):
+        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
+
+    with open(path, encoding=encoding) as f:
+        dialect = csv.Sniffer().sniff(f.read(1000))
+        f.seek(0)
+        dialect.quoting = csv.QUOTE_NONNUMERIC
+        if sep is None:
+            sep = dialect.delimiter
+        else:
+            dialect.delimiter = sep
+        headers = f.readline().split("\n")[0].split(sep)
+        reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
+        data = [row for row in reader]
+
+    return data
 
 
 def write_csv(path, data, **kwargs):
@@ -242,7 +272,8 @@ def write_csv(path, data, **kwargs):
     try:
         import pandas as pd
     except ImportError as e:
-        raise NotImplementedError("function not yet implemented without pandas")
+        warnings.warn("pandas is not installed so write_csv_light will be used.")
+        return write_csv_light(path, data)
 
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
@@ -253,6 +284,30 @@ def write_csv(path, data, **kwargs):
     elif isinstance(data, dict):
         df = pd.DataFrame.from_dict(data)
         df.to_csv(path, **kwargs, index=False)
+
+
+def write_csv_light(path, data, sep=None, encoding=None):
+    """
+    Write data to csv using csv library.
+
+    :param path: path of the csv file
+    :param data: data as list of dict
+    :param sep: separator of the csv file
+    :param encoding: encoding
+    :return: None
+    """
+    if not check_extension(path, ".csv"):
+        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
+
+    dialect = csv.get_dialect("excel")
+    if sep is not None:
+        dialect.delimiter = sep
+
+    with open(path, "w", newline="", encoding=encoding) as f:
+        headers = data[0].keys()
+        writer = csv.DictWriter(f, fieldnames=headers, dialect=dialect)
+        writer.writerow({h: h for h in headers})
+        writer.writerows(data)
 
 
 def write_df_to_csv(path, data, **kwargs):
@@ -279,11 +334,6 @@ def adjust_excel_col_width(writer, df, table_name: str, min_len: int = 7):
     :param str table_name:
     :param int min_len:
     """
-    try:
-        import pandas as pd
-    except ImportError as e:
-        raise NotImplementedError("function not yet implemented without pandas")
-
     for column in df:
         content_len = df[column].astype(str).map(len).max()
         column_width = max(content_len, len(str(column)), min_len) + 2
@@ -291,12 +341,13 @@ def adjust_excel_col_width(writer, df, table_name: str, min_len: int = 7):
         writer.sheets[table_name].set_column(col_idx, col_idx, column_width)
 
 
-def load_excel_open(path):
+def load_excel_light(path, sheets=None):
     """
     The load_excel function loads an Excel file and returns it as a dictionary of DataFrames.
     It doesn't use pandas.
 
-    :param path: Specify the path of the file to be loaded
+    :param path: Specify the path of the file to be loaded.
+    :param sheets: list of sheets to read. If None, all sheets will be read.
     :return: A dictionary of TupLists
     :doc-author: baobab soluciones
     """
@@ -305,7 +356,9 @@ def load_excel_open(path):
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
         )
 
-    wb = xl.load_workbook(path)
+    wb = xl.load_workbook(path, read_only=True, keep_vba=False)
+    if sheets is not None:
+        wb = [ws for ws in wb if ws.title in sheets]
     dataset = {}
     for ws in wb:
         data = [row for row in ws.values]
@@ -317,7 +370,7 @@ def load_excel_open(path):
     return dataset
 
 
-def write_excel_open(path, data):
+def write_excel_light(path, data):
     """
     The write_excel function writes a dictionary of DataFrames to an Excel file.
 

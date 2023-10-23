@@ -15,6 +15,7 @@ from mango.processing import (
     write_csv,
     write_df_to_csv,
 )
+from mango.processing.file_functions import load_csv_light, write_csv_light
 from mango.tests.const import normalize_path
 
 
@@ -161,6 +162,18 @@ class FileTests(TestCase):
         self.assertIsInstance(data, pd.DataFrame)
         self.assertEqual(data.shape, (2, 2))
 
+    def test_read_csv_open(self):
+        file = normalize_path("./data/test.csv")
+        data = load_csv_light(file)
+        self.assertIsInstance(data, list)
+        self.assertEqual([{'a': 1.0, 'b': '2'}, {'a': 3.0, 'b': '4'}], data)
+
+    def test_read_csv_open_2(self):
+        file = normalize_path("./data/test2.csv")
+        data = load_csv_light(file)
+        self.assertIsInstance(data, list)
+        self.assertEqual([{'a': 1.2, 'b': '2,5'}, {'a': 3.6, 'b': '4,5'}], data)
+
     def test_read_bad_csv_file(self):
         file = normalize_path("./data/test.json")
         self.assertRaises(FileNotFoundError, load_csv, file)
@@ -176,6 +189,14 @@ class FileTests(TestCase):
         write_csv(file, data)
         data2 = load_csv(file)
         self.assertEqual(data2.shape, (3, 2))
+        os.remove(file)
+
+    def test_write_csv_light(self):
+        file = normalize_path("./data/temp.csv")
+        data = [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
+        write_csv_light(file, data)
+        data2 = load_csv_light(file)
+        self.assertEqual(data2, data)
         os.remove(file)
 
     def test_write_csv_bad_format(self):
