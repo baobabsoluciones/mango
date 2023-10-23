@@ -373,7 +373,9 @@ class TestTable(TestCase):
         self.assertEqual(df1, expected, msg=msg)
         msg = "left join with empty table 1 and if_empty_table_1 argument"
         if_empty_1 = {"Name": None}
-        df2 = Table(empty_table).left_join(self.default_data2, if_empty_table_1=if_empty_1)
+        df2 = Table(empty_table).left_join(
+            self.default_data2, if_empty_table_1=if_empty_1
+        )
         expected2 = Table()
         self.assertEqual(df2, expected2, msg=msg)
 

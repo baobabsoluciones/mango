@@ -224,7 +224,6 @@ def load_csv(path, **kwargs):
     except ImportError as e:
         raise NotImplementedError("function not yet implemented without pandas")
 
-
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 

@@ -26,7 +26,7 @@ from .object_functions import (
     flatten,
     df_to_list,
     df_to_dict,
-    as_list
+    as_list,
 )
 from .processing_time_series import (
     create_dense_data,

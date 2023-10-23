@@ -87,18 +87,19 @@ class FileTests(TestCase):
         self.assertIn("Sheet1", data.keys())
         try:
             import pandas as pd
+
             self.assertIsInstance(data["Sheet1"], pd.DataFrame)
             self.assertEqual(data["Sheet1"].shape, (2, 2))
         except ImportError:
             self.assertIsInstance(data["Sheet1"], list)
-            self.assertEqual(data["Sheet1"], [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}])
+            self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
 
     def test_excel_file_to_dict(self):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file, output="records")
         self.assertIn("Sheet1", data.keys())
         self.assertIsInstance(data["Sheet1"], list)
-        self.assertEqual(data["Sheet1"], [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}])
+        self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
 
     def test_write_excel(self):
         data = {
