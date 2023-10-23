@@ -2,7 +2,7 @@ from pytups import TupList, SuperDict
 from typing import Callable, Iterable
 from mango.table.table_tools import str_key, to_len, invert_dict_list
 from mango.processing import as_list, flatten, reverse_dict, unique
-from numpy import isnan, isnat
+import numpy as np
 
 
 def mutate(table, **kwargs):
@@ -707,7 +707,43 @@ def is_null(v):
     :param v: a scalar value
     :return: boolean
     """
-    return v is None or isnan(v) or isnat(v)
+    if isinstance(v, list):
+        return [is_null(i) for i in v]
+    return v is None or is_nan(v) or is_nat(v)
+
+
+def is_nan(v):
+    """
+    Return True if the value is nan.
+    Similar to np.isnan but return False instead of error if value is not a number.
+
+    :param v: a value
+    :return: bool
+    """
+    from numbers import Number
+
+    if isinstance(v, list):
+        return [is_nan(i) for i in v]
+    elif isinstance(v, Number):
+        return np.isnan(v)
+    else:
+        return False
+
+
+def is_nat(v):
+    """
+    Return True if the value is nat.
+    Similar to np.isnat but return False instead of error if value is not a date.
+
+    :param v: a value
+    :return: bool
+    """
+    if isinstance(v, list):
+        return [is_nat(i) for i in v]
+    elif isinstance(v, np.datetime64):
+        return np.isnat(v)
+    else:
+        return False
 
 
 def pivot_longer(tl, cols, names_to="variable", value_to="value"):
