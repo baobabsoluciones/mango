@@ -1,4 +1,3 @@
-from configparser import NoOptionError
 from unittest import TestCase
 
 from mango.config import BaseConfig, ConfigParameter
