@@ -1,4 +1,4 @@
-name: mango unit testing
+name: mango full unit testing
 
 on:
   pull_request:
