@@ -6,7 +6,10 @@ from mango.processing.date_functions_2 import (
     dt_to_str,
     as_datetime,
     as_date,
-    as_str, add_to_str_dt, str_to_d, to_tz,
+    as_str,
+    add_to_str_dt,
+    str_to_d,
+    to_tz,
 )
 
 
@@ -187,34 +190,33 @@ class DateTests(TestCase):
         self.assertEqual(dt, "2022-09", msg=msg)
 
     def test_add_to_str_dt(self):
-        msg ="add_to_str_date works with default formats"
-        dt=add_to_str_dt("2022-09-27 08:00:00", hours=1)
+        msg = "add_to_str_date works with default formats"
+        dt = add_to_str_dt("2022-09-27 08:00:00", hours=1)
         self.assertEqual(dt, "2022-09-27 09:00:00", msg=msg)
 
     def test_add_to_str_dt_2(self):
-        msg ="add_to_str_date works with input format"
-        dt=add_to_str_dt("2022-09-27 08h00", fmt_in="%Y-%m-%d %Hh%M", hours=1)
+        msg = "add_to_str_date works with input format"
+        dt = add_to_str_dt("2022-09-27 08h00", fmt_in="%Y-%m-%d %Hh%M", hours=1)
         self.assertEqual(dt, "2022-09-27 09:00:00", msg=msg)
 
     def test_add_to_str_dt_3(self):
-        msg ="add_to_str_date works with output formats"
-        dt=add_to_str_dt("2022-09-27 08:00:00", fmt_out="%Y-%m-%d %Hh%M",hours=1)
+        msg = "add_to_str_date works with output formats"
+        dt = add_to_str_dt("2022-09-27 08:00:00", fmt_out="%Y-%m-%d %Hh%M", hours=1)
         self.assertEqual(dt, "2022-09-27 09h00", msg=msg)
 
     def test_add_to_str_dt_4(self):
-        msg ="add_to_str_date works with dates"
-        dt=add_to_str_dt("2022-09-27", hours=1)
+        msg = "add_to_str_date works with dates"
+        dt = add_to_str_dt("2022-09-27", hours=1)
         self.assertEqual(dt, "2022-09-27 01:00:00", msg=msg)
 
     def test_to_tz(self):
-        msg="to_tz should work in summer"
+        msg = "to_tz should work in summer"
         dt = datetime(2022, 9, 12, 8, 0, 0)
         dt_tz = to_tz(dt)
         self.assertEqual(dt_tz, datetime(2022, 9, 12, 10, 0, 0), msg=msg)
 
     def test_to_tz_2(self):
-        msg="to_tz should work in winter"
+        msg = "to_tz should work in winter"
         dt = datetime(2022, 1, 12, 8, 0, 0)
         dt_tz = to_tz(dt)
         self.assertEqual(dt_tz, datetime(2022, 1, 12, 9, 0, 0), msg=msg)
-        
