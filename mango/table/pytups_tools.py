@@ -2,6 +2,7 @@ from pytups import TupList, SuperDict
 from typing import Callable, Iterable
 from mango.table.table_tools import str_key, to_len, invert_dict_list
 from mango.processing import as_list, flatten, reverse_dict, unique
+import numpy as np
 
 
 def mutate(table, **kwargs):
@@ -677,11 +678,8 @@ def replace_nan(tl, replacement=None):
     :param replacement: the value to replace nan.
     :return: a tuplist with nan values filled.
     """
-    # TODO: see if we need pandas here
-    import pandas as pd
-
     return TupList(
-        [{k: replacement if pd.isnull(v) else v for k, v in dic.items()} for dic in tl]
+        [{k: replacement if is_null(v) else v for k, v in dic.items()} for dic in tl]
     )
 
 
@@ -693,16 +691,59 @@ def drop_empty(tl, cols=None):
     :param cols: list of column names or single name.
     :return: a tuplist with empty values dropped.
     """
-    # TODO: see if we need pandas here
-    import pandas as pd
-
     if cols is None:
         cols = get_col_names(tl)
     else:
         cols = as_list(cols)
     tl2 = replace(tl, replacement=None, to_replace=None)
 
-    return tl2.vfilter(lambda v: not any(k not in v or pd.isnull(v[k]) for k in cols))
+    return tl2.vfilter(lambda v: not any(k not in v or is_null(v[k]) for k in cols))
+
+
+def is_null(v):
+    """
+    Return True if the value is None, NaN or NaT
+
+    :param v: a scalar value
+    :return: boolean
+    """
+    if isinstance(v, list):
+        return [is_null(i) for i in v]
+    return v is None or is_nan(v) or is_nat(v)
+
+
+def is_nan(v):
+    """
+    Return True if the value is nan.
+    Similar to np.isnan but return False instead of error if value is not a number.
+
+    :param v: a value
+    :return: bool
+    """
+    from numbers import Number
+
+    if isinstance(v, list):
+        return [is_nan(i) for i in v]
+    elif isinstance(v, Number):
+        return np.isnan(v)
+    else:
+        return False
+
+
+def is_nat(v):
+    """
+    Return True if the value is nat.
+    Similar to np.isnat but return False instead of error if value is not a date.
+
+    :param v: a value
+    :return: bool
+    """
+    if isinstance(v, list):
+        return [is_nat(i) for i in v]
+    elif isinstance(v, np.datetime64):
+        return np.isnat(v)
+    else:
+        return False
 
 
 def pivot_longer(tl, cols, names_to="variable", value_to="value"):

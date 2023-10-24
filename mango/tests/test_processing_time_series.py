@@ -3,7 +3,10 @@ from unittest import TestCase
 
 from mango.data import get_ts_dataset
 from mango.processing import create_lags_col, create_recurrent_dataset
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 
 class ProcessingTests(TestCase):
