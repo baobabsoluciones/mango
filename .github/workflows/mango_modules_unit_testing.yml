@@ -141,7 +141,7 @@ jobs:
     - name: Run table testing
       if: steps.filter.outputs.table == 'true'
       run: |
-          coverage run --source=./mango/ -m unittest discover -s mango/tests/table_module
+          coverage run --source=./mango/table/ -m unittest discover -s mango/tests/table_module
           coverage report -m
           coverage xml
     - name: Upload coverage to Codecov
