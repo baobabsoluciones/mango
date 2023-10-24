@@ -1,6 +1,6 @@
 from unittest import TestCase
 import os
-import pandas as pd
+import warnings
 from mango.processing import (
     list_files_directory,
     load_json,
@@ -15,6 +15,7 @@ from mango.processing import (
     write_csv,
     write_df_to_csv,
 )
+from mango.processing.file_functions import load_csv_light, write_csv_light
 from mango.tests.const import normalize_path
 
 
@@ -71,6 +72,11 @@ class FileTests(TestCase):
         self.assertFalse(is_excel_file(file + ".txt"))
 
     def test_load_excel_sheet(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         file = normalize_path("./data/test.xlsx")
         data = load_excel_sheet(file, sheet="Sheet1")
         self.assertIsInstance(data, pd.DataFrame)
@@ -80,15 +86,21 @@ class FileTests(TestCase):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file)
         self.assertIn("Sheet1", data.keys())
-        self.assertIsInstance(data["Sheet1"], pd.DataFrame)
-        self.assertEqual(data["Sheet1"].shape, (2, 2))
+        try:
+            import pandas as pd
+
+            self.assertIsInstance(data["Sheet1"], pd.DataFrame)
+            self.assertEqual(data["Sheet1"].shape, (2, 2))
+        except ImportError:
+            self.assertIsInstance(data["Sheet1"], list)
+            self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
 
     def test_excel_file_to_dict(self):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file, output="records")
         self.assertIn("Sheet1", data.keys())
         self.assertIsInstance(data["Sheet1"], list)
-        self.assertEqual(data["Sheet1"], [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}])
+        self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
 
     def test_write_excel(self):
         data = {
@@ -103,6 +115,11 @@ class FileTests(TestCase):
         os.remove(file)
 
     def test_write_df_to_excel(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )
@@ -113,6 +130,11 @@ class FileTests(TestCase):
         os.remove(file)
 
     def test_write_df_to_excel_bad_extension(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )
@@ -130,10 +152,27 @@ class FileTests(TestCase):
         self.assertRaises(FileNotFoundError, load_excel_sheet, file, None)
 
     def test_read_csv_file(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         file = normalize_path("./data/test.csv")
         data = load_csv(file)
         self.assertIsInstance(data, pd.DataFrame)
         self.assertEqual(data.shape, (2, 2))
+
+    def test_read_csv_open(self):
+        file = normalize_path("./data/test.csv")
+        data = load_csv_light(file)
+        self.assertIsInstance(data, list)
+        self.assertEqual([{'a': 1.0, 'b': '2'}, {'a': 3.0, 'b': '4'}], data)
+
+    def test_read_csv_open_2(self):
+        file = normalize_path("./data/test2.csv")
+        data = load_csv_light(file)
+        self.assertIsInstance(data, list)
+        self.assertEqual([{'a': 1.2, 'b': '2,5'}, {'a': 3.6, 'b': '4,5'}], data)
 
     def test_read_bad_csv_file(self):
         file = normalize_path("./data/test.json")
@@ -152,12 +191,25 @@ class FileTests(TestCase):
         self.assertEqual(data2.shape, (3, 2))
         os.remove(file)
 
+    def test_write_csv_light(self):
+        file = normalize_path("./data/temp.csv")
+        data = [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
+        write_csv_light(file, data)
+        data2 = load_csv_light(file)
+        self.assertEqual(data2, data)
+        os.remove(file)
+
     def test_write_csv_bad_format(self):
         data = {"a": [1, 2, 3], "b": [4, 5, 6]}
         file = normalize_path("./data/temp.xlsz")
         self.assertRaises(FileNotFoundError, write_csv, file, data)
 
     def test_write_df_to_csv(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )
@@ -168,6 +220,11 @@ class FileTests(TestCase):
         os.remove(file)
 
     def test_write_df_to_csv_bad_extension(self):
+        try:
+            import pandas as pd
+        except ImportError:
+            warnings.warn("pandas not installed. test cancelled")
+            return True
         df = pd.DataFrame.from_records(
             [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         )
