@@ -1,11 +1,12 @@
-name: mango unit testing
+name: mango full unit testing
 
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
+    branches:
+      - 'release/'
     paths:
       - 'mango/**'
-      - '.github/workflows/mango_unit_testing.yml'
   push:
     branches:
       - master
@@ -27,89 +28,16 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-        cache-dependency-path: './requirements-dev.txt'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
-    - name: Set up filters
-      uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          clients:
-            - 'mango/clients/**'
-            - 'mango/tests/clients_module/**'
-          config:
-            - 'mango/config/**'
-            - 'mango/tests/config_module/**'
-          logging:
-            - 'mango/logging/**'
-            - 'mango/tests/logging_module/**'
-          models:
-            - 'mango/models/**'
-            - 'mango/tests/models_module/**'
-          plots:
-            - 'mango/plots/**'
-            - 'mango/tests/plots_module/**'
-          processing:
-            - 'mango/processing/**'
-            - 'mango/tests/processing_module/**'
-          shared:
-            - 'mango/shared/**'
-            - 'mango/tests/shared_module/**'
-          table:
-            - 'mango/table/**'
-            - 'mango/tests/table_module/**'
-    - name: Run clients testing
+    - name: Run unit testing
       if: steps.filter.outputs.clients == 'true'
       run: |
-        coverage run -a --source=./mango/ -m unittest discover -s mango/tests/clients_module
+        coverage run --source=./mango/ --omit=./mango/tests/ -m unittest discover -s mango/tests
         coverage report -m
         coverage xml
-    - name: Run config testing
-      if: steps.filter.outputs.config == 'true'
-      run: |
-        coverage run -a --source=./mango/ -m unittest discover -s mango/tests/config_module
-        coverage report -m
-        coverage xml
-    - name: Run logging testing
-      if: steps.filter.outputs.logging == 'true'
-      run: |
-          coverage run -a --source=./mango/ -m unittest discover -s mango/tests/logging_module
-          coverage report -m
-          coverage xml
-    - name: Run models testing
-      if: steps.filter.outputs.models == 'true'
-      run: |
-          coverage run -a --source=./mango/ -m unittest discover -s mango/tests/models_module
-          coverage report -m
-          coverage xml
-    - name: Run plots testing
-      if: steps.filter.outputs.plots == 'true'
-      run: |
-          coverage run -a --source=./mango/ -m unittest discover -s mango/tests/plots_module
-          coverage report -m
-          coverage xml
-    - name: Run processing testing
-      if: steps.filter.outputs.processing == 'true'
-      run: |
-          coverage run -a --source=./mango/ -m unittest discover -s mango/tests/processing_module
-          coverage report -m
-          coverage xml
-    - name: Run shared testing
-      if: steps.filter.outputs.shared == 'true'
-      run: |
-          coverage run -a --source=./mango/ -m unittest discover -s mango/tests/shared_module
-          coverage report -m
-          coverage xml
-    - name: Run table testing
-      if: steps.filter.outputs.table == 'true'
-      run: |
-          coverage run -a --source=./mango/ -m unittest discover -s mango/tests/table_module
-          coverage report -m
-          coverage xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
