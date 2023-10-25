@@ -1,113 +1,15 @@
 import os
 import time
 import warnings
-from datetime import datetime, date
+from datetime import datetime
 from math import radians, cos, sin, asin, sqrt
-from typing import Union, List, Literal
+from typing import Union
 
-from pydantic import BaseModel, RootModel, field_validator, ValidationInfo
 from tqdm import tqdm
 
 from mango.clients.rest_client import RestClient
 from mango.shared import ApiKeyError
-
-
-class UrlCallResponse(BaseModel):
-    estado: int
-    datos: str
-
-
-class FetchStationsElement(BaseModel):
-    latitud: str
-    longitud: str
-    provincia: str
-    altitud: float
-    indicativo: str
-    nombre: str
-    indsinop: str
-
-
-class FetchStationsResponse(RootModel):
-    root: List[FetchStationsElement]
-
-
-class FetchHistoricElement(BaseModel):
-    fecha: date
-    indicativo: str
-    nombre: str
-    provincia: str
-    altitud: float
-    tmed: float
-    prec: float
-    tmin: float
-    horatmin: str
-    tmax: float
-    horatmax: str
-    dir: str
-    velmedia: float
-    racha: float
-    horaracha: str
-    sol: float
-    presMax: float
-    horaPresMax: str
-    presMin: float
-    horaPresMin: str
-
-    @field_validator(
-        "tmed",
-        "prec",
-        "tmin",
-        "tmax",
-        "velmedia",
-        "racha",
-        "sol",
-        "presMax",
-        "presMin",
-        mode="before",
-    )
-    @classmethod
-    def _parse_float(cls, v: str, info: ValidationInfo) -> float:
-        try:
-            return float(v.replace(",", "."))
-        except ValueError:
-            raise ValueError(f"{info.field_name}: Could not parse {v} to float")
-
-
-class FetchHistoricResponse(RootModel):
-    root: List[FetchHistoricElement]
-
-
-class FetchLiveDataElement(BaseModel):
-    idema: str
-    lon: float
-    fint: datetime
-    prec: float
-    alt: float
-    vmax: float
-    vv: float
-    dv: int
-    lat: float
-    dmax: float
-    ubi: str
-    pres: float
-    hr: float
-    stdvv: float
-    ts: float
-    pres_nmar: float
-    tamin: float
-    ta: float
-    tamax: float
-    tpr: float
-    vis: float
-    stddv: float
-    inso: float
-    tss5cm: float
-    pacutp: float
-    tss20cm: float
-
-
-class FetchLiveDataResponse(RootModel):
-    root: List[FetchLiveDataElement]
+from mango.validators.aemet import *
 
 
 class AemetClient(RestClient):
@@ -451,7 +353,6 @@ class AemetClient(RestClient):
                 params={},
                 wait_time=self._wait_time,
                 if_error="warn",
-                expected_schema=FetchLiveDataResponse,
             )
             data.append(live_data)
         if not data:
@@ -459,11 +360,11 @@ class AemetClient(RestClient):
         return data
 
     def _format_data(self, data, output_format):
-        if output_format not in ["dataframe", "raw"]:
-            raise NotImplementedError("Only dataframe and raw are supported")
         if output_format == "dataframe":
-            import pandas as pd
-
+            try:
+                import pandas as pd
+            except ImportError:
+                raise ImportError("Pandas is required to return a dataframe")
             data = pd.DataFrame(data)
         return data
 
@@ -531,6 +432,10 @@ class AemetClient(RestClient):
             raise ValueError("lat and long must be provided together")
         if long and not lat:
             raise ValueError("lat and long must be provided together")
+        if output_format not in ["dataframe", "raw"]:
+            raise NotImplementedError(
+                f"output_format {output_format} not implemented. Only dataframe and raw"
+            )
 
         # Decision logic for search given parameters
         station_codes_filtered = self._get_stations_filtered(
@@ -599,3 +504,8 @@ class AemetClient(RestClient):
             custom_enpoint_url, params={}, wait_time=self._wait_time, if_error="warn"
         )
         return custom_enpoint_data
+
+
+if __name__ == "__main__":
+    client = AemetClient(api_key="1")
+    client.get_meteo_data(lat=40.4165, long=-3.70256, output_format="dataframe")
