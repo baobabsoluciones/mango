@@ -22,6 +22,15 @@ class FetchStationsElement(BaseModel):
 class FetchStationsResponse(RootModel):
     root: List[FetchStationsElement]
 
+class FetchMunicipiosElement(BaseModel):
+    id: str
+    nombre: str
+    longitud_dec: float
+    latitud_dec: float
+
+class FetchMunicipiosResponse(RootModel):
+    root: List[FetchMunicipiosElement]
+
 
 class FetchHistoricElement(BaseModel):
     fecha: date
@@ -67,3 +76,4 @@ class FetchHistoricElement(BaseModel):
 
 class FetchHistoricResponse(RootModel):
     root: List[FetchHistoricElement]
+

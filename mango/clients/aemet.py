@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 import warnings
@@ -31,38 +32,43 @@ class AemetClient(RestClient):
     >>> load_dotenv()
     >>> client = AemetClient(os.environ["AEMET_API_KEY"])
     """
-
-    _DEFAULT_WAIT_TIME = os.environ.get("AEMET_DEFAULT_WAIT_TIME", 1.25)
-    _FETCH_STATIONS_URL = os.environ.get(
-        "AEMET_FETCH_STATIONS_URL",
-        "https://opendata.aemet.es/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones",
-    )
-    _FETCH_MUNICIPIOS_URL = os.environ.get(
-        "AEMET_FETCH_MUNICIPIOS_URL",
-        "https://opendata.aemet.es/opendata/api/maestro/municipios",
-    )
-    _FETCH_HISTORIC_URL = os.environ.get(
-        "AEMET_FETCH_HISTORIC_URL",
-        "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos/fechaini"
-        "/{start_date_str}/fechafin/{end_date_str}"
-        "/estacion/{station}",
-    )
-    _FETCH_DAILY_URL = os.environ.get(
-        "AEMET_FETCH_DAILY_URL",
-        "https://opendata.aemet.es/opendata/api/observacion/convencional/datos/estacion/{station}",
-    )
+    def _set_up_default(self):
+        """
+        Do as function to allow for updates mid execution
+        """
+        self._DEFAULT_WAIT_TIME = float(os.environ.get("AEMET_DEFAULT_WAIT_TIME", 1.25))
+        self._FETCH_STATIONS_URL = os.environ.get(
+            "AEMET_FETCH_STATIONS_URL",
+            "https://opendata.aemet.es/opendata/api/valores/climatologicos/inventarioestaciones/todasestaciones",
+        )
+        self._FETCH_MUNICIPIOS_URL = os.environ.get(
+            "AEMET_FETCH_MUNICIPIOS_URL",
+            "https://opendata.aemet.es/opendata/api/maestro/municipios",
+        )
+        self._FETCH_HISTORIC_URL = os.environ.get(
+            "AEMET_FETCH_HISTORIC_URL",
+            "https://opendata.aemet.es/opendata/api/valores/climatologicos/diarios/datos/fechaini"
+            "/{start_date_str}/fechafin/{end_date_str}"
+            "/estacion/{station}",
+        )
+        self._FETCH_DAILY_URL = os.environ.get(
+            "AEMET_FETCH_DAILY_URL",
+            "https://opendata.aemet.es/opendata/api/observacion/convencional/datos/estacion/{station}",
+        )
 
     def __init__(self, *, api_key: str, wait_time: Union[float, int] = None):
         super().__init__()
+        self._set_up_default()
         self._api_key = api_key
         self._wait_time = wait_time or self._DEFAULT_WAIT_TIME
+        logging.getLogger("root")
         if self._wait_time < self._DEFAULT_WAIT_TIME:
-            print(
+            logging.warning(
                 "Wait time is too low. API limits may be exceeded. Minimum wait time is {} seconds.".format(
                     self._DEFAULT_WAIT_TIME
                 )
             )
-        print(
+        logging.info(
             "Aemet API has a limit of 50 requests per minute. Please be patient. Wait time is set to {} seconds.".format(
                 self._wait_time
             )
@@ -110,7 +116,7 @@ class AemetClient(RestClient):
         self._municipios = tmp
 
     @staticmethod
-    def _haversine(point1, point2, miles=False):
+    def _haversine(point1, point2):
         """
         Calculate the great circle distance in kilometers between two points
         on the earth (specified in decimal degrees)
@@ -125,10 +131,7 @@ class AemetClient(RestClient):
         dlat = lat2 - lat1
         a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
         c = 2 * asin(sqrt(a))
-        if miles:
-            r = 3956
-        else:
-            r = 6371  # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
+        r = 6371  # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
         return c * r
 
     @staticmethod
@@ -165,6 +168,7 @@ class AemetClient(RestClient):
             self._FETCH_MUNICIPIOS_URL,
             params={"api_key": self._api_key},
             wait_time=self._wait_time,
+            expected_schema=FetchMunicipiosResponse,
         )
         return municipios
 
@@ -176,17 +180,18 @@ class AemetClient(RestClient):
         province=None,
     ):
         if station_code:
-            print("Selecting only station: " + station_code)
-            assert station_code in [
-                s["indicativo"] for s in self.all_stations
-            ], "Station not found"
+            logging.info("Selecting only station: " + station_code+ " ignoring other parameters")
+            if station_code not in [s["indicativo"] for s in self.all_stations]:
+                raise ValueError(
+                    f"{station_code} not found in Spain. Possible values: {[s['indicativo'] for s in self.all_stations]}"
+                )
             # Use list for consistency in code
             station_codes = [station_code]
         elif lat and long:
             # Search for closest station
             # province None is handled in search_closest_station
             # Only one but to mantain consistency embed in list
-            print(
+            logging.info(
                 "Searching for closest station to lat: "
                 + str(lat)
                 + " long: "
@@ -195,16 +200,24 @@ class AemetClient(RestClient):
             station_codes = self._search_closest_station(lat, long, province)
         elif province:
             # Search for all stations in province
-            print("Searching for all stations in province: " + province)
-            station_codes = [
-                est["indicativo"] for est in self._search_stations_province(province)
-            ]
+            logging.info("Searching for all stations in province: " + province)
+            possible_provinces = list(
+                set([stat.get("provincia").lower() for stat in self._all_stations])
+            )
+            if province.lower() not in possible_provinces:
+                logging.warning(
+                    f"Province not found in Spain. Possible values: {possible_provinces}"
+                )
+                logging.warning("Searching in all Spain")
+                station_codes = [est["indicativo"] for est in self._all_stations]
+            else:
+                station_codes = [
+                    est["indicativo"] for est in self._search_stations_province(province)
+                ]
         else:
             # Search for all stations in Spain
-            print("Searching for all stations in Spain")
+            logging.info("Searching for all stations in Spain")
             station_codes = [est["indicativo"] for est in self.all_stations]
-        if not station_codes:
-            raise Exception("No stations found")
         return station_codes
 
     def _search_closest_station(self, lat, long, province=None) -> list[dict]:
@@ -225,10 +238,10 @@ class AemetClient(RestClient):
                 set([stat.get("provincia").lower() for stat in self._all_stations])
             )
             if province.lower() not in possible_provinces:
-                warnings.warn(
+                logging.warning(
                     f"Province not found in Spain. Possible values: {possible_provinces}"
                 )
-                warnings.warn("Searching in all Spain")
+                logging.warning("Searching in all Spain")
             else:
                 stations_to_search = self._search_stations_province(province)
         lat_long_list = [
@@ -309,7 +322,7 @@ class AemetClient(RestClient):
             )
             hist_data_url = hist_data_url_call.get("datos")
             if not hist_data_url:
-                warnings.warn(
+                logging.warning(
                     f"No data found for station: {station} between {start_date} and {end_date}"
                 )
                 continue
@@ -320,9 +333,7 @@ class AemetClient(RestClient):
                 if_error="warn",
                 expected_schema=FetchHistoricResponse,
             )
-            if not hist_data:  # Empty json
-                print("No data found for station: " + station)
-            data.append(hist_data)
+            data.extend(hist_data)
         if not data:
             raise Exception("Failed for all stations")
         return data
@@ -343,10 +354,9 @@ class AemetClient(RestClient):
                 if_error="warn",
                 expected_schema=UrlCallResponse,
             )
-            time.sleep(self._wait_time)
             live_data_url = live_data_url_call.get("datos")
             if not live_data_url:
-                warnings.warn(f"No data found for station: {station}")
+                logging.warning(f"No data found for station: {station}")
                 continue
             live_data = self._request_handler(
                 live_data_url,
@@ -354,17 +364,18 @@ class AemetClient(RestClient):
                 wait_time=self._wait_time,
                 if_error="warn",
             )
-            data.append(live_data)
+            data.extend(live_data)
         if not data:
             raise Exception("Failed for all stations")
         return data
 
     def _format_data(self, data, output_format):
-        if output_format == "dataframe":
+        if output_format == "df":
             try:
                 import pandas as pd
             except ImportError:
                 raise ImportError("Pandas is required to return a dataframe")
+            # Flatten list of lists of dicts to list of dicts
             data = pd.DataFrame(data)
         return data
 
@@ -376,7 +387,7 @@ class AemetClient(RestClient):
         province: str = None,
         start_date: datetime = None,
         end_date: datetime = None,
-        output_format: Literal["dataframe", "raw"] = "raw",
+        output_format: Literal["df", "raw"] = "raw",
     ):
         """
         Main method of the class. This method will return the meteorological data from the meteorological stations in
@@ -420,10 +431,16 @@ class AemetClient(RestClient):
             raise TypeError("start_date must be a datetime")
         if end_date and not isinstance(end_date, datetime):
             raise TypeError("end_date must be a datetime")
+        if output_format not in ["df", "raw"]:
+            raise NotImplementedError(
+                f"output_format {output_format} not implemented. Only dataframe and raw"
+            )
         # Ensure params consistency
+        if not station_code and not lat and not long:
+            raise ValueError("station_code or lat and long must be provided")
         if start_date and not end_date:
             end_date = datetime.now()
-            print("end_date not provided. Using current date as end_date")
+            logging.warning("end_date not provided. Using current date as end_date")
         if end_date and not start_date:
             raise ValueError("end_date provided but not start_date")
         if start_date and end_date and start_date > end_date:
@@ -432,10 +449,6 @@ class AemetClient(RestClient):
             raise ValueError("lat and long must be provided together")
         if long and not lat:
             raise ValueError("lat and long must be provided together")
-        if output_format not in ["dataframe", "raw"]:
-            raise NotImplementedError(
-                f"output_format {output_format} not implemented. Only dataframe and raw"
-            )
 
         # Decision logic for search given parameters
         station_codes_filtered = self._get_stations_filtered(
@@ -450,13 +463,15 @@ class AemetClient(RestClient):
                 station_codes_filtered, start_date, end_date
             )
         else:
-            print("As start_date is not provided, last hours data will be returned")
+            logging.info("As start_date is not provided, last hours data will be returned")
             data = self._get_live_data(station_codes_filtered)
 
         # Return data
         return self._format_data(data, output_format)
 
     def get_forecast_data(self, postal_code: str = None):
+        if postal_code and not isinstance(postal_code, str):
+            raise TypeError("postal_code must be a string")
         if postal_code:
             assert postal_code in [
                 m["codigo postal"] for m in self.municipios
@@ -473,9 +488,9 @@ class AemetClient(RestClient):
                 if_error="warn",
                 expected_schema=UrlCallResponse,
             )
-            forecast_url = forecast_url_call.get("datos")
+            forecast_url = forecast_url_call.get("datos", None)
             if not forecast_url:
-                warnings.warn(f"No data found for postal_code: {postal_code}")
+                logging.warning(f"No data found for postal_code: {postal_code}")
                 continue
             forecast_data = self._request_handler(
                 forecast_url, params={}, wait_time=self._wait_time, if_error="warn"
@@ -487,8 +502,17 @@ class AemetClient(RestClient):
                     if k in ["nombre", "provincia", "elaborado", "prediccion"]
                 }
             )
+        if not data:
+            raise Exception("Failed for all municipios")
+        return data
 
     def custom_endpoint(self, endpoint: str):
+        # Check datatype
+        if not isinstance(endpoint, str):
+            raise TypeError("endpoint must be a string")
+        # Check it starts with /api
+        if not endpoint.startswith("/api"):
+            raise ValueError("endpoint must start with /api")
         custom_endpoint_url_call = self._request_handler(
             "https://opendata.aemet.es/opendata" + endpoint,
             params={"api_key": self._api_key},
@@ -498,14 +522,9 @@ class AemetClient(RestClient):
         )
         custom_enpoint_url = custom_endpoint_url_call.get("datos")
         if not custom_enpoint_url:
-            warnings.warn(f"No data found for endpoint: {endpoint}")
-            return None
+            logging.info(f"No data found for endpoint: {endpoint}")
+            raise ValueError(f"No data found for endpoint: {endpoint}")
         custom_enpoint_data = self._request_handler(
             custom_enpoint_url, params={}, wait_time=self._wait_time, if_error="warn"
         )
         return custom_enpoint_data
-
-
-if __name__ == "__main__":
-    client = AemetClient(api_key="1")
-    client.get_meteo_data(lat=40.4165, long=-3.70256, output_format="dataframe")

@@ -13,7 +13,7 @@ class RestClient(ABC):
 
     @abstractmethod
     def connect(self, *args, **kwargs):
-        pass
+        raise NotImplementedError("This method must be implemented in the child class")
 
     @staticmethod
     def _request_handler(
@@ -33,6 +33,12 @@ class RestClient(ABC):
         :return: Dictionary with the response
         :doc-author: baobab soluciones
         """
+        if if_error not in ["raise", "warn", "ignore"]:
+            if_error = "raise"
+            warnings.warn(
+                f"Invalid option for if_error. Valid options are: raise, warn, ignore. "
+                f"Setting if_error to {if_error}"
+            )
         response = requests.get(url, params=params)
         try:
             response.raise_for_status()
@@ -43,9 +49,6 @@ class RestClient(ABC):
                 warnings.warn(str(e))
             elif if_error == "ignore":
                 pass
-            else:
-                # If not valid option keep default behaviour
-                raise e
         time.sleep(wait_time)
         try:
             parsed = response.json()
@@ -57,15 +60,21 @@ class RestClient(ABC):
                 parsed = {}
             elif if_error == "ignore":
                 parsed = {}
-            else:
-                # If not valid option keep default behaviour
-                raise e
         if expected_schema:
             if parsed:
-                if isinstance(parsed, dict):
-                    parsed = expected_schema(**parsed).model_dump()
-                elif isinstance(parsed, list):
-                    parsed = expected_schema(parsed).model_dump()
+                try:
+                    if isinstance(parsed, dict):
+                        parsed = expected_schema(**parsed).model_dump()
+                    elif isinstance(parsed, list):
+                        parsed = expected_schema(parsed).model_dump()
+                except Exception as e:
+                    if if_error == "raise":
+                        raise e
+                    elif if_error == "warn":
+                        warnings.warn(str(e))
+                        parsed = {key: None for key in expected_schema.model_fields}
+                    elif if_error == "ignore":
+                        parsed = {key: None for key in expected_schema.model_fields}
             else:
                 # Return Dict with keys and None values
                 parsed = {key: None for key in expected_schema.model_fields}
