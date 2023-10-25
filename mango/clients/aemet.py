@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 from math import radians, cos, sin, asin, sqrt
-from typing import Union, Any
+from typing import Union, Any, Tuple
 
 from tqdm import tqdm
 
@@ -148,7 +148,7 @@ class AemetClient(RestClient):
         return c * r
 
     @staticmethod
-    def _parse_lat_long(lat_long: tuple[str, str]) -> tuple[float, float]:
+    def _parse_lat_long(lat_long: Tuple[str, str]) -> Tuple[float, float]:
         """
         This function will parse the latitude and longitude strings returned by the AEMET API to a tuple of floats
         """
