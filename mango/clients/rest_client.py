@@ -1,7 +1,7 @@
 import time
 import warnings
 from abc import ABC, abstractmethod
-from typing import Union, Literal, Type
+from typing import Union, Literal, Type, List
 
 import requests
 from pydantic import BaseModel
@@ -26,7 +26,7 @@ class RestClient(ABC):
         wait_time: Union[float, int] = 0.5,
         if_error: Literal["raise", "warn", "ignore"] = "raise",
         expected_schema: Type[BaseModel] = None,
-    ) -> Union[dict, list[dict]]:
+    ) -> Union[dict, List[dict]]:
         """
         This function will handle the request to a URL, implements the wait time and checks for errors.
         :param url: URL to make the request to
