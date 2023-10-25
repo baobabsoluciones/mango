@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 from math import radians, cos, sin, asin, sqrt
-from typing import Union
+from typing import Union, Any
 
 from tqdm import tqdm
 
@@ -30,9 +30,10 @@ class AemetClient(RestClient):
     >>> load_dotenv()
     >>> client = AemetClient(os.environ["AEMET_API_KEY"])
     """
-    def _set_up_default(self):
+
+    def _set_up_default(self) -> None:
         """
-        Do as function to allow for updates mid execution
+        Do as function to allow for updates mid execution and set up default values
         """
         self._DEFAULT_WAIT_TIME = float(os.environ.get("AEMET_DEFAULT_WAIT_TIME", 1.25))
         self._FETCH_STATIONS_URL = os.environ.get(
@@ -53,6 +54,10 @@ class AemetClient(RestClient):
             "AEMET_FETCH_DAILY_URL",
             "https://opendata.aemet.es/opendata/api/observacion/convencional/datos/estacion/{station}",
         )
+        self._FETCH_FORECAST_URL = os.environ.get(
+            "AEMET_FETCH_FORECAST_URL",
+            "https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/{postal_code}",
+        )
 
     def __init__(self, *, api_key: str, wait_time: Union[float, int] = None):
         super().__init__()
@@ -72,7 +77,12 @@ class AemetClient(RestClient):
             )
         )
 
-    def connect(self):
+    def connect(self) -> None:
+        """
+        This method will connect to the AEMET API and cache the stations and municipios.
+        Checks if the API key is valid.
+        :doc-author: baobab soluciones
+        """
         # Allows to check if the api_key is valid and cache the stations
         try:
             self._all_stations = self._get_all_stations()
@@ -100,7 +110,10 @@ class AemetClient(RestClient):
         return self._municipios
 
     @municipios.setter
-    def municipios(self, value):
+    def municipios(self, value) -> None:
+        """
+        Keep only the relevant information for the municipios
+        """
         tmp = []
         for m in value:
             m["codigo postal"] = m["id"].lstrip("id")
@@ -114,10 +127,12 @@ class AemetClient(RestClient):
         self._municipios = tmp
 
     @staticmethod
-    def _haversine(point1, point2):
+    def _haversine(point1, point2) -> float:
         """
         Calculate the great circle distance in kilometers between two points
-        on the earth (specified in decimal degrees)
+        on the earth (specified in decimal degrees).
+        :param point1: Tuple with latitude and longitude of the first point
+        :param point2: Tuple with latitude and longitude of the second point
         """
         # convert decimal degrees to radians
         lon1, lat1 = point1
@@ -135,7 +150,7 @@ class AemetClient(RestClient):
     @staticmethod
     def _parse_lat_long(lat_long: tuple[str, str]) -> tuple[float, float]:
         """
-        This function will parse the latitude and longitude returned by the AEMET API to a tuple of floats
+        This function will parse the latitude and longitude strings returned by the AEMET API to a tuple of floats
         """
         """
         The parse_lat_long function parses the latitude and longitude of a tuple.
@@ -156,7 +171,7 @@ class AemetClient(RestClient):
         )
         return lat, long
 
-    def _get_municipios(self):
+    def _get_municipios(self) -> list[dict]:
         """
         This function will search for all the municipios in Spain.
         :return: List with all the municipios in Spain
@@ -172,13 +187,31 @@ class AemetClient(RestClient):
 
     def _get_stations_filtered(
         self,
-        station_code=None,
-        lat=None,
-        long=None,
-        province=None,
-    ):
+        station_code: str = None,
+        lat: Union[float, int] = None,
+        long: Union[float, int] = None,
+        province: str = None,
+    ) -> list[str]:
+        """
+        This function will filter the stations given the parameters with higher priority.
+        First it will check if station_code is provided. If it is, it will return only that station.
+        If station_code is not provided, it will check if lat and long are provided. If they are, it will return the
+        closest station to that point.
+        If lat, long and province are provided, it will return the closest station to that point in that province.
+        If lat and long are not provided, it will check if province is provided. If it is, it will return all the
+        stations in that province.
+        If province is not provided, it will return all the stations in Spain.
+
+        :param station_code: meteorological station code
+        :param lat: latitude
+        :param long: longitude
+        :param province: province
+        :return: List of station codes
+        """
         if station_code:
-            logging.info("Selecting only station: " + station_code+ " ignoring other parameters")
+            logging.info(
+                "Selecting only station: " + station_code + " ignoring other parameters"
+            )
             if station_code not in [s["indicativo"] for s in self.all_stations]:
                 raise ValueError(
                     f"{station_code} not found in Spain. Possible values: {[s['indicativo'] for s in self.all_stations]}"
@@ -187,8 +220,6 @@ class AemetClient(RestClient):
             station_codes = [station_code]
         elif lat and long:
             # Search for closest station
-            # province None is handled in search_closest_station
-            # Only one but to mantain consistency embed in list
             logging.info(
                 "Searching for closest station to lat: "
                 + str(lat)
@@ -210,7 +241,8 @@ class AemetClient(RestClient):
                 station_codes = [est["indicativo"] for est in self._all_stations]
             else:
                 station_codes = [
-                    est["indicativo"] for est in self._search_stations_province(province)
+                    est["indicativo"]
+                    for est in self._search_stations_province(province)
                 ]
         else:
             # Search for all stations in Spain
@@ -218,7 +250,9 @@ class AemetClient(RestClient):
             station_codes = [est["indicativo"] for est in self.all_stations]
         return station_codes
 
-    def _search_closest_station(self, lat, long, province=None) -> list[dict]:
+    def _search_closest_station(
+        self, lat: Union[float, int], long: Union[float, int], province: str = None
+    ) -> list[dict]:
         """
         This function will search for the closest meteorological station to the given point.
         If province is provided, it will search for the closest station in that province.
@@ -254,10 +288,10 @@ class AemetClient(RestClient):
         # Sort by distance
         distances.sort(key=lambda x: x[1])
         station = distances[0][0]
-        # Only one element however to mantain consistency embed in list
+        # Only one element however to maintain consistency embed in list
         return [station]
 
-    def _search_stations_province(self, province):
+    def _search_stations_province(self, province: str) -> list[dict]:
         """
         This function will search for all the meteorological stations in the given province.
         :param province: Province to search for the closest station
@@ -272,7 +306,7 @@ class AemetClient(RestClient):
         ]
         return stations
 
-    def _get_all_stations(self):
+    def _get_all_stations(self) -> list[dict]:
         """
         This function will search for all the meteorological stations in Spain.
         :return: List with all the stations in Spain
@@ -295,7 +329,9 @@ class AemetClient(RestClient):
         )
         return stations
 
-    def _get_historical_data(self, station_codes, start_date, end_date):
+    def _get_historical_data(
+        self, station_codes: List[str], start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         """
         This function will get the historical data from the given stations between the given dates.
         :param station_codes: List of station codes to get the data from
@@ -336,7 +372,7 @@ class AemetClient(RestClient):
             raise Exception("Failed for all stations")
         return data
 
-    def _get_live_data(self, station_codes):
+    def _get_live_data(self, station_codes: list[str]) -> list[dict]:
         """
         This function will get the live data from the given stations.
         :param station_codes: List of station codes to get the data from
@@ -367,7 +403,10 @@ class AemetClient(RestClient):
             raise Exception("Failed for all stations")
         return data
 
-    def _format_data(self, data, output_format):
+    def _format_data(self, data: List[dict], output_format) -> Any:
+        """
+        This function will format the data to the desired output format
+        """
         if output_format == "df":
             try:
                 import pandas as pd
@@ -394,18 +433,36 @@ class AemetClient(RestClient):
         Usage
         -----
 
+        >>> import pandas as pd
+        >>> from datetime import datetime
+        >>> from mango.clients.aemet import AemetClient
+        >>> import load_dotenv
+        >>> import os
+        >>>
+        >>> load_dotenv()
+        >>>
+        >>> client = AemetClient(os.environ["AEMET_API_KEY"])
+        >>> client.connect()
+
         If lat and long are provided this method will search for the closest meteorological station to that point.
         Province is not necessary however it will speed up the search.
-        >>
+
+        >>> data = client.get_meteo_data(lat=40.4165, long=-3.70256, province="Madrid", start_date=datetime(2021, 1, 1), end_date=datetime(2021, 1, 31), output_format="df")
 
         If lat and long are not provided but province is provided, this method will search for all the meteorological
         stations in that province.
 
+        >>> data = client.get_meteo_data(province="Madrid", start_date=datetime(2021, 1, 1), end_date=datetime(2021, 1, 31), output_format="df")
+
         If lat and long are not provided and province is not provided, this method will search for all the meteorological
         stations in Spain.
 
+        >>> data = client.get_meteo_data(start_date=datetime(2021, 1, 1), end_date=datetime(2021, 1, 31), output_format="df")
+
         If neither start_date nor end_date are provided, this method will search for live data following the rules
         described above. end_date needs start_date to be provided.
+
+        >>> data = client.get_meteo_data(lat=40.4165, long=-3.70256, province="Madrid", output_format="df")
 
         :param str station_code: meteorological station code
         :param float lat: latitude
@@ -461,13 +518,26 @@ class AemetClient(RestClient):
                 station_codes_filtered, start_date, end_date
             )
         else:
-            logging.info("As start_date is not provided, last hours data will be returned")
+            logging.info(
+                "As start_date is not provided, last hours data will be returned"
+            )
             data = self._get_live_data(station_codes_filtered)
 
         # Return data
         return self._format_data(data, output_format)
 
     def get_forecast_data(self, postal_code: str = None):
+        """
+        This method will return the forecast data for the given postal code for the next days
+        provided by the AEMET API. If postal_code is not provided, it will return the forecast data for all the
+        municipios in Spain, doing so takes a long time due to API limitations.
+
+        In this version it returns the raw data from the API. In future versions it will return a dataframe with the
+        forecast data properly formatted.
+
+        :param postal_code: Postal code of the municipio to get the forecast data from
+        :return: List of dictionaries with the forecast data
+        """
         if postal_code and not isinstance(postal_code, str):
             raise TypeError("postal_code must be a string")
         if postal_code:

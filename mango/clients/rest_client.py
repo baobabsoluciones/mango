@@ -13,6 +13,10 @@ class RestClient(ABC):
 
     @abstractmethod
     def connect(self, *args, **kwargs):
+        """
+        This method must be implemented in the child class and must connect to the API
+        Can be used to check if the API is available and API keys are valid
+        """
         raise NotImplementedError("This method must be implemented in the child class")
 
     @staticmethod

@@ -45,6 +45,10 @@ class TestAemet(TestCase):
             "AEMET_FETCH_DAILY_URL",
             "https://opendata.aemet.es/opendata/api/observacion/convencional/datos/estacion/{station}",
         )
+        self._FETCH_FORECAST_URL = os.environ.get(
+            "AEMET_FETCH_FORECAST_URL",
+            "https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/{postal_code}",
+        )
 
     def setUp(self) -> None:
         self.set_enviroment_config()
@@ -177,12 +181,17 @@ class TestAemet(TestCase):
             self._FETCH_DAILY_URL,
             client._FETCH_DAILY_URL,
         )
+        self.assertEqual(
+            self._FETCH_FORECAST_URL,
+            client._FETCH_FORECAST_URL,
+        )
         # Custom behaviour
         os.environ["AEMET_DEFAULT_WAIT_TIME"] = "1"
         os.environ["AEMET_FETCH_STATIONS_URL"] = "changed"
         os.environ["AEMET_FETCH_MUNICIPIOS_URL"] = "changed"
         os.environ["AEMET_FETCH_HISTORIC_URL"] = "changed"
         os.environ["AEMET_FETCH_DAILY_URL"] = "changed"
+        os.environ["AEMET_FETCH_FORECAST_URL"] = "changed"
         client = AemetClient(api_key="1")
         self.assertEqual(
             1,
@@ -203,6 +212,10 @@ class TestAemet(TestCase):
         self.assertEqual(
             "changed",
             client._FETCH_DAILY_URL,
+        )
+        self.assertEqual(
+            "changed",
+            client._FETCH_FORECAST_URL,
         )
         # Reset
         self.set_enviroment_config()
