@@ -92,7 +92,7 @@ class AemetClient(RestClient):
         self.municipios = self._get_municipios()
 
     @property
-    def all_stations(self) -> list[dict]:
+    def all_stations(self) -> List[dict]:
         """
         This property will return all the meteorological stations in Spain.
         :return: List of dictionaries with the meteorological stations
@@ -101,7 +101,7 @@ class AemetClient(RestClient):
         return self._all_stations
 
     @property
-    def municipios(self) -> list[dict]:
+    def municipios(self) -> List[dict]:
         """
         This property will return all the municipios in Spain.
         :return: List of dictionaries with the municipios
@@ -171,7 +171,7 @@ class AemetClient(RestClient):
         )
         return lat, long
 
-    def _get_municipios(self) -> list[dict]:
+    def _get_municipios(self) -> List[dict]:
         """
         This function will search for all the municipios in Spain.
         :return: List with all the municipios in Spain
@@ -191,7 +191,7 @@ class AemetClient(RestClient):
         lat: Union[float, int] = None,
         long: Union[float, int] = None,
         province: str = None,
-    ) -> list[str]:
+    ) -> List[str]:
         """
         This function will filter the stations given the parameters with higher priority.
         First it will check if station_code is provided. If it is, it will return only that station.
@@ -252,7 +252,7 @@ class AemetClient(RestClient):
 
     def _search_closest_station(
         self, lat: Union[float, int], long: Union[float, int], province: str = None
-    ) -> list[dict]:
+    ) -> List[dict]:
         """
         This function will search for the closest meteorological station to the given point.
         If province is provided, it will search for the closest station in that province.
@@ -291,7 +291,7 @@ class AemetClient(RestClient):
         # Only one element however to maintain consistency embed in list
         return [station]
 
-    def _search_stations_province(self, province: str) -> list[dict]:
+    def _search_stations_province(self, province: str) -> List[dict]:
         """
         This function will search for all the meteorological stations in the given province.
         :param province: Province to search for the closest station
@@ -306,7 +306,7 @@ class AemetClient(RestClient):
         ]
         return stations
 
-    def _get_all_stations(self) -> list[dict]:
+    def _get_all_stations(self) -> List[dict]:
         """
         This function will search for all the meteorological stations in Spain.
         :return: List with all the stations in Spain
@@ -331,7 +331,7 @@ class AemetClient(RestClient):
 
     def _get_historical_data(
         self, station_codes: List[str], start_date: datetime, end_date: datetime
-    ) -> list[dict]:
+    ) -> List[dict]:
         """
         This function will get the historical data from the given stations between the given dates.
         :param station_codes: List of station codes to get the data from
@@ -372,7 +372,7 @@ class AemetClient(RestClient):
             raise Exception("Failed for all stations")
         return data
 
-    def _get_live_data(self, station_codes: list[str]) -> list[dict]:
+    def _get_live_data(self, station_codes: List[str]) -> List[dict]:
         """
         This function will get the live data from the given stations.
         :param station_codes: List of station codes to get the data from
