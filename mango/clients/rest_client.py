@@ -12,7 +12,7 @@ class RestClient(ABC):
         pass
 
     @abstractmethod
-    def connect(self):
+    def connect(self, *args, **kwargs):
         pass
 
     @staticmethod

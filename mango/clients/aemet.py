@@ -584,14 +584,14 @@ class AemetClient(RestClient):
             )
 
     def custom_endpoint(self, endpoint: str):
-        custom_enpoint_url_call = self._request_handler(
+        custom_endpoint_url_call = self._request_handler(
             "https://opendata.aemet.es/opendata" + endpoint,
             params={"api_key": self._api_key},
             wait_time=self._wait_time,
             if_error="warn",
             expected_schema=UrlCallResponse,
         )
-        custom_enpoint_url = custom_enpoint_url_call.get("datos")
+        custom_enpoint_url = custom_endpoint_url_call.get("datos")
         if not custom_enpoint_url:
             warnings.warn(f"No data found for endpoint: {endpoint}")
             return None
