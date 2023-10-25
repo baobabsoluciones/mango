@@ -1,7 +1,5 @@
 import logging
 import os
-import time
-import warnings
 from datetime import datetime
 from math import radians, cos, sin, asin, sqrt
 from typing import Union

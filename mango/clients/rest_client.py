@@ -1,6 +1,6 @@
+import time
 import warnings
 from abc import ABC, abstractmethod
-import time
 from typing import Union, Literal, Type
 
 import requests
