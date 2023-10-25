@@ -1,7 +1,10 @@
 import pickle
 from collections.abc import Iterable
 
-import pandas
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 
 def pickle_copy(instance):
@@ -98,7 +101,7 @@ def flatten(lst: list) -> list:
     return [item for sublist in lst for item in as_list(sublist)]
 
 
-def df_to_list(df: pandas.DataFrame) -> list:
+def df_to_list(df: pd.DataFrame) -> list:
     """
     The data_frame_to_list function takes a DataFrame and returns a list of dictionaries with the
     column names as keys and the values as values.
@@ -110,7 +113,7 @@ def df_to_list(df: pandas.DataFrame) -> list:
     return df.to_dict(orient="records")
 
 
-def df_to_dict(df: pandas.DataFrame) -> dict:
+def df_to_dict(df: pd.DataFrame) -> dict:
     """
     The data_frame_to_dict function takes a dict of DataFrames and returns a dictionary with the
     sheet names as keys and the DataFrames in records as values.

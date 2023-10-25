@@ -1,0 +1,172 @@
+name: mango modules unit testing
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    paths:
+      - 'mango/**'
+  push:
+    branches:
+      - master
+      - development
+
+jobs:
+  unit-testing:
+    name: Run all unit test suites
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 21
+      matrix:
+        python-version: [3.8, 3.9, '3.10', '3.11']
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: './requirements-dev.txt'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+    - name: Set up filters
+      uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          clients:
+            - 'mango/clients/**'
+            - 'mango/tests/clients_module/**'
+          config:
+            - 'mango/config/**'
+            - 'mango/tests/config_module/**'
+          logging:
+            - 'mango/logging/**'
+            - 'mango/tests/logging_module/**'
+          models:
+            - 'mango/models/**'
+            - 'mango/tests/models_module/**'
+          plots:
+            - 'mango/plots/**'
+            - 'mango/tests/plots_module/**'
+          processing:
+            - 'mango/processing/**'
+            - 'mango/tests/processing_module/**'
+          shared:
+            - 'mango/shared/**'
+            - 'mango/tests/shared_module/**'
+          table:
+            - 'mango/table/**'
+            - 'mango/tests/table_module/**'
+    - name: Run clients testing
+      if: steps.filter.outputs.clients == 'true'
+      run: |
+        coverage run --source=./mango/clients/ -m unittest discover -s mango/tests/clients_module
+        coverage report -m
+        coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.clients == 'true'
+      with:
+        flags: clients-tests
+    - name: Run config testing
+      if: steps.filter.outputs.config == 'true'
+      run: |
+        coverage run --source=./mango/config/ -m unittest discover -s mango/tests/config_module
+        coverage report -m
+        coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.config == 'true'
+      with:
+        flags: config-tests
+    - name: Run logging testing
+      if: steps.filter.outputs.logging == 'true'
+      run: |
+          coverage run --source=./mango/logging/ -m unittest discover -s mango/tests/logging_module
+          coverage report -m
+          coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.logging == 'true'
+      with:
+        flags: logging-tests
+    - name: Run models testing
+      if: steps.filter.outputs.models == 'true'
+      run: |
+          coverage run --source=./mango/models/ -m unittest discover -s mango/tests/models_module
+          coverage report -m
+          coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.models == 'true'
+      with:
+        flags: models-tests
+    - name: Run plots testing
+      if: steps.filter.outputs.plots == 'true'
+      run: |
+          coverage run --source=./mango/plots/ -m unittest discover -s mango/tests/plots_module
+          coverage report -m
+          coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.plots == 'true'
+      with:
+        flags: plots-tests
+    - name: Run processing testing
+      if: steps.filter.outputs.processing == 'true'
+      run: |
+          coverage run --source=./mango/processing/ -m unittest discover -s mango/tests/processing_module
+          coverage report -m
+          coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.processing == 'true'
+      with:
+        flags: processing-tests
+    - name: Run shared testing
+      if: steps.filter.outputs.shared == 'true'
+      run: |
+          coverage run --source=./mango/shared/ -m unittest discover -s mango/tests/shared_module
+          coverage report -m
+          coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.shared == 'true'
+      with:
+        flags: shared-tests
+    - name: Run table testing
+      if: steps.filter.outputs.table == 'true'
+      run: |
+          coverage run --source=./mango/table/ -m unittest discover -s mango/tests/table_module
+          coverage report -m
+          coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.table == 'true'
+      with:
+        flags: table-tests
+
+  setup-testing:
+    name: Build the library to test that it gets correctly built
+    needs: unit-testing
+    defaults:
+      run:
+        working-directory: .
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install wheel
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+      - name: Build binary wheel and source tarball
+        run: |
+          python -m build

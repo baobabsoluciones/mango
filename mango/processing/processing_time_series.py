@@ -1,17 +1,21 @@
 import numpy as np
-import pandas as pd
 from typing import List
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 
 def create_dense_data(
-    df,
+    df: pd.DataFrame,
     id_cols,
     freq: str,
     min_max_by_id: bool = None,
     date_init=None,
     date_end=None,
     time_col: str = "timeslot",
-):
+) -> pd.DataFrame:
     """
     Create a dense dataframe with a frequency of freq, given range of dates or inherited from the dataframe,
      using the id_cols as keys.
@@ -24,7 +28,10 @@ def create_dense_data(
     :param time_col: string with name of the column with the time information
     :return: dataframe with all the dates using the frequency freq
     """
-
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError("pandas need to be installed to use this function")
     df_w = df.copy()
 
     # get cols id_cols from df and drop duplicates
@@ -101,6 +108,11 @@ def create_lags_col(
     :param list[str] check_col: Check if the value of a column is equal to the previous or next value
     :return: A dataframe with the lagged columns
     """
+    try:
+        import pandas as pd
+    except ImportError:
+        raise ImportError("pandas need to be installed to use this function")
+
     df_c = df.copy()
 
     for i in lags:

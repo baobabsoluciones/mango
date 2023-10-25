@@ -3,13 +3,12 @@ from logging import log
 from typing import Union
 
 # Import from external modules
-import pandas as pd
 import plotly.express as px
 from bs4 import BeautifulSoup
 
 
 def plotly_plot_lines(
-    df: pd.DataFrame,
+    df,
     x_axis: str,
     y_axis: Union[list, str],
     output_path: str,
@@ -48,7 +47,7 @@ def plotly_plot_lines(
 
 
 def plotly_plot_scatter(
-    df: pd.DataFrame,
+    df,
     x_axis: str,
     y_axis: Union[list, str],
     color_by: str = None,
