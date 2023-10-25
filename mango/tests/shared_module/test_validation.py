@@ -1,7 +1,8 @@
 from unittest import TestCase
 
-from mango.shared import validate_args, ValidationError
+from mango.shared import validate_args, ValidationError, pydantic_validation
 from mango.tests.const import VALIDATION_SCHEMA, normalize_path
+from mango.validators.arcgis import LocationsList, Locations
 
 
 class ValidationTests(TestCase):
@@ -20,6 +21,44 @@ class ValidationTests(TestCase):
 
         result = do_nothing(argument=data)
         self.assertEqual(result, True)
+
+    def test_pydantic_validation_list(self):
+        @pydantic_validation(argument=LocationsList)
+        def do_nothing(*, argument):
+            return True
+
+        data = [{"name": "random", "x": 0, "y": 1}]
+
+        result = do_nothing(argument=data)
+        self.assertEqual(result, True)
+
+    def test_pydantic_validation_dict(self):
+        @pydantic_validation(argument=Locations)
+        def do_nothing(*, argument):
+            return True
+
+        data = {"name": "random", "x": 0, "y": 1}
+
+        result = do_nothing(argument=data)
+        self.assertEqual(result, True)
+
+    def test_pydantic_error_value(self):
+        @pydantic_validation(argument=Locations)
+        def do_nothing(*, argument):
+            return True
+
+        data = {"name": "random"}
+
+        self.assertRaises(ValidationError, do_nothing, argument=data)
+
+    def test_pydantic_error_list(self):
+        @pydantic_validation(argument=LocationsList)
+        def do_nothing(*, argument):
+            return True
+
+        data = [{"name": "random"}]
+
+        self.assertRaises(ValidationError, do_nothing, argument=data)
 
     def test_validation_correct_object(self):
         schema = VALIDATION_SCHEMA

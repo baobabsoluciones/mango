@@ -1,8 +1,7 @@
-import logging
+import logging as log
 import os
 import time
 from unittest import TestCase
-import logging as log
 
 from mango.logging import log_time, Chrono
 from mango.logging.logger import get_basic_logger

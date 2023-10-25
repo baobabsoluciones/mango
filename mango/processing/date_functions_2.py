@@ -1,7 +1,9 @@
-import pytz
 from datetime import timedelta, datetime, date
+from typing import Iterable, Union
+
+import pytz
+
 from .object_functions import as_list
-from typing import Callable, Iterable, Union
 
 DATETIME_FORMATS = [
     "%Y-%m-%d %H:%M:%S",
