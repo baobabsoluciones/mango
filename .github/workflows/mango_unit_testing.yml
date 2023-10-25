@@ -33,7 +33,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
     - name: Run unit testing
-      if: steps.filter.outputs.clients == 'true'
       run: |
         coverage run --source=./mango/ --omit=./mango/tests/ -m unittest discover -s mango/tests
         coverage report -m
