@@ -850,10 +850,22 @@ class Table(TupList):
         data = load_excel_light(path, sheets)
         return cls.format_dataset(data)
 
+    def to_excel(self, path, sheet_name=None):
+        """
+        Write the table to an excel file
+
+        :param path: path fo the Excel file.
+        :param sheet_name: Name of the excel sheet.
+        :return: None
+        """
+        if sheet_name is None:
+            sheet_name = "Sheet1"
+        return write_excel_light(path, {sheet_name: self})
+
     @classmethod
     def from_csv(cls, path, sep=",", encoding=None) -> "Table":
         """
-        Read an Excel file and return a dict of Table()
+        Write the table to a csv file.
 
         :param path: path fo the Excel file.
         :param sep: column separator in the csv file. (detected automatically if None).
