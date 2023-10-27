@@ -90,7 +90,7 @@ def row_number(lst: list, start: int = 0) -> list:
     return [i + start for i, _ in enumerate(lst)]
 
 
-def flatten(lst: list) -> list:
+def flatten(lst: Iterable) -> list:
     """
     The flatten function takes a list of lists and returns a flattened list.
 
