@@ -996,6 +996,12 @@ class TestTable(TestCase):
         ]
         self.assertEqual(df, expected, msg=msg)
 
+    def test_distinct_empty(self):
+        msg = "distinct on empty table is empty table"
+        df = Table().distinct("Under_25")
+        expected = []
+        self.assertEqual(df, expected, msg=msg)
+
     def test_order_by(self):
         msg = "order_by in ascending order (default)"
         df = Table(self.default_data2).select("Name", "Points").order_by("Points")
@@ -1007,7 +1013,13 @@ class TestTable(TestCase):
         ]
         self.assertEqual(df, expected, msg=msg)
 
-    def test_oder_by_reverse(self):
+    def test_order_by_empty(self):
+        msg = "order_by on empty table is empty table"
+        df = Table().order_by("Points")
+        expected = []
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_order_by_reverse(self):
         msg = "order_by in descending order"
         df = (
             Table(self.default_data2)
