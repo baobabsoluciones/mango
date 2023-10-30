@@ -60,7 +60,7 @@ class CalendarTests(TestCase):
         start_year = 2013
         df_calendar = get_calendar(
             calendar_events=False,
-            name_transformations=False,
+            name_transformations=True,
             start_year=start_year,
             communities=True,
         )
@@ -102,4 +102,13 @@ class CalendarTests(TestCase):
         self.assertNotIn(
             "Black Friday",
             df_calendar["name"].unique(),
+        )
+
+        # Check Exception start_year > end_year
+        self.assertRaises(
+            ValueError,
+            get_calendar(
+                start_year=2020,
+                end_year=2013,
+            )
         )
