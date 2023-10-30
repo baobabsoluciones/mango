@@ -81,7 +81,7 @@ class CalendarTests(TestCase):
         )
 
         # Check names
-        self.assertIn(
+        self.assertNotIn(
             "Black Friday",
             df_calendar["name"].unique(),
         )
