@@ -105,10 +105,5 @@ class CalendarTests(TestCase):
         )
 
         # Check Exception start_year > end_year
-        self.assertRaises(
-            ValueError,
-            get_calendar(
-                start_year=2020,
-                end_year=2013,
-            )
-        )
+        with self.assertRaises(ValueError):
+            get_calendar(start_year=2020, end_year=2013)
