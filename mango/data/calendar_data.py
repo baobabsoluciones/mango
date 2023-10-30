@@ -120,6 +120,7 @@ def get_calendar(
         df = pd.concat([df, df_com])
 
     # Sort by date
+    df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values(by="date").reset_index(drop=True)
 
     # Apply name transformations
