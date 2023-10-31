@@ -41,6 +41,9 @@ jobs:
           config:
             - 'mango/config/**'
             - 'mango/tests/config_module/**'
+          data:
+            - 'mango/data/**'
+            - 'mango/tests/data_module/**'
           logging:
             - 'mango/logging/**'
             - 'mango/tests/logging_module/**'
@@ -81,6 +84,17 @@ jobs:
       if: steps.filter.outputs.config == 'true'
       with:
         flags: config-tests
+    - name: Run data testing
+      if: steps.filter.outputs.data == 'true'
+      run: |
+        coverage run --source=./mango/data/ -m unittest discover -s mango/tests/data_module
+        coverage report -m
+        coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: steps.filter.outputs.data == 'true'
+      with:
+        flags: data-tests
     - name: Run logging testing
       if: steps.filter.outputs.logging == 'true'
       run: |
