@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 
-class BaseIndividual(ABC):
-    def __init__(self, genes=None, idx: int = 0, parents: tuple = None):
+class Individual:
+    def __init__(self, genes=None, idx: int = 0, parents: tuple = None, config):
         self._genes = genes
         self.fitness = None
         self._idx = idx
@@ -39,13 +39,11 @@ class BaseIndividual(ABC):
     def idx(self):
         del self._idx
 
-    @abstractmethod
     def mutate(self):
-        """This method should implement the logic to mutate the genotype of one individual"""
-        # Implemented on inherited classes
+
+
         raise NotImplemented
 
-    @abstractmethod
     def dominates(self, other):
         """This method should implement the logic to check if one individual dominates another one"""
         # Implemented on inherited classes
