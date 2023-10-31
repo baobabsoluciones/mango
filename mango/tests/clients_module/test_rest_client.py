@@ -1,7 +1,7 @@
 # Set wait time to 0 to avoid waiting time between requests as it is not needed for testing
 from unittest import TestCase, mock
 
-from mango.clients.rest_client import RestClient
+from mango.clients.rest_client import RESTClient
 
 
 class TestRest(TestCase):
@@ -13,7 +13,7 @@ class TestRest(TestCase):
         pass
 
     def test_child_creation(self):
-        class TestRestClient(RestClient):
+        class TestRESTClient(RESTClient):
             def __init__(self):
                 super().__init__()
 
@@ -21,21 +21,21 @@ class TestRest(TestCase):
             def connect(self, *args, **kwargs):
                 super().connect(*args, **kwargs)
 
-        test = TestRestClient()
-        self.assertIsInstance(test, TestRestClient)
-        self.assertIsInstance(test, RestClient)
+        test = TestRESTClient()
+        self.assertIsInstance(test, TestRESTClient)
+        self.assertIsInstance(test, RESTClient)
         self.assertRaises(NotImplementedError, test.connect)
 
-        class TestRestClient2(RestClient):
+        class TestRESTClient2(RESTClient):
             def __init__(self):
                 super().__init__()
 
             def connect(self):
                 pass
 
-        test2 = TestRestClient2()
-        self.assertIsInstance(test2, TestRestClient2)
-        self.assertIsInstance(test2, RestClient)
+        test2 = TestRESTClient2()
+        self.assertIsInstance(test2, TestRESTClient2)
+        self.assertIsInstance(test2, RESTClient)
         self.assertIsNone(test2.connect())
 
     @mock.patch("mango.clients.rest_client.requests")
@@ -50,7 +50,7 @@ class TestRest(TestCase):
         )
         # Setup
         rest_client = (
-            RestClient  # Is an abstract class however, _request_handler is static
+            RESTClient  # Is an abstract class however, _request_handler is static
         )
         wait_time = 0
         # Test with error raise

@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 from unittest import TestCase, mock
 
-from mango.clients.aemet import AemetClient
+from mango.clients.aemet import AEMETClient
 from mango.shared import ApiKeyError
 from mango.validators.aemet import FetchHistoricResponse
 
@@ -159,7 +159,7 @@ class TestAemet(TestCase):
         ]
 
     def test_enviroment_config(self):
-        client = AemetClient(api_key="1234567890")
+        client = AEMETClient(api_key="1234567890")
         # Default behaviour
         self.assertEqual(
             self._DEFAULT_WAIT_TIME,
@@ -192,7 +192,7 @@ class TestAemet(TestCase):
         os.environ["AEMET_FETCH_HISTORIC_URL"] = "changed"
         os.environ["AEMET_FETCH_DAILY_URL"] = "changed"
         os.environ["AEMET_FETCH_FORECAST_URL"] = "changed"
-        client = AemetClient(api_key="1")
+        client = AEMETClient(api_key="1")
         self.assertEqual(
             1,
             client._DEFAULT_WAIT_TIME,
@@ -233,9 +233,9 @@ class TestAemet(TestCase):
             self.municipios_response,
         ]
 
-        client = AemetClient(api_key="1234567890")
+        client = AEMETClient(api_key="1234567890")
         client.connect()
-        self.assertIsInstance(client, AemetClient)
+        self.assertIsInstance(client, AEMETClient)
         self.assertEqual(
             client.all_stations,
             self.stations_response,
@@ -246,7 +246,7 @@ class TestAemet(TestCase):
         )
         os.environ["AEMET_DEFAULT_WAIT_TIME"] = "0.5"
         # Test wait time smaller than DEFAULT_WAIT_TIME
-        client = AemetClient(api_key="1234567890", wait_time=0.1)
+        client = AEMETClient(api_key="1234567890", wait_time=0.1)
         client.connect()
         self.assertEqual(
             client._wait_time,
@@ -262,7 +262,7 @@ class TestAemet(TestCase):
         mock_requests.get.return_value.status_code = 401
         mock_requests.get.return_value.text = "Api key is invalid"
         with self.assertRaises(ApiKeyError):
-            AemetClient(api_key="").connect()
+            AEMETClient(api_key="").connect()
 
     @mock.patch("mango.clients.rest_client.requests")
     def test_get_filtered_stations(self, mock_requests):
@@ -271,7 +271,7 @@ class TestAemet(TestCase):
             self.stations_response,
             self.municipios_response,
         ]
-        client = AemetClient(api_key="1234567890")
+        client = AEMETClient(api_key="1234567890")
         client.connect()
         # Test with no parameters
         result = client._get_stations_filtered()
@@ -324,7 +324,7 @@ class TestAemet(TestCase):
             self.live_data_response,
         ]
 
-        client = AemetClient(api_key="1234567890")
+        client = AEMETClient(api_key="1234567890")
         client.connect()
 
         # Test correct configuration
@@ -384,7 +384,7 @@ class TestAemet(TestCase):
             self.invalid_response,
             self.invalid_response,
         ]
-        client = AemetClient(api_key="123456789", wait_time=0)
+        client = AEMETClient(api_key="123456789", wait_time=0)
         client.connect()
         # Test error response snd no data due to error
         with self.assertWarns(Warning) and self.assertRaises(Exception):
@@ -403,7 +403,7 @@ class TestAemet(TestCase):
             self.fetch_url_response,
             self.live_data_response,
         ]
-        client = AemetClient(api_key="1234567890")
+        client = AEMETClient(api_key="1234567890")
         client.connect()
         mock_requests.get.return_value.status_code = 200
         mock_requests.get.return_value.text = "OK"
@@ -443,7 +443,7 @@ class TestAemet(TestCase):
             self.stations_response,
             self.invalid_response,
         ]
-        client = AemetClient(api_key="1234567890")
+        client = AEMETClient(api_key="1234567890")
         client.connect()
         mock_requests.get.return_value.status_code = 200
         mock_requests.get.return_value.text = "OK"
@@ -479,7 +479,7 @@ class TestAemet(TestCase):
             self.forecast_data_response,
             self.invalid_response,
         ]
-        client = AemetClient(api_key="1234567890", wait_time=0)
+        client = AEMETClient(api_key="1234567890", wait_time=0)
         client.connect()
         # Invalid type
         self.assertRaises(TypeError, client.get_forecast_data, postal_code=1234)

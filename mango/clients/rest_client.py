@@ -7,7 +7,7 @@ import requests
 from pydantic import BaseModel
 
 
-class RestClient(ABC):
+class RESTClient(ABC):
     def __init__(self):
         pass
 

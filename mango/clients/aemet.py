@@ -6,12 +6,12 @@ from typing import Union, Any, Tuple
 
 from tqdm import tqdm
 
-from mango.clients.rest_client import RestClient
+from mango.clients.rest_client import RESTClient
 from mango.shared import ApiKeyError
 from mango.validators.aemet import *
 
 
-class AemetClient(RestClient):
+class AEMETClient(RESTClient):
     """
     This class will handle the connection to the AEMET API. It will allow to get the meteorological data from the
     meteorological stations in Spain. To initialize the class, an API key is needed. This key can be obtained in the
@@ -24,17 +24,14 @@ class AemetClient(RestClient):
     Usage
     -----
 
-    >>> import load_dotenv
     >>> import os
-    >>> from mango.clients.aemet import AemetClient
-    >>> load_dotenv()
-    >>> client = AemetClient(os.environ["AEMET_API_KEY"])
+    >>> from mango.clients.aemet import AEMETClient
+    >>> client = AEMETClient(api_key=os.environ["AEMET_API_KEY"])
     """
 
-    def _set_up_default(self) -> None:
-        """
-        Do as function to allow for updates mid execution and set up default values
-        """
+    def __init__(self, *, api_key: str, wait_time: Union[float, int] = None):
+        super().__init__()
+        # Default values
         self._DEFAULT_WAIT_TIME = float(os.environ.get("AEMET_DEFAULT_WAIT_TIME", 1.25))
         self._FETCH_STATIONS_URL = os.environ.get(
             "AEMET_FETCH_STATIONS_URL",
@@ -58,10 +55,6 @@ class AemetClient(RestClient):
             "AEMET_FETCH_FORECAST_URL",
             "https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/{postal_code}",
         )
-
-    def __init__(self, *, api_key: str, wait_time: Union[float, int] = None):
-        super().__init__()
-        self._set_up_default()
         self._api_key = api_key
         self._wait_time = wait_time or self._DEFAULT_WAIT_TIME
         logging.getLogger("root")
@@ -435,13 +428,10 @@ class AemetClient(RestClient):
 
         >>> import pandas as pd
         >>> from datetime import datetime
-        >>> from mango.clients.aemet import AemetClient
-        >>> import load_dotenv
+        >>> from mango.clients.aemet import AEMETClient
         >>> import os
         >>>
-        >>> load_dotenv()
-        >>>
-        >>> client = AemetClient(os.environ["AEMET_API_KEY"])
+        >>> client = AEMETClient(api_key=os.environ["AEMET_API_KEY"])
         >>> client.connect()
 
         If lat and long are provided this method will search for the closest meteorological station to that point.
