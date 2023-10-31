@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -95,7 +96,12 @@ class DisplayablePath(object):
         return "".join(reversed(parts))
 
 
-def _element_selector(folder_path: str, element_type: str = "file", key: str = None):
+def _element_selector(
+    folder_path: str,
+    element_type: str = "file",
+    key: str = None,
+    dict_layout: dict = None,
+):
     paths = []
     for root, dirs, files in os.walk(folder_path):
         if element_type == "file":
@@ -116,9 +122,21 @@ def _element_selector(folder_path: str, element_type: str = "file", key: str = N
     # Selectbox
     if element_type == "folder":
         paths = [os.path.basename(folder_path)] + paths
-        default_index = 0
+        # Return index of paths that match with the key
+        default_index = (
+            [i for i, s in enumerate(paths) if dict_layout[key] in s][0]
+            if key in dict_layout.keys()
+            else 0
+        )
+
     else:
-        default_index = None
+        # Return index of paths that match with the key
+        default_index = (
+            [i for i, s in enumerate(paths) if dict_layout[key] in s][0]
+            if key in dict_layout.keys()
+            else None
+        )
+
     element_selected = st.selectbox(
         f"Select a {element_type}",
         paths,
@@ -162,6 +180,11 @@ def _render_file_content(path_selected: str):
             df = pd.read_excel(excel_file, sheet_name=sheet_selected)
             st.dataframe(df, use_container_width=True)
 
+    elif path_selected.endswith(".md"):
+        with st.spinner("Wait for it..."):
+            text_md = Path(path_selected).read_text()
+            st.markdown(text_md, unsafe_allow_html=True)
+
     elif path_selected == "":
         pass
     else:
@@ -182,6 +205,7 @@ def _render_dropdown(dict_layout: dict, i_row: int, i_col: int):
         folder_path=APP_CONFIG["dir_path"],
         element_type="folder",
         key=f"folder_{i_row}_{i_col}",
+        dict_layout=dict_layout,
     )
     # Select file
     if os.path.basename(dict_layout[f"folder_{i_row}_{i_col}"]) == os.path.basename(
@@ -192,14 +216,14 @@ def _render_dropdown(dict_layout: dict, i_row: int, i_col: int):
         folder_path=dict_layout[f"folder_{i_row}_{i_col}"],
         element_type="file",
         key=f"file_{i_row}_{i_col}",
+        dict_layout=dict_layout,
     )
 
     # Render file content
     _render_file_content(path_selected=dict_layout[f"file_{i_row}_{i_col}"])
 
 
-def _render_body_content(n_cols: int, n_rows: int):
-    dict_layout = {}
+def _render_body_content(n_cols: int, n_rows: int, dict_layout: dict = {}):
     for i_row in range(1, n_rows + 1):
         if n_cols == 1:
             _render_dropdown(dict_layout=dict_layout, i_row=i_row, i_col=1)
@@ -212,36 +236,91 @@ def _render_body_content(n_cols: int, n_rows: int):
 
             with col2_2:
                 _render_dropdown(dict_layout=dict_layout, i_row=i_row, i_col=2)
+    return dict_layout
+
+
+def _save_config(dict_update: dict):
+    APP_CONFIG.update(dict_update)
+    with open("config.json", "w") as f:
+        json.dump(APP_CONFIG, f)
 
 
 def app():
+    # Load config
+    if os.path.isfile("config.json"):
+        with open("config.json", "r") as f:
+            APP_CONFIG.update(json.load(f))
+
+    # Set page config
     st.set_page_config(
         page_title=APP_CONFIG["title"],
         page_icon=APP_CONFIG["icon"],
         layout=APP_CONFIG["layout"],
+        initial_sidebar_state="collapsed",
     )
+
     # Create columns display
     col3_1, col3_2, col3_3 = st.columns(3)
     with col3_1:
         st.image(Image.open(APP_CONFIG["logo"]), width=150)
+        st.markdown(
+            """<style>button[title="View fullscreen"]{visibility: hidden;}</style>""",
+            unsafe_allow_html=True,
+        )
     with col3_2:
         st.title(APP_CONFIG["title"])
+        st.markdown(
+            """<style>.st-emotion-cache-15zrgzn {display: none;}</style>""",
+            unsafe_allow_html=True,
+        )
     st.header(APP_CONFIG["header"])
 
     with st.sidebar:
+        config_dict_update = {}
         st.header("Configuration")
-        n_cols = st.number_input(
-            "Column Levels", key="config_cols", min_value=1, max_value=2, value=1
+
+        # Select folder
+        config_dict_update["dir_path"] = st.text_input(
+            "Folder", value=APP_CONFIG["dir_path"], max_chars=None, key="input_dir_path"
         )
-        n_rows = st.number_input(
-            "Row Levels", key="config_rows", min_value=1, max_value=10, value=1
+        if not os.path.isdir(st.session_state.input_dir_path):
+            st.error("Please enter a valid folder path")
+
+        # Select number of columns and rows
+        config_dict_update["n_cols"] = st.number_input(
+            "Column Levels",
+            key="config_cols",
+            min_value=1,
+            max_value=2,
+            value=APP_CONFIG["n_cols"] if "n_cols" in APP_CONFIG.keys() else 1,
+        )
+        config_dict_update["n_rows"] = st.number_input(
+            "Row Levels",
+            key="config_rows",
+            min_value=1,
+            max_value=10,
+            value=APP_CONFIG["n_rows"] if "n_rows" in APP_CONFIG.keys() else 1,
+        )
+
+        # Save config
+        st.button(
+            "Apply configuration",
+            key="save_config",
+            on_click=_save_config,
+            args=(config_dict_update,),
         )
 
     # Render folder tree
     _render_tree_folder(dir_path=APP_CONFIG["dir_path"])
 
     # Render body content
-    _render_body_content(n_cols=n_cols, n_rows=n_rows)
+    APP_CONFIG["dict_layout"] = _render_body_content(
+        n_cols=config_dict_update["n_cols"],
+        n_rows=config_dict_update["n_rows"],
+        dict_layout=APP_CONFIG["dict_layout"]
+        if "dict_layout" in APP_CONFIG.keys()
+        else {},
+    )
 
 
 if __name__ == "__main__":
