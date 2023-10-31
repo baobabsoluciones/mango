@@ -225,6 +225,8 @@ def _render_dropdown(dict_layout: dict, i_row: int, i_col: int):
 
 def _render_body_content(n_cols: int, n_rows: int, dict_layout: dict = {}):
     for i_row in range(1, n_rows + 1):
+        if i_row > 1:
+            st.markdown("---")
         if n_cols == 1:
             _render_dropdown(dict_layout=dict_layout, i_row=i_row, i_col=1)
 
