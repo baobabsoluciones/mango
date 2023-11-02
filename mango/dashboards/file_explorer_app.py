@@ -88,7 +88,7 @@ class DisplayablePath(object):
 
 
 class FileExplorerApp:
-    def __init__(self, config_path: str = None):
+    def __init__(self, config_path: str = None, editable: bool = True):
         # Config
         _APP_CONFIG = {
             "logo_path": os.path.join(os.path.dirname(__file__), "assets", "logo.png"),
@@ -101,17 +101,21 @@ class FileExplorerApp:
         }
 
         if config_path is None:
+            self.config_path = os.path.join(os.getcwd(), "config.json")
             config_dict = _APP_CONFIG
         else:
             if not os.path.exists(config_path):
+                self.config_path = os.path.join(os.getcwd(), "config.json")
                 config_dict = _APP_CONFIG
             else:
+                self.config_path = config_path
                 with open(config_path, "r") as f:
                     config_dict = json.load(f)
 
         # Set config
         self.config = config_dict.copy()
         self.new_config = config_dict.copy()
+        self.editable = editable
 
         # Set Streamlit config
         st.set_page_config(
@@ -136,7 +140,58 @@ class FileExplorerApp:
                 """<style>.st-emotion-cache-15zrgzn {display: none;}</style>""",
                 unsafe_allow_html=True,
             )
-        st.header(self.config["header"])
+        if self.editable:
+            st.header(self.config["header"])
+
+    def _render_configuration(self):
+        with st.sidebar:
+            st.header("Configuration")
+
+            # Select folder
+            self.new_config["dir_path"] = st.text_input(
+                "Folder",
+                value=self.config["dir_path"],
+                max_chars=None,
+                key="input_dir_path",
+            )
+            if not os.path.isdir(self.new_config["dir_path"]):
+                st.error("Please enter a valid folder path")
+
+            # Select title
+            self.new_config["title"] = st.text_input(
+                "Title",
+                value=self.config["title"],
+                max_chars=None,
+                key="title",
+            )
+
+            # Select number of columns and rows
+            self.new_config["n_cols"] = st.number_input(
+                "Column Levels",
+                key="config_cols",
+                min_value=1,
+                max_value=2,
+                value=self.new_config["n_cols"]
+                if "n_cols" in self.new_config.keys()
+                else 1,
+            )
+            self.new_config["n_rows"] = st.number_input(
+                "Row Levels",
+                key="config_rows",
+                min_value=1,
+                max_value=10,
+                value=self.new_config["n_rows"]
+                if "n_rows" in self.new_config.keys()
+                else 1,
+            )
+
+            # Save config
+            if os.path.isdir(self.new_config["dir_path"]):
+                st.button(
+                    "Apply & Save Configuration",
+                    key="save_config",
+                    on_click=self._save_config,
+                )
 
     def _render_tree_folder(self):
         paths = DisplayablePath.make_tree(
@@ -146,6 +201,37 @@ class FileExplorerApp:
         for path in paths:
             displayable_path = displayable_path + "  \n" + path.displayable()
         st.info(displayable_path)
+
+    def _render_dropdown(self, i_row: int, i_col: int):
+        if self.editable:
+            # Select folder
+            self._element_selector(
+                folder_path=self.config["dir_path"],
+                element_type="folder",
+                key=f"folder_{i_row}_{i_col}",
+            )
+
+            # Select file
+            self._element_selector(
+                folder_path=st.session_state[f"folder_{i_row}_{i_col}"]
+                if f"folder_{i_row}_{i_col}" in st.session_state.keys()
+                else self.config["dir_path"],
+                element_type="file",
+                key=f"file_{i_row}_{i_col}",
+            )
+
+            # Render file content
+            self._render_file_content(
+                path_selected=st.session_state[f"file_{i_row}_{i_col}"]
+                if f"file_{i_row}_{i_col}" in st.session_state.keys()
+                else ""
+            )
+
+        else:
+            # Render file content
+            self._render_file_content(
+                path_selected=self.config["dict_layout"][f"file_{i_row}_{i_col}"]
+            )
 
     def _element_selector(
         self,
@@ -172,45 +258,34 @@ class FileExplorerApp:
 
         # Selectbox
         if element_type == "folder":
-            paths = [os.path.basename(folder_path)] + paths
-            # Return index of paths that match with the key
-            default_index = (
-                [
-                    i
-                    for i, s in enumerate(paths)
-                    if self.config["dict_layout"][key] in s
-                ][0]
-                if key in self.config["dict_layout"].keys()
-                else 0
-            )
-
+            paths = [folder_path] + paths
         else:
-            # Return index of paths that match with the key
-            default_index = (
-                [
-                    i
-                    for i, s in enumerate(paths)
-                    if self.config["dict_layout"][key] in s
-                ][0]
-                if key in self.config["dict_layout"].keys()
-                else None
-            )
-
-        element_selected = st.selectbox(
+            paths = ["Select a file"] + paths
+        # Return index of paths that match with the key
+        default_index = (
+            [i for i, s in enumerate(paths) if self.config["dict_layout"][key] in s][0]
+            if key in self.config["dict_layout"].keys()
+            else 0
+        )
+        st.selectbox(
             f"Select a {element_type}",
             paths,
             placeholder="Choose an option",
             index=default_index,
-            format_func=lambda x: x.replace(folder_path, ""),
+            format_func=lambda x: x.replace(folder_path, "")
+            if x != self.config["dir_path"]
+            else os.path.basename(x),
             key=key,
         )
-        if element_selected:
-            return os.path.join(folder_path, element_selected)
-        else:
-            return ""
 
     def _render_file_content(self, path_selected: str):
-        if path_selected.endswith(".csv"):
+        if (
+            path_selected is None
+            or path_selected == ""
+            or path_selected == "Select a file"
+        ):
+            pass
+        elif path_selected.endswith(".csv"):
             df = pd.read_csv(path_selected)
             st.dataframe(df, use_container_width=True)
 
@@ -232,60 +307,32 @@ class FileExplorerApp:
             with st.spinner("Wait for it..."):
                 excel_file = pd.ExcelFile(path_selected)
                 sheets = excel_file.sheet_names
-                sheet_selected = st.selectbox(
-                    "Select a sheet", sheets, index=0, format_func=lambda x: x
-                )
-                df = pd.read_excel(excel_file, sheet_name=sheet_selected)
-                st.dataframe(df, use_container_width=True)
+                list_of_tabs = st.tabs(sheets)
+                dict_of_tabs = {}
+                for i, tab in enumerate(list_of_tabs):
+                    dict_of_tabs[sheets[i]] = tab
+
+                for key_tab, tab in dict_of_tabs.items():
+                    with tab:
+                        df = pd.read_excel(excel_file, sheet_name=key_tab)
+                        st.dataframe(df, use_container_width=True)
 
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):
                 text_md = Path(path_selected).read_text()
                 st.markdown(text_md, unsafe_allow_html=True)
 
-        elif path_selected == "":
-            pass
         else:
             st.warning(
                 "This file format is not supported yet. Please try another file."
             )
-
-    def _render_dropdown(self, i_row: int, i_col: int):
-        # Select folder
-        self._element_selector(
-            folder_path=self.config["dir_path"],
-            element_type="folder",
-            key=f"folder_{i_row}_{i_col}",
-        )
-        # Select file
-        if os.path.basename(
-            self.config["dict_layout"][f"folder_{i_row}_{i_col}"]
-            if f"folder_{i_row}_{i_col}" in self.config["dict_layout"].keys()
-            else self.config["dir_path"]
-        ) == os.path.basename(self.config["dir_path"]):
-            self.config["dict_layout"][f"folder_{i_row}_{i_col}"] = self.config[
-                "dir_path"
-            ]
-        self._element_selector(
-            folder_path=self.config["dict_layout"][f"folder_{i_row}_{i_col}"],
-            element_type="file",
-            key=f"file_{i_row}_{i_col}",
-        )
-
-        # Render file content
-        self._render_file_content(
-            path_selected=self.config["dict_layout"][f"file_{i_row}_{i_col}"]
-            if f"file_{i_row}_{i_col}" in self.config["dict_layout"].keys()
-            else ""
-        )
 
     def _render_body_content(self):
         n_cols = self.config["n_cols"] if "n_cols" in self.config.keys() else 1
         n_rows = self.config["n_rows"] if "n_rows" in self.config.keys() else 1
 
         for i_row in range(1, n_rows + 1):
-            if i_row > 1:
-                st.markdown("---")
+            st.markdown("---")
             if n_cols == 1:
                 self._render_dropdown(i_row=i_row, i_col=1)
 
@@ -299,56 +346,59 @@ class FileExplorerApp:
                     self._render_dropdown(i_row=i_row, i_col=2)
 
     def _save_config(self):
+        for row in range(1, self.new_config["n_rows"] + 1):
+            for col in range(1, self.new_config["n_cols"] + 1):
+                try:
+                    if st.session_state[f"folder_{row}_{col}"] != None:
+                        self.new_config["dict_layout"][
+                            f"folder_{row}_{col}"
+                        ] = st.session_state[f"folder_{row}_{col}"]
+                except:
+                    pass
+                try:
+                    if st.session_state[f"file_{row}_{col}"] != None:
+                        self.new_config["dict_layout"][
+                            f"file_{row}_{col}"
+                        ] = st.session_state[f"file_{row}_{col}"]
+                except:
+                    pass
+        # Drop keys that are not in the new config
+        keys_to_del = [
+            key_layout
+            for key_layout in self.config["dict_layout"].keys()
+            if int(key_layout.split("_")[2]) > self.new_config["n_cols"]
+        ]
+        _ = [
+            self.new_config["dict_layout"].pop(key_to_del) for key_to_del in keys_to_del
+        ]
+        keys_to_del = [
+            key_layout
+            for key_layout in self.config["dict_layout"].keys()
+            if int(key_layout.split("_")[1]) > self.new_config["n_rows"]
+        ]
+        _ = [
+            self.new_config["dict_layout"].pop(key_to_del) for key_to_del in keys_to_del
+        ]
+
+        # Change folder
+        if self.new_config["dir_path"] != self.config["dir_path"]:
+            self.new_config["dict_layout"] = {}
+
         self.config.update(self.new_config)
-        with open("config.json", "w") as f:
+        with open(self.config_path, "w") as f:
             json.dump(self.config, f, sort_keys=True, indent=4)
 
     def run(self):
-
+        # Render header
         self._render_header()
 
-        with st.sidebar:
-            st.header("Configuration")
+        if self.editable:
+            # Render configuration
+            self._render_configuration()
 
-            # Select folder
-            self.new_config["dir_path"] = st.text_input(
-                "Folder",
-                value=self.config["dir_path"],
-                max_chars=None,
-                key="input_dir_path",
-            )
-            if not os.path.isdir(self.new_config["dir_path"]):
-                st.error("Please enter a valid folder path")
-
-            # Select number of columns and rows
-            self.new_config["n_cols"] = st.number_input(
-                "Column Levels",
-                key="config_cols",
-                min_value=1,
-                max_value=2,
-                value=self.new_config["n_cols"]
-                if "n_cols" in self.new_config.keys()
-                else 1,
-            )
-            self.new_config["n_rows"] = st.number_input(
-                "Row Levels",
-                key="config_rows",
-                min_value=1,
-                max_value=10,
-                value=self.new_config["n_rows"]
-                if "n_rows" in self.new_config.keys()
-                else 1,
-            )
-
-            # Save config
-            st.button(
-                "Apply & Save Configuration",
-                key="save_config",
-                on_click=self._save_config,
-            )
-
-        # Render folder tree
-        self._render_tree_folder()
+        if self.editable:
+            # Render folder tree
+            self._render_tree_folder()
 
         # Render body content
         self._render_body_content()
@@ -365,9 +415,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_path", type=str, default=os.path.join(os.getcwd(), "config.json")
     )
+    parser.add_argument("--editable", type=bool, default=True)
     args = parser.parse_args()
     config_path = args.config_path
+    editable = args.editable
 
     # Run app
-    app = FileExplorerApp(config_path=config_path)
+    app = FileExplorerApp(config_path=config_path, editable=editable)
     app.run()
