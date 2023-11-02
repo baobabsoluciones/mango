@@ -134,6 +134,28 @@ def _get_code_name_dict(country: str) -> dict:
     }
 
 
+def _get_weight_dict(country: str = "ES") -> dict:
+    if country != "ES":
+        raise ValueError("Only Spain is supported for now, code: 'ES'")
+
+    # Code name dict
+    code_name_dict = _get_code_name_dict(country=country)
+
+    # Generate weight dict for spain communities
+    weight_dict = {
+        subdivision: {"name": "", "weight": 1}
+        for subdivision in holidays.ES.subdivisions
+    }
+
+    # Assign name
+    for subdivision in weight_dict.keys():
+        weight_dict[subdivision]["name"] = code_name_dict[f"{country}-{subdivision}"]
+
+    import json
+    with open("weight_dict.json", "w") as outfile:
+        json.dump(weight_dict, outfile, indent=4)
+
+
 def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
     """
     The _name_transformations function performs the following transformations on the name column:
@@ -179,3 +201,7 @@ def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
     df["name"] = df["name"].str.strip()
 
     return df
+
+
+if __name__ == "__main__":
+    _get_weight_dict()
