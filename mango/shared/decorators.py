@@ -1,11 +1,14 @@
+import warnings
 from collections.abc import Mapping
 from functools import wraps
+from typing import Literal
 
 from fastjsonschema import compile
 from fastjsonschema.exceptions import JsonSchemaValueException
-from mango.processing import load_json
-from .exceptions import ValidationError
 from pydantic_core import ValidationError as ValidationErrorPydantic
+
+from mango.processing import load_json
+from mango.shared.exceptions import ValidationError
 
 
 def validate_args(**schemas):
@@ -43,7 +46,12 @@ def validate_args(**schemas):
     return decorator
 
 
-def pydantic_validation(**validators):
+def pydantic_validation(
+    *validator,
+    on_validation_error: Literal["raise", "warn", "ignore"] = "raise",
+    strict_validation: bool = True,
+    **named_validators,
+):
     def decorator(func: callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -56,16 +64,41 @@ def pydantic_validation(**validators):
             :return: The same as the original function
             :doc-author: baobab soluciones
             """
-            try:
-                for key, value in validators.items():
-                    if isinstance(kwargs[key], Mapping):
-                        value(**kwargs[key])
-                    else:
-                        value(kwargs[key])
-            except ValidationErrorPydantic as e:
-                raise ValidationError(
-                    f"There is {e.error_count()} validation errors"
-                ) from None
+            if args:
+                raise ValueError(
+                    "This decorator only works if function takes keyword arguments"
+                )
+            validation_errors = []
+            if validator:
+                try:
+                    validator[0].model_validate(kwargs, strict=strict_validation)
+                except ValidationErrorPydantic as e:
+                    validation_errors.extend(e.errors())
+            if named_validators:
+                try:
+                    for key, value in named_validators.items():
+                        if isinstance(kwargs[key], Mapping):
+                            value.model_validate(kwargs[key], strict=strict_validation)
+                        else:
+                            value.model_validate(kwargs[key], strict=strict_validation)
+                except ValidationErrorPydantic as e:
+                    validation_errors.extend(e.errors())
+            if validation_errors:
+                more_than_one_error = len(validation_errors) > 1
+                if more_than_one_error:
+                    msg = f"There are {len(validation_errors)} validation errors: {validation_errors}"
+                else:
+                    msg = f"There is {len(validation_errors)} validation error: {validation_errors[0]}"
+                if on_validation_error == "raise":
+                    raise ValidationError(msg) from None
+                elif on_validation_error == "warn":
+                    warnings.warn(msg)
+                elif on_validation_error == "ignore":
+                    pass
+                else:
+                    raise ValueError(
+                        f"on_validation_error must be one of 'raise', 'warn', 'ignore' but it is {on_validation_error}"
+                    )
             return func(*args, **kwargs)
 
         return wrapper
