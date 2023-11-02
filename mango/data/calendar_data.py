@@ -72,17 +72,6 @@ def get_calendar(
         # Add to df
         df = pd.concat([df, df_usa])
 
-    # Add jueves santo
-    if country == "ES":
-        # Get viernes santo
-        df_viernes_santo = df[df["name"].str.contains("Viernes Santo")]
-        # Rest one day
-        df_viernes_santo["date"] = df_viernes_santo["date"] - pd.Timedelta(days=1)
-        # Rename to Jueves Santo
-        df_viernes_santo["name"] = "Jueves Santo"
-        # Add to df
-        df = pd.concat([df, df_viernes_santo])
-
     # Add communities holidays
     if communities:
         code_name_dict = _get_code_name_dict(country=country)
