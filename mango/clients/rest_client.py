@@ -5,6 +5,7 @@ from typing import Union, Literal, Type, List
 
 import requests
 from pydantic import BaseModel
+from requests import HTTPError
 
 
 class RESTClient(ABC):
@@ -20,7 +21,7 @@ class RESTClient(ABC):
         raise NotImplementedError("This method must be implemented in the child class")
 
     @staticmethod
-    def _request_handler(
+    def request_handler(
         url: str,
         params: dict,
         wait_time: Union[float, int] = 0.5,
@@ -37,12 +38,6 @@ class RESTClient(ABC):
         :return: Dictionary with the response
         :doc-author: baobab soluciones
         """
-        if if_error not in ["raise", "warn", "ignore"]:
-            if_error = "raise"
-            warnings.warn(
-                f"Invalid option for if_error. Valid options are: raise, warn, ignore. "
-                f"Setting if_error to {if_error}"
-            )
         response = requests.get(url, params=params)
         try:
             response.raise_for_status()
@@ -53,6 +48,8 @@ class RESTClient(ABC):
                 warnings.warn(str(e))
             elif if_error == "ignore":
                 pass
+            else:
+                raise ValueError(f"Invalid if_error: {if_error}")
         time.sleep(wait_time)
         try:
             parsed = response.json()
@@ -64,6 +61,8 @@ class RESTClient(ABC):
                 parsed = {}
             elif if_error == "ignore":
                 parsed = {}
+            else:
+                raise ValueError(f"Invalid if_error: {if_error}")
         if expected_schema:
             if parsed:
                 try:
@@ -83,3 +82,28 @@ class RESTClient(ABC):
                 # Return Dict with keys and None values
                 parsed = {key: None for key in expected_schema.model_fields}
         return parsed
+
+    @staticmethod
+    def expect_status(
+        func, expected_status=None, response_type: Literal["json", "raw"] = "json"
+    ):
+        """
+        Decorator for functions that return a response from the server using requests library. It will check the status
+        code of the response and raise an exception if the status of the response is not the expected
+        and raise an exception if the status of the response is not the expected
+        """
+
+        def decorator(*args, **kwargs):
+            response = func(*args, **kwargs)
+            if expected_status is not None and response.status_code != expected_status:
+                raise HTTPError(
+                    f"Expected a code {expected_status}, got a {response.status_code} error instead: {response.text}"
+                )
+            if response_type == "json":
+                return response.json()
+            elif response_type == "raw":
+                return response
+            else:
+                raise ValueError(f"Invalid response_type: {response_type}")
+
+        return decorator

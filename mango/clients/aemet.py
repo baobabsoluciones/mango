@@ -170,7 +170,7 @@ class AEMETClient(RESTClient):
         :return: List with all the municipios in Spain
         :doc-author: baobab soluciones
         """
-        municipios = self._request_handler(
+        municipios = self.request_handler(
             self._FETCH_MUNICIPIOS_URL,
             params={"api_key": self._api_key},
             wait_time=self._wait_time,
@@ -305,7 +305,7 @@ class AEMETClient(RESTClient):
         :return: List with all the stations in Spain
         :doc-author: baobab soluciones
         """
-        all_stations_call = self._request_handler(
+        all_stations_call = self.request_handler(
             self._FETCH_STATIONS_URL,
             params={"api_key": self._api_key},
             wait_time=self._wait_time,
@@ -314,7 +314,7 @@ class AEMETClient(RESTClient):
         # AEMET API returns a URL to get the data
         all_station_res_url = all_stations_call.get("datos")
         # Fetch the data
-        stations = self._request_handler(
+        stations = self.request_handler(
             all_station_res_url,
             params={},
             wait_time=self._wait_time,
@@ -336,7 +336,7 @@ class AEMETClient(RESTClient):
         data = []
         for station in tqdm(station_codes):
             # Make it in a loop to make it easier to debug errors in HTTP requests
-            hist_data_url_call = self._request_handler(
+            hist_data_url_call = self.request_handler(
                 self._FETCH_HISTORIC_URL.format(
                     start_date_str=start_date.strftime("%Y-%m-%dT%H:%M:%SUTC"),
                     end_date_str=end_date.strftime("%Y-%m-%dT%H:%M:%SUTC"),
@@ -353,7 +353,7 @@ class AEMETClient(RESTClient):
                     f"No data found for station: {station} between {start_date} and {end_date}"
                 )
                 continue
-            hist_data = self._request_handler(
+            hist_data = self.request_handler(
                 hist_data_url,
                 params={},
                 wait_time=self._wait_time,
@@ -374,7 +374,7 @@ class AEMETClient(RESTClient):
         """
         data = []
         for station in tqdm(station_codes):
-            live_data_url_call = self._request_handler(
+            live_data_url_call = self.request_handler(
                 self._FETCH_DAILY_URL.format(station=station),
                 params={"api_key": self._api_key},
                 wait_time=self._wait_time,
@@ -385,7 +385,7 @@ class AEMETClient(RESTClient):
             if not live_data_url:
                 logging.warning(f"No data found for station: {station}")
                 continue
-            live_data = self._request_handler(
+            live_data = self.request_handler(
                 live_data_url,
                 params={},
                 wait_time=self._wait_time,
@@ -539,7 +539,7 @@ class AEMETClient(RESTClient):
             postal_codes = [m["codigo postal"] for m in self.municipios]
         data = []
         for postal_code in tqdm(postal_codes):
-            forecast_url_call = self._request_handler(
+            forecast_url_call = self.request_handler(
                 f"https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/diaria/{postal_code}",
                 params={"api_key": self._api_key},
                 wait_time=self._wait_time,
@@ -550,7 +550,7 @@ class AEMETClient(RESTClient):
             if not forecast_url:
                 logging.warning(f"No data found for postal_code: {postal_code}")
                 continue
-            forecast_data = self._request_handler(
+            forecast_data = self.request_handler(
                 forecast_url, params={}, wait_time=self._wait_time, if_error="warn"
             )
             data.append(
@@ -571,7 +571,7 @@ class AEMETClient(RESTClient):
         # Check it starts with /api
         if not endpoint.startswith("/api"):
             raise ValueError("endpoint must start with /api")
-        custom_endpoint_url_call = self._request_handler(
+        custom_endpoint_url_call = self.request_handler(
             "https://opendata.aemet.es/opendata" + endpoint,
             params={"api_key": self._api_key},
             wait_time=self._wait_time,
@@ -582,7 +582,7 @@ class AEMETClient(RESTClient):
         if not custom_enpoint_url:
             logging.info(f"No data found for endpoint: {endpoint}")
             raise ValueError(f"No data found for endpoint: {endpoint}")
-        custom_enpoint_data = self._request_handler(
+        custom_enpoint_data = self.request_handler(
             custom_enpoint_url, params={}, wait_time=self._wait_time, if_error="warn"
         )
         return custom_enpoint_data
