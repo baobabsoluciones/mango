@@ -52,6 +52,77 @@ def pydantic_validation(
     strict_validation: bool = True,
     **named_validators,
 ):
+    """
+    Decorator to validate the arguments of a function using pydantic models. The decorator can be used in two ways:
+    1. Passing a single positional argument: the pydantic model to validate the arguments against.
+    2. Passing multiple keyword arguments: the name of the argument to validate and the pydantic model to validate (useful
+    when the argument is a dictionary or a list of dictionaries).
+
+    :param validator: The pydantic model to validate all the arguments against
+    :param on_validation_error: What to do when there is a validation error. One of 'raise', 'warn', 'ignore'
+    :param strict_validation: Whether to validate the arguments strictly or not (if false pydantic will try to convert)
+    :param named_validators: The name of the argument to validate and the pydantic model to validate
+    :return: The original function with arguments validated
+
+
+    Usage
+    -----
+
+    1. Passing a single positional argument:
+
+    >>> from mango.shared import pydantic_validation
+    >>> from pydantic import BaseModel
+    >>> class DummyArgs(BaseModel):
+    ...     name: str
+    ...     x: int
+    ...     y: int
+    >>> @pydantic_validation(DummyArgs)
+    ... def do_nothing(*, name: str, x: int, y: int):
+    ...     return True
+    >>> do_nothing(name="random", x=0, y=1) # No error
+    ... True
+    >>> do_nothing(name="random", x=0, y="1") # Error (validation is strict by default can be changed with strict_validation=False)
+    ... Raises ValidationError
+
+    2. Passing multiple keyword arguments for JSON arguments (For compatibility with the previous version of the decorator) or if
+    just want to validate some of the arguments:
+
+    >>> from mango.shared import pydantic_validation
+    >>> from pydantic import BaseModel
+    >>> class JSONModel(BaseModel):
+    ...     self.model_config = {"extra": "forbid"} # This is to avoid extra arguments in the JSON
+    ...     c_1: str
+    ...     c_2: int
+    >>> @pydantic_validation(c=JSONModel)
+    ... def dummy(a: str, b: int, c: dict):
+    ...     return True
+    >>> dummy(a="a", b=1, c={"c_1": "a", "c_2": 1}) # No error
+    ... True
+    >>> dummy(a="a", b=1, c={"c_1": "a", "c_2": "1"}) # Error
+    ... Raises ValidationError
+
+    Intended usage:
+
+    >>> from mango.shared import pydantic_validation
+    >>> from pydantic import BaseModel
+    >>> class JSONModel(BaseModel):
+    ...     self.model_config = {"extra": "forbid"}
+    ...     c_1: str
+    ...     c_2: int
+    >>> class DummyArgs(BaseModel):
+    ...     name: str
+    ...     x: int
+    ...     y: int
+    ...     c: JSONModel
+    >>> @pydantic_validation(DummyArgs)
+    ... def do_nothing(*, name: str, x: int, y: int, c: dict):
+    ...     return True
+    >>> do_nothing(name="random", x=0, y=1, c={"c_1": "a", "c_2": 1}) # No error
+    ... True
+    >>> do_nothing(name="random", x=0, y=1, c={"c_1": "a", "c_2": "1"}) # Error
+    ... Raises ValidationError
+    """
+
     def decorator(func: callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
