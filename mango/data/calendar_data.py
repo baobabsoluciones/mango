@@ -6,12 +6,35 @@ import pycountry
 import unidecode
 from holidays import country_holidays
 
+_WEIGHT_DICT = {
+    "AN": 1,
+    "AR": 1,
+    "AS": 1,
+    "CB": 1,
+    "CE": 1,
+    "CL": 1,
+    "CM": 1,
+    "CN": 1,
+    "CT": 1,
+    "EX": 1,
+    "GA": 1,
+    "IB": 1,
+    "MC": 1,
+    "MD": 1,
+    "ML": 1,
+    "NC": 1,
+    "PV": 1,
+    "RI": 1,
+    "VC": 1,
+}
+
 
 def get_calendar(
     country: str = "ES",
     start_year: int = 2010,
     end_year: int = datetime.now().year + 2,
     communities: bool = False,
+    weight_communities: dict = _WEIGHT_DICT,
     calendar_events: bool = False,
     name_transformations: bool = True,
 ):
@@ -96,6 +119,14 @@ def get_calendar(
             "community_name",
         ]
 
+        # Add weight column
+        df_com["weight"] = df_com["community_code"].map(weight_communities)
+        total_sum = sum(weight_communities.values())
+        # Add new column with the sum of weights grouping by date and name
+        df_com["weight"] = (
+            df_com.groupby(["date", "name"])["weight"].transform("sum") / total_sum
+        )
+
         # Drop from df_com the holidays that are in df
         df_com = (
             df_com.merge(
@@ -107,6 +138,9 @@ def get_calendar(
 
         # Concatenate dataframes
         df = pd.concat([df, df_com])
+
+    # Fill na
+    df["weight"] = df["weight"].fillna(1)
 
     # Sort by date
     df["date"] = pd.to_datetime(df["date"])
@@ -132,28 +166,6 @@ def _get_code_name_dict(country: str) -> dict:
         subdivision.code: subdivision.name
         for subdivision in pycountry.subdivisions.get(country_code=country)
     }
-
-
-def _get_weight_dict(country: str = "ES") -> dict:
-    if country != "ES":
-        raise ValueError("Only Spain is supported for now, code: 'ES'")
-
-    # Code name dict
-    code_name_dict = _get_code_name_dict(country=country)
-
-    # Generate weight dict for spain communities
-    weight_dict = {
-        subdivision: {"name": "", "weight": 1}
-        for subdivision in holidays.ES.subdivisions
-    }
-
-    # Assign name
-    for subdivision in weight_dict.keys():
-        weight_dict[subdivision]["name"] = code_name_dict[f"{country}-{subdivision}"]
-
-    import json
-    with open("weight_dict.json", "w") as outfile:
-        json.dump(weight_dict, outfile, indent=4)
 
 
 def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
@@ -201,7 +213,3 @@ def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
     df["name"] = df["name"].str.strip()
 
     return df
-
-
-if __name__ == "__main__":
-    _get_weight_dict()
