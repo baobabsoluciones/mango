@@ -87,8 +87,10 @@ class DisplayablePath(object):
         return "".join(reversed(parts))
 
 
-class FileExplorerApp:
-    def __init__(self, config_path: str = None, editable: bool = True):
+ class FileExplorerApp:
+    def __init__(
+        self, path: str = None, editable: bool = True, config_path: str = None
+    ):
         # Config
         _APP_CONFIG = {
             "logo_path": os.path.join(os.path.dirname(__file__), "assets", "logo.png"),
@@ -99,7 +101,6 @@ class FileExplorerApp:
             "dir_path": os.getcwd(),
             "dict_layout": {},
         }
-
         if config_path is None:
             self.config_path = os.path.join(os.getcwd(), "config.json")
             config_dict = _APP_CONFIG
@@ -111,6 +112,10 @@ class FileExplorerApp:
                 self.config_path = config_path
                 with open(config_path, "r") as f:
                     config_dict = json.load(f)
+
+        if path:
+            if os.path.exists(path):
+                config_dict["dir_path"] = path
 
         # Set config
         self.config = config_dict.copy()
@@ -156,6 +161,20 @@ class FileExplorerApp:
             )
             if not os.path.isdir(self.new_config["dir_path"]):
                 st.error("Please enter a valid folder path")
+
+            # Select config path
+            self.config_path = st.text_input(
+                "Configuration path",
+                value=self.config_path,
+                max_chars=None,
+                key="input_config_path",
+            )
+            if not os.path.basename(self.config_path).endswith(
+                ".json"
+            ) or not os.path.exists(os.path.dirname(self.config_path)):
+                st.error(
+                    "Please enter a valid configuration path: *.json in correct folder"
+                )
 
             # Select title
             self.new_config["title"] = st.text_input(
@@ -397,8 +416,9 @@ class FileExplorerApp:
             self._render_configuration()
 
         if self.editable:
-            # Render folder tree
-            self._render_tree_folder()
+            with st.spinner("Wait for it..."):
+                # Render folder tree
+                self._render_tree_folder()
 
         # Render body content
         self._render_body_content()
@@ -412,14 +432,14 @@ class FileExplorerApp:
 if __name__ == "__main__":
     # Parse arguments
     parser = ArgumentParser()
-    parser.add_argument(
-        "--config_path", type=str, default=os.path.join(os.getcwd(), "config.json")
-    )
-    parser.add_argument("--editable", type=bool, default=True)
+    parser.add_argument("--path", type=str)
+    parser.add_argument("--config_path", type=str)
+    parser.add_argument("--editable", type=int, default=True, choices=[0, 1])
     args = parser.parse_args()
+    path = args.path
     config_path = args.config_path
     editable = args.editable
 
     # Run app
-    app = FileExplorerApp(config_path=config_path, editable=editable)
+    app = FileExplorerApp(path=path, editable=editable, config_path=config_path)
     app.run()
