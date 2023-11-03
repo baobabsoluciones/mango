@@ -139,8 +139,8 @@ def get_calendar(
         # Concatenate dataframes
         df = pd.concat([df, df_com])
 
-    # Fill na
-    df["weight"] = df["weight"].fillna(1)
+        # Fill na
+        df["weight"] = df["weight"].fillna(1)
 
     # Sort by date
     df["date"] = pd.to_datetime(df["date"])
