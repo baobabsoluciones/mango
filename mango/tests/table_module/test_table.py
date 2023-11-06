@@ -104,6 +104,14 @@ class TestTable(TestCase):
         self.assertIsInstance(result, TupList, msg="take create a TupList")
         self.assertEqual(result, expected, msg="take works as expected")
 
+    def test_take_tup_2(self):
+        result = Table(self.default_data).take("Name", "Age")
+        expected = TupList(
+            [("Albert", 20), ("Bernard", 25), ("Charlie", 30), ("Daniel", 35)]
+        )
+        self.assertIsInstance(result, TupList, msg="take create a TupList")
+        self.assertEqual(result, expected, msg="take works as expected")
+
     def test_mutate_on_tuplist(self):
         msg = "mutate transform a list of tuple into a list of dict"
         result = Table([(1, 2), (3, 4), (5, 6)]).mutate(a=5)
@@ -988,6 +996,12 @@ class TestTable(TestCase):
         ]
         self.assertEqual(df, expected, msg=msg)
 
+    def test_distinct_empty(self):
+        msg = "distinct on empty table is empty table"
+        df = Table().distinct("Under_25")
+        expected = []
+        self.assertEqual(df, expected, msg=msg)
+
     def test_order_by(self):
         msg = "order_by in ascending order (default)"
         df = Table(self.default_data2).select("Name", "Points").order_by("Points")
@@ -999,7 +1013,13 @@ class TestTable(TestCase):
         ]
         self.assertEqual(df, expected, msg=msg)
 
-    def test_oder_by_reverse(self):
+    def test_order_by_empty(self):
+        msg = "order_by on empty table is empty table"
+        df = Table().order_by("Points")
+        expected = []
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_order_by_reverse(self):
         msg = "order_by in descending order"
         df = (
             Table(self.default_data2)
@@ -1264,6 +1284,12 @@ class TestTable(TestCase):
         expected2 = [(20, 5), (30, 4), (25, 8), (35, 6)]
         self.assertEqual(result1, expected1, msg=msg1)
         self.assertEqual(result2, expected2, msg=msg2)
+
+    def test_to_set2_empty(self):
+        msg1 = "to_set2 on empty table returns empty table"
+        result1 = Table().to_set2("Points")
+        expected1 = []
+        self.assertEqual(result1, expected1, msg=msg1)
 
     def test_to_param(self):
         msg1 = "to_param creates a dict"
