@@ -254,6 +254,8 @@ class FileExplorerApp:
             # Render file content
             self._render_file_content(
                 path_selected=self.config["dict_layout"][f"file_{i_row}_{i_col}"]
+                if f"file_{i_row}_{i_col}" in self.config["dict_layout"].keys()
+                else ""
             )
 
     def _element_selector(
