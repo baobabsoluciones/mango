@@ -168,6 +168,7 @@ class FileExplorerApp:
                 value=self.config_path,
                 max_chars=None,
                 key="input_config_path",
+                disabled=True,
             )
             if not os.path.basename(self.config_path).endswith(
                 ".json"
@@ -205,7 +206,10 @@ class FileExplorerApp:
             )
 
             # Save config
-            if os.path.isdir(self.new_config["dir_path"]):
+            if os.path.isdir(self.new_config["dir_path"]) and (
+                os.path.basename(self.config_path).endswith(".json")
+                and os.path.exists(os.path.dirname(self.config_path))
+            ):
                 st.button(
                     "Apply & Save Configuration",
                     key="save_config",
