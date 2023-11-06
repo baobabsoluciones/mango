@@ -2,6 +2,8 @@ import os
 
 import click
 
+cli_path = os.path.dirname(os.path.abspath(__file__))
+
 
 @click.group(name="mango", help="Commands in the mango cli")
 def cli():
@@ -25,6 +27,10 @@ def cli():
 )
 def dashboard(path, editable, config_path):
     # Python Run os command
+    relative_path = "../dashboards/file_explorer.py"
+
+    absolute_path = os.path.join(cli_path, relative_path)
+
     os.system(
-        rf'streamlit run mango/dashboards/file_explorer.py -- --config_path "{path}" --editable {editable} --config_path "{config_path}"'
+        rf'streamlit run {absolute_path} -- --path "{path}" --editable {editable} --config_path "{config_path}"'
     )
