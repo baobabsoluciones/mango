@@ -27,7 +27,7 @@ def cli():
 )
 def dashboard(path, editable, config_path):
     # Python Run os command
-    relative_path = "../dashboards/file_explorer.py"
+    relative_path = "../dashboards/file_explorer_app.py"
 
     absolute_path = os.path.join(cli_path, relative_path)
 
