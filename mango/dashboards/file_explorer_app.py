@@ -163,6 +163,7 @@ class FileExplorerApp:
                 value=self.config["dir_path"],
                 max_chars=None,
                 key="input_dir_path",
+                disabled=True,
             )
             if not os.path.isdir(self.new_config["dir_path"]):
                 st.error("Please enter a valid folder path")
