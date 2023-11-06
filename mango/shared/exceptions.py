@@ -12,3 +12,7 @@ class JobError(Exception):
 
 class BadResponse(Exception):
     pass
+
+
+class ApiKeyError(Exception):
+    pass
