@@ -306,7 +306,7 @@ class FileExplorerApp:
             pass
         elif path_selected.endswith(".csv"):
             df = pd.read_csv(path_selected)
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df.astype(str), use_container_width=True)
 
         elif (
             path_selected.endswith(".png")
@@ -334,7 +334,7 @@ class FileExplorerApp:
                 for key_tab, tab in dict_of_tabs.items():
                     with tab:
                         df = pd.read_excel(excel_file, sheet_name=key_tab)
-                        st.dataframe(df, use_container_width=True)
+                        st.dataframe(df.astype(str), use_container_width=True)
 
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):

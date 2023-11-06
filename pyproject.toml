@@ -51,7 +51,7 @@ plot = [
     "pandas==2.0.3",
     "plotly==5.17.0"
 ]
-dashboard = ["streamlit"]
+dashboard = ["streamlit", "pandas==2.0.3"]
 cli = ["click"]
 
 [project.scripts]
