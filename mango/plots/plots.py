@@ -12,9 +12,11 @@ def plotly_plot_lines(
     x_axis: str,
     y_axis: Union[list, str],
     output_path: str,
+    color_by: str = None,
     hover_list: list = None,
     show: bool = False,
     title: str = None,
+    **kwargs_plotly,
 ):
     """
     The plot_lines function creates a plotly line chart from the given dataframe.
@@ -27,12 +29,17 @@ def plotly_plot_lines(
     :param str x_axis: Specify the column name of the dataframe that will be used as x axis
     :param Union[list, str] y_axis: Specify the columns of the dataframe that will be plotted
     :param str output_path: Specify the path where you want to save the plot. Without specifying the extension, the plot will be saved as a html file
+    :param str color_by: Specify the column name of the dataframe that will be used to color the lines
     :param list hover_list: Add the name of the column to be shown when hovering over a point in the plot
     :param bool show: Set to True if you want to show the plot
     :param str title: Set the title of the plot
+    :param kwargs_plotly: Additional arguments that will be passed to the plotly express line function.
+        See https://plotly.com/python-api-reference/generated/plotly.express.line.html for more information
     """
     # Create a list of traces
-    fig = px.line(df, x=x_axis, y=y_axis, hover_data=hover_list)
+    fig = px.line(
+        df, x=x_axis, y=y_axis, hover_data=hover_list, color=color_by, **kwargs_plotly
+    )
 
     # add title
     fig.update_layout(title_text=title)
