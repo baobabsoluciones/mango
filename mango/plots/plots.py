@@ -105,11 +105,11 @@ def join_html(
             If not specified, the button names will be the same as the html file names.
     :param str encoding: The encoding of the html files. Default is "utf-8".
     """
+    htmls = []
     if all(file.endswith(".html") for file in htmls_path):
-        htmls = [
-            BeautifulSoup(open(file, encoding=encoding), "html.parser")
-            for file in htmls_path
-        ]
+        for file in htmls_path:
+            with open(file, encoding=encoding) as f:
+                htmls.append(BeautifulSoup(f.read(), "html.parser"))
     else:
         raise ValueError(
             "The input must be a list of html files or a list of BeautifulSoup objects"
