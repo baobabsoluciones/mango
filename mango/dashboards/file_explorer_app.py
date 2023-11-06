@@ -88,19 +88,31 @@ class DisplayablePath(object):
 
 
 class FileExplorerApp:
+    # Config
+    _APP_CONFIG = {
+        "logo_path": os.path.join(os.path.dirname(__file__), "assets", "logo.png"),
+        "title": "Mango Explorer App",
+        "header": "Folder path structure",
+        "icon": ":mango:",
+        "layout": "wide",
+        "dir_path": os.getcwd(),
+        "dict_layout": {},
+    }
+
     def __init__(
         self, path: str = None, editable: bool = True, config_path: str = None
     ):
-        # Config
-        _APP_CONFIG = {
-            "logo_path": os.path.join(os.path.dirname(__file__), "assets", "logo.png"),
-            "title": "Mango Explorer App",
-            "header": "Folder path structure",
-            "icon": ":mango:",
-            "layout": "wide",
-            "dir_path": os.getcwd(),
-            "dict_layout": {},
-        }
+        """
+        The __init__ function is called when the class is instantiated.
+        It sets up the instance of the class, and defines all its attributes.
+
+
+        :param self: Represent the instance of the class
+        :param str path: Set the default path of the app
+        :param bool editable: Determine whether the user can edit the config file or not
+        :param str config_path: Set the path to a config file
+        :doc-author: baobab soluciones
+        """
         if config_path is None:
             if os.path.exists(os.path.join(os.getcwd(), "config.json")):
                 self.config_path = os.path.join(os.getcwd(), "config.json")
@@ -108,11 +120,11 @@ class FileExplorerApp:
                     config_dict = json.load(f)
             else:
                 self.config_path = os.path.join(os.getcwd(), "config.json")
-                config_dict = _APP_CONFIG
+                config_dict = self._APP_CONFIG
         else:
             if not os.path.exists(config_path):
                 self.config_path = os.path.join(os.getcwd(), "config.json")
-                config_dict = _APP_CONFIG
+                config_dict = self._APP_CONFIG
             else:
                 self.config_path = config_path
                 with open(config_path, "r") as f:
@@ -136,6 +148,15 @@ class FileExplorerApp:
         )
 
     def _render_header(self):
+        """
+        The _render_header function is a helper function that renders the header of the app.
+        It takes in no arguments and returns nothing. It uses Streamlit's st module to render
+        the logo, title, and header of the app.
+
+        :param self: Refer to the instance of the class
+        :return: None.
+        :doc-author: baobab soluciones
+        """
         # Create columns display
         col3_1, col3_2, col3_3 = st.columns(3)
         with col3_1:
@@ -154,6 +175,16 @@ class FileExplorerApp:
             st.header(self.config["header"])
 
     def _render_configuration(self):
+        """
+        The _render_configuration function is used to render the configuration sidebar.
+        It allows the user to select a folder, a config path, and set title and number of columns/rows.
+        The function also checks if the selected folder exists and if it does not, an error message is displayed.
+        Similarly for config path: it must be in *.json format in correct directory.
+
+        :param self: Refer to the object itself
+        :return: None
+        :doc-author: baobab soluciones
+        """
         with st.sidebar:
             st.header("Configuration")
 
@@ -223,6 +254,14 @@ class FileExplorerApp:
                 )
 
     def _render_tree_folder(self):
+        """
+        The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
+        It uses DisplayablePath.make_tree to create a list of paths, and then iterates through them to display each one.
+
+        :param self: Bind the method to an object
+        :return: None
+        :doc-author: baobab soluciones
+        """
         paths = DisplayablePath.make_tree(
             Path(self.config["dir_path"]), criteria=lambda p: p.is_dir()
         )
@@ -232,6 +271,15 @@ class FileExplorerApp:
         st.info(displayable_path)
 
     def _render_dropdown(self, i_row: int, i_col: int):
+        """
+        The _render_dropdown function is a helper function that renders the dropdown menu for selecting files.
+
+        :param self: Access the attributes and methods of the class
+        :param int i_row: Specify the row number of the file to be rendered
+        :param int i_col: Specify the column number of the file to be rendered
+        :return: None
+        :doc-author: baobab soluciones
+        """
         if self.editable:
             # Select folder
             self._element_selector(
@@ -270,6 +318,21 @@ class FileExplorerApp:
         element_type: str = "file",
         key: str = None,
     ):
+        """
+        The _element_selector function is a helper function that allows the user to select an element from a folder.
+        The function takes in three arguments:
+            - self: The class instance of the Streamlit app. This is required for all functions within this class, as it allows us to access other functions and variables within the same class.
+            - folder_path (str): The path of the folder where we want to select an element from.
+                For example, if we want to select a file from our data directory, then we would pass in `self._data_dir` as our argument for `folder_path`.
+
+
+        :param self: Bind the method to an object
+        :param str folder_path: Specify the path of the folder to be searched
+        :param str element_type: Specify whether the function should return a list of files or folders
+        :param str key: Identify the selectbox in the config file
+        :return: None
+        :doc-author: baobab soluciones
+        """
         paths = []
         for root, dirs, files in os.walk(folder_path):
             if element_type == "file":
@@ -310,6 +373,20 @@ class FileExplorerApp:
         )
 
     def _render_file_content(self, path_selected: str):
+        """
+        The _render_file_content function is a helper function that renders the content of a file in the Streamlit app.
+        It takes as input:
+            - path_selected: The path to the selected file. It can be None, an empty string or Select a file. In these cases, nothing is rendered.
+            - If it ends with .csv, then it renders its content as a dataframe using st.dataframe().
+            - If it ends with .png or .jpg or .jpeg, then it renders its content as an image using st.image().
+            - If it ends with .html.
+            - If it ends with .xlsx, then it renders its content as a dataframe using st.dataframe().
+
+        :param self: Represent the instance of the class
+        :param path_selected: str: Specify the path of the file to be rendered
+        :return: None
+        :doc-author: baobab soluciones
+        """
         if (
             path_selected is None
             or path_selected == ""
@@ -373,6 +450,13 @@ class FileExplorerApp:
             )
 
     def _render_body_content(self):
+        """
+        The _render_body_content function is responsible for rendering the body content of the widget.
+
+        :param self: Refer to the object itself
+        :return: None
+        :doc-author: baobab soluciones
+        """
         n_cols = self.config["n_cols"] if "n_cols" in self.config.keys() else 1
         n_rows = self.config["n_rows"] if "n_rows" in self.config.keys() else 1
 
@@ -391,6 +475,15 @@ class FileExplorerApp:
                     self._render_dropdown(i_row=i_row, i_col=2)
 
     def _save_config(self):
+        """
+        The _save_config function is called when the user clicks on the &quot;Save&quot; button in the sidebar.
+        It updates self.config with all of the new values that were entered into st.sidebar, and then saves
+        the updated config to a json file.
+
+        :param self: Refer to the object itself
+        :return: The new configuration
+        :doc-author: baobab soluciones
+        """
         for row in range(1, self.new_config["n_rows"] + 1):
             for col in range(1, self.new_config["n_cols"] + 1):
                 try:
@@ -434,6 +527,15 @@ class FileExplorerApp:
             json.dump(self.config, f, sort_keys=True, indent=4)
 
     def run(self):
+        """
+        The run function is the main entry point for the Streamlit app.
+        It renders all of the components in order, and then returns a dictionary
+        of values that can be used by other functions.
+
+        :param self: Represent the instance of the class
+        :return: None
+        :doc-author: baobab soluciones
+        """
         # Render header
         self._render_header()
 
