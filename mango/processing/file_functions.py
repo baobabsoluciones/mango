@@ -357,16 +357,21 @@ def load_excel_light(path, sheets=None):
         )
 
     wb = xl.load_workbook(path, read_only=True, keep_vba=False)
-    if sheets is not None:
-        wb = [ws for ws in wb if ws.title in sheets]
-    dataset = {}
-    for ws in wb:
-        data = [row for row in ws.values]
-        if len(data):
-            dataset[ws.title] = TupList(data[1:]).to_dictlist(data[0])
-        else:
-            dataset[ws.title] = []
 
+    if sheets is None:
+        dict_sheets = {ws.title: ws.values for ws in wb}
+    else:
+        dict_sheets = {ws.title: ws.values for ws in wb if ws.title in sheets}
+
+    dataset = {}
+    for name, v in dict_sheets.items():
+        data = [row for row in v]
+        if len(data):
+            dataset[name] = TupList(data[1:]).to_dictlist(data[0])
+        else:
+            dataset[name] = []
+
+    wb.close()
     return dataset
 
 
@@ -402,6 +407,7 @@ def write_excel_light(path, data):
                 adjust_excel_col_width_2(ws)
 
     wb.save(path)
+    wb.close()
     return None
 
 
