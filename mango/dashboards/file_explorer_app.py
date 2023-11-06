@@ -87,7 +87,7 @@ class DisplayablePath(object):
         return "".join(reversed(parts))
 
 
- class FileExplorerApp:
+class FileExplorerApp:
     def __init__(
         self, path: str = None, editable: bool = True, config_path: str = None
     ):
