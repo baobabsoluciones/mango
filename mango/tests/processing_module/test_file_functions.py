@@ -1,6 +1,9 @@
 from unittest import TestCase
 import os
 import warnings
+
+import pandas as pd
+
 from mango.processing import (
     list_files_directory,
     load_json,
@@ -125,8 +128,7 @@ class FileTests(TestCase):
 
         data2 = load_excel(file, output="records")
         self.assertEqual(data.keys(), data2.keys())
-        #  TODO: how is it supposed to write Sheet1 ?
-        # self.assertEqual(data["Sheet1"], data2["Sheet1"])
+        self.assertEqual(data["Sheet2"], data2["Sheet1"])
         self.assertEqual(data["Sheet2"], data2["Sheet2"])
         os.remove(file)
 

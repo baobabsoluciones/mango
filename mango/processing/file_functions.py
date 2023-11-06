@@ -185,8 +185,8 @@ def write_excel(path, data):
                 df = pd.DataFrame.from_records(content)
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
             elif isinstance(content, dict):
-                df = pd.DataFrame.from_dict(content, orient="index")
-                df.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
+                df = pd.DataFrame.from_dict(content, orient="columns")
+                df.to_excel(writer, sheet_name=sheet_name, index=False, header=True)
             adjust_excel_col_width(writer, df, sheet_name)
 
 
