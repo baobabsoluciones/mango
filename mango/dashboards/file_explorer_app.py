@@ -102,8 +102,13 @@ class FileExplorerApp:
             "dict_layout": {},
         }
         if config_path is None:
-            self.config_path = os.path.join(os.getcwd(), "config.json")
-            config_dict = _APP_CONFIG
+            if os.path.exists(os.path.join(os.getcwd(), "config.json")):
+                self.config_path = os.path.join(os.getcwd(), "config.json")
+                with open(os.path.join(os.getcwd(), "config.json"), "r") as f:
+                    config_dict = json.load(f)
+            else:
+                self.config_path = os.path.join(os.getcwd(), "config.json")
+                config_dict = _APP_CONFIG
         else:
             if not os.path.exists(config_path):
                 self.config_path = os.path.join(os.getcwd(), "config.json")
