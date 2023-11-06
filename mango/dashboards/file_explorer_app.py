@@ -318,7 +318,7 @@ class FileExplorerApp:
             pass
         elif path_selected.endswith(".csv"):
             df = pd.read_csv(path_selected)
-            st.dataframe(df.astype(str), use_container_width=True)
+            st.dataframe(df, use_container_width=True)
 
         elif (
             path_selected.endswith(".png")
@@ -331,8 +331,22 @@ class FileExplorerApp:
 
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
-                with open(path_selected, "r") as f:
-                    components.html(f.read(), height=500)
+                try:
+                    with open(path_selected, "r") as f:
+                        components.html(f.read(), height=500)
+                except Exception as e:
+                    try:
+                        with open(path_selected, "r", encoding="utf8") as f:
+                            components.html(f.read(), height=500)
+                    except Exception as e:
+                        try:
+                            with open(path_selected, "r", encoding="utf-8") as f:
+                                components.html(f.read(), height=500)
+                        except Exception as e:
+                            print(e)
+                            st.warning(
+                                "The rendering of the HTML file failed. Please, notify mango@baobabsoluciones.es"
+                            )
 
         elif path_selected.endswith(".xlsx"):
             with st.spinner("Wait for it..."):
@@ -346,7 +360,7 @@ class FileExplorerApp:
                 for key_tab, tab in dict_of_tabs.items():
                     with tab:
                         df = pd.read_excel(excel_file, sheet_name=key_tab)
-                        st.dataframe(df.astype(str), use_container_width=True)
+                        st.dataframe(df, use_container_width=True)
 
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):
