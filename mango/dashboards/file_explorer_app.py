@@ -123,8 +123,14 @@ class FileExplorerApp:
                 config_dict = self._APP_CONFIG
         else:
             if not os.path.exists(config_path):
-                self.config_path = os.path.join(os.getcwd(), "config.json")
-                config_dict = self._APP_CONFIG
+                if os.path.exists(os.path.dirname(config_path)):
+                    self.config_path = os.path.join(
+                        os.path.dirname(config_path), "config.json"
+                    )
+                    config_dict = self._APP_CONFIG
+                else:
+                    self.config_path = os.path.join(os.getcwd(), "config.json")
+                    config_dict = self._APP_CONFIG
             else:
                 self.config_path = config_path
                 with open(config_path, "r") as f:
@@ -139,7 +145,9 @@ class FileExplorerApp:
         self.new_config = config_dict.copy()
         if editable is None:
             if self.config.get("editable", None) is not None:
-                self.editable = not self.config["editable"]
+                self.editable = self.config["editable"]
+            else:
+                self.editable = True
         else:
             self.editable = True
 
@@ -291,9 +299,9 @@ class FileExplorerApp:
 
             # Change to editable
             self.new_config["editable"] = st.checkbox(
-                "Change to not editable",
-                key="not_editable",
-                value=not bool(self.editable),
+                "Editable",
+                key="editable_checkbox",
+                value=bool(self.editable),
             )
             # Save config
             if os.path.isdir(self.new_config["dir_path"]) and (
