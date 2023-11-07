@@ -137,10 +137,11 @@ class FileExplorerApp:
         # Set config
         self.config = config_dict.copy()
         self.new_config = config_dict.copy()
-        if self.config.get("editable", None) is None:
-            self.editable = editable
+        if editable is None:
+            if self.config.get("editable", None) is not None:
+                self.editable = not self.config["editable"]
         else:
-            self.editable = not self.config["editable"]
+            self.editable = True
 
         # Set Streamlit config
         st.set_page_config(
@@ -622,7 +623,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--path", type=str)
     parser.add_argument("--config_path", type=str)
-    parser.add_argument("--editable", type=int, default=True, choices=[0, 1])
+    parser.add_argument("--editable", type=int, default=None, choices=[0, 1])
     args = parser.parse_args()
     path = args.path
     config_path = args.config_path
