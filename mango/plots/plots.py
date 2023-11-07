@@ -50,7 +50,9 @@ def plotly_plot_lines(
 
     # Save the plot as an html file
     if output_path != None:
-        fig.write_html(output_path + ".html")
+        fig.write_html(
+            output_path + ".html" if not output_path.endswith(".html") else output_path
+        )
 
 
 def plotly_plot_scatter(
@@ -90,7 +92,9 @@ def plotly_plot_scatter(
 
     # Save the plot as an html file
     if output_path != None:
-        fig.write_html(output_path + ".html")
+        fig.write_html(
+            output_path + ".html" if not output_path.endswith(".html") else output_path
+        )
 
 
 def join_html(
