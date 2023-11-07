@@ -280,6 +280,7 @@ class FileExplorerApp:
                         number_w = st.text_input(
                             f"Ancho: {os.path.basename(path_row_col)}",
                             value=self.config.get(f"width_{key_row_col}", None),
+                            key=f"width_{key_row_col}",
                         )
                         number_w = _validate_number_text_input(number_w)
                         if number_w == "Error":
@@ -290,6 +291,7 @@ class FileExplorerApp:
                             number_h = st.text_input(
                                 f"Alto: {os.path.basename(path_row_col)}",
                                 value=self.config.get(f"height_{key_row_col}", 500),
+                                key=f"height_{key_row_col}",
                             )
                             number_h = _validate_number_text_input(number_h)
                             if number_h == "Error":
