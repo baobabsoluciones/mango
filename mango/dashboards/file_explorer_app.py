@@ -395,7 +395,6 @@ class FileExplorerApp:
         else:
             paths = ["Select a file"] + paths
         # Return index of paths that match with the key
-        print(self.config["dict_layout"])
         default_index = (
             [i for i, s in enumerate(paths) if self.config["dict_layout"][key] in s]
             if key in self.config["dict_layout"].keys()
