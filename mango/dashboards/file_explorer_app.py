@@ -577,27 +577,6 @@ class FileExplorerApp:
                     ] = st.session_state[f"file_{row}_{col}"]
             except:
                 pass
-        # Drop keys that are not in the new config
-        keys_to_del = [
-            key_layout
-            for key_layout in self.config["dict_layout"].keys()
-            if int(key_layout.split("_")[1]) > self.new_config["n_rows"]
-        ]
-        _ = [
-            self.new_config["dict_layout"].pop(key_to_del) for key_to_del in keys_to_del
-        ]
-
-        for row in range(1, self.new_config["n_rows"] + 1):
-            keys_to_del = [
-                key_layout
-                for key_layout in self.config["dict_layout"].keys()
-                if int(key_layout.split("_")[1]) == row
-                and int(key_layout.split("_")[2]) > self.new_config[f"n_cols_{row}"]
-            ]
-            _ = [
-                self.new_config["dict_layout"].pop(key_to_del)
-                for key_to_del in keys_to_del
-            ]
 
         # Change folder
         if self.new_config["dir_path"] != self.config["dir_path"]:
@@ -643,11 +622,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--path", type=str)
     parser.add_argument("--config_path", type=str)
-    parser.add_argument("--editable", type=int, default=None, choices=[0, 1])
+    parser.add_argument("--editable", type=int, default=None, choices=[0, 1, -1])
     args = parser.parse_args()
     path = args.path
     config_path = args.config_path
-    editable = args.editable
+    editable = None if args.editable == -1 else args.editable
 
     # Run app
     app = FileExplorerApp(path=path, editable=editable, config_path=config_path)

@@ -16,7 +16,7 @@ def cli():
     "--editable",
     "-e",
     help="Enable editing of dashboard structure",
-    default=None,
+    default=-1,
     type=int,
 )
 @click.option(
