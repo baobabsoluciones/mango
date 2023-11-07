@@ -238,15 +238,15 @@ class FileExplorerApp:
                 key="config_rows",
                 min_value=1,
                 max_value=10,
-                value=self.new_config.get("n_rows", 1)
+                value=self.new_config.get("n_rows", 1),
             )
             for row in range(1, self.new_config["n_rows"] + 1):
                 for col in range(1, self.new_config["n_cols"] + 1):
                     try:
                         path_row_col = st.session_state[f"file_{row}_{col}"]
                     except:
-                        path_row_col = (
-                            self.new_config["dict_layout"].get(f"file_{row}_{col}", None)
+                        path_row_col = self.new_config["dict_layout"].get(
+                            f"file_{row}_{col}", None
                         )
                         if path_row_col == None:
                             continue
@@ -269,7 +269,7 @@ class FileExplorerApp:
 
                             number_w = st.text_input(
                                 f"Ancho: {os.path.basename(path_row_col)}",
-                                value=self.config.get(f"width_{key_row_col}", None)
+                                value=self.config.get(f"width_{key_row_col}", None),
                             )
                             number_w = _validate_number_text_input(number_w)
                             if number_w == "Error":
@@ -279,7 +279,7 @@ class FileExplorerApp:
                             if path_row_col.endswith(".html"):
                                 number_h = st.text_input(
                                     f"Alto: {os.path.basename(path_row_col)}",
-                                    value=self.config.get(f"height_{key_row_col}", 500)
+                                    value=self.config.get(f"height_{key_row_col}", 500),
                                 )
                                 number_h = _validate_number_text_input(number_h)
                                 if number_h == "Error":
@@ -288,7 +288,7 @@ class FileExplorerApp:
                                     self.new_config[f"height_{key_row_col}"] = number_h
 
             # Change to editable
-            self.new_config["editable"]= st.checkbox(
+            self.new_config["editable"] = st.checkbox(
                 "Change to not editable",
                 key="not_editable",
                 value=not bool(self.editable),
@@ -303,6 +303,7 @@ class FileExplorerApp:
                     key="save_config",
                     on_click=self._save_config,
                 )
+
     def _render_tree_folder(self):
         """
         The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
@@ -340,7 +341,9 @@ class FileExplorerApp:
 
             # Select file
             self._element_selector(
-                folder_path=st.session_state.get(f"folder_{i_row}_{i_col}", self.config["dir_path"]),
+                folder_path=st.session_state.get(
+                    f"folder_{i_row}_{i_col}", self.config["dir_path"]
+                ),
                 element_type="file",
                 key=f"file_{i_row}_{i_col}",
             )
@@ -354,7 +357,9 @@ class FileExplorerApp:
         else:
             # Render file content
             self._render_file_content(
-                path_selected=self.config["dict_layout"].get(f"file_{i_row}_{i_col}", ""),
+                path_selected=self.config["dict_layout"].get(
+                    f"file_{i_row}_{i_col}", ""
+                ),
                 key=f"file_{i_row}_{i_col}",
             )
 
@@ -455,10 +460,7 @@ class FileExplorerApp:
         ):
             image = Image.open(path_selected)
             with st.spinner("Wait for it..."):
-                st.image(
-                    image,
-                    width=self.config.get(f"width_{key}", None)
-                )
+                st.image(image, width=self.config.get(f"width_{key}", None))
 
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
@@ -467,7 +469,7 @@ class FileExplorerApp:
                         components.html(
                             f.read(),
                             height=self.config.get(f"height_{key}", 500),
-                            width=self.config.get(f"width_{key}", None)
+                            width=self.config.get(f"width_{key}", None),
                         )
                 except Exception as e:
                     try:
@@ -475,7 +477,7 @@ class FileExplorerApp:
                             components.html(
                                 f.read(),
                                 height=self.config.get(f"height_{key}", 500),
-                                width=self.config.get(f"width_{key}", None)
+                                width=self.config.get(f"width_{key}", None),
                             )
                     except Exception as e:
                         try:
@@ -483,7 +485,7 @@ class FileExplorerApp:
                                 components.html(
                                     f.read(),
                                     height=self.config.get(f"height_{key}", 500),
-                                    width=self.config.get(f"width_{key}", None)
+                                    width=self.config.get(f"width_{key}", None),
                                 )
                         except Exception as e:
                             print(e)
