@@ -137,7 +137,10 @@ class FileExplorerApp:
         # Set config
         self.config = config_dict.copy()
         self.new_config = config_dict.copy()
-        self.editable = editable
+        if self.config.get("editable", None) is None:
+            self.editable = editable
+        else:
+            self.editable = not self.config["editable"]
 
         # Set Streamlit config
         st.set_page_config(
@@ -284,6 +287,12 @@ class FileExplorerApp:
                                 else:
                                     self.new_config[f"height_{key_row_col}"] = number_h
 
+            # Change to editable
+            self.new_config["editable"]= st.checkbox(
+                "Change to not editable",
+                key="not_editable",
+                value=not bool(self.editable),
+            )
             # Save config
             if os.path.isdir(self.new_config["dir_path"]) and (
                 os.path.basename(self.config_path).endswith(".json")
@@ -294,8 +303,6 @@ class FileExplorerApp:
                     key="save_config",
                     on_click=self._save_config,
                 )
-                # st.markdown(f"Saved configuration to {self.config}")
-
     def _render_tree_folder(self):
         """
         The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
@@ -400,10 +407,11 @@ class FileExplorerApp:
             if key in self.config["dict_layout"].keys()
             else 0
         )
-        if len(default_index) == 0:
-            default_index = 0
-        else:
-            default_index = default_index[0]
+        if default_index != 0:
+            if len(default_index) == 0:
+                default_index = 0
+            else:
+                default_index = default_index[0]
         st.selectbox(
             f"Select a {element_type}",
             paths,
