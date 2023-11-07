@@ -57,8 +57,8 @@ plot = [
     "pandas<=2.0.3",
     "plotly<=5.17.0"
 ]
-dashboard = ["streamlit", "pandas==2.0.3"]
-cli = ["click"]
+dashboard = ["streamlit<=1.28.1", "pandas==2.0.3"]
+cli = ["click<=8.1.7"]
 
 [project.scripts]
 mango = "mango.cli:cli"
