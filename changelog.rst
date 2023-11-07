@@ -1,7 +1,7 @@
 version 0.1.0
 --------------
 
-- **released**: 2023-11-06
+- **released**: 2023-11-07
 - **description**: first beta release of the library.
 - **changelog**:
     - fix bug fix on left join of Table class.
