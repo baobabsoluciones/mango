@@ -1,6 +1,9 @@
 from unittest import TestCase
 import os
 import warnings
+
+import pandas as pd
+
 from mango.processing import (
     list_files_directory,
     load_json,
@@ -15,7 +18,12 @@ from mango.processing import (
     write_csv,
     write_df_to_csv,
 )
-from mango.processing.file_functions import load_csv_light, write_csv_light
+from mango.processing.file_functions import (
+    load_csv_light,
+    write_csv_light,
+    load_excel_light,
+    write_excel_light,
+)
 from mango.tests.const import normalize_path
 
 
@@ -95,6 +103,13 @@ class FileTests(TestCase):
             self.assertIsInstance(data["Sheet1"], list)
             self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
 
+    def test_excel_light(self):
+        file = normalize_path("./data/test.xlsx")
+        data = load_excel_light(file)
+        self.assertIn("Sheet1", data.keys())
+        self.assertIsInstance(data["Sheet1"], list)
+        self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
+
     def test_excel_file_to_dict(self):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file, output="records")
@@ -103,6 +118,7 @@ class FileTests(TestCase):
         self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
 
     def test_write_excel(self):
+
         data = {
             "Sheet1": {"a": [1, 2, 3], "b": [4, 5, 6]},
             "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
@@ -110,8 +126,58 @@ class FileTests(TestCase):
         file = normalize_path("./data/temp.xlsx")
         write_excel(file, data)
 
-        data2 = load_excel(file)
+        data2 = load_excel(file, output="records")
         self.assertEqual(data.keys(), data2.keys())
+        self.assertEqual(data["Sheet2"], data2["Sheet1"])
+        self.assertEqual(data["Sheet2"], data2["Sheet2"])
+        os.remove(file)
+
+    def test_write_excel_light(self):
+        data = {
+            "Sheet1": [
+                {"a": 1.2, "b": 4.1},
+                {"a": 2.3, "b": 5.2},
+                {"a": 3.1, "b": 6.4},
+            ],
+            "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
+        }
+        file = normalize_path("./data/temp.xlsx")
+        write_excel_light(file, data)
+
+        data2 = load_excel_light(file)
+        self.assertEqual(data.keys(), data2.keys())
+        self.assertEqual(data["Sheet1"], data2["Sheet1"])
+        self.assertEqual(data["Sheet2"], data2["Sheet2"])
+        os.remove(file)
+
+    def test_write_excel_light_close(self):
+        data = {
+            "Sheet1": [
+                {"a": 1.2, "b": 4.1},
+                {"a": 2.3, "b": 5.2},
+                {"a": 3.1, "b": 6.4},
+            ],
+            "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
+        }
+        file = normalize_path("./data/temp.xlsx")
+        write_excel_light(file, data)
+        os.remove(file)
+
+    def test_load_write_excel_light_sheet(self):
+        data = {
+            "Sheet1": [
+                {"a": 1.2, "b": 4.1},
+                {"a": 2.3, "b": 5.2},
+                {"a": 3.1, "b": 6.4},
+            ],
+            "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
+        }
+        file = normalize_path("./data/temp.xlsx")
+        write_excel_light(file, data)
+
+        data2 = load_excel_light(file, sheets="Sheet1")
+        self.assertEqual(data["Sheet1"], data2["Sheet1"])
+        self.assertFalse("Sheet2" in data2)
         os.remove(file)
 
     def test_write_df_to_excel(self):
@@ -166,13 +232,13 @@ class FileTests(TestCase):
         file = normalize_path("./data/test.csv")
         data = load_csv_light(file)
         self.assertIsInstance(data, list)
-        self.assertEqual([{'a': 1.0, 'b': '2'}, {'a': 3.0, 'b': '4'}], data)
+        self.assertEqual([{"a": 1.0, "b": "2"}, {"a": 3.0, "b": "4"}], data)
 
     def test_read_csv_open_2(self):
         file = normalize_path("./data/test2.csv")
         data = load_csv_light(file)
         self.assertIsInstance(data, list)
-        self.assertEqual([{'a': 1.2, 'b': '2,5'}, {'a': 3.6, 'b': '4,5'}], data)
+        self.assertEqual([{"a": 1.2, "b": "2,5"}, {"a": 3.6, "b": "4,5"}], data)
 
     def test_read_bad_csv_file(self):
         file = normalize_path("./data/test.json")
