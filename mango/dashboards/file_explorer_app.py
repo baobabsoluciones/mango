@@ -395,11 +395,16 @@ class FileExplorerApp:
         else:
             paths = ["Select a file"] + paths
         # Return index of paths that match with the key
+        print(self.config["dict_layout"])
         default_index = (
-            [i for i, s in enumerate(paths) if self.config["dict_layout"][key] in s][0]
+            [i for i, s in enumerate(paths) if self.config["dict_layout"][key] in s]
             if key in self.config["dict_layout"].keys()
             else 0
         )
+        if len(default_index) == 0:
+            default_index = 0
+        else:
+            default_index = default_index[0]
         st.selectbox(
             f"Select a {element_type}",
             paths,
