@@ -1,8 +1,16 @@
-import pandas as pd
 import pyomo.environ as pyo
 from pytups import SuperDict
 from mango.table import Table
-from mango.processing import write_excel, as_list, is_excel_file, load_json, write_json, load_excel_light
+from mango.processing import write_excel, as_list, load_json, write_json, load_excel_light
+from pyomo.opt import (
+    SolverResults,
+    ScalarData,
+    UndefinedData,
+    SolverStatus,
+    TerminationCondition,
+    SolutionStatus,
+    ListContainer,
+)
 
 
 def is_feasible(status):
@@ -227,3 +235,31 @@ def model_data_to_excel(model_data, path, clean=True):
     data = model_data
     tables = {k: prepare_data(v) for k, v in data.items()}
     write_excel(path + "model_data.xlsx", tables)
+
+def solver_result_to_json(result, path):
+    def get_val(v):
+        try:
+            if isinstance(v.value, UndefinedData):
+                return None
+            if isinstance(
+                v.value, (SolverStatus, TerminationCondition, SolutionStatus)
+            ):
+                return str(v.value)
+            return v.value
+        except AttributeError:
+            return None
+
+    data = {
+        k: Table([{k1: get_val(v1) for k1, v1 in v.items()}]) for k, v in result.items()
+    }
+    write_json(data, path)
+
+
+def solver_result_from_json(path):
+    data = load_json(path)
+    result = SolverResults()
+    for k, v in result.items():
+        for k1, v1 in v.items():
+            if data[k][0][k1] is not None:
+                v1.value = data[k][0][k1]
+    return result

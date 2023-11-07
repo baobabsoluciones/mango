@@ -17,8 +17,10 @@ from mango.pyomo.pyomo_tools import (
     is_feasible,
     get_status,
     get_gap,
-    variables_to_excel, model_data_to_excel, instance_from_json, variables_to_json,
+    variables_to_excel, model_data_to_excel, instance_from_json, variables_to_json, solver_result_to_json,
+    solver_result_from_json,
 )
+from mango.table import Table
 from mango.tests.const import normalize_path
 
 
@@ -32,8 +34,6 @@ class TestTools(TestCase):
     model = create_model()
     data = {"sSet": {None: ["01", "02", "03"]}}
     instance = model.create_instance({None: data})
-    # opt = SolverFactory("cbc")
-    # result = opt.solve(instance)
 
     def test_is_feasible_True(self):
         result = is_feasible("optimal")
@@ -66,13 +66,17 @@ class TestTools(TestCase):
         ]
         self.assertEqual(result, expected, msg="convert instance variable to Table")
 
-    # def test_get_status(self):
-    #     result = get_status(self.result)
-    #     self.assertEqual(result, "optimal", msg="Resolution status is: optimal")
-    #
-    # def test_get_gap(self):
-    #     result = get_gap(self.result)
-    #     self.assertEqual(result, 0, msg="the relative gap of the solution")
+    def test_get_status(self):
+        path = normalize_path("./data/result.json")
+        result = solver_result_from_json(path)
+        status = get_status(result)
+        self.assertEqual(status, "optimal", msg="Resolution status is: optimal")
+
+    def test_get_gap(self):
+        path = normalize_path("./data/result.json")
+        result = solver_result_from_json(path)
+        gap = get_gap(result)
+        self.assertEqual(gap, 0, msg="the relative gap of the solution")
 
     def test_variables_to_excel(self):
         path = normalize_path("./data/")
@@ -135,4 +139,14 @@ class TestTools(TestCase):
         self.assertEqual(data.keys(), self.data.keys(), "write model data to excel")
         os.remove(file)
 
+    def test_solver_result_to_json(self):
+        path = normalize_path("./data/result.json")
+        expected = solver_result_from_json(path)
+        solver_result_to_json(expected, path)
+        result = solver_result_from_json(path)
+        self.assertEqual(Table(result), Table(expected), "write pyomo result to json")
 
+    def test_solver_result_from_json(self):
+        path = normalize_path("./data/result.json")
+        result = solver_result_from_json(path)
+        self.assertEqual(str(result.problem.sense), "maximize", "read pyomo result from json")
