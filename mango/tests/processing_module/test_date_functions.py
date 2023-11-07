@@ -343,3 +343,9 @@ class DateTests(TestCase):
         dt = datetime(2022, 1, 12, 8, 0, 0)
         dt_tz = to_tz(dt)
         self.assertEqual(dt_tz, datetime(2022, 1, 12, 9, 0, 0), msg=msg)
+
+    def test_to_tz_dst_change(self):
+        msg = "to_tz should work in hour change"
+        dt = datetime(2023, 10, 29, 2, 20, 0)
+        dt_tz = to_tz(dt)
+        self.assertEqual(dt_tz, datetime(2023, 10, 29, 3, 20, 0), msg=msg)

@@ -163,8 +163,10 @@ def to_tz(dt: datetime, tz: str = "Europe/Madrid") -> datetime:
     :param tz: timezone name
     :return: datetime in local timezone
     """
+    dt = pytz.utc.localize(dt)
     timezone = pytz.timezone(tz)
-    return dt + timezone.utcoffset(dt)
+    dt = dt.astimezone(timezone)
+    return dt.replace(tzinfo=None)
 
 
 def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
