@@ -587,6 +587,18 @@ class FileExplorerApp:
             self.new_config["dict_layout"].pop(key_to_del) for key_to_del in keys_to_del
         ]
 
+        for row in range(1, self.new_config["n_rows"] + 1):
+            keys_to_del = [
+                key_layout
+                for key_layout in self.config["dict_layout"].keys()
+                if int(key_layout.split("_")[1]) == row
+                and int(key_layout.split("_")[2]) > self.new_config[f"n_cols_{row}"]
+            ]
+            _ = [
+                self.new_config["dict_layout"].pop(key_to_del)
+                for key_to_del in keys_to_del
+            ]
+
         # Change folder
         if self.new_config["dir_path"] != self.config["dir_path"]:
             self.new_config["dict_layout"] = {}
