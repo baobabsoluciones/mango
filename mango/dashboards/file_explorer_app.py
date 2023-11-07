@@ -241,6 +241,59 @@ class FileExplorerApp:
                 if "n_rows" in self.new_config.keys()
                 else 1,
             )
+            for row in range(1, self.new_config["n_rows"] + 1):
+                for col in range(1, self.new_config["n_cols"] + 1):
+                    try:
+                        path_row_col = st.session_state[f"file_{row}_{col}"]
+                    except:
+                        path_row_col = (
+                            self.new_config["dict_layout"][f"file_{row}_{col}"]
+                            if f"file_{row}_{col}"
+                            in self.new_config["dict_layout"].keys()
+                            else None
+                        )
+                        if path_row_col == None:
+                            continue
+                    key_row_col = f"file_{row}_{col}"
+                    if path_row_col != None:
+                        if (
+                            path_row_col.endswith(".html")
+                            or path_row_col.endswith(".jpg")
+                            or path_row_col.endswith(".png")
+                            or path_row_col.endswith(".jpeg")
+                        ):
+
+                            def _validate_number_text_input(text):
+                                if text == "None" or text == "" or text == None:
+                                    return None
+                                elif text.isdecimal():
+                                    return int(text)
+                                else:
+                                    return "Error"
+
+                            number_w = st.text_input(
+                                f"Ancho: {os.path.basename(path_row_col)}",
+                                value=self.config[f"width_{key_row_col}"]
+                                if f"width_{key_row_col}" in self.config.keys()
+                                else None,
+                            )
+                            number_w = _validate_number_text_input(number_w)
+                            if number_w == "Error":
+                                st.error("Input must be number")
+                            else:
+                                self.new_config[f"width_{key_row_col}"] = number_w
+                            if path_row_col.endswith(".html"):
+                                number_h = st.text_input(
+                                    f"Alto: {os.path.basename(path_row_col)}",
+                                    value=self.config[f"height_{key_row_col}"]
+                                    if f"height_{key_row_col}" in self.config.keys()
+                                    else 500,
+                                )
+                                number_h = _validate_number_text_input(number_h)
+                                if number_h == "Error":
+                                    st.error("Input must be number")
+                                else:
+                                    self.new_config[f"height_{key_row_col}"] = number_h
 
             # Save config
             if os.path.isdir(self.new_config["dir_path"]) and (
@@ -252,6 +305,7 @@ class FileExplorerApp:
                     key="save_config",
                     on_click=self._save_config,
                 )
+                # st.markdown(f"Saved configuration to {self.config}")
 
     def _render_tree_folder(self):
         """
@@ -301,7 +355,8 @@ class FileExplorerApp:
             self._render_file_content(
                 path_selected=st.session_state[f"file_{i_row}_{i_col}"]
                 if f"file_{i_row}_{i_col}" in st.session_state.keys()
-                else ""
+                else "",
+                key=f"file_{i_row}_{i_col}",
             )
 
         else:
@@ -309,7 +364,8 @@ class FileExplorerApp:
             self._render_file_content(
                 path_selected=self.config["dict_layout"][f"file_{i_row}_{i_col}"]
                 if f"file_{i_row}_{i_col}" in self.config["dict_layout"].keys()
-                else ""
+                else "",
+                key=f"file_{i_row}_{i_col}",
             )
 
     def _element_selector(
@@ -372,7 +428,7 @@ class FileExplorerApp:
             key=key,
         )
 
-    def _render_file_content(self, path_selected: str):
+    def _render_file_content(self, path_selected: str, key: str):
         """
         The _render_file_content function is a helper function that renders the content of a file in the Streamlit app.
         It takes as input:
@@ -404,21 +460,56 @@ class FileExplorerApp:
         ):
             image = Image.open(path_selected)
             with st.spinner("Wait for it..."):
-                st.image(image)
+                st.image(
+                    image,
+                    width=self.config[f"width_{key}"]
+                    if f"width_{key}" in self.config.keys()
+                    else None,
+                )
 
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
                 try:
                     with open(path_selected, "r") as f:
-                        components.html(f.read(), height=500)
+                        components.html(
+                            f.read(),
+                            height=self.config[f"height_{key}"]
+                            if f"height_{key}" in self.config.keys()
+                            else 5000,
+                            width=self.config[f"width_{key}"]
+                            if f"width_{key}" in self.config.keys()
+                            else None,
+                        )
                 except Exception as e:
                     try:
+                        print(f"height_{key}")
+                        print(
+                            self.config[f"height_{key}"]
+                            if f"height_{key}" in self.config.keys()
+                            else 500
+                        )
                         with open(path_selected, "r", encoding="utf8") as f:
-                            components.html(f.read(), height=500)
+                            components.html(
+                                f.read(),
+                                height=self.config[f"height_{key}"]
+                                if f"height_{key}" in self.config.keys()
+                                else 500,
+                                width=self.config[f"width_{key}"]
+                                if f"width_{key}" in self.config.keys()
+                                else None,
+                            )
                     except Exception as e:
                         try:
                             with open(path_selected, "r", encoding="utf-8") as f:
-                                components.html(f.read(), height=500)
+                                components.html(
+                                    f.read(),
+                                    height=self.config[f"height_{key}"]
+                                    if f"height_{key}" in self.config.keys()
+                                    else 500,
+                                    width=self.config[f"width_{key}"]
+                                    if f"width_{key}" in self.config.keys()
+                                    else None,
+                                )
                         except Exception as e:
                             print(e)
                             st.warning(
