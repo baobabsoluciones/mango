@@ -473,6 +473,26 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected, msg=msg)
 
+    def test_left_join_with_by_dict4(self):
+        msg = "left join with by as a dict with two keys and common keys"
+        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N").mutate(other=1)
+        df = (
+            Table(self.default_data2)
+            .mutate(N=1)
+            .left_join(df_id, by=dict(Name="N", N="other"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
     def test_left_join_with_by_dict_with_suffix(self):
         msg = "left join with by as a dict and common keys"
         df_id = (
