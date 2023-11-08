@@ -123,8 +123,14 @@ class FileExplorerApp:
                 config_dict = self._APP_CONFIG
         else:
             if not os.path.exists(config_path):
-                self.config_path = os.path.join(os.getcwd(), "config.json")
-                config_dict = self._APP_CONFIG
+                if os.path.exists(os.path.dirname(config_path)):
+                    self.config_path = os.path.join(
+                        os.path.dirname(config_path), "config.json"
+                    )
+                    config_dict = self._APP_CONFIG
+                else:
+                    self.config_path = os.path.join(os.getcwd(), "config.json")
+                    config_dict = self._APP_CONFIG
             else:
                 self.config_path = config_path
                 with open(config_path, "r") as f:
@@ -137,7 +143,13 @@ class FileExplorerApp:
         # Set config
         self.config = config_dict.copy()
         self.new_config = config_dict.copy()
-        self.editable = editable
+        if editable is None:
+            if self.config.get("editable", None) is not None:
+                self.editable = self.config["editable"]
+            else:
+                self.editable = True
+        else:
+            self.editable = True
 
         # Set Streamlit config
         st.set_page_config(
@@ -223,67 +235,76 @@ class FileExplorerApp:
             )
 
             # Select number of columns and rows
-            self.new_config["n_cols"] = st.number_input(
-                "Column Levels",
-                key="config_cols",
-                min_value=1,
-                max_value=2,
-                value=self.new_config.get("n_cols", 1),
-            )
             self.new_config["n_rows"] = st.number_input(
                 "Row Levels",
                 key="config_rows",
                 min_value=1,
                 max_value=10,
-                value=self.new_config.get("n_rows", 1)
+                value=self.new_config.get("n_rows", 1),
             )
             for row in range(1, self.new_config["n_rows"] + 1):
-                for col in range(1, self.new_config["n_cols"] + 1):
-                    try:
-                        path_row_col = st.session_state[f"file_{row}_{col}"]
-                    except:
-                        path_row_col = (
-                            self.new_config["dict_layout"].get(f"file_{row}_{col}", None)
+                self.new_config[f"n_cols_{row}"] = st.number_input(
+                    f"Column Levels row {row}",
+                    key=f"n_cols_{row}",
+                    min_value=1,
+                    max_value=2,
+                    value=self.new_config.get(f"n_cols_{row}", 1),
+                )
+            for row in range(1, self.new_config["n_rows"] + 1):
+                col = self.new_config.get(f"n_cols_{row}", 1)
+                try:
+                    path_row_col = st.session_state[f"file_{row}_{col}"]
+                except:
+                    path_row_col = self.new_config["dict_layout"].get(
+                        f"file_{row}_{col}", None
+                    )
+                    if path_row_col == None:
+                        continue
+                key_row_col = f"file_{row}_{col}"
+                if path_row_col != None:
+                    if (
+                        path_row_col.endswith(".html")
+                        or path_row_col.endswith(".jpg")
+                        or path_row_col.endswith(".png")
+                        or path_row_col.endswith(".jpeg")
+                    ):
+
+                        def _validate_number_text_input(text):
+                            if text == "None" or text == "" or text == None:
+                                return None
+                            elif text.isdecimal():
+                                return int(text)
+                            else:
+                                return "Error"
+
+                        number_w = st.text_input(
+                            f"Ancho: {os.path.basename(path_row_col)}",
+                            value=self.config.get(f"width_{key_row_col}", None),
+                            key=f"width_{key_row_col}",
                         )
-                        if path_row_col == None:
-                            continue
-                    key_row_col = f"file_{row}_{col}"
-                    if path_row_col != None:
-                        if (
-                            path_row_col.endswith(".html")
-                            or path_row_col.endswith(".jpg")
-                            or path_row_col.endswith(".png")
-                            or path_row_col.endswith(".jpeg")
-                        ):
-
-                            def _validate_number_text_input(text):
-                                if text == "None" or text == "" or text == None:
-                                    return None
-                                elif text.isdecimal():
-                                    return int(text)
-                                else:
-                                    return "Error"
-
-                            number_w = st.text_input(
-                                f"Ancho: {os.path.basename(path_row_col)}",
-                                value=self.config.get(f"width_{key_row_col}", None)
+                        number_w = _validate_number_text_input(number_w)
+                        if number_w == "Error":
+                            st.error("Input must be number")
+                        else:
+                            self.new_config[f"width_{key_row_col}"] = number_w
+                        if path_row_col.endswith(".html"):
+                            number_h = st.text_input(
+                                f"Alto: {os.path.basename(path_row_col)}",
+                                value=self.config.get(f"height_{key_row_col}", 500),
+                                key=f"height_{key_row_col}",
                             )
-                            number_w = _validate_number_text_input(number_w)
-                            if number_w == "Error":
+                            number_h = _validate_number_text_input(number_h)
+                            if number_h == "Error":
                                 st.error("Input must be number")
                             else:
-                                self.new_config[f"width_{key_row_col}"] = number_w
-                            if path_row_col.endswith(".html"):
-                                number_h = st.text_input(
-                                    f"Alto: {os.path.basename(path_row_col)}",
-                                    value=self.config.get(f"height_{key_row_col}", 500)
-                                )
-                                number_h = _validate_number_text_input(number_h)
-                                if number_h == "Error":
-                                    st.error("Input must be number")
-                                else:
-                                    self.new_config[f"height_{key_row_col}"] = number_h
+                                self.new_config[f"height_{key_row_col}"] = number_h
 
+            # Change to editable
+            self.new_config["editable"] = st.checkbox(
+                "Editable",
+                key="editable_checkbox",
+                value=bool(self.editable),
+            )
             # Save config
             if os.path.isdir(self.new_config["dir_path"]) and (
                 os.path.basename(self.config_path).endswith(".json")
@@ -294,7 +315,6 @@ class FileExplorerApp:
                     key="save_config",
                     on_click=self._save_config,
                 )
-                # st.markdown(f"Saved configuration to {self.config}")
 
     def _render_tree_folder(self):
         """
@@ -333,7 +353,9 @@ class FileExplorerApp:
 
             # Select file
             self._element_selector(
-                folder_path=st.session_state.get(f"folder_{i_row}_{i_col}", self.config["dir_path"]),
+                folder_path=st.session_state.get(
+                    f"folder_{i_row}_{i_col}", self.config["dir_path"]
+                ),
                 element_type="file",
                 key=f"file_{i_row}_{i_col}",
             )
@@ -347,7 +369,9 @@ class FileExplorerApp:
         else:
             # Render file content
             self._render_file_content(
-                path_selected=self.config["dict_layout"].get(f"file_{i_row}_{i_col}", ""),
+                path_selected=self.config["dict_layout"].get(
+                    f"file_{i_row}_{i_col}", ""
+                ),
                 key=f"file_{i_row}_{i_col}",
             )
 
@@ -400,10 +424,11 @@ class FileExplorerApp:
             if key in self.config["dict_layout"].keys()
             else 0
         )
-        if len(default_index) == 0:
-            default_index = 0
-        else:
-            default_index = default_index[0]
+        if default_index != 0:
+            if len(default_index) == 0:
+                default_index = 0
+            else:
+                default_index = default_index[0]
         st.selectbox(
             f"Select a {element_type}",
             paths,
@@ -447,10 +472,7 @@ class FileExplorerApp:
         ):
             image = Image.open(path_selected)
             with st.spinner("Wait for it..."):
-                st.image(
-                    image,
-                    width=self.config.get(f"width_{key}", None)
-                )
+                st.image(image, width=self.config.get(f"width_{key}", None))
 
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
@@ -459,7 +481,7 @@ class FileExplorerApp:
                         components.html(
                             f.read(),
                             height=self.config.get(f"height_{key}", 500),
-                            width=self.config.get(f"width_{key}", None)
+                            width=self.config.get(f"width_{key}", None),
                         )
                 except Exception as e:
                     try:
@@ -467,7 +489,7 @@ class FileExplorerApp:
                             components.html(
                                 f.read(),
                                 height=self.config.get(f"height_{key}", 500),
-                                width=self.config.get(f"width_{key}", None)
+                                width=self.config.get(f"width_{key}", None),
                             )
                     except Exception as e:
                         try:
@@ -475,7 +497,7 @@ class FileExplorerApp:
                                 components.html(
                                     f.read(),
                                     height=self.config.get(f"height_{key}", 500),
-                                    width=self.config.get(f"width_{key}", None)
+                                    width=self.config.get(f"width_{key}", None),
                                 )
                         except Exception as e:
                             print(e)
@@ -515,15 +537,14 @@ class FileExplorerApp:
         :return: None
         :doc-author: baobab soluciones
         """
-        n_cols = self.config.get("n_cols", 1)
         n_rows = self.config.get("n_rows", 1)
 
         for i_row in range(1, n_rows + 1):
             st.markdown("---")
-            if n_cols == 1:
+            if self.config.get(f"n_cols_{i_row}", 1) == 1:
                 self._render_dropdown(i_row=i_row, i_col=1)
 
-            elif n_cols == 2:
+            elif self.config.get(f"n_cols_{i_row}", 1) == 2:
                 # Create columns display
                 col2_1, col2_2 = st.columns(2)
                 with col2_1:
@@ -543,38 +564,21 @@ class FileExplorerApp:
         :doc-author: baobab soluciones
         """
         for row in range(1, self.new_config["n_rows"] + 1):
-            for col in range(1, self.new_config["n_cols"] + 1):
-                try:
-                    if st.session_state[f"folder_{row}_{col}"] != None:
-                        self.new_config["dict_layout"][
-                            f"folder_{row}_{col}"
-                        ] = st.session_state[f"folder_{row}_{col}"]
-                except:
-                    pass
-                try:
-                    if st.session_state[f"file_{row}_{col}"] != None:
-                        self.new_config["dict_layout"][
-                            f"file_{row}_{col}"
-                        ] = st.session_state[f"file_{row}_{col}"]
-                except:
-                    pass
-        # Drop keys that are not in the new config
-        keys_to_del = [
-            key_layout
-            for key_layout in self.config["dict_layout"].keys()
-            if int(key_layout.split("_")[2]) > self.new_config["n_cols"]
-        ]
-        _ = [
-            self.new_config["dict_layout"].pop(key_to_del) for key_to_del in keys_to_del
-        ]
-        keys_to_del = [
-            key_layout
-            for key_layout in self.config["dict_layout"].keys()
-            if int(key_layout.split("_")[1]) > self.new_config["n_rows"]
-        ]
-        _ = [
-            self.new_config["dict_layout"].pop(key_to_del) for key_to_del in keys_to_del
-        ]
+            col = self.config.get(f"n_cols_{row}", 1)
+            try:
+                if st.session_state[f"folder_{row}_{col}"] != None:
+                    self.new_config["dict_layout"][
+                        f"folder_{row}_{col}"
+                    ] = st.session_state[f"folder_{row}_{col}"]
+            except:
+                pass
+            try:
+                if st.session_state[f"file_{row}_{col}"] != None:
+                    self.new_config["dict_layout"][
+                        f"file_{row}_{col}"
+                    ] = st.session_state[f"file_{row}_{col}"]
+            except:
+                pass
 
         # Change folder
         if self.new_config["dir_path"] != self.config["dir_path"]:
@@ -620,11 +624,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--path", type=str)
     parser.add_argument("--config_path", type=str)
-    parser.add_argument("--editable", type=int, default=True, choices=[0, 1])
+    parser.add_argument("--editable", type=int, default=None, choices=[0, 1, -1])
     args = parser.parse_args()
     path = args.path
     config_path = args.config_path
-    editable = args.editable
+    editable = None if args.editable == -1 else args.editable
 
     # Run app
     app = FileExplorerApp(path=path, editable=editable, config_path=config_path)
