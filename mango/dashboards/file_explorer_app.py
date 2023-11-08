@@ -1,5 +1,6 @@
 import json
 import os
+import webbrowser
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -504,6 +505,11 @@ class FileExplorerApp:
                             st.warning(
                                 "The rendering of the HTML file failed. Please, notify mango@baobabsoluciones.es"
                             )
+
+                def _open_html():
+                    webbrowser.open_new_tab(path_selected)
+
+                st.button("Open", on_click=_open_html)
 
         elif path_selected.endswith(".xlsx"):
             with st.spinner("Wait for it..."):
