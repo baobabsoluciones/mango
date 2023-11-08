@@ -5,7 +5,6 @@ from pytups import TupList
 from mango.processing import as_list, flatten, lag_list, lead_list
 
 
-
 def is_subset(set_a, set_b):
     """
     Tell if set_a is a subset of set_b without iterating over strings.
@@ -121,4 +120,3 @@ def simplify(x):
         else:
             return x1
     return x
-

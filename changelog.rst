@@ -1,3 +1,21 @@
+version 0.1.0
+--------------
+
+- **released**: 2023-11-07
+- **description**: first beta release of the library.
+- **changelog**:
+    - fix bug fix on left join of Table class.
+    - added improvements to Table class.
+    - adapt load_excel function to return a list of dictionaries.
+    - added new date functions.
+    - drop images module.
+    - removed pandas as a main dependency of the library. It is still needed in some submodules.
+    - changed from setup.py to pyproject.toml.
+    - added calendar datasets for Spain.
+    - added a REST client to the AEMET to gather meteorological data.
+    - added pydantic validation as a decorator that can be used in any function.
+
+
 version 0.0.6
 --------------
 

@@ -5,3 +5,4 @@ include setup.py
 include mango/data/*
 include mango/tests/data/*
 include mango/schemas/*
+include mango/dashboards/assets/*
