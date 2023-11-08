@@ -641,18 +641,6 @@ class FileExplorerApp:
         st.markdown(
             "<style>footer{visibility: hidden;}</style>", unsafe_allow_html=True
         )
-        # st.markdown(
-        # #     plotly - graph - div
-        # # js - plotly - plot
-        #     """
-        #     <style>
-        #         .js-plotly-plot {
-        #             height: 1000px;
-        #         }
-        #     </style>
-        #     """,
-        #     unsafe_allow_html=True,
-        # )
 
 
 if __name__ == "__main__":
