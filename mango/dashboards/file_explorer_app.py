@@ -519,6 +519,24 @@ class FileExplorerApp:
                         df = pd.read_excel(excel_file, sheet_name=key_tab)
                         st.dataframe(df, use_container_width=True)
 
+        elif path_selected.endswith(".json"):
+            with st.spinner("Wait for it..."):
+                with open(path_selected, "r") as f:
+                    data = json.load(f)
+                    st.checkbox("As table", value=False, key=f"json_df_{key}")
+                    if st.session_state[f"json_df_{key}"]:
+                        sheets = list(data.keys())
+                        list_of_tabs = st.tabs(sheets)
+                        dict_of_tabs = {}
+                        for i, tab in enumerate(list_of_tabs):
+                            dict_of_tabs[sheets[i]] = tab
+                        for key_tab, tab in dict_of_tabs.items():
+                            with tab:
+                                df = pd.DataFrame.from_dict(data[key_tab])
+                                st.dataframe(df, use_container_width=True)
+                    else:
+                        st.json(data)
+
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):
                 text_md = Path(path_selected).read_text()
@@ -617,6 +635,18 @@ class FileExplorerApp:
         st.markdown(
             "<style>footer{visibility: hidden;}</style>", unsafe_allow_html=True
         )
+        # st.markdown(
+        # #     plotly - graph - div
+        # # js - plotly - plot
+        #     """
+        #     <style>
+        #         .js-plotly-plot {
+        #             height: 1000px;
+        #         }
+        #     </style>
+        #     """,
+        #     unsafe_allow_html=True,
+        # )
 
 
 if __name__ == "__main__":
