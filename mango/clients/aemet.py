@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 from math import radians, cos, sin, asin, sqrt
-from typing import Union, Any, Tuple
+from typing import Union, Any, Tuple, Literal
 
 from tqdm import tqdm
 
