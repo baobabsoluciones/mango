@@ -1,7 +1,7 @@
-from datetime import datetime, date
-from typing import Optional, Literal, List
+from datetime import date
+from typing import List, Optional
 
-from pydantic import BaseModel, RootModel, field_validator, ValidationInfo
+from pydantic import BaseModel, RootModel, field_validator, ValidationInfo, ConfigDict
 
 
 class UrlCallResponse(BaseModel):
@@ -22,37 +22,41 @@ class FetchStationsElement(BaseModel):
 class FetchStationsResponse(RootModel):
     root: List[FetchStationsElement]
 
+
 class FetchMunicipiosElement(BaseModel):
     id: str
     nombre: str
     longitud_dec: float
     latitud_dec: float
 
+
 class FetchMunicipiosResponse(RootModel):
     root: List[FetchMunicipiosElement]
 
 
 class FetchHistoricElement(BaseModel):
-    fecha: date
-    indicativo: str
-    nombre: str
-    provincia: str
-    altitud: float
-    tmed: float
-    prec: float
-    tmin: float
-    horatmin: str
-    tmax: float
-    horatmax: str
-    dir: str
-    velmedia: float
-    racha: float
-    horaracha: str
-    sol: float
-    presMax: float
-    horaPresMax: str
-    presMin: float
-    horaPresMin: str
+    model_config = ConfigDict(extra="forbid")
+
+    fecha: Optional[date] = None
+    indicativo: Optional[str] = None
+    nombre: Optional[str] = None
+    provincia: Optional[str] = None
+    altitud: Optional[float] = None
+    tmed: Optional[float] = None
+    prec: Optional[float] = None
+    tmin: Optional[float] = None
+    horatmin: Optional[str] = None
+    tmax: Optional[float] = None
+    horatmax: Optional[str] = None
+    dir: Optional[str] = None
+    velmedia: Optional[float] = None
+    racha: Optional[float] = None
+    horaracha: Optional[str] = None
+    sol: Optional[float] = None
+    presMax: Optional[float] = None
+    horaPresMax: Optional[str] = None
+    presMin: Optional[float] = None
+    horaPresMin: Optional[str] = None
 
     @field_validator(
         "tmed",
@@ -76,4 +80,3 @@ class FetchHistoricElement(BaseModel):
 
 class FetchHistoricResponse(RootModel):
     root: List[FetchHistoricElement]
-
