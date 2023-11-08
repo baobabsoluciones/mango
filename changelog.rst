@@ -1,3 +1,12 @@
+version 0.1.1
+--------------
+
+- **released**: 2023-11-08
+- **description**: some small bugfixes
+- **changelog**:
+    - fixed a bug on left join on class Table.
+    - fixed a small bug on AEMET pydantic validation.
+
 version 0.1.0
 --------------
 
