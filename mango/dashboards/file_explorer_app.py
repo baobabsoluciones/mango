@@ -451,6 +451,9 @@ class FileExplorerApp:
                     dict_of_tabs[sheet]["df"].to_excel(
                         writer, sheet_name=sheet, index=False
                     )
+        elif path_selected.endswith(".json"):
+            with open(path_selected, "w") as f:
+                json.dump(edited_df, f)
 
     def _render_file_content(self, path_selected: str, key: str):
         """
@@ -565,11 +568,20 @@ class FileExplorerApp:
                         list_of_tabs = st.tabs(sheets)
                         dict_of_tabs = {}
                         for i, tab in enumerate(list_of_tabs):
-                            dict_of_tabs[sheets[i]] = tab
+                            df = pd.DataFrame.from_dict(data[sheets[i]])
+                            dict_of_tabs[sheets[i]] = {"tab": tab, "df": df}
                         for key_tab, tab in dict_of_tabs.items():
-                            with tab:
-                                df = pd.DataFrame.from_dict(data[key_tab])
-                                st.dataframe(df, use_container_width=True)
+                            with tab["tab"]:
+                                edited_df = st.data_editor(tab["df"], use_container_width=True)
+                                dict_edited = edited_df.to_dict()
+                                data[key_tab] = dict_edited
+                                st.button(
+                                    "Save",
+                                    on_click=self._save_dataframe,
+                                    args=(data, path_selected),
+                                    key=f"{tab['tab']}.json",
+                                )
+                                # st.dataframe(df, use_container_width=True)
                     else:
                         st.json(data)
 
