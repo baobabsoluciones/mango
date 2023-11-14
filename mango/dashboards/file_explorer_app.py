@@ -581,7 +581,6 @@ class FileExplorerApp:
                                     args=(data, path_selected),
                                     key=f"{tab['tab']}.json",
                                 )
-                                # st.dataframe(df, use_container_width=True)
                     else:
                         st.json(data)
 
