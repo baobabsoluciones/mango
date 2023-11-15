@@ -185,6 +185,22 @@ def build_tree_folder():
     return displayable_path
 
 
+paths = []
+element_type = "folder"
+for root, dirs, files in os.walk(_APP_CONFIG["dir_path"]):
+    if element_type == "file":
+        for element in files:
+            path = os.path.join(root, element)
+            paths.append(path)
+    elif element_type == "folder":
+        for element in dirs:
+            path = os.path.join(root, element)
+            paths.append(path)
+    else:
+        raise ValueError(
+            "element_type must be 'file' or 'folder', but got {}".format(element_type)
+        )
+
 app.layout = html.Div(
     id="big-app-container",
     children=[
@@ -193,6 +209,15 @@ app.layout = html.Div(
             id="app-container",
             children=[
                 dcc.Markdown(children=(build_tree_folder())),
+                html.Label(
+                    id="metric-select-title",
+                    children="Selecciona la carpeta",
+                ),
+                dcc.Dropdown(
+                    id="dropdown_folder",
+                    options=paths,
+                    value=None,
+                ),
                 # Main app
                 html.Div(
                     id="status-container",
