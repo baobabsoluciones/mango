@@ -1,8 +1,8 @@
 import os
 import pathlib
+from pathlib import Path
 
 import dash
-import pandas as pd
 from dash import dcc, html
 from dash.dependencies import Input, Output
 
@@ -89,6 +89,102 @@ def generate_modal():
     )
 
 
+class DisplayablePath(object):
+    display_filename_prefix_middle = "├──"
+    display_filename_prefix_last = "└──"
+    display_parent_prefix_middle = "    "
+    display_parent_prefix_last = "│   "
+
+    def __init__(self, path, parent_path, is_last):
+        self.path = Path(str(path))
+        self.parent = parent_path
+        self.is_last = is_last
+        if self.parent:
+            self.depth = self.parent.depth + 1
+        else:
+            self.depth = 0
+
+    @property
+    def displayname(self):
+        if self.path.is_dir():
+            return self.path.name + "/"
+        return self.path.name
+
+    @classmethod
+    def make_tree(cls, root, parent=None, is_last=False, criteria=None):
+        root = Path(str(root))
+        criteria = criteria or cls._default_criteria
+
+        displayable_root = cls(root, parent, is_last)
+        yield displayable_root
+
+        children = sorted(
+            list(path for path in root.iterdir() if criteria(path)),
+            key=lambda s: str(s).lower(),
+        )
+        count = 1
+        for path in children:
+            is_last = count == len(children)
+            if path.is_dir():
+                yield from cls.make_tree(
+                    path, parent=displayable_root, is_last=is_last, criteria=criteria
+                )
+            else:
+                yield cls(path, displayable_root, is_last)
+            count += 1
+
+    @classmethod
+    def _default_criteria(cls, path):
+        return True
+
+    @property
+    def displayname(self):
+        if self.path.is_dir():
+            return self.path.name + "/"
+        return self.path.name
+
+    def displayable(self):
+        if self.parent is None:
+            return self.displayname
+
+        _filename_prefix = (
+            self.display_filename_prefix_last
+            if self.is_last
+            else self.display_filename_prefix_middle
+        )
+
+        parts = ["{!s} {!s}".format(_filename_prefix, self.displayname)]
+
+        parent = self.parent
+        while parent and parent.parent is not None:
+            parts.append(
+                self.display_parent_prefix_middle
+                if parent.is_last
+                else self.display_parent_prefix_last
+            )
+            parent = parent.parent
+
+        return "".join(reversed(parts))
+
+
+def build_tree_folder():
+    """
+    The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
+    It uses DisplayablePath.make_tree to create a list of paths, and then iterates through them to display each one.
+
+    :param self: Bind the method to an object
+    :return: None
+    :doc-author: baobab soluciones
+    """
+    paths = DisplayablePath.make_tree(
+        Path(_APP_CONFIG["dir_path"]), criteria=lambda p: p.is_dir()
+    )
+    displayable_path = ""
+    for path in paths:
+        displayable_path = displayable_path + "  \n" + path.displayable()
+    return displayable_path
+
+
 app.layout = html.Div(
     id="big-app-container",
     children=[
@@ -96,6 +192,7 @@ app.layout = html.Div(
         html.Div(
             id="app-container",
             children=[
+                dcc.Markdown(children=(build_tree_folder())),
                 # Main app
                 html.Div(
                     id="status-container",
