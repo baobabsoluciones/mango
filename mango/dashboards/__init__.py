@@ -1,1 +1,1 @@
-from .file_explorer_app import FileExplorerApp
+from .streamlit_file_explorer_app.file_explorer_app import FileExplorerApp
