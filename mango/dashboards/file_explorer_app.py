@@ -536,10 +536,16 @@ class FileExplorerApp:
                 excel_file = pd.ExcelFile(path_selected)
                 sheets = excel_file.sheet_names
                 list_of_tabs = st.tabs(sheets)
-                dict_of_tabs = {}
-                for i, tab in enumerate(list_of_tabs):
-                    df = pd.read_excel(excel_file, sheet_name=i)
-                    dict_of_tabs[sheets[i]] = {"tab": tab, "df": df}
+                try:
+                    dict_of_tabs = {
+                        sheets[i]: {
+                            "tab": tab,
+                            "df": pd.read_excel(excel_file, sheet_name=i),
+                        }
+                        for i, tab in enumerate(list_of_tabs)
+                    }
+                except Exception as e:
+                    st.warning(f"The rendering of the Excel file failed. Error: {e}.")
 
                 for key_tab, tab in dict_of_tabs.items():
                     with tab["tab"]:
@@ -566,13 +572,23 @@ class FileExplorerApp:
                     if st.session_state[f"json_df_{key}"]:
                         sheets = list(data.keys())
                         list_of_tabs = st.tabs(sheets)
-                        dict_of_tabs = {}
-                        for i, tab in enumerate(list_of_tabs):
-                            df = pd.DataFrame.from_dict(data[sheets[i]])
-                            dict_of_tabs[sheets[i]] = {"tab": tab, "df": df}
+                        try:
+                            dict_of_tabs = {
+                                sheets[i]: {
+                                    "tab": tab,
+                                    "df": pd.DataFrame.from_dict(data[sheets[i]]),
+                                }
+                                for i, tab in enumerate(list_of_tabs)
+                            }
+                        except Exception as e:
+                            st.error(
+                                f"The rendering of the JSON file failed. Error: {e}"
+                            )
                         for key_tab, tab in dict_of_tabs.items():
                             with tab["tab"]:
-                                edited_df = st.data_editor(tab["df"], use_container_width=True)
+                                edited_df = st.data_editor(
+                                    tab["df"], use_container_width=True
+                                )
                                 dict_edited = edited_df.to_dict()
                                 data[key_tab] = dict_edited
                                 st.button(
