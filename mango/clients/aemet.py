@@ -253,7 +253,7 @@ class AEMETClient(RESTClient):
         ]
         objective_lat_long = (lat, long)
         distances = [
-            (station_indicative, haversine(objective_lat_long, station_coords))
+            (station_indicative, haversine(point1=objective_lat_long, point2=station_coords))
             for station_indicative, station_coords in lat_long_list
         ]
         # Sort by distance
