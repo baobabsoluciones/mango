@@ -1,5 +1,6 @@
 import json
 import os
+import webbrowser
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -440,6 +441,20 @@ class FileExplorerApp:
             key=key,
         )
 
+    @classmethod
+    def _save_dataframe(cls, edited_df, path_selected, dict_of_tabs: dict = None):
+        if path_selected.endswith(".csv"):
+            edited_df.to_csv(path_selected, index=False)
+        elif path_selected.endswith(".xlsx"):
+            with pd.ExcelWriter(path_selected) as writer:
+                for sheet in dict_of_tabs.keys():
+                    dict_of_tabs[sheet]["df"].to_excel(
+                        writer, sheet_name=sheet, index=False
+                    )
+        elif path_selected.endswith(".json"):
+            with open(path_selected, "w") as f:
+                json.dump(edited_df, f)
+
     def _render_file_content(self, path_selected: str, key: str):
         """
         The _render_file_content function is a helper function that renders the content of a file in the Streamlit app.
@@ -463,7 +478,13 @@ class FileExplorerApp:
             pass
         elif path_selected.endswith(".csv"):
             df = pd.read_csv(path_selected)
-            st.dataframe(df, use_container_width=True)
+            edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic")
+            st.button(
+                "Save",
+                on_click=self._save_dataframe,
+                args=(edited_df, path_selected),
+                key=".csv",
+            )
 
         elif (
             path_selected.endswith(".png")
@@ -505,19 +526,79 @@ class FileExplorerApp:
                                 "The rendering of the HTML file failed. Please, notify mango@baobabsoluciones.es"
                             )
 
+                def _open_html():
+                    webbrowser.open_new_tab(path_selected)
+
+                st.button("Open", on_click=_open_html, key="Open .html")
+
         elif path_selected.endswith(".xlsx"):
             with st.spinner("Wait for it..."):
                 excel_file = pd.ExcelFile(path_selected)
                 sheets = excel_file.sheet_names
                 list_of_tabs = st.tabs(sheets)
-                dict_of_tabs = {}
-                for i, tab in enumerate(list_of_tabs):
-                    dict_of_tabs[sheets[i]] = tab
+                try:
+                    dict_of_tabs = {
+                        sheets[i]: {
+                            "tab": tab,
+                            "df": pd.read_excel(excel_file, sheet_name=i),
+                        }
+                        for i, tab in enumerate(list_of_tabs)
+                    }
+                except Exception as e:
+                    st.warning(f"The rendering of the Excel file failed. Error: {e}.")
 
                 for key_tab, tab in dict_of_tabs.items():
-                    with tab:
-                        df = pd.read_excel(excel_file, sheet_name=key_tab)
-                        st.dataframe(df, use_container_width=True)
+                    with tab["tab"]:
+                        df = tab["df"]
+                        edited_df = st.data_editor(
+                            df,
+                            use_container_width=True,
+                            num_rows="dynamic",
+                            key=key_tab,
+                        )
+                        tab["df"] = edited_df
+                        st.button(
+                            "Save",
+                            on_click=self._save_dataframe,
+                            args=(edited_df, path_selected, dict_of_tabs),
+                            key=f"{tab}.xlsx",
+                        )
+
+        elif path_selected.endswith(".json"):
+            with st.spinner("Wait for it..."):
+                with open(path_selected, "r") as f:
+                    data = json.load(f)
+                    st.checkbox("As table", value=False, key=f"json_df_{key}")
+                    if st.session_state[f"json_df_{key}"]:
+                        sheets = list(data.keys())
+                        list_of_tabs = st.tabs(sheets)
+                        try:
+                            dict_of_tabs = {
+                                sheets[i]: {
+                                    "tab": tab,
+                                    "df": pd.DataFrame.from_dict(data[sheets[i]]),
+                                }
+                                for i, tab in enumerate(list_of_tabs)
+                            }
+                        except Exception as e:
+                            st.error(
+                                f"The rendering of the JSON file failed. Error: {e}"
+                            )
+                        for key_tab, tab in dict_of_tabs.items():
+                            with tab["tab"]:
+                                edited_df = st.data_editor(
+                                    tab["df"], use_container_width=True
+                                )
+                                dict_edited = edited_df.to_dict()
+                                data[key_tab] = dict_edited
+                                st.button(
+                                    "Save",
+                                    on_click=self._save_dataframe,
+                                    args=(data, path_selected),
+                                    key=f"{tab['tab']}.json",
+                                )
+                    else:
+                        st.json(data)
 
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):
