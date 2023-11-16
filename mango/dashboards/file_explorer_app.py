@@ -240,7 +240,7 @@ class FileExplorerApp:
                 "Row Levels",
                 key="config_rows",
                 min_value=1,
-                max_value=10,
+                max_value=100,
                 value=self.new_config.get("n_rows", 1),
             )
             for row in range(1, self.new_config["n_rows"] + 1):
