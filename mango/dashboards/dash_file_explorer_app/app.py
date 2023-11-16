@@ -1,6 +1,7 @@
 import os
 import pathlib
 from pathlib import Path
+from typing import List, Dict
 
 import dash
 from dash import dcc, html
@@ -9,7 +10,7 @@ from dash.dependencies import Input, Output
 # Config
 _APP_CONFIG = {
     "title": "Mango Explorer App",
-    "dir_path": os.getcwd(),
+    "dir_path": r"G:\Unidades compartidas\mango\desarrollo\datos\file_explorer_folder",
     "dict_layout": {},
 }
 
@@ -185,21 +186,33 @@ def build_tree_folder():
     return displayable_path
 
 
-paths = []
-element_type = "folder"
-for root, dirs, files in os.walk(_APP_CONFIG["dir_path"]):
-    if element_type == "file":
-        for element in files:
-            path = os.path.join(root, element)
-            paths.append(path)
-    elif element_type == "folder":
-        for element in dirs:
-            path = os.path.join(root, element)
-            paths.append(path)
-    else:
-        raise ValueError(
-            "element_type must be 'file' or 'folder', but got {}".format(element_type)
-        )
+def _get_options_by_path(
+    path: str, element_type: str = "folder"
+) -> List[Dict[str, str]]:
+    paths = []
+    for root, dirs, files in os.walk(path):
+        if element_type == "file":
+            for element in files:
+                path_i = os.path.join(root, element)
+                paths.append(path_i)
+        elif element_type == "folder":
+            for element in dirs:
+                path_i = os.path.join(root, element)
+                paths.append(path_i)
+        else:
+            raise ValueError(
+                "element_type must be 'file' or 'folder', but got {}".format(
+                    element_type
+                )
+            )
+    return list(
+        {
+            "label": path_i.replace(path, ""),
+            "value": path_i,
+        }
+        for path_i in paths
+    )
+
 
 app.layout = html.Div(
     id="big-app-container",
@@ -209,14 +222,34 @@ app.layout = html.Div(
             id="app-container",
             children=[
                 dcc.Markdown(children=(build_tree_folder())),
-                html.Label(
-                    id="metric-select-title",
-                    children="Selecciona la carpeta",
+                html.Div(
+                    id="metric-select-menu",
+                    children=[
+                        html.Label(
+                            id="metric-select-title",
+                            children="Selecciona la carpeta",
+                        ),
+                        dcc.Dropdown(
+                            id="dropdown_folder",
+                            options=_get_options_by_path(
+                                _APP_CONFIG["dir_path"], "folder"
+                            ),
+                            value=None,
+                        ),
+                    ],
                 ),
-                dcc.Dropdown(
-                    id="dropdown_folder",
-                    options=paths,
-                    value=None,
+                html.Div(
+                    id="metric-select-menu",
+                    children=[
+                        html.Label(
+                            id="metric-select-title",
+                            children="Selecciona el fichero",
+                        ),
+                        dcc.Dropdown(
+                            id="dropdown_file",
+                            value=None,
+                        ),
+                    ],
                 ),
                 # Main app
                 html.Div(
@@ -243,6 +276,16 @@ def update_click_output(button_click, close_click):
             return {"display": "block"}
 
     return {"display": "none"}
+
+
+@app.callback(
+    output=Output("dropdown_file", "options"),
+    inputs=[
+        Input(f"dropdown_folder", "value"),
+    ],
+)
+def show_selector_file(path_folder):
+    return _get_options_by_path(path_folder, "file")
 
 
 # Running the server
