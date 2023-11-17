@@ -1,3 +1,11 @@
+version 0.1.3
+--------------
+
+- **released**: 2023-11-17
+- **description**: small bugfix
+- **changelog**:
+    - fixed a bug on save button with unique keys.
+
 version 0.1.2
 --------------
 
