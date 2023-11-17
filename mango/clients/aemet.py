@@ -1,13 +1,12 @@
 import logging
 import os
 from datetime import datetime
-from math import radians, cos, sin, asin, sqrt
 from typing import Union, Any, Tuple, Literal
 
 from tqdm import tqdm
 
 from mango.clients.rest_client import RESTClient
-from mango.shared import ApiKeyError
+from mango.shared import ApiKeyError, haversine
 from mango.validators.aemet import *
 
 
@@ -118,27 +117,6 @@ class AEMETClient(RESTClient):
                 }
             )
         self._municipios = tmp
-
-    @staticmethod
-    def _haversine(point1, point2) -> float:
-        """
-        Calculate the great circle distance in kilometers between two points
-        on the earth (specified in decimal degrees).
-        :param point1: Tuple with latitude and longitude of the first point
-        :param point2: Tuple with latitude and longitude of the second point
-        """
-        # convert decimal degrees to radians
-        lon1, lat1 = point1
-        lon2, lat2 = point2
-        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-
-        # haversine formula
-        dlon = lon2 - lon1
-        dlat = lat2 - lat1
-        a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-        c = 2 * asin(sqrt(a))
-        r = 6371  # Radius of earth in kilometers. Use 3956 for miles. Determines return value units.
-        return c * r
 
     @staticmethod
     def _parse_lat_long(lat_long: Tuple[str, str]) -> Tuple[float, float]:
@@ -275,7 +253,7 @@ class AEMETClient(RESTClient):
         ]
         objective_lat_long = (lat, long)
         distances = [
-            (station_indicative, self._haversine(objective_lat_long, station_coords))
+            (station_indicative, haversine(point1=objective_lat_long, point2=station_coords))
             for station_indicative, station_coords in lat_long_list
         ]
         # Sort by distance

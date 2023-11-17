@@ -1,5 +1,6 @@
 import json
 import os
+import webbrowser
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -142,7 +143,6 @@ class FileExplorerApp:
 
         # Set config
         self.config = config_dict.copy()
-        self.new_config = config_dict.copy()
         if editable is None:
             if self.config.get("editable", None) is not None:
                 self.editable = self.config["editable"]
@@ -201,18 +201,18 @@ class FileExplorerApp:
             st.header("Configuration")
 
             # Select folder
-            self.new_config["dir_path"] = st.text_input(
+            st.text_input(
                 "Folder",
                 value=self.config["dir_path"],
                 max_chars=None,
                 key="input_dir_path",
                 disabled=True,
             )
-            if not os.path.isdir(self.new_config["dir_path"]):
+            if not os.path.isdir(self.config["dir_path"]):
                 st.error("Please enter a valid folder path")
 
             # Select config path
-            self.config_path = st.text_input(
+            st.text_input(
                 "Configuration path",
                 value=self.config_path,
                 max_chars=None,
@@ -227,7 +227,7 @@ class FileExplorerApp:
                 )
 
             # Select title
-            self.new_config["title"] = st.text_input(
+            self.config["title"] = st.text_input(
                 "Title",
                 value=self.config["title"],
                 max_chars=None,
@@ -235,27 +235,27 @@ class FileExplorerApp:
             )
 
             # Select number of columns and rows
-            self.new_config["n_rows"] = st.number_input(
+            self.config["n_rows"] = st.number_input(
                 "Row Levels",
                 key="config_rows",
                 min_value=1,
-                max_value=10,
-                value=self.new_config.get("n_rows", 1),
+                max_value=100,
+                value=self.config.get("n_rows", 1),
             )
-            for row in range(1, self.new_config["n_rows"] + 1):
-                self.new_config[f"n_cols_{row}"] = st.number_input(
+            for row in range(1, self.config["n_rows"] + 1):
+                self.config[f"n_cols_{row}"] = st.number_input(
                     f"Column Levels row {row}",
                     key=f"n_cols_{row}",
                     min_value=1,
                     max_value=2,
-                    value=self.new_config.get(f"n_cols_{row}", 1),
+                    value=self.config.get(f"n_cols_{row}", 1),
                 )
-            for row in range(1, self.new_config["n_rows"] + 1):
-                col = self.new_config.get(f"n_cols_{row}", 1)
+            for row in range(1, self.config["n_rows"] + 1):
+                col = self.config.get(f"n_cols_{row}", 1)
                 try:
                     path_row_col = st.session_state[f"file_{row}_{col}"]
                 except:
-                    path_row_col = self.new_config["dict_layout"].get(
+                    path_row_col = self.config["dict_layout"].get(
                         f"file_{row}_{col}", None
                     )
                     if path_row_col == None:
@@ -286,7 +286,7 @@ class FileExplorerApp:
                         if number_w == "Error":
                             st.error("Input must be number")
                         else:
-                            self.new_config[f"width_{key_row_col}"] = number_w
+                            self.config[f"width_{key_row_col}"] = number_w
                         if path_row_col.endswith(".html"):
                             number_h = st.text_input(
                                 f"Alto: {os.path.basename(path_row_col)}",
@@ -297,16 +297,16 @@ class FileExplorerApp:
                             if number_h == "Error":
                                 st.error("Input must be number")
                             else:
-                                self.new_config[f"height_{key_row_col}"] = number_h
+                                self.config[f"height_{key_row_col}"] = number_h
 
             # Change to editable
-            self.new_config["editable"] = st.checkbox(
+            self.config["editable"] = st.checkbox(
                 "Editable",
                 key="editable_checkbox",
                 value=bool(self.editable),
             )
             # Save config
-            if os.path.isdir(self.new_config["dir_path"]) and (
+            if os.path.isdir(self.config["dir_path"]) and (
                 os.path.basename(self.config_path).endswith(".json")
                 and os.path.exists(os.path.dirname(self.config_path))
             ):
@@ -440,6 +440,20 @@ class FileExplorerApp:
             key=key,
         )
 
+    @classmethod
+    def _save_dataframe(cls, edited_df, path_selected, dict_of_tabs: dict = None):
+        if path_selected.endswith(".csv"):
+            edited_df.to_csv(path_selected, index=False)
+        elif path_selected.endswith(".xlsx"):
+            with pd.ExcelWriter(path_selected) as writer:
+                for sheet in dict_of_tabs.keys():
+                    dict_of_tabs[sheet]["df"].to_excel(
+                        writer, sheet_name=sheet, index=False
+                    )
+        elif path_selected.endswith(".json"):
+            with open(path_selected, "w") as f:
+                json.dump(edited_df, f)
+
     def _render_file_content(self, path_selected: str, key: str):
         """
         The _render_file_content function is a helper function that renders the content of a file in the Streamlit app.
@@ -463,7 +477,13 @@ class FileExplorerApp:
             pass
         elif path_selected.endswith(".csv"):
             df = pd.read_csv(path_selected)
-            st.dataframe(df, use_container_width=True)
+            edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic")
+            st.button(
+                "Save",
+                on_click=self._save_dataframe,
+                args=(edited_df, path_selected),
+                key=".csv",
+            )
 
         elif (
             path_selected.endswith(".png")
@@ -505,19 +525,79 @@ class FileExplorerApp:
                                 "The rendering of the HTML file failed. Please, notify mango@baobabsoluciones.es"
                             )
 
+                def _open_html():
+                    webbrowser.open_new_tab(path_selected)
+
+                st.button("Open", on_click=_open_html, key="Open .html")
+
         elif path_selected.endswith(".xlsx"):
             with st.spinner("Wait for it..."):
                 excel_file = pd.ExcelFile(path_selected)
                 sheets = excel_file.sheet_names
                 list_of_tabs = st.tabs(sheets)
-                dict_of_tabs = {}
-                for i, tab in enumerate(list_of_tabs):
-                    dict_of_tabs[sheets[i]] = tab
+                try:
+                    dict_of_tabs = {
+                        sheets[i]: {
+                            "tab": tab,
+                            "df": pd.read_excel(excel_file, sheet_name=i),
+                        }
+                        for i, tab in enumerate(list_of_tabs)
+                    }
+                except Exception as e:
+                    st.warning(f"The rendering of the Excel file failed. Error: {e}.")
 
                 for key_tab, tab in dict_of_tabs.items():
-                    with tab:
-                        df = pd.read_excel(excel_file, sheet_name=key_tab)
-                        st.dataframe(df, use_container_width=True)
+                    with tab["tab"]:
+                        df = tab["df"]
+                        edited_df = st.data_editor(
+                            df,
+                            use_container_width=True,
+                            num_rows="dynamic",
+                            key=key_tab,
+                        )
+                        tab["df"] = edited_df
+                        st.button(
+                            "Save",
+                            on_click=self._save_dataframe,
+                            args=(edited_df, path_selected, dict_of_tabs),
+                            key=f"{tab}.xlsx",
+                        )
+
+        elif path_selected.endswith(".json"):
+            with st.spinner("Wait for it..."):
+                with open(path_selected, "r") as f:
+                    data = json.load(f)
+                    st.checkbox("As table", value=False, key=f"json_df_{key}")
+                    if st.session_state[f"json_df_{key}"]:
+                        sheets = list(data.keys())
+                        list_of_tabs = st.tabs(sheets)
+                        try:
+                            dict_of_tabs = {
+                                sheets[i]: {
+                                    "tab": tab,
+                                    "df": pd.DataFrame.from_dict(data[sheets[i]]),
+                                }
+                                for i, tab in enumerate(list_of_tabs)
+                            }
+                        except Exception as e:
+                            st.error(
+                                f"The rendering of the JSON file failed. Error: {e}"
+                            )
+                        for key_tab, tab in dict_of_tabs.items():
+                            with tab["tab"]:
+                                edited_df = st.data_editor(
+                                    tab["df"], use_container_width=True
+                                )
+                                dict_edited = edited_df.to_dict()
+                                data[key_tab] = dict_edited
+                                st.button(
+                                    "Save",
+                                    on_click=self._save_dataframe,
+                                    args=(data, path_selected),
+                                    key=f"{tab['tab']}.json",
+                                )
+                    else:
+                        st.json(data)
 
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):
@@ -563,28 +643,33 @@ class FileExplorerApp:
         :return: The new configuration
         :doc-author: baobab soluciones
         """
-        for row in range(1, self.new_config["n_rows"] + 1):
+        # Get max of config row in dict_layout
+        for row in range(1, 101):
             col = self.config.get(f"n_cols_{row}", 1)
-            try:
-                if st.session_state[f"folder_{row}_{col}"] != None:
-                    self.new_config["dict_layout"][
-                        f"folder_{row}_{col}"
-                    ] = st.session_state[f"folder_{row}_{col}"]
-            except:
-                pass
-            try:
-                if st.session_state[f"file_{row}_{col}"] != None:
-                    self.new_config["dict_layout"][
-                        f"file_{row}_{col}"
-                    ] = st.session_state[f"file_{row}_{col}"]
-            except:
-                pass
+            for i_col in range(1, col + 1):
+                try:
+                    if st.session_state[f"folder_{row}_{i_col}"] != None:
+                        self.config["dict_layout"][
+                            f"folder_{row}_{i_col}"
+                        ] = st.session_state[f"folder_{row}_{i_col}"]
+                except:
+                    if (
+                        self.config["dict_layout"].get(f"folder_{row}_{i_col}", None)
+                        != None
+                    ):
+                        self.config["dict_layout"].pop(f"folder_{row}_{i_col}")
+                try:
+                    if st.session_state[f"file_{row}_{i_col}"] != None:
+                        self.config["dict_layout"][
+                            f"file_{row}_{i_col}"
+                        ] = st.session_state[f"file_{row}_{i_col}"]
+                except:
+                    if (
+                        self.config["dict_layout"].get(f"file_{row}_{i_col}", None)
+                        != None
+                    ):
+                        self.config["dict_layout"].pop(f"file_{row}_{i_col}")
 
-        # Change folder
-        if self.new_config["dir_path"] != self.config["dir_path"]:
-            self.new_config["dict_layout"] = {}
-
-        self.config.update(self.new_config)
         with open(self.config_path, "w") as f:
             json.dump(self.config, f, sort_keys=True, indent=4)
 
