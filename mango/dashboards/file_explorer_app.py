@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 import webbrowser
 from argparse import ArgumentParser
 from pathlib import Path
@@ -477,13 +478,14 @@ class FileExplorerApp:
             pass
         elif path_selected.endswith(".csv"):
             df = pd.read_csv(path_selected)
-            edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic")
-            st.button(
-                "Save",
-                on_click=self._save_dataframe,
-                args=(edited_df, path_selected),
-                key=".csv",
-            )
+            edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic", key=f"{path_selected}_editor_{uuid.uuid4()}")
+            if self.editable:
+                st.button(
+                    "Save",
+                    on_click=self._save_dataframe,
+                    args=(edited_df, path_selected),
+                    key=f"{path_selected}_csv_{uuid.uuid4()}",
+                )
 
         elif (
             path_selected.endswith(".png")
@@ -528,7 +530,7 @@ class FileExplorerApp:
                 def _open_html():
                     webbrowser.open_new_tab(path_selected)
 
-                st.button("Open", on_click=_open_html, key="Open .html")
+                st.button("Open", on_click=_open_html, key=f"{path_selected}_html_{uuid.uuid4()}")
 
         elif path_selected.endswith(".xlsx"):
             with st.spinner("Wait for it..."):
@@ -556,18 +558,19 @@ class FileExplorerApp:
                             key=key_tab,
                         )
                         tab["df"] = edited_df
-                        st.button(
-                            "Save",
-                            on_click=self._save_dataframe,
-                            args=(edited_df, path_selected, dict_of_tabs),
-                            key=f"{tab}.xlsx",
-                        )
+                        if self.editable:
+                            st.button(
+                                "Save",
+                                on_click=self._save_dataframe,
+                                args=(edited_df, path_selected, dict_of_tabs),
+                                key=f"{tab}_xlsx_{uuid.uuid4()}",
+                            )
 
         elif path_selected.endswith(".json"):
             with st.spinner("Wait for it..."):
                 with open(path_selected, "r") as f:
                     data = json.load(f)
-                    st.checkbox("As table", value=False, key=f"json_df_{key}")
+                    st.checkbox("As table", value=False, key=f"json_df_{key}_{uuid.uuid4()}")
                     if st.session_state[f"json_df_{key}"]:
                         sheets = list(data.keys())
                         list_of_tabs = st.tabs(sheets)
@@ -590,12 +593,13 @@ class FileExplorerApp:
                                 )
                                 dict_edited = edited_df.to_dict()
                                 data[key_tab] = dict_edited
-                                st.button(
-                                    "Save",
-                                    on_click=self._save_dataframe,
-                                    args=(data, path_selected),
-                                    key=f"{tab['tab']}.json",
-                                )
+                                if self.editable:
+                                    st.button(
+                                        "Save",
+                                        on_click=self._save_dataframe,
+                                        args=(data, path_selected),
+                                        key=f"{tab['tab']}_json_{uuid.uuid4()}",
+                                    )
                     else:
                         st.json(data)
 
