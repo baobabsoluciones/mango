@@ -478,7 +478,12 @@ class FileExplorerApp:
             pass
         elif path_selected.endswith(".csv"):
             df = pd.read_csv(path_selected)
-            edited_df = st.data_editor(df, use_container_width=True, num_rows="dynamic", key=f"{path_selected}_editor_{uuid.uuid4()}")
+            edited_df = st.data_editor(
+                df,
+                use_container_width=True,
+                num_rows="dynamic",
+                key=f"{path_selected}_editor_{uuid.uuid4()}",
+            )
             if self.editable:
                 st.button(
                     "Save",
@@ -530,7 +535,11 @@ class FileExplorerApp:
                 def _open_html():
                     webbrowser.open_new_tab(path_selected)
 
-                st.button("Open", on_click=_open_html, key=f"{path_selected}_html_{uuid.uuid4()}")
+                st.button(
+                    "Open",
+                    on_click=_open_html,
+                    key=f"{path_selected}_html_{uuid.uuid4()}",
+                )
 
         elif path_selected.endswith(".xlsx"):
             with st.spinner("Wait for it..."):
@@ -570,7 +579,9 @@ class FileExplorerApp:
             with st.spinner("Wait for it..."):
                 with open(path_selected, "r") as f:
                     data = json.load(f)
-                    st.checkbox("As table", value=False, key=f"json_df_{key}_{uuid.uuid4()}")
+                    st.checkbox(
+                        "As table", value=False, key=f"json_df_{key}_{uuid.uuid4()}"
+                    )
                     if st.session_state[f"json_df_{key}"]:
                         sheets = list(data.keys())
                         list_of_tabs = st.tabs(sheets)
