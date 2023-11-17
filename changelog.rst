@@ -1,3 +1,13 @@
+version 0.1.2
+--------------
+
+- **released**: 2023-11-17
+- **description**: some small bugfixes and add haversine function
+- **changelog**:
+    - fixed a bug on streamlit app saving the config file.
+    - Add edit excels, csv and json files in streamlit app.
+    - Add haversine function to calculate distance between two points.
+
 version 0.1.1
 --------------
 
