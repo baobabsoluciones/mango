@@ -1,11 +1,13 @@
 import json
 import os
+import re
 import uuid
 import webbrowser
 from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
+import plotly
 import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
@@ -455,6 +457,15 @@ class FileExplorerApp:
             with open(path_selected, "w") as f:
                 json.dump(edited_df, f)
 
+    @classmethod
+    def _read_plot_from_html(cls, path_selected):
+        with open(path_selected) as f:
+            html = f.read()
+        call_arg_str = re.findall(r"Plotly\.newPlot\((.*)\)", html[-(2**16) :])[0]
+        call_args = json.loads(f"[{call_arg_str}]")
+        plotly_json = {"data": call_args[1], "layout": call_args[2]}
+        return plotly.io.from_json(json.dumps(plotly_json))
+
     def _render_file_content(self, path_selected: str, key: str):
         """
         The _render_file_content function is a helper function that renders the content of a file in the Streamlit app.
@@ -504,12 +515,20 @@ class FileExplorerApp:
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
                 try:
-                    with open(path_selected, "r") as f:
-                        components.html(
-                            f.read(),
+                    try:
+                        fig = self._read_plot_from_html(path_selected)
+                        st.plotly_chart(
+                            fig,
                             height=self.config.get(f"height_{key}", 500),
                             width=self.config.get(f"width_{key}", None),
                         )
+                    except Exception:
+                        with open(path_selected, "r") as f:
+                            components.html(
+                                f.read(),
+                                height=self.config.get(f"height_{key}", 500),
+                                width=self.config.get(f"width_{key}", None),
+                            )
                 except Exception as e:
                     try:
                         with open(path_selected, "r", encoding="utf8") as f:
