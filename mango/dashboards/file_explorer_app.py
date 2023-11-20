@@ -521,17 +521,13 @@ class FileExplorerApp:
                             height=self.config.get(f"height_{key}", 500),
                             width=self.config.get(f"width_{key}", None),
                         )
-                        if self.config.get(f"width_{key}", None) is not None:
-                            st.plotly_chart(
-                                fig,
-                                theme=None,
-                            )
-                        else:
-                            st.plotly_chart(
-                                fig,
-                                use_container_width=True,
-                                theme=None,
-                            )
+                        st.plotly_chart(
+                            fig,
+                            use_container_width=True
+                            if self.config.get(f"width_{key}", None) is None
+                            else False,
+                            theme=None,
+                        )
                     except Exception:
                         with open(path_selected, "r") as f:
                             components.html(
