@@ -90,9 +90,14 @@ class FileTests(TestCase):
 
         # Test pandas ImportError
         with mock.patch.dict("sys.modules", {"pandas": None}):
-            self.assertRaises(
-                ImportError,
-                load_excel_sheet(file, sheet="Sheet1"),
+            with self.assertRaises(
+                NotImplementedError,
+            ) as context:
+                load_excel_sheet(file, sheet="Sheet1")
+
+            self.assertEqual(
+                str(context.exception),
+                "function not yet implemented without pandas",
             )
 
     def test_excel_file(self):
@@ -110,10 +115,16 @@ class FileTests(TestCase):
 
         # Test pandas ImportError
         with mock.patch.dict("sys.modules", {"pandas": None}):
-            self.assertRaises(
-                ImportError,
-                load_excel(file),
-            )
+            with warnings.catch_warnings(record=True) as warning_list:
+                # Run the function that may raise a warning
+                result = load_excel(file)
+
+                # Assert that the warning is raised
+                self.assertEqual(len(warning_list), 1)
+                self.assertEqual(
+                    str(warning_list[0].message),
+                    "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts.",
+                )
 
     def test_excel_light(self):
         file = normalize_path("./data/test.xlsx")
@@ -142,14 +153,21 @@ class FileTests(TestCase):
         self.assertEqual(data.keys(), data2.keys())
         self.assertEqual(data["Sheet2"], data2["Sheet1"])
         self.assertEqual(data["Sheet2"], data2["Sheet2"])
-        os.remove(file)
 
         # Test pandas ImportError
         with mock.patch.dict("sys.modules", {"pandas": None}):
-            self.assertRaises(
-                ImportError,
-                write_excel(file, data),
-            )
+            # Test pandas ImportError
+            with mock.patch.dict("sys.modules", {"pandas": None}):
+                with warnings.catch_warnings(record=True) as warning_list:
+                    # Run the function that may raise a warning
+                    write_excel(file, data)
+
+                    # Assert that the warning is raised
+                    self.assertEqual(len(warning_list), 1)
+                    self.assertEqual(
+                        str(warning_list[0].message),
+                        "pandas is not installed so write_excel_open will be used.",
+                    )
 
     def test_write_excel_light(self):
         data = {
@@ -212,13 +230,17 @@ class FileTests(TestCase):
         write_df_to_excel(file, df)
         data2 = load_excel(file)
         self.assertEqual(df.shape, data2["Sheet1"].shape)
-        os.remove(file)
 
         # Test pandas ImportError
         with mock.patch.dict("sys.modules", {"pandas": None}):
-            self.assertRaises(
-                ImportError,
-                write_df_to_excel(file, df),
+            with self.assertRaises(
+                NotImplementedError,
+            ) as context:
+                write_df_to_excel(file, df)
+
+            self.assertEqual(
+                str(context.exception),
+                "function not yet implemented without pandas",
             )
 
     def test_write_df_to_excel_bad_extension(self):
@@ -256,10 +278,16 @@ class FileTests(TestCase):
 
         # Test pandas ImportError
         with mock.patch.dict("sys.modules", {"pandas": None}):
-            self.assertRaises(
-                ImportError,
-                load_csv(file),
-            )
+            with warnings.catch_warnings(record=True) as warning_list:
+                # Run the function that may raise a warning
+                result = load_csv(file)
+
+                # Assert that the warning is raised
+                self.assertEqual(len(warning_list), 1)
+                self.assertEqual(
+                    str(warning_list[0].message),
+                    "pandas is not installed so load_csv_light will be used.",
+                )
 
     def test_read_csv_open(self):
         file = normalize_path("./data/test.csv")
@@ -291,10 +319,18 @@ class FileTests(TestCase):
 
         # Test pandas ImportError
         with mock.patch.dict("sys.modules", {"pandas": None}):
-            self.assertRaises(
-                ImportError,
-                write_csv(file, data),
-            )
+            # Test pandas ImportError
+            with mock.patch.dict("sys.modules", {"pandas": None}):
+                with warnings.catch_warnings(record=True) as warning_list:
+                    # Run the function that may raise a warning
+                    write_csv(file, data)
+
+                    # Assert that the warning is raised
+                    self.assertEqual(len(warning_list), 1)
+                    self.assertEqual(
+                        str(warning_list[0].message),
+                        "pandas is not installed so write_csv_light will be used.",
+                    )
 
     def test_write_csv_light(self):
         file = normalize_path("./data/temp.csv")

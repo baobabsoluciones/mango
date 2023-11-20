@@ -1,11 +1,13 @@
-import os
 import io
+import os
+from unittest import TestCase, mock
+
 import numpy as np
 from pytups import TupList, SuperDict
-from unittest import TestCase, mock
+
+from mango.processing import row_number
 from mango.table.pytups_table import Table
 from mango.table.table_tools import mean
-from mango.processing import row_number
 from mango.tests.const import normalize_path
 
 
@@ -1395,6 +1397,18 @@ class TestTable(TestCase):
         result = table.to_pandas()
         expected = pd.DataFrame.from_records(self.default_data2)
         pd.testing.assert_frame_equal(result, expected)
+
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            with self.assertRaises(
+                ImportError,
+            ) as context:
+                table.to_pandas()
+
+            self.assertEqual(
+                str(context.exception),
+                "Pandas is not present in your system. Try: pip install pandas",
+            )
 
     def test_to_from_json(self):
         msg = "to_json and from_json allow to write and load json files into a Table"
