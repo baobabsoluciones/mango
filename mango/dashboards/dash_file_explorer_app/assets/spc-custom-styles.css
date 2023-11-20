@@ -285,7 +285,7 @@ body {
 }
 
 
-#metric-select-title {
+#metric-select-title #metric-select-title-folder #metric-select-title-file {
   color: darkgray;
 }
 
@@ -437,7 +437,7 @@ body {
   margin: 4rem 5rem 1rem;
 }
 
-#metric-select-menu {
+#metric-select-menu #metric-select-folder #metric-select-file {
   flex: 1 1 0;
 }
 

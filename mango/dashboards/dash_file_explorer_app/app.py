@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import List, Dict
 
 import dash
-from dash import dcc, html
+import pandas as pd
+from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 
 # Config
@@ -223,10 +224,10 @@ app.layout = html.Div(
             children=[
                 dcc.Markdown(children=(build_tree_folder())),
                 html.Div(
-                    id="metric-select-menu",
+                    id="metric-select-folder",
                     children=[
                         html.Label(
-                            id="metric-select-title",
+                            id="metric-select-title-folder",
                             children="Selecciona la carpeta",
                         ),
                         dcc.Dropdown(
@@ -239,10 +240,10 @@ app.layout = html.Div(
                     ],
                 ),
                 html.Div(
-                    id="metric-select-menu",
+                    id="metric-select-file",
                     children=[
                         html.Label(
-                            id="metric-select-title",
+                            id="metric-select-title-file",
                             children="Selecciona el fichero",
                         ),
                         dcc.Dropdown(
@@ -253,8 +254,7 @@ app.layout = html.Div(
                 ),
                 # Main app
                 html.Div(
-                    id="status-container",
-                    children=[],
+                    id="file_content",
                 ),
             ],
         ),
@@ -285,7 +285,67 @@ def update_click_output(button_click, close_click):
     ],
 )
 def show_selector_file(path_folder):
+    if path_folder is None:
+        path_folder = _APP_CONFIG["dir_path"]
+    elif not os.path.exists(path_folder):
+        path_folder = _APP_CONFIG["dir_path"]
     return _get_options_by_path(path_folder, "file")
+
+
+@app.callback(
+    Output("file_content", "children"),
+    [Input("dropdown_file", "value")],
+)
+def build_file_content(path_selected):
+    if path_selected is None:
+        div_return = html.Div(
+            children=[],
+        )
+    elif not os.path.exists(path_selected):
+        div_return = html.Div(
+            children=[],
+        )
+    elif path_selected.endswith(".csv"):
+        div_return = html.Div(
+            children=[_render_table(path_selected)],
+        )
+    else:
+        div_return = html.Div(
+            children=[],
+        )
+    return div_return
+
+
+def _render_table(path_selected):
+    df = pd.read_csv(path_selected)
+    return dash_table.DataTable(
+        style_header={"fontWeight": "bold", "color": "inherit"},
+        style_as_list_view=True,
+        fill_width=True,
+        style_cell_conditional=[
+            {"if": {"column_id": ""}, "fontWeight": "bold", "color": "inherit"}
+        ],
+        style_cell={
+            "backgroundColor": "#1e2130",
+            "fontFamily": "Open Sans",
+            "padding": "0 2rem",
+            "color": "darkgray",
+            "border": "none",
+        },
+        css=[
+            {"selector": "tr:hover td", "rule": "color: #91dfd2 !important;"},
+            {"selector": "td", "rule": "border: none !important;"},
+            {
+                "selector": ".dash-cell.focused",
+                "rule": "background-color: #1e2130 !important;",
+            },
+            {"selector": "table", "rule": "--accent: #1e2130;"},
+            {"selector": "tr", "rule": "background-color: transparent"},
+        ],
+        data=df.to_dict("records"),
+        columns=[{"name": c, "id": c} for c in df.columns],
+        filter_action="native",
+    )
 
 
 # Running the server
