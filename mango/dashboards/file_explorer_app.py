@@ -254,53 +254,53 @@ class FileExplorerApp:
                     value=self.config.get(f"n_cols_{row}", 1),
                 )
             for row in range(1, self.config["n_rows"] + 1):
-                col = self.config.get(f"n_cols_{row}", 1)
-                try:
-                    path_row_col = st.session_state[f"file_{row}_{col}"]
-                except:
-                    path_row_col = self.config["dict_layout"].get(
-                        f"file_{row}_{col}", None
-                    )
-                    if path_row_col == None:
-                        continue
-                key_row_col = f"file_{row}_{col}"
-                if path_row_col != None:
-                    if (
-                        path_row_col.endswith(".html")
-                        or path_row_col.endswith(".jpg")
-                        or path_row_col.endswith(".png")
-                        or path_row_col.endswith(".jpeg")
-                    ):
-
-                        def _validate_number_text_input(text):
-                            if text == "None" or text == "" or text == None:
-                                return None
-                            elif text.isdecimal():
-                                return int(text)
-                            else:
-                                return "Error"
-
-                        number_w = st.text_input(
-                            f"Ancho: {os.path.basename(path_row_col)}",
-                            value=self.config.get(f"width_{key_row_col}", None),
-                            key=f"width_{key_row_col}",
+                for col in range(1, self.config[f"n_cols_{row}"] + 1):
+                    try:
+                        path_row_col = st.session_state[f"file_{row}_{col}"]
+                    except:
+                        path_row_col = self.config["dict_layout"].get(
+                            f"file_{row}_{col}", None
                         )
-                        number_w = _validate_number_text_input(number_w)
-                        if number_w == "Error":
-                            st.error("Input must be number")
-                        else:
-                            self.config[f"width_{key_row_col}"] = number_w
-                        if path_row_col.endswith(".html"):
-                            number_h = st.text_input(
-                                f"Alto: {os.path.basename(path_row_col)}",
-                                value=self.config.get(f"height_{key_row_col}", 500),
-                                key=f"height_{key_row_col}",
+                        if path_row_col == None:
+                            continue
+                    key_row_col = f"file_{row}_{col}"
+                    if path_row_col != None:
+                        if (
+                            path_row_col.endswith(".html")
+                            or path_row_col.endswith(".jpg")
+                            or path_row_col.endswith(".png")
+                            or path_row_col.endswith(".jpeg")
+                        ):
+
+                            def _validate_number_text_input(text):
+                                if text == "None" or text == "" or text == None:
+                                    return None
+                                elif text.isdecimal():
+                                    return int(text)
+                                else:
+                                    return "Error"
+
+                            number_w = st.text_input(
+                                f"Ancho: {os.path.basename(path_row_col)}",
+                                value=self.config.get(f"width_{key_row_col}", None),
+                                key=f"width_{key_row_col}",
                             )
-                            number_h = _validate_number_text_input(number_h)
-                            if number_h == "Error":
+                            number_w = _validate_number_text_input(number_w)
+                            if number_w == "Error":
                                 st.error("Input must be number")
                             else:
-                                self.config[f"height_{key_row_col}"] = number_h
+                                self.config[f"width_{key_row_col}"] = number_w
+                            if path_row_col.endswith(".html"):
+                                number_h = st.text_input(
+                                    f"Alto: {os.path.basename(path_row_col)}",
+                                    value=self.config.get(f"height_{key_row_col}", 500),
+                                    key=f"height_{key_row_col}",
+                                )
+                                number_h = _validate_number_text_input(number_h)
+                                if number_h == "Error":
+                                    st.error("Input must be number")
+                                else:
+                                    self.config[f"height_{key_row_col}"] = number_h
 
             # Change to editable
             self.config["editable"] = st.checkbox(
