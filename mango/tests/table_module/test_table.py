@@ -475,7 +475,11 @@ class TestTable(TestCase):
 
     def test_left_join_with_by_dict4(self):
         msg = "left join with by as a dict with two keys and common keys"
-        df_id = Table(self.df_id + [{"Name": "Albert", "Id": 5}]).rename(Name="N").mutate(other=1)
+        df_id = (
+            Table(self.df_id + [{"Name": "Albert", "Id": 5}])
+            .rename(Name="N")
+            .mutate(other=1)
+        )
         df = (
             Table(self.default_data2)
             .mutate(N=1)
@@ -1368,6 +1372,18 @@ class TestTable(TestCase):
         result = Table.from_pandas(df)
         self.assertEqual(result, self.default_data2, msg=msg)
         self.assertIsInstance(result, Table)
+
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            with self.assertRaises(
+                ImportError,
+            ) as context:
+                Table.from_pandas(df)
+
+            self.assertEqual(
+                str(context.exception),
+                "Pandas is not present in your system. Try: pip install pandas",
+            )
 
     def test_to_pandas(self):
         try:
