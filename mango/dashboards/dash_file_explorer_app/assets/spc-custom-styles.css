@@ -26,6 +26,12 @@ body {
   margin: 0;
 }
 
+#plot_roc {
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
 #big-app-container {
   max-width: 100%;
   display: flex;

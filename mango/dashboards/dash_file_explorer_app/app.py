@@ -215,52 +215,61 @@ def _get_options_by_path(
     )
 
 
-app.layout = html.Div(
-    id="big-app-container",
-    children=[
-        build_banner(),
-        html.Div(
-            id="app-container",
-            children=[
-                dcc.Markdown(children=(build_tree_folder())),
-                html.Div(
-                    id="metric-select-folder",
-                    children=[
-                        html.Label(
-                            id="metric-select-title-folder",
-                            children="Selecciona la carpeta",
-                        ),
-                        dcc.Dropdown(
-                            id="dropdown_folder",
-                            options=_get_options_by_path(
-                                _APP_CONFIG["dir_path"], "folder"
-                            ),
-                            value=None,
-                        ),
-                    ],
-                ),
-                html.Div(
-                    id="metric-select-file",
-                    children=[
-                        html.Label(
-                            id="metric-select-title-file",
-                            children="Selecciona el fichero",
-                        ),
-                        dcc.Dropdown(
-                            id="dropdown_file",
-                            value=None,
-                        ),
-                    ],
-                ),
-                # Main app
-                html.Div(
-                    id="file_content",
-                ),
-            ],
-        ),
-        generate_modal(),
-    ],
-)
+def _render_table(path_selected):
+    df = pd.read_csv(path_selected)
+    return dash_table.DataTable(
+        style_header={"fontWeight": "bold", "color": "inherit"},
+        style_as_list_view=True,
+        fill_width=True,
+        style_cell_conditional=[
+            {"if": {"column_id": ""}, "fontWeight": "bold", "color": "inherit"}
+        ],
+        style_cell={
+            "backgroundColor": "#1e2130",
+            "fontFamily": "Open Sans",
+            "padding": "0 2rem",
+            "color": "darkgray",
+            "border": "none",
+        },
+        css=[
+            {"selector": "tr:hover td", "rule": "color: #91dfd2 !important;"},
+            {"selector": "td", "rule": "border: none !important;"},
+            {
+                "selector": ".dash-cell.focused",
+                "rule": "background-color: #1e2130 !important;",
+            },
+            {"selector": "table", "rule": "--accent: #1e2130;"},
+            {"selector": "tr", "rule": "background-color: transparent"},
+        ],
+        data=df.to_dict("records"),
+        columns=[{"name": c, "id": c} for c in df.columns],
+        filter_action="native",
+        editable=True,
+    )
+
+def _render_html(path_selected):
+    try:
+        import re
+        import json
+        import plotly
+        with open(path_selected) as f:
+            html = f.read()
+        call_arg_str = re.findall(r'Plotly\.newPlot\((.*)\)', html[-2 ** 16:])[0]
+        call_args = json.loads(f'[{call_arg_str}]')
+        plotly_json = {'data': call_args[1], 'layout': call_args[2]}
+        fig = plotly.io.from_json(json.dumps(plotly_json))
+        print("Loading html file")
+        return dcc.Graph(figure=fig, className="plot_roc", style={"height": "500px", "width": "100%"})
+    except:
+        print("Error loading html file")
+        return html.Iframe(
+            id="plot_roc",
+            srcDoc=open(
+                path_selected,
+                encoding="utf8",
+            ).read(),
+            className="plot_roc",
+        )
 
 
 @app.callback(
@@ -309,6 +318,10 @@ def build_file_content(path_selected):
         div_return = html.Div(
             children=[_render_table(path_selected)],
         )
+    elif path_selected.endswith(".html"):
+        div_return = html.Div(
+            children=[_render_html(path_selected)],
+        )
     else:
         div_return = html.Div(
             children=[],
@@ -316,37 +329,52 @@ def build_file_content(path_selected):
     return div_return
 
 
-def _render_table(path_selected):
-    df = pd.read_csv(path_selected)
-    return dash_table.DataTable(
-        style_header={"fontWeight": "bold", "color": "inherit"},
-        style_as_list_view=True,
-        fill_width=True,
-        style_cell_conditional=[
-            {"if": {"column_id": ""}, "fontWeight": "bold", "color": "inherit"}
-        ],
-        style_cell={
-            "backgroundColor": "#1e2130",
-            "fontFamily": "Open Sans",
-            "padding": "0 2rem",
-            "color": "darkgray",
-            "border": "none",
-        },
-        css=[
-            {"selector": "tr:hover td", "rule": "color: #91dfd2 !important;"},
-            {"selector": "td", "rule": "border: none !important;"},
-            {
-                "selector": ".dash-cell.focused",
-                "rule": "background-color: #1e2130 !important;",
-            },
-            {"selector": "table", "rule": "--accent: #1e2130;"},
-            {"selector": "tr", "rule": "background-color: transparent"},
-        ],
-        data=df.to_dict("records"),
-        columns=[{"name": c, "id": c} for c in df.columns],
-        filter_action="native",
-    )
-
+app.layout = html.Div(
+    id="big-app-container",
+    children=[
+        build_banner(),
+        html.Div(
+            id="app-container",
+            children=[
+                dcc.Markdown(children=(build_tree_folder())),
+                html.Div(
+                    id="metric-select-folder",
+                    children=[
+                        html.Label(
+                            id="metric-select-title-folder",
+                            children="Selecciona la carpeta",
+                        ),
+                        dcc.Dropdown(
+                            id="dropdown_folder",
+                            options=_get_options_by_path(
+                                _APP_CONFIG["dir_path"], "folder"
+                            ),
+                            value=None,
+                        ),
+                    ],
+                ),
+                html.Div(
+                    id="metric-select-file",
+                    children=[
+                        html.Label(
+                            id="metric-select-title-file",
+                            children="Selecciona el fichero",
+                        ),
+                        dcc.Dropdown(
+                            id="dropdown_file",
+                            value=None,
+                        ),
+                    ],
+                ),
+                # Main app
+                html.Div(
+                    id="file_content",
+                ),
+            ],
+        ),
+        generate_modal(),
+    ],
+)
 
 # Running the server
 if __name__ == "__main__":
