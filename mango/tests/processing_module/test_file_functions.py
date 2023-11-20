@@ -168,6 +168,8 @@ class FileTests(TestCase):
                         str(warning_list[0].message),
                         "pandas is not installed so write_excel_open will be used.",
                     )
+        if os.path.exists(file):
+            os.remove(file)
 
     def test_write_excel_light(self):
         data = {
@@ -242,6 +244,8 @@ class FileTests(TestCase):
                 str(context.exception),
                 "function not yet implemented without pandas",
             )
+        if os.path.exists(file):
+            os.remove(file)
 
     def test_write_df_to_excel_bad_extension(self):
         try:
@@ -331,6 +335,8 @@ class FileTests(TestCase):
                         str(warning_list[0].message),
                         "pandas is not installed so write_csv_light will be used.",
                     )
+        if os.path.exists(file):
+            os.remove(file)
 
     def test_write_csv_light(self):
         file = normalize_path("./data/temp.csv")
