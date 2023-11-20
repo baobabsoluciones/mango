@@ -1,8 +1,6 @@
-from unittest import TestCase
 import os
 import warnings
-
-import pandas as pd
+from unittest import TestCase, mock
 
 from mango.processing import (
     list_files_directory,
@@ -90,6 +88,13 @@ class FileTests(TestCase):
         self.assertIsInstance(data, pd.DataFrame)
         self.assertEqual(data.shape, (2, 2))
 
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            self.assertRaises(
+                ImportError,
+                load_excel_sheet(file, sheet="Sheet1"),
+            )
+
     def test_excel_file(self):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file)
@@ -102,6 +107,13 @@ class FileTests(TestCase):
         except ImportError:
             self.assertIsInstance(data["Sheet1"], list)
             self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
+
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            self.assertRaises(
+                ImportError,
+                load_excel(file),
+            )
 
     def test_excel_light(self):
         file = normalize_path("./data/test.xlsx")
@@ -131,6 +143,13 @@ class FileTests(TestCase):
         self.assertEqual(data["Sheet2"], data2["Sheet1"])
         self.assertEqual(data["Sheet2"], data2["Sheet2"])
         os.remove(file)
+
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            self.assertRaises(
+                ImportError,
+                write_excel(file, data),
+            )
 
     def test_write_excel_light(self):
         data = {
@@ -195,6 +214,13 @@ class FileTests(TestCase):
         self.assertEqual(df.shape, data2["Sheet1"].shape)
         os.remove(file)
 
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            self.assertRaises(
+                ImportError,
+                write_df_to_excel(file, df),
+            )
+
     def test_write_df_to_excel_bad_extension(self):
         try:
             import pandas as pd
@@ -228,6 +254,13 @@ class FileTests(TestCase):
         self.assertIsInstance(data, pd.DataFrame)
         self.assertEqual(data.shape, (2, 2))
 
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            self.assertRaises(
+                ImportError,
+                load_csv(file),
+            )
+
     def test_read_csv_open(self):
         file = normalize_path("./data/test.csv")
         data = load_csv_light(file)
@@ -255,7 +288,13 @@ class FileTests(TestCase):
         write_csv(file, data)
         data2 = load_csv(file)
         self.assertEqual(data2.shape, (3, 2))
-        os.remove(file)
+
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            self.assertRaises(
+                ImportError,
+                write_csv(file, data),
+            )
 
     def test_write_csv_light(self):
         file = normalize_path("./data/temp.csv")
