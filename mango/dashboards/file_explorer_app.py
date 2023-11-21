@@ -1,11 +1,13 @@
 import json
 import os
+import re
 import uuid
 import webbrowser
 from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
+import plotly
 import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
@@ -252,53 +254,53 @@ class FileExplorerApp:
                     value=self.config.get(f"n_cols_{row}", 1),
                 )
             for row in range(1, self.config["n_rows"] + 1):
-                col = self.config.get(f"n_cols_{row}", 1)
-                try:
-                    path_row_col = st.session_state[f"file_{row}_{col}"]
-                except:
-                    path_row_col = self.config["dict_layout"].get(
-                        f"file_{row}_{col}", None
-                    )
-                    if path_row_col == None:
-                        continue
-                key_row_col = f"file_{row}_{col}"
-                if path_row_col != None:
-                    if (
-                        path_row_col.endswith(".html")
-                        or path_row_col.endswith(".jpg")
-                        or path_row_col.endswith(".png")
-                        or path_row_col.endswith(".jpeg")
-                    ):
-
-                        def _validate_number_text_input(text):
-                            if text == "None" or text == "" or text == None:
-                                return None
-                            elif text.isdecimal():
-                                return int(text)
-                            else:
-                                return "Error"
-
-                        number_w = st.text_input(
-                            f"Ancho: {os.path.basename(path_row_col)}",
-                            value=self.config.get(f"width_{key_row_col}", None),
-                            key=f"width_{key_row_col}",
+                for col in range(1, self.config[f"n_cols_{row}"] + 1):
+                    try:
+                        path_row_col = st.session_state[f"file_{row}_{col}"]
+                    except:
+                        path_row_col = self.config["dict_layout"].get(
+                            f"file_{row}_{col}", None
                         )
-                        number_w = _validate_number_text_input(number_w)
-                        if number_w == "Error":
-                            st.error("Input must be number")
-                        else:
-                            self.config[f"width_{key_row_col}"] = number_w
-                        if path_row_col.endswith(".html"):
-                            number_h = st.text_input(
-                                f"Alto: {os.path.basename(path_row_col)}",
-                                value=self.config.get(f"height_{key_row_col}", 500),
-                                key=f"height_{key_row_col}",
+                        if path_row_col == None:
+                            continue
+                    key_row_col = f"file_{row}_{col}"
+                    if path_row_col != None:
+                        if (
+                            path_row_col.endswith(".html")
+                            or path_row_col.endswith(".jpg")
+                            or path_row_col.endswith(".png")
+                            or path_row_col.endswith(".jpeg")
+                        ):
+
+                            def _validate_number_text_input(text):
+                                if text == "None" or text == "" or text == None:
+                                    return None
+                                elif text.isdecimal():
+                                    return int(text)
+                                else:
+                                    return "Error"
+
+                            number_w = st.text_input(
+                                f"Width: {os.path.basename(path_row_col)}",
+                                value=self.config.get(f"width_{key_row_col}", None),
+                                key=f"width_{key_row_col}",
                             )
-                            number_h = _validate_number_text_input(number_h)
-                            if number_h == "Error":
+                            number_w = _validate_number_text_input(number_w)
+                            if number_w == "Error":
                                 st.error("Input must be number")
                             else:
-                                self.config[f"height_{key_row_col}"] = number_h
+                                self.config[f"width_{key_row_col}"] = number_w
+                            if path_row_col.endswith(".html"):
+                                number_h = st.text_input(
+                                    f"Height: {os.path.basename(path_row_col)}",
+                                    value=self.config.get(f"height_{key_row_col}", 500),
+                                    key=f"height_{key_row_col}",
+                                )
+                                number_h = _validate_number_text_input(number_h)
+                                if number_h == "Error":
+                                    st.error("Input must be number")
+                                else:
+                                    self.config[f"height_{key_row_col}"] = number_h
 
             # Change to editable
             self.config["editable"] = st.checkbox(
@@ -455,6 +457,15 @@ class FileExplorerApp:
             with open(path_selected, "w") as f:
                 json.dump(edited_df, f)
 
+    @classmethod
+    def _read_plot_from_html(cls, path_selected):
+        with open(path_selected) as f:
+            html = f.read()
+        call_arg_str = re.findall(r"Plotly\.newPlot\((.*)\)", html[-(2**16) :])[0]
+        call_args = json.loads(f"[{call_arg_str}]")
+        plotly_json = {"data": call_args[1], "layout": call_args[2]}
+        return plotly.io.from_json(json.dumps(plotly_json))
+
     def _render_file_content(self, path_selected: str, key: str):
         """
         The _render_file_content function is a helper function that renders the content of a file in the Streamlit app.
@@ -504,12 +515,26 @@ class FileExplorerApp:
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
                 try:
-                    with open(path_selected, "r") as f:
-                        components.html(
-                            f.read(),
+                    try:
+                        fig = self._read_plot_from_html(path_selected)
+                        fig.update_layout(
                             height=self.config.get(f"height_{key}", 500),
                             width=self.config.get(f"width_{key}", None),
                         )
+                        st.plotly_chart(
+                            fig,
+                            use_container_width=True
+                            if self.config.get(f"width_{key}", None) is None
+                            else False,
+                            theme=None,
+                        )
+                    except Exception:
+                        with open(path_selected, "r") as f:
+                            components.html(
+                                f.read(),
+                                height=self.config.get(f"height_{key}", 500),
+                                width=self.config.get(f"width_{key}", None),
+                            )
                 except Exception as e:
                     try:
                         with open(path_selected, "r", encoding="utf8") as f:
@@ -579,9 +604,7 @@ class FileExplorerApp:
             with st.spinner("Wait for it..."):
                 with open(path_selected, "r") as f:
                     data = json.load(f)
-                    st.checkbox(
-                        "As table", value=False, key=f"json_df_{key}_{uuid.uuid4()}"
-                    )
+                    st.checkbox("As table", value=False, key=f"json_df_{key}")
                     if st.session_state[f"json_df_{key}"]:
                         sheets = list(data.keys())
                         list_of_tabs = st.tabs(sheets)
@@ -593,24 +616,24 @@ class FileExplorerApp:
                                 }
                                 for i, tab in enumerate(list_of_tabs)
                             }
-                        except Exception as e:
-                            st.error(
-                                f"The rendering of the JSON file failed. Error: {e}"
-                            )
-                        for key_tab, tab in dict_of_tabs.items():
-                            with tab["tab"]:
-                                edited_df = st.data_editor(
-                                    tab["df"], use_container_width=True
-                                )
-                                dict_edited = edited_df.to_dict()
-                                data[key_tab] = dict_edited
-                                if self.editable:
-                                    st.button(
-                                        "Save",
-                                        on_click=self._save_dataframe,
-                                        args=(data, path_selected),
-                                        key=f"{tab['tab']}_json_{uuid.uuid4()}",
+                            for key_tab, tab in dict_of_tabs.items():
+                                with tab["tab"]:
+                                    edited_df = st.data_editor(
+                                        tab["df"], use_container_width=True
                                     )
+                                    dict_edited = edited_df.to_dict()
+                                    data[key_tab] = dict_edited
+                                    if self.editable:
+                                        st.button(
+                                            "Save",
+                                            on_click=self._save_dataframe,
+                                            args=(data, path_selected),
+                                            key=f"{tab['tab']}_json_{uuid.uuid4()}",
+                                        )
+                        except Exception as e:
+                            st.warning(
+                                f"The rendering of the JSON as file failed. Error: {e}"
+                            )
                     else:
                         st.json(data)
 
