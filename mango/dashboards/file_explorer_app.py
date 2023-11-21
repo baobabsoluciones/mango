@@ -9,7 +9,6 @@ from pathlib import Path
 import pandas as pd
 import plotly
 import streamlit as st
-import streamlit.components.v1 as components
 from PIL import Image
 
 
@@ -459,12 +458,23 @@ class FileExplorerApp:
 
     @classmethod
     def _read_plot_from_html(cls, path_selected):
-        with open(path_selected) as f:
-            html = f.read()
-        call_arg_str = re.findall(r"Plotly\.newPlot\((.*)\)", html[-(2**16) :])[0]
-        call_args = json.loads(f"[{call_arg_str}]")
-        plotly_json = {"data": call_args[1], "layout": call_args[2]}
-        return plotly.io.from_json(json.dumps(plotly_json))
+        encodings_to_try = ["utf-8", "latin-1", "cp1252"]
+
+        for encoding in encodings_to_try:
+            try:
+                with open(path_selected, encoding=encoding) as f:
+                    html = f.read()
+
+                # Read
+                call_arg_str = re.findall(
+                    r"Plotly\.newPlot\((.*)\)", html[-(2**16) :]
+                )[0]
+                call_args = json.loads(f"[{call_arg_str}]")
+                plotly_json = {"data": call_args[1], "layout": call_args[2]}
+                return plotly.io.from_json(json.dumps(plotly_json))
+
+            except:
+                pass
 
     def _render_file_content(self, path_selected: str, key: str):
         """
@@ -515,47 +525,22 @@ class FileExplorerApp:
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
                 try:
-                    try:
-                        fig = self._read_plot_from_html(path_selected)
-                        fig.update_layout(
-                            height=self.config.get(f"height_{key}", 500),
-                            width=self.config.get(f"width_{key}", None),
-                        )
-                        st.plotly_chart(
-                            fig,
-                            use_container_width=True
-                            if self.config.get(f"width_{key}", None) is None
-                            else False,
-                            theme=None,
-                        )
-                    except Exception:
-                        with open(path_selected, "r") as f:
-                            components.html(
-                                f.read(),
-                                height=self.config.get(f"height_{key}", 500),
-                                width=self.config.get(f"width_{key}", None),
-                            )
-                except Exception as e:
-                    try:
-                        with open(path_selected, "r", encoding="utf8") as f:
-                            components.html(
-                                f.read(),
-                                height=self.config.get(f"height_{key}", 500),
-                                width=self.config.get(f"width_{key}", None),
-                            )
-                    except Exception as e:
-                        try:
-                            with open(path_selected, "r", encoding="utf-8") as f:
-                                components.html(
-                                    f.read(),
-                                    height=self.config.get(f"height_{key}", 500),
-                                    width=self.config.get(f"width_{key}", None),
-                                )
-                        except Exception as e:
-                            print(e)
-                            st.warning(
-                                "The rendering of the HTML file failed. Please, notify mango@baobabsoluciones.es"
-                            )
+                    fig = self._read_plot_from_html(path_selected)
+                    fig.update_layout(
+                        height=self.config.get(f"height_{key}", 500),
+                        width=self.config.get(f"width_{key}", None),
+                    )
+                    st.plotly_chart(
+                        fig,
+                        use_container_width=True
+                        if self.config.get(f"width_{key}", None) is None
+                        else False,
+                        theme=None,
+                    )
+                except:
+                    st.warning(
+                        "The rendering of the HTML file failed. Please, notify mango@baobabsoluciones.es"
+                    )
 
                 def _open_html():
                     webbrowser.open_new_tab(path_selected)
