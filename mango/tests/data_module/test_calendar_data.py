@@ -71,7 +71,7 @@ class CalendarTests(TestCase):
         # Columns
         self.assertEqual(
             list(df_calendar.columns),
-            ["date", "name", "country_code", "community_code", "community_name"],
+            ["date", "name", "country_code", "community_code", "community_name", "weight"],
         )
 
         # Check years

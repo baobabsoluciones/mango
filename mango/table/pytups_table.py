@@ -30,7 +30,16 @@ from .pytups_tools import (
     auto_join,
 )
 from .table_tools import is_subset
-from mango.processing import load_json, write_json, as_list
+from mango.processing import (
+    load_json,
+    write_json,
+    as_list,
+    flatten,
+    load_excel_light,
+    write_excel_light,
+    load_csv_light,
+    write_csv_light,
+)
 
 
 class Table(TupList):
@@ -86,18 +95,31 @@ class Table(TupList):
             )
 
     def sorted(self, **kwargs) -> "Table":
-        raise NotImplementedError(
-            "A list of dict cannot be sorted. Use order_by instead"
-        )
-
-    def take(self, indices, use_numpy=False) -> TupList:
-        indices = as_list(indices)
-        if len(indices) == 1:
-            indices = indices[0]
-
-        return TupList(self).take(indices, use_numpy)
+        try:
+            return Table(super().sorted(**kwargs))
+        except:
+            raise NotImplementedError(
+                "A list of dict cannot be sorted. Use order_by instead"
+            )
 
     # New or modified methods
+    def take(self, *args, use_numpy=False) -> TupList:
+        """
+        Extract values from a columns of a table.
+
+        Example:
+        result=Table([{"a":1, "b":2}, {"a":3, "b":4}]).take("a", "b")
+        result: [(1,2), (3,4)]
+
+        :param args: name of the columns to extract
+        :param use_numpy: use numpy methods in take
+        :return: a list of tuples.
+        """
+        indices = flatten(args)
+        if len(indices) == 1:
+            indices = indices[0]
+        return TupList(self).take(indices, use_numpy)
+
     def __str__(self):
         if self.len():
             if not isinstance(self[0], dict):
@@ -638,6 +660,8 @@ class Table(TupList):
         :param columns: Columns to select to create the set.
         :return: a tuplist with unique values
         """
+        if len(self) == 0:
+            return TupList()
         table_col = set(self[0].keys())
         if not is_subset(columns, table_col):
             raise KeyError(f"key(s) {columns} are not in table.")
@@ -675,7 +699,7 @@ class Table(TupList):
         len_unique = self.distinct(columns).len()
         return len_unique == self.len()
 
-    def add_row(self, **kwargs):
+    def add_row(self, **kwargs) -> "Table":
         """
         Add a row to the table.
         Missing columns are filled with value None.
@@ -686,7 +710,7 @@ class Table(TupList):
         result = self + [{**kwargs}]
         return result.replace(replacement=None, to_replace=None)
 
-    def rbind(self, table: TupList):
+    def rbind(self, table: list) -> "Table":
         """
         Bind two tables by rows.
 
@@ -710,7 +734,7 @@ class Table(TupList):
         }
 
     @classmethod
-    def dataset_from_json(self, path):
+    def dataset_from_json(cls, path):
         """
         Load a json file and format it applying Table() to every table.
 
@@ -718,7 +742,7 @@ class Table(TupList):
         :return: a dict of Tables
         """
         data = load_json(path)
-        return self.format_dataset(data)
+        return cls.format_dataset(data)
 
     # Save and load functions
     @staticmethod
@@ -813,3 +837,40 @@ class Table(TupList):
         :return: what the function returns.
         """
         return func(self, *args, **kwargs)
+
+    @classmethod
+    def dataset_from_excel(cls, path, sheets=None) -> dict:
+        """
+        Read an Excel file and return a dict of Table()
+
+        :param path: path fo the Excel file.
+        :param sheets: list of sheets to read (all the sheets are read if None)
+        :return: a dict of Table objects.
+        """
+        data = load_excel_light(path, sheets)
+        return cls.format_dataset(data)
+
+    def to_excel(self, path, sheet_name=None):
+        """
+        Write the table to an excel file
+
+        :param path: path fo the Excel file.
+        :param sheet_name: Name of the excel sheet.
+        :return: None
+        """
+        if sheet_name is None:
+            sheet_name = "Sheet1"
+        return write_excel_light(path, {sheet_name: self})
+
+    @classmethod
+    def from_csv(cls, path, sep=",", encoding=None) -> "Table":
+        """
+        Write the table to a csv file.
+
+        :param path: path fo the Excel file.
+        :param sep: column separator in the csv file. (detected automatically if None).
+        :param encoding: encoding.
+        :return: a dict of Table objects.
+        """
+        data = load_csv_light(path, sep, encoding)
+        return Table(data)
