@@ -125,6 +125,7 @@ class FileTests(TestCase):
                     str(warning_list[0].message),
                     "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts.",
                 )
+                self.test_excel_light()
 
     def test_excel_light(self):
         file = normalize_path("./data/test.xlsx")
@@ -168,6 +169,7 @@ class FileTests(TestCase):
                         str(warning_list[0].message),
                         "pandas is not installed so write_excel_open will be used.",
                     )
+                    self.test_write_excel_light()
         if os.path.exists(file):
             os.remove(file)
 
@@ -292,6 +294,7 @@ class FileTests(TestCase):
                     str(warning_list[0].message),
                     "pandas is not installed so load_csv_light will be used.",
                 )
+                self.test_read_csv_open()
 
     def test_read_csv_open(self):
         file = normalize_path("./data/test.csv")
@@ -335,6 +338,7 @@ class FileTests(TestCase):
                         str(warning_list[0].message),
                         "pandas is not installed so write_csv_light will be used.",
                     )
+                    self.test_write_csv_light()
         if os.path.exists(file):
             os.remove(file)
 
