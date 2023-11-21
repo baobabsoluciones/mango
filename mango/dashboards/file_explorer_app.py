@@ -604,9 +604,7 @@ class FileExplorerApp:
             with st.spinner("Wait for it..."):
                 with open(path_selected, "r") as f:
                     data = json.load(f)
-                    st.checkbox(
-                        "As table", value=False, key=f"json_df_{key}_{uuid.uuid4()}"
-                    )
+                    st.checkbox("As table", value=False, key=f"json_df_{key}")
                     if st.session_state[f"json_df_{key}"]:
                         sheets = list(data.keys())
                         list_of_tabs = st.tabs(sheets)
@@ -618,24 +616,24 @@ class FileExplorerApp:
                                 }
                                 for i, tab in enumerate(list_of_tabs)
                             }
-                        except Exception as e:
-                            st.error(
-                                f"The rendering of the JSON file failed. Error: {e}"
-                            )
-                        for key_tab, tab in dict_of_tabs.items():
-                            with tab["tab"]:
-                                edited_df = st.data_editor(
-                                    tab["df"], use_container_width=True
-                                )
-                                dict_edited = edited_df.to_dict()
-                                data[key_tab] = dict_edited
-                                if self.editable:
-                                    st.button(
-                                        "Save",
-                                        on_click=self._save_dataframe,
-                                        args=(data, path_selected),
-                                        key=f"{tab['tab']}_json_{uuid.uuid4()}",
+                            for key_tab, tab in dict_of_tabs.items():
+                                with tab["tab"]:
+                                    edited_df = st.data_editor(
+                                        tab["df"], use_container_width=True
                                     )
+                                    dict_edited = edited_df.to_dict()
+                                    data[key_tab] = dict_edited
+                                    if self.editable:
+                                        st.button(
+                                            "Save",
+                                            on_click=self._save_dataframe,
+                                            args=(data, path_selected),
+                                            key=f"{tab['tab']}_json_{uuid.uuid4()}",
+                                        )
+                        except Exception as e:
+                            st.warning(
+                                f"The rendering of the JSON as file failed. Error: {e}"
+                            )
                     else:
                         st.json(data)
 
