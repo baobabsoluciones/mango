@@ -366,7 +366,7 @@ def load_excel_light(path, sheets=None):
             dataset[ws.title] = TupList(data[1:]).to_dictlist(data[0])
         else:
             dataset[ws.title] = []
-
+    wb._archive.close()
     return dataset
 
 

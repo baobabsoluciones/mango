@@ -1,12 +1,7 @@
 import os
 from copy import deepcopy
 from unittest import TestCase
-
-import pandas as pd
-from pandas._testing import assert_frame_equal
 from pyomo.environ import *
-from pyomo.opt import SolverFactory
-
 from mango.processing import load_excel_light
 from mango.pyomo.pyomo_tools import (
     var_to_table,

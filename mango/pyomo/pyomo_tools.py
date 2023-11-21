@@ -99,10 +99,21 @@ def get_gap(result):
     :param result: a pyomo result object
     :return: the gap
     """
+    sense = result.Problem.sense
     lb = result.Problem.lower_bound
     ub = result.Problem.upper_bound
-    gap = round(100 * (ub - lb) / lb, 3)
-    return gap
+
+    if ub == lb:
+        return 0
+    if sense == "minimize":
+        if ub == 0:
+            ub = 10 ** -6
+        gap = round(100 * (ub - lb) / ub, 3)
+    else:
+        if lb == 0:
+            lb = 10 ** -6
+        gap = round(100 * (lb - ub) / lb, 3)
+    return abs(gap)
 
 
 def write_cbc_warmstart_file(filename, instance, opt):
@@ -130,7 +141,7 @@ def variables_to_excel(model_solution, path, clean=True):
     :return: nothing
     """
     variables = {
-        k: var_to_table(v, keys=None, clean=clean)
+        k: var_to_table(v, keys=None, clean=clean, rounding=6)
         for k, v in model_solution.component_map(ctype=pyo.Var).items()
     }
     write_excel(path + "variables.xlsx", variables)
