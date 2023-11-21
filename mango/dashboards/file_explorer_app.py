@@ -281,7 +281,7 @@ class FileExplorerApp:
                                     return "Error"
 
                             number_w = st.text_input(
-                                f"Ancho: {os.path.basename(path_row_col)}",
+                                f"Width: {os.path.basename(path_row_col)}",
                                 value=self.config.get(f"width_{key_row_col}", None),
                                 key=f"width_{key_row_col}",
                             )
@@ -292,7 +292,7 @@ class FileExplorerApp:
                                 self.config[f"width_{key_row_col}"] = number_w
                             if path_row_col.endswith(".html"):
                                 number_h = st.text_input(
-                                    f"Alto: {os.path.basename(path_row_col)}",
+                                    f"Height: {os.path.basename(path_row_col)}",
                                     value=self.config.get(f"height_{key_row_col}", 500),
                                     key=f"height_{key_row_col}",
                                 )
