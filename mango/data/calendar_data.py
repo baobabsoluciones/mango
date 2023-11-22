@@ -245,4 +245,6 @@ def _pivot_calendar(
             if col not in ["date", "weight"]:
                 df_calendar[col] = df_calendar[col] * df_calendar["weight"]
 
+        df_calendar.drop(["weight"], axis=1, inplace=True)
+
     return df_calendar
