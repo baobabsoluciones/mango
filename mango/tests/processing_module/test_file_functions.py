@@ -12,9 +12,7 @@ from mango.processing import (
     write_json,
     load_csv,
     write_excel,
-    write_df_to_excel,
     write_csv,
-    write_df_to_csv,
 )
 from mango.processing.file_functions import (
     load_csv_light,
@@ -27,6 +25,15 @@ from mango.tests.const import normalize_path
 
 class FileTests(TestCase):
     def setUp(self):
+        self.data_1 = {
+            "Sheet1": [
+                {"a": 1.2, "b": 4.1},
+                {"a": 2.3, "b": 5.2},
+                {"a": 3.1, "b": 6.4},
+            ],
+            "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
+        }
+        self.records_to_df = [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
         pass
 
     def tearDown(self):
@@ -88,61 +95,64 @@ class FileTests(TestCase):
         self.assertIsInstance(data, pd.DataFrame)
         self.assertEqual(data.shape, (2, 2))
 
-        # Test pandas ImportError
-        with mock.patch.dict("sys.modules", {"pandas": None}):
-            with self.assertRaises(
-                NotImplementedError,
-            ) as context:
-                load_excel_sheet(file, sheet="Sheet1")
+    @mock.patch.dict("sys.modules", {"pandas": None})
+    def test_load_excel_sheet_pd(self):
+        file = normalize_path("./data/test.xlsx")
+        with self.assertRaises(
+            NotImplementedError,
+        ) as context:
+            load_excel_sheet(file, sheet="Sheet1")
 
-            self.assertEqual(
-                str(context.exception),
-                "function not yet implemented without pandas",
-            )
+        self.assertEqual(
+            str(context.exception),
+            "function not yet implemented without pandas",
+        )
 
     def test_excel_file(self):
+        import pandas as pd
+
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file)
         self.assertIn("Sheet1", data.keys())
-        try:
-            import pandas as pd
+        self.assertIsInstance(data["Sheet1"], pd.DataFrame)
+        self.assertEqual(data["Sheet1"].shape, (2, 2))
 
-            self.assertIsInstance(data["Sheet1"], pd.DataFrame)
-            self.assertEqual(data["Sheet1"].shape, (2, 2))
-        except ImportError:
-            self.assertIsInstance(data["Sheet1"], list)
-            self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
+    def check_test_excel(self, data):
+        self.assertIn("Sheet1", data.keys())
+        self.assertIsInstance(data["Sheet1"], list)
+        self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
 
-        # Test pandas ImportError
-        with mock.patch.dict("sys.modules", {"pandas": None}):
-            with warnings.catch_warnings(record=True) as warning_list:
-                # Run the function that may raise a warning
-                result = load_excel(file)
+    @mock.patch.dict("sys.modules", {"pandas": None})
+    def test_excel_file_pd(self):
+        file = normalize_path("./data/test.xlsx")
+        with warnings.catch_warnings(record=True) as warning_list:
+            # Run the function that may raise a warning
+            data = load_excel(file)
 
-                # Assert that the warning is raised
-                self.assertEqual(len(warning_list), 1)
-                self.assertEqual(
-                    str(warning_list[0].message),
-                    "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts.",
-                )
-                self.test_excel_light()
+            # Assert that the warning is raised
+            self.assertEqual(len(warning_list), 1)
+            self.assertEqual(
+                str(warning_list[0].message),
+                "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts.",
+            )
+            self.check_test_excel(data)
 
     def test_excel_light(self):
         file = normalize_path("./data/test.xlsx")
         data = load_excel_light(file)
-        self.assertIn("Sheet1", data.keys())
-        self.assertIsInstance(data["Sheet1"], list)
-        self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
+        self.check_test_excel(data)
 
     def test_excel_file_to_dict(self):
         file = normalize_path("./data/test.xlsx")
         data = load_excel(file, output="records")
-        self.assertIn("Sheet1", data.keys())
-        self.assertIsInstance(data["Sheet1"], list)
-        self.assertEqual(data["Sheet1"], [{"a": 1, "b": 2}, {"a": 3, "b": 4}])
+        self.check_test_excel(data)
+
+    def check_test_excel_write(self, data, data2):
+        self.assertEqual(data.keys(), data2.keys())
+        self.assertEqual(data["Sheet1"], data2["Sheet1"])
+        self.assertEqual(data["Sheet2"], data2["Sheet2"])
 
     def test_write_excel(self):
-
         data = {
             "Sheet1": {"a": [1, 2, 3], "b": [4, 5, 6]},
             "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
@@ -155,111 +165,49 @@ class FileTests(TestCase):
         self.assertEqual(data["Sheet2"], data2["Sheet1"])
         self.assertEqual(data["Sheet2"], data2["Sheet2"])
 
-        # Test pandas ImportError
-        with mock.patch.dict("sys.modules", {"pandas": None}):
-            # Test pandas ImportError
-            with mock.patch.dict("sys.modules", {"pandas": None}):
-                with warnings.catch_warnings(record=True) as warning_list:
-                    # Run the function that may raise a warning
-                    write_excel(file, data)
+    @mock.patch.dict("sys.modules", {"pandas": None})
+    def test_write_excel_pd(self):
+        file = normalize_path("./data/temp.xlsx")
 
-                    # Assert that the warning is raised
-                    self.assertEqual(len(warning_list), 1)
-                    self.assertEqual(
-                        str(warning_list[0].message),
-                        "pandas is not installed so write_excel_open will be used.",
-                    )
-                    self.test_write_excel_light()
+        # Test pandas ImportError
+        with warnings.catch_warnings(record=True) as warning_list:
+            # Run the function that may raise a warning
+            write_excel(file, self.data_1)
+
+            # Assert that the warning is raised
+            self.assertEqual(len(warning_list), 1)
+            self.assertEqual(
+                str(warning_list[0].message),
+                "pandas is not installed so write_excel_open will be used.",
+            )
+
+            # Assert that the file was written correctly
+            data2 = load_excel_light(file)
+            self.check_test_excel_write(self.data_1, data2)
         if os.path.exists(file):
             os.remove(file)
 
     def test_write_excel_light(self):
-        data = {
-            "Sheet1": [
-                {"a": 1.2, "b": 4.1},
-                {"a": 2.3, "b": 5.2},
-                {"a": 3.1, "b": 6.4},
-            ],
-            "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
-        }
         file = normalize_path("./data/temp.xlsx")
-        write_excel_light(file, data)
+        write_excel_light(file, self.data_1)
 
         data2 = load_excel_light(file)
-        self.assertEqual(data.keys(), data2.keys())
-        self.assertEqual(data["Sheet1"], data2["Sheet1"])
-        self.assertEqual(data["Sheet2"], data2["Sheet2"])
+        self.check_test_excel_write(self.data_1, data2)
         os.remove(file)
 
     def test_write_excel_light_close(self):
-        data = {
-            "Sheet1": [
-                {"a": 1.2, "b": 4.1},
-                {"a": 2.3, "b": 5.2},
-                {"a": 3.1, "b": 6.4},
-            ],
-            "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
-        }
         file = normalize_path("./data/temp.xlsx")
-        write_excel_light(file, data)
+        write_excel_light(file, self.data_1)
         os.remove(file)
 
     def test_load_write_excel_light_sheet(self):
-        data = {
-            "Sheet1": [
-                {"a": 1.2, "b": 4.1},
-                {"a": 2.3, "b": 5.2},
-                {"a": 3.1, "b": 6.4},
-            ],
-            "Sheet2": [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}],
-        }
         file = normalize_path("./data/temp.xlsx")
-        write_excel_light(file, data)
+        write_excel_light(file, self.data_1)
 
         data2 = load_excel_light(file, sheets="Sheet1")
-        self.assertEqual(data["Sheet1"], data2["Sheet1"])
+        self.assertEqual(self.data_1["Sheet1"], data2["Sheet1"])
         self.assertFalse("Sheet2" in data2)
         os.remove(file)
-
-    def test_write_df_to_excel(self):
-        try:
-            import pandas as pd
-        except ImportError:
-            warnings.warn("pandas not installed. test cancelled")
-            return True
-        df = pd.DataFrame.from_records(
-            [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
-        )
-        file = normalize_path("./data/temp.xlsx")
-        write_df_to_excel(file, df)
-        data2 = load_excel(file)
-        self.assertEqual(df.shape, data2["Sheet1"].shape)
-
-        # Test pandas ImportError
-        with mock.patch.dict("sys.modules", {"pandas": None}):
-            with self.assertRaises(
-                NotImplementedError,
-            ) as context:
-                write_df_to_excel(file, df)
-
-            self.assertEqual(
-                str(context.exception),
-                "function not yet implemented without pandas",
-            )
-        if os.path.exists(file):
-            os.remove(file)
-
-    def test_write_df_to_excel_bad_extension(self):
-        try:
-            import pandas as pd
-        except ImportError:
-            warnings.warn("pandas not installed. test cancelled")
-            return True
-        df = pd.DataFrame.from_records(
-            [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
-        )
-        file = normalize_path("./data/temp.xlsz")
-        self.assertRaises(FileNotFoundError, write_df_to_excel, file, df)
 
     def test_bad_format_write_excel(self):
         file = normalize_path("./data/temp.xlsz")
@@ -272,29 +220,30 @@ class FileTests(TestCase):
         self.assertRaises(FileNotFoundError, load_excel_sheet, file, None)
 
     def test_read_csv_file(self):
-        try:
-            import pandas as pd
-        except ImportError:
-            warnings.warn("pandas not installed. test cancelled")
-            return True
+        import pandas as pd
+
         file = normalize_path("./data/test.csv")
         data = load_csv(file)
         self.assertIsInstance(data, pd.DataFrame)
         self.assertEqual(data.shape, (2, 2))
 
-        # Test pandas ImportError
-        with mock.patch.dict("sys.modules", {"pandas": None}):
-            with warnings.catch_warnings(record=True) as warning_list:
-                # Run the function that may raise a warning
-                result = load_csv(file)
+    @mock.patch.dict("sys.modules", {"pandas": None})
+    def test_read_csv_file_pd(self):
+        file = normalize_path("./data/test.csv")
 
-                # Assert that the warning is raised
-                self.assertEqual(len(warning_list), 1)
-                self.assertEqual(
-                    str(warning_list[0].message),
-                    "pandas is not installed so load_csv_light will be used.",
-                )
-                self.test_read_csv_open()
+        # Test pandas ImportError
+        with warnings.catch_warnings(record=True) as warning_list:
+            # Run the function that may raise a warning
+            data = load_csv(file)
+
+            # Assert that the warning is raised
+            self.assertEqual(len(warning_list), 1)
+            self.assertEqual(
+                str(warning_list[0].message),
+                "pandas is not installed so load_csv_light will be used.",
+            )
+            self.assertIsInstance(data, list)
+            self.assertEqual([{"a": 1.0, "b": "2"}, {"a": 3.0, "b": "4"}], data)
 
     def test_read_csv_open(self):
         file = normalize_path("./data/test.csv")
@@ -319,65 +268,37 @@ class FileTests(TestCase):
         data2 = load_csv(file)
         self.assertEqual(data2.shape, (3, 2))
         os.remove(file)
-        data = [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
-        write_csv(file, data)
+        write_csv(file, self.records_to_df)
         data2 = load_csv(file)
         self.assertEqual(data2.shape, (3, 2))
 
-        # Test pandas ImportError
-        with mock.patch.dict("sys.modules", {"pandas": None}):
-            # Test pandas ImportError
-            with mock.patch.dict("sys.modules", {"pandas": None}):
-                with warnings.catch_warnings(record=True) as warning_list:
-                    # Run the function that may raise a warning
-                    write_csv(file, data)
+    @mock.patch.dict("sys.modules", {"pandas": None})
+    def test_write_csv_pd(self):
+        file = normalize_path("./data/temp.csv")
 
-                    # Assert that the warning is raised
-                    self.assertEqual(len(warning_list), 1)
-                    self.assertEqual(
-                        str(warning_list[0].message),
-                        "pandas is not installed so write_csv_light will be used.",
-                    )
-                    self.test_write_csv_light()
-        if os.path.exists(file):
+        # Test pandas ImportError
+        with warnings.catch_warnings(record=True) as warning_list:
+            # Run the function that may raise a warning
+            write_csv(file, self.records_to_df)
+
+            # Assert that the warning is raised
+            self.assertEqual(len(warning_list), 1)
+            self.assertEqual(
+                str(warning_list[0].message),
+                "pandas is not installed so write_csv_light will be used.",
+            )
+            data2 = load_csv_light(file)
+            self.assertEqual(data2, self.records_to_df)
             os.remove(file)
 
     def test_write_csv_light(self):
         file = normalize_path("./data/temp.csv")
-        data = [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
-        write_csv_light(file, data)
+        write_csv_light(file, self.records_to_df)
         data2 = load_csv_light(file)
-        self.assertEqual(data2, data)
+        self.assertEqual(data2, self.records_to_df)
         os.remove(file)
 
     def test_write_csv_bad_format(self):
         data = {"a": [1, 2, 3], "b": [4, 5, 6]}
         file = normalize_path("./data/temp.xlsz")
         self.assertRaises(FileNotFoundError, write_csv, file, data)
-
-    def test_write_df_to_csv(self):
-        try:
-            import pandas as pd
-        except ImportError:
-            warnings.warn("pandas not installed. test cancelled")
-            return True
-        df = pd.DataFrame.from_records(
-            [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
-        )
-        file = normalize_path("./data/temp.csv")
-        write_df_to_csv(file, df)
-        data2 = load_csv(file)
-        self.assertEqual(df.shape, data2.shape)
-        os.remove(file)
-
-    def test_write_df_to_csv_bad_extension(self):
-        try:
-            import pandas as pd
-        except ImportError:
-            warnings.warn("pandas not installed. test cancelled")
-            return True
-        df = pd.DataFrame.from_records(
-            [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
-        )
-        file = normalize_path("./data/temp.xlsz")
-        self.assertRaises(FileNotFoundError, write_df_to_csv, file, df)

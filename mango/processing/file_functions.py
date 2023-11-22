@@ -190,29 +190,6 @@ def write_excel(path, data):
             adjust_excel_col_width(writer, df, sheet_name)
 
 
-def write_df_to_excel(path, data, **kwargs):
-    """
-    The write_df_to_excel function writes a DataFrame to an Excel file.
-
-    :param path: Specify the path of the file that you want to write to
-    :param data: Specify the DataFrame to be written
-    :return: None
-    :doc-author: baobab soluciones
-    """
-    try:
-        import pandas as pd
-    except ImportError as e:
-        raise NotImplementedError("function not yet implemented without pandas")
-
-    if not is_excel_file(path):
-        raise FileNotFoundError(
-            f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
-        )
-
-    with pd.ExcelWriter(path) as writer:
-        data.to_excel(writer, **kwargs, index=False)
-
-
 def load_csv(path, **kwargs):
     """
     The load_csv function loads a CSV file and returns it as a DataFrame.
@@ -308,21 +285,6 @@ def write_csv_light(path, data, sep=None, encoding=None):
         writer = csv.DictWriter(f, fieldnames=headers, dialect=dialect)
         writer.writerow({h: h for h in headers})
         writer.writerows(data)
-
-
-def write_df_to_csv(path, data, **kwargs):
-    """
-    The write_csv function writes a DataFrame to a CSV file.
-
-    :param path: Specify the path of the file that you want to write to
-    :param data: Specify the DataFrame to be written
-    :return: None
-    :doc-author: baobab soluciones
-    """
-    if not check_extension(path, ".csv"):
-        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
-
-    data.to_csv(path, **kwargs, index=False)
 
 
 def adjust_excel_col_width(writer, df, table_name: str, min_len: int = 7):
