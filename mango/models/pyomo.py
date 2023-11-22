@@ -1,15 +1,19 @@
 import pyomo.environ as pyo
 from pytups import SuperDict
 from mango.table import Table
-from mango.processing import write_excel, as_list, load_json, write_json, load_excel_light
+from mango.processing import (
+    as_list,
+    load_json,
+    write_json,
+    load_excel_light,
+    write_excel_light,
+)
 from pyomo.opt import (
     SolverResults,
-    ScalarData,
     UndefinedData,
     SolverStatus,
     TerminationCondition,
     SolutionStatus,
-    ListContainer,
 )
 
 
@@ -107,11 +111,11 @@ def get_gap(result):
         return 0
     if sense == "minimize":
         if ub == 0:
-            ub = 10 ** -6
+            ub = 10**-6
         gap = round(100 * (ub - lb) / ub, 3)
     else:
         if lb == 0:
-            lb = 10 ** -6
+            lb = 10**-6
         gap = round(100 * (lb - ub) / lb, 3)
     return abs(gap)
 
@@ -144,7 +148,8 @@ def variables_to_excel(model_solution, path, clean=True):
         k: var_to_table(v, keys=None, clean=clean, rounding=6)
         for k, v in model_solution.component_map(ctype=pyo.Var).items()
     }
-    write_excel(path + "variables.xlsx", variables)
+    write_excel_light(path + "variables.xlsx", variables)
+
 
 def variables_to_json(model_solution, path, clean=True):
     """
@@ -174,6 +179,7 @@ def instance_from_excel(instance, path):
     data = load_excel_light(path + "variables.xlsx")
     return instance_from_dict(instance, data)
 
+
 def instance_from_json(instance, path):
     """
     The function reads instance from json.
@@ -184,6 +190,7 @@ def instance_from_json(instance, path):
     """
     data = load_json(path + "variables.json")
     return instance_from_dict(instance, data)
+
 
 def instance_from_dict(instance, data):
     """
@@ -202,6 +209,7 @@ def instance_from_dict(instance, data):
             load_variable(instance, k, model_data[k])
     return instance
 
+
 def load_variable(instance, var_name, value):
     """
     The function loads the values to indicated variable.
@@ -213,6 +221,7 @@ def load_variable(instance, var_name, value):
     var = instance.__dict__[var_name]
     for k, v in value.items():
         var[k] = v
+
 
 def model_data_to_excel(model_data, path, clean=True):
     """
@@ -245,7 +254,8 @@ def model_data_to_excel(model_data, path, clean=True):
 
     data = model_data
     tables = {k: prepare_data(v) for k, v in data.items()}
-    write_excel(path + "model_data.xlsx", tables)
+    write_excel_light(path + "model_data.xlsx", tables)
+
 
 def solver_result_to_json(result, path):
     def get_val(v):
