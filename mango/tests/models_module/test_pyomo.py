@@ -3,7 +3,7 @@ from copy import deepcopy
 from unittest import TestCase
 from pyomo.environ import *
 from mango.processing import load_excel_light
-from mango.pyomo.pyomo_tools import (
+from mango.models.pyomo import (
     var_to_table,
     instance_from_excel,
     var_to_sdict,
