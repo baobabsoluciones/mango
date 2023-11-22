@@ -37,7 +37,7 @@ def get_calendar(
     weight_communities: dict = _WEIGHT_DICT,
     calendar_events: bool = False,
     name_transformations: bool = True,
-    pivot: bool = True,
+    pivot: bool = False,
 ):
     """
     The get_calendar function returns a pandas DataFrame with the following columns:
@@ -102,7 +102,7 @@ def get_calendar(
         list_com = []
         for community in holidays.ES.subdivisions:
             # Autonomous Community holidays
-            com_holidays = country_holidays("ES", years=years, prov=community)
+            com_holidays = country_holidays("ES", years=years, subdiv=community)
             # Dict to DataFrame
             df_com = pd.DataFrame.from_dict(com_holidays, orient="index").reset_index()
             df_com["country_code"] = country
