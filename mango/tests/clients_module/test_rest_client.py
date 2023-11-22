@@ -71,7 +71,7 @@ class TestRest(TestCase):
             url="url", params={}, if_error="ignore", wait_time=wait_time
         )
         # Test with invalid if_error
-        with self.assertWarns(Warning) and self.assertRaises(Exception):
+        with self.assertRaises(Exception):
             rest_client.request_handler(
                 url="url", params={}, if_error="invalid", wait_time=wait_time
             )
@@ -94,7 +94,7 @@ class TestRest(TestCase):
             url="url", params={}, if_error="ignore", wait_time=wait_time
         )
         # Test with invalid if_error
-        with self.assertWarns(Warning) and self.assertRaises(Exception):
+        with self.assertRaises(Exception):
             rest_client.request_handler(
                 url="url", params={}, if_error="invalid", wait_time=wait_time
             )
