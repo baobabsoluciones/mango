@@ -134,7 +134,9 @@ def write_cbc_warmstart_file(filename, instance, opt):
     opt._write_soln_file(instance, filename)
 
 
-def variables_to_excel(model_solution, path, clean=True):
+def variables_to_excel(
+    model_solution, path, file_name="variables.xlsx", clean=True, rounding=6
+):
     """
     Save all the values of the variables in an Excel file.
 
@@ -145,13 +147,13 @@ def variables_to_excel(model_solution, path, clean=True):
     :return: nothing
     """
     variables = {
-        k: var_to_table(v, keys=None, clean=clean, rounding=6)
+        k: var_to_table(v, keys=None, clean=clean, rounding=rounding)
         for k, v in model_solution.component_map(ctype=pyo.Var).items()
     }
-    write_excel_light(path + "variables.xlsx", variables)
+    write_excel_light(path + file_name, variables)
 
 
-def variables_to_json(model_solution, path, clean=True):
+def variables_to_json(model_solution, path, file_name="variables.json", clean=True):
     """
     Save all the values of the variables in an json file.
 
@@ -165,10 +167,10 @@ def variables_to_json(model_solution, path, clean=True):
         k: var_to_table(v, keys=None, clean=clean)
         for k, v in model_solution.component_map(ctype=pyo.Var).items()
     }
-    write_json(variables, path + "variables.json")
+    write_json(variables, path + file_name)
 
 
-def instance_from_excel(instance, path):
+def instance_from_excel(instance, path, file_name="variables.xlsx"):
     """
     The function reads instance from excel.
 
@@ -176,11 +178,11 @@ def instance_from_excel(instance, path):
     :param path: the path of the file to be loaded
     :return: model instance
     """
-    data = load_excel_light(path + "variables.xlsx")
+    data = load_excel_light(path + file_name)
     return instance_from_dict(instance, data)
 
 
-def instance_from_json(instance, path):
+def instance_from_json(instance, path, file_name="variables.json", **kwargs):
     """
     The function reads instance from json.
 
@@ -188,7 +190,7 @@ def instance_from_json(instance, path):
     :param path: the path of the file to be loaded
     :return: model instance
     """
-    data = load_json(path + "variables.json")
+    data = load_json(path + file_name, **kwargs)
     return instance_from_dict(instance, data)
 
 
@@ -223,7 +225,7 @@ def load_variable(instance, var_name, value):
         var[k] = v
 
 
-def model_data_to_excel(model_data, path, clean=True):
+def model_data_to_excel(model_data, path, file_name="model_data.xlsx"):
     """
     Save a pyomo instance to excel.
 
@@ -254,7 +256,7 @@ def model_data_to_excel(model_data, path, clean=True):
 
     data = model_data
     tables = {k: prepare_data(v) for k, v in data.items()}
-    write_excel_light(path + "model_data.xlsx", tables)
+    write_excel_light(path + file_name, tables)
 
 
 def solver_result_to_json(result, path):
@@ -276,8 +278,8 @@ def solver_result_to_json(result, path):
     write_json(data, path)
 
 
-def solver_result_from_json(path):
-    data = load_json(path)
+def solver_result_from_json(path, **kwargs):
+    data = load_json(path, **kwargs)
     result = SolverResults()
     for k, v in result.items():
         for k1, v1 in v.items():
