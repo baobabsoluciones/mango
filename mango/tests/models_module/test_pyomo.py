@@ -1,7 +1,10 @@
 import os
 from copy import deepcopy
 from unittest import TestCase
-from pyomo.environ import *
+
+from pyomo.environ import Binary
+from pyomo.core import AbstractModel, Set, Var
+
 from mango.processing import load_excel_light
 from mango.models.pyomo import (
     var_to_table,
@@ -12,23 +15,29 @@ from mango.models.pyomo import (
     is_feasible,
     get_status,
     get_gap,
-    variables_to_excel, model_data_to_excel, instance_from_json, variables_to_json, solver_result_to_json,
+    variables_to_excel,
+    model_data_to_excel,
+    instance_from_json,
+    variables_to_json,
+    solver_result_to_json,
     solver_result_from_json,
 )
+
 from mango.table import Table
 from mango.tests.const import normalize_path
 
 
 class TestTools(TestCase):
-    def create_model():
-        model = AbstractModel()
-        model.sSet = Set()
-        model.vVariable = Var(model.sSet, domain=Binary, initialize=0)
-        return model
+    def setUp(self):
+        def create_model():
+            model = AbstractModel()
+            model.sSet = Set()
+            model.vVariable = Var(model.sSet, domain=Binary, initialize=0)
+            return model
 
-    model = create_model()
-    data = {"sSet": {None: ["01", "02", "03"]}}
-    instance = model.create_instance({None: data})
+        self.model = create_model()
+        self.data = {"sSet": {None: ["01", "02", "03"]}}
+        self.instance = self.model.create_instance({None: self.data})
 
     def test_is_feasible_True(self):
         result = is_feasible("optimal")
@@ -144,4 +153,6 @@ class TestTools(TestCase):
     def test_solver_result_from_json(self):
         path = normalize_path("./data/result.json")
         result = solver_result_from_json(path)
-        self.assertEqual(str(result.problem.sense), "maximize", "read pyomo result from json")
+        self.assertEqual(
+            str(result.problem.sense), "maximize", "read pyomo result from json"
+        )
