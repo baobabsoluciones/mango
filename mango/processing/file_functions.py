@@ -332,7 +332,6 @@ def load_excel_light(path, sheets=None):
             dataset[name] = TupList(data[1:]).to_dictlist(data[0])
         else:
             dataset[name] = []
-
     wb.close()
     return dataset
 
