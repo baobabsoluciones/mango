@@ -89,14 +89,16 @@ class TestTools(TestCase):
             instance.vVariable,
             ["sSet", "Value"],
         )
-        variables_to_excel(instance, path)
+        variables_to_excel(instance, path, file_name="variables_test.xlsx")
 
-        instance_resut = instance_from_excel(deepcopy(self.instance), path)
+        instance_result = instance_from_excel(deepcopy(self.instance), path, file_name="variables_test.xlsx")
         result = var_to_table(
-            instance_resut.vVariable,
+            instance_result.vVariable,
             ["sSet", "Value"],
         )
         self.assertEqual(result, expected, msg="save variables to excel file")
+        file = normalize_path("./data/variables_test.xlsx")
+        os.remove(file)
 
     def test_variables_to_json(self):
         path = normalize_path("./data/")
