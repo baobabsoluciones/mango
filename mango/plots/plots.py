@@ -49,10 +49,12 @@ def plotly_plot_lines(
         fig.show()
 
     # Save the plot as an html file
-    if output_path != None:
+    if output_path:
         fig.write_html(
             output_path + ".html" if not output_path.endswith(".html") else output_path
         )
+    else:
+        return fig
 
 
 def plotly_plot_scatter(
