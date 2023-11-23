@@ -39,12 +39,12 @@ class TestTools(TestCase):
         self.assertEqual(str_key({}), {})
         self.assertEqual(str_key({1: "a", 2: "b"}), {"1": "a", "2": "b"})
 
-    # Commented due to conflict with pyomo
-    # def test_str_key_warning(self):
-    #     self.assertWarns(SyntaxWarning, str_key, {"1": "a", 1: "b"})
-    #     result = str_key({"1": "a", 1: "b"})
-    #     expected = {"1": "b"}
-    #     self.assertEqual(result, expected)
+    def test_str_key_warning(self):
+        # Commented due to conflict with pyomo
+        # self.assertWarns(SyntaxWarning, str_key, {"1": "a", 1: "b"})
+        result = str_key({"1": "a", 1: "b"})
+        expected = {"1": "b"}
+        self.assertEqual(result, expected)
 
     def test_to_len(self):
         self.assertEqual(to_len(1, 0), [])
