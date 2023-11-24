@@ -574,7 +574,7 @@ class FileExplorerApp:
                             df,
                             use_container_width=True,
                             num_rows="dynamic",
-                            key=f"{key_tab}_{uuid.uuid4()},
+                            key=f"{key_tab}_{uuid.uuid4()}",
                         )
                         tab["df"] = edited_df
                         if self.editable:
