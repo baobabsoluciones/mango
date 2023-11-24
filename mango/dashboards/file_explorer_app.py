@@ -604,7 +604,9 @@ class FileExplorerApp:
                             for key_tab, tab in dict_of_tabs.items():
                                 with tab["tab"]:
                                     edited_df = st.data_editor(
-                                        tab["df"], use_container_width=True
+                                        tab["df"],
+                                        use_container_width=True,
+                                        key=f"{key_tab}_{uuid.uuid4()}",
                                     )
                                     dict_edited = edited_df.to_dict()
                                     data[key_tab] = dict_edited
