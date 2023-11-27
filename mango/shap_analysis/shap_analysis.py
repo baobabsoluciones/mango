@@ -5,20 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shap
-from catboost import CatBoostClassifier, CatBoostRegressor
-from lightgbm import LGBMClassifier, LGBMRegressor
-from sklearn.ensemble import (
-    RandomForestClassifier,
-    GradientBoostingClassifier,
-    RandomForestRegressor,
-    GradientBoostingRegressor,
-)
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from xgboost import XGBClassifier, XGBRegressor
 
 
 class ShapAnalyzer:
@@ -26,6 +13,7 @@ class ShapAnalyzer:
     Class to analyze the shap values of a model.
 
     :param problem_type: Problem type of the model
+    :param model_name: Name of the model
     :param estimator: Model to analyze
     :param data: Data used to train the model
     :param metadata: Metadata of the data
@@ -50,14 +38,32 @@ class ShapAnalyzer:
         self,
         *,
         problem_type: str,
-        estimator: Union[object, dict[str, object]],
+        model_name: str,
+        estimator: object,
         data: Union[pd.DataFrame, np.ndarray],
         metadata: pd.DataFrame = None,
-        shap_folder: str = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "shap_analysis"
-        ),
+        shap_folder: str = None,
     ):
+        # Tree Explainer models name
+        self._TREE_EXPLAINER_MODELS = [
+            "XGBClassifier",
+            "XGBRegressor",
+            "LGBMClassifier",
+            "LGBMRegressor",
+            "CatBoostClassifier",
+            "CatBoostRegressor",
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "ExtraTreesClassifier",
+            "ExtraTreesRegressor",
+        ]
+
+        # Kernel Explainer models name
+        self._KERNEL_EXPLAINER_MODELS = ["LogisticRegression", "LinearRegression"]
+
+        # Set attributes
         self.problem_type = problem_type
+        self._model_name = model_name
         self.shap_folder = shap_folder
         self.data = data
         self._metadata = metadata
@@ -97,6 +103,15 @@ class ShapAnalyzer:
         self._problem_type = problem_type
 
     @property
+    def model_name(self):
+        """
+        This property is the model name.
+        :return: model name
+        :doc-author: baobab soluciones
+        """
+        return self._model_name
+
+    @property
     def shap_folder(self):
         """
         This property is the shap folder.
@@ -111,7 +126,11 @@ class ShapAnalyzer:
         Validate the shap_folder and set the shap_folder attribute of the class.
         """
         if not os.path.exists(shap_folder):
-            raise ValueError(f"Path: {shap_folder} does not exist")
+            try:
+                os.makedirs(shap_folder)
+            except OSError:
+                raise OSError(f"Creation of the directory {shap_folder} failed")
+
         self._shap_folder = shap_folder
 
     @property
@@ -148,48 +167,19 @@ class ShapAnalyzer:
         :return: Shap explainer
         :doc-author: baobab soluciones
         """
-        if isinstance(
-            self._model,
-            (
-                RandomForestClassifier,
-                DecisionTreeClassifier,
-                GradientBoostingClassifier,
-                XGBClassifier,
-                CatBoostClassifier,
-                LGBMClassifier,
-                RandomForestRegressor,
-                DecisionTreeRegressor,
-                GradientBoostingRegressor,
-                XGBRegressor,
-                CatBoostRegressor,
-                LGBMRegressor,
-            ),
-        ):
-            # For tree-based models
-            shap_explainer = shap.TreeExplainer(self._model)
+        for model_name in self._TREE_EXPLAINER_MODELS:
+            if model_name in type(self._model).__name__:
+                self._explainer = shap.TreeExplainer(self._model)
 
-        elif isinstance(
-            self._model,
-            (
-                LogisticRegression,
-                SVC,
-                KNeighborsClassifier,
-                KNeighborsRegressor,
-            ),
-        ):
-            # For linear models and non-tree-based models
-            shap_explainer = shap.KernelExplainer(
-                self._model.predict_proba, shap.sample(self._data, 5)
+        for model_name in self._KERNEL_EXPLAINER_MODELS:
+            if model_name in type(self._model).__name__:
+                self._explainer = shap.KernelExplainer(
+                    self._model.predict, shap.sample(self._data, 5)
+                )
+        if self._explainer is None:
+            raise ValueError(
+                f"Model {type(self._model).__name__} is not supported by ShapAnalyzer class"
             )
-
-        # Add more conditions for other types of models as needed
-        else:
-            # Default to KernelExplainer for unsupported models
-            shap_explainer = shap.KernelExplainer(
-                self._model.predict, shap.sample(self._data, 5)
-            )
-
-        return shap_explainer
 
     def _get_estimator(self, estimator):
         """
@@ -366,3 +356,73 @@ class ShapAnalyzer:
         return self._data[
             operator_dict[operator](sh_values[:, index_feature], shap_value)
         ].copy()
+
+    def make_shap_analysis(self):
+        """
+        The make_shap_analysis function is a wrapper function that calls the summary_plot and bar_summary_plot functions.
+        It also checks if the shap folder exists, and creates it if not. It then saves all plots to this folder.
+
+        :param self: Bind the method to an object
+        :return: The summary plot and the barplot for each class
+        :doc-author: baobab soluciones
+        """
+        # Check path to save plots
+        if self._shap_folder == None:
+            raise ValueError(
+                "Set path to save plots: the attribute shap_folder is None"
+            )
+
+        list_paths = [
+            os.path.join(
+                self._shap_folder, "shap_analysis", self.model_name, "summary/"
+            ),
+            os.path.join(
+                self._shap_folder, "shap_analysis", self.model_name, "individual/"
+            ),
+        ]
+        # Make dirs to save plots
+        _ = [os.makedirs(os.path.dirname(path), exist_ok=True) for path in list_paths]
+
+        # Make summary plot
+        if self._problem_type in ["binary_classification", "multiclass_classification"]:
+            _ = [
+                self.summary_plot(
+                    class_index=class_index,
+                    path_save=os.path.join(
+                        self._shap_folder,
+                        self.model_name,
+                        "summary",
+                        "shap_analysis",
+                        f"summary_class_{class_index}",
+                    ),
+                )
+                for class_index in range(len(self._model.classes_) + 1)
+            ]
+            self.bar_summary_plot(
+                path_save=os.path.join(
+                    self._shap_folder,
+                    "shap_analysis",
+                    self.model_name,
+                    "summary",
+                    "barplot",
+                )
+            )
+        elif self._problem_type == "regression":
+            self.summary_plot(
+                path_save=os.path.join(
+                    self._shap_folder,
+                    "shap_analysis",
+                    self.model_name,
+                    "summary",
+                    "summary",
+                )
+            )
+            self.bar_summary_plot(
+                path_save=os.path.join(
+                    self._shap_folder,
+                    "shap_analysis",
+                    self.model_name,
+                    "summary",
+                    "barplot",
+                )
+            )
