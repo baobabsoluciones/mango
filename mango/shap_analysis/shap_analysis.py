@@ -1,5 +1,5 @@
 import os
-from typing import Union, List
+from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,12 +9,11 @@ from sklearn.pipeline import Pipeline
 
 
 class ShapAnalyzer:
-    # TODO: introduce more than one estimator
     def __init__(
         self,
         *,
         problem_type: str,
-        estimator: Union[object, List[object]],
+        estimator: Union[object, dict[str, object]],
         data: Union[pd.DataFrame, np.ndarray],
         metadata: pd.DataFrame = None,
         shap_folder: str = os.path.join(
@@ -96,8 +95,9 @@ class ShapAnalyzer:
                 feature_names=self._feature_names,
             )
         else:
-            raise NotImplementedError(
-                f"Problem type {self._problem_type} not implemented"
+            self._explainer = shap.TreeExplainer(
+                self._model,
+                feature_names=self._feature_names,
             )
 
     def _get_estimator(self, estimator):
@@ -144,7 +144,9 @@ class ShapAnalyzer:
         shap.summary_plot(
             self.shap_values,
             plot_type="bar",
-            class_names=self._model.classes_,
+            class_names=self._model.classes_
+            if self._problem_type != "regression"
+            else None,
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
             sort=kwargs.get("sort", True),
@@ -192,19 +194,29 @@ class ShapAnalyzer:
             ">=": lambda x, y: x >= y,
             "<=": lambda x, y: x <= y,
         }
-        # TODO: Check when the self.problem_type is regression
-        if class_name not in self._model.classes_:
-            raise ValueError(
-                f"Clase {class_name} no asociada al modelo. Debe ser uno de {self._model.classes_}"
-            )
-        index_class = self._model.classes_.tolist().index(class_name)
+        if self._problem_type != "regression":
+            if class_name not in self._model.classes_:
+                raise ValueError(
+                    f"Clase {class_name} no asociada al modelo. Debe ser uno de {self._model.classes_}"
+                )
+            index_class = self._model.classes_.tolist().index(class_name)
+        else:
+            index_class = 0
+
         if feature_name not in self._feature_names:
             raise ValueError(
                 f"Feature {feature_name} no asociada al modelo. Debe ser uno de {self._feature_names}"
             )
         index_feature = list(self._feature_names).index(feature_name)
+
+        # Get shap_values
+        if isinstance(self.shap_values, list):
+            sh_values = self.shap_values[index_class]
+        elif isinstance(self.shap_values, np.ndarray):
+            sh_values = self.shap_values
+        else:
+            raise ValueError(f"shap_values must be a list or a numpy array")
+
         return self._data[
-            operator_dict[operator](
-                self.shap_values[index_class][:, index_feature], shap_value
-            )
+            operator_dict[operator](sh_values[:, index_feature], shap_value)
         ].copy()
