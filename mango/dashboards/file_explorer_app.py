@@ -503,14 +503,14 @@ class FileExplorerApp:
                 df,
                 use_container_width=True,
                 num_rows="dynamic",
-                key=f"{path_selected}_editor_{uuid.uuid4()}",
+                key=f"{path_selected}_editor_{key}",
             )
             if self.editable:
                 st.button(
                     "Save",
                     on_click=self._save_dataframe,
                     args=(edited_df, path_selected),
-                    key=f"{path_selected}_csv_{uuid.uuid4()}",
+                    key=f"{path_selected}_csv_{key}",
                 )
 
         elif (
@@ -574,7 +574,7 @@ class FileExplorerApp:
                             df,
                             use_container_width=True,
                             num_rows="dynamic",
-                            key=key_tab,
+                            key=f"{key_tab}_{path_selected}_{key}",
                         )
                         tab["df"] = edited_df
                         if self.editable:
@@ -582,7 +582,7 @@ class FileExplorerApp:
                                 "Save",
                                 on_click=self._save_dataframe,
                                 args=(edited_df, path_selected, dict_of_tabs),
-                                key=f"{tab}_xlsx_{uuid.uuid4()}",
+                                key=f"{tab}_{path_selected}_xlsx_{key}",
                             )
 
         elif path_selected.endswith(".json"):
@@ -604,7 +604,9 @@ class FileExplorerApp:
                             for key_tab, tab in dict_of_tabs.items():
                                 with tab["tab"]:
                                     edited_df = st.data_editor(
-                                        tab["df"], use_container_width=True
+                                        tab["df"],
+                                        use_container_width=True,
+                                        key=f"{key_tab}_{path_selected}_{key}",
                                     )
                                     dict_edited = edited_df.to_dict()
                                     data[key_tab] = dict_edited
@@ -613,7 +615,7 @@ class FileExplorerApp:
                                             "Save",
                                             on_click=self._save_dataframe,
                                             args=(data, path_selected),
-                                            key=f"{tab['tab']}_json_{uuid.uuid4()}",
+                                            key=f"{tab['tab']}_json_{path_selected}_{key}",
                                         )
                         except Exception as e:
                             st.warning(
