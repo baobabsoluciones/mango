@@ -420,6 +420,16 @@ class ShapAnalyzer:
                     "barplot.png",
                 )
             )
+            for query in queries:
+                self.waterfall_plot(
+                    query=query,
+                    path_save=os.path.join(
+                        base_path,
+                        "individual",
+                        f"sample_{query}.png",
+                    ),
+                )
+
         elif self._problem_type == "regression":
             self.summary_plot(
                 path_save=os.path.join(
