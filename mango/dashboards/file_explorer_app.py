@@ -174,7 +174,18 @@ class FileExplorerApp:
         # Create columns display
         col3_1, col3_2, col3_3 = st.columns(3)
         with col3_1:
-            st.image(Image.open(os.path.join(os.path.dirname(__file__), self.config["logo_path"])), width=150)
+            st.image(
+                Image.open(
+                    (
+                        os.path.join(
+                            os.path.dirname(__file__), self._APP_CONFIG["logo_path"]
+                        )
+                        if not os.path.exists(self.config["logo_path"])
+                        else self.config["logo_path"]
+                    )
+                ),
+                width=150,
+            )
             st.markdown(
                 """<style>button[title="View fullscreen"]{visibility: hidden;}</style>""",
                 unsafe_allow_html=True,
