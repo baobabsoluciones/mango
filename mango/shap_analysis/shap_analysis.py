@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Union, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -149,6 +149,8 @@ class ShapAnalyzer:
         """
         if not isinstance(data, (pd.DataFrame, np.ndarray)):
             raise ValueError(f"data must be a pandas DataFrame or a numpy array")
+        if isinstance(data, pd.DataFrame):
+            data.reset_index(drop=True, inplace=True)
         self._data = data
 
     @property
@@ -311,6 +313,44 @@ class ShapAnalyzer:
             )
             plt.close()
 
+    def waterfall_plot(self, query: str, path_save: str = None, **kwargs):
+        filter_data = self._data.query(query).copy()
+        if filter_data.shape[0] == 0:
+            raise ValueError(f"No data found for query: {query}")
+        elif filter_data.shape[0] > 1:
+            # Get the index of the sample in self._data
+            list_idx = self._data.query(query).index.to_list()
+            for idx in list_idx:
+                shap.waterfall_plot(
+                    shap.Explanation(
+                        values=self.shap_values[idx],
+                        base_values=self._explainer.expected_value,
+                        data=self._data.iloc[idx],
+                        feature_names=self._feature_names,
+                    ),
+                    show=False,
+                )
+
+                if path_save != None:
+                    fig1 = plt.gcf()
+                    fig1.savefig(
+                        f"{path_save.replace('.png', '')}_{idx}.png"
+                        if path_save.endswith(".png")
+                        else f"{path_save}_{idx}.png"
+                    )
+                    plt.close()
+
+        else:
+            # Get the index of the sample in self._data
+            idx = self._data.query(query).index[0]
+            shap.waterfall_plot(shap_values=self.shap_values[idx, :])
+            if path_save != None:
+                fig1 = plt.gcf()
+                fig1.savefig(
+                    f"{path_save}.png" if not path_save.endswith(".png") else path_save
+                )
+                plt.close()
+
     def get_sample_by_shap_value(
         self, shap_value, feature_name, class_name: str = None, operator: str = ">="
     ):
@@ -357,7 +397,7 @@ class ShapAnalyzer:
             operator_dict[operator](sh_values[:, index_feature], shap_value)
         ].copy()
 
-    def make_shap_analysis(self):
+    def make_shap_analysis(self, queries: List[str] = None):
         """
         The make_shap_analysis function is a wrapper function that calls the summary_plot and bar_summary_plot functions.
         It also checks if the shap folder exists, and creates it if not. It then saves all plots to this folder.
@@ -371,14 +411,15 @@ class ShapAnalyzer:
             raise ValueError(
                 "Set path to save plots: the attribute shap_folder is None"
             )
+        base_path = os.path.join(
+            self._shap_folder,
+            "shap_analysis",
+            self.model_name,
+        )
 
         list_paths = [
-            os.path.join(
-                self._shap_folder, "shap_analysis", self.model_name, "summary/"
-            ),
-            os.path.join(
-                self._shap_folder, "shap_analysis", self.model_name, "individual/"
-            ),
+            os.path.join(base_path, "summary/"),
+            os.path.join(base_path, "individual/"),
         ]
         # Make dirs to save plots
         _ = [os.makedirs(os.path.dirname(path), exist_ok=True) for path in list_paths]
@@ -389,22 +430,18 @@ class ShapAnalyzer:
                 self.summary_plot(
                     class_index=class_index,
                     path_save=os.path.join(
-                        self._shap_folder,
-                        self.model_name,
+                        base_path,
                         "summary",
-                        "shap_analysis",
-                        f"summary_class_{class_index}",
+                        f"summary_class_{class_index}.png",
                     ),
                 )
-                for class_index in range(len(self._model.classes_) + 1)
+                for class_index in range(len(self._model.classes_))
             ]
             self.bar_summary_plot(
                 path_save=os.path.join(
-                    self._shap_folder,
-                    "shap_analysis",
-                    self.model_name,
+                    base_path,
                     "summary",
-                    "barplot",
+                    "barplot.png",
                 )
             )
         elif self._problem_type == "regression":
@@ -414,7 +451,7 @@ class ShapAnalyzer:
                     "shap_analysis",
                     self.model_name,
                     "summary",
-                    "summary",
+                    "summary.png",
                 )
             )
             self.bar_summary_plot(
@@ -423,6 +460,6 @@ class ShapAnalyzer:
                     "shap_analysis",
                     self.model_name,
                     "summary",
-                    "barplot",
+                    "barplot.png",
                 )
             )
