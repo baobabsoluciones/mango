@@ -93,7 +93,7 @@ class DisplayablePath(object):
 class FileExplorerApp:
     # Config
     _APP_CONFIG = {
-        "logo_path": os.path.join(os.path.dirname(__file__), "assets", "logo.png"),
+        "logo_path": os.path.join("assets", "logo.png"),
         "title": "Mango Explorer App",
         "header": "Folder path structure",
         "icon": ":mango:",
@@ -174,7 +174,7 @@ class FileExplorerApp:
         # Create columns display
         col3_1, col3_2, col3_3 = st.columns(3)
         with col3_1:
-            st.image(Image.open(self.config["logo_path"]), width=150)
+            st.image(Image.open(os.path.join(os.path.dirname(__file__), self.config["logo_path"])), width=150)
             st.markdown(
                 """<style>button[title="View fullscreen"]{visibility: hidden;}</style>""",
                 unsafe_allow_html=True,
