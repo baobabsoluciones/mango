@@ -12,12 +12,6 @@ class ShapAnalyzer:
     """
     Class to analyze the shap values of a model.
 
-    :param problem_type: Problem type of the model
-    :param model_name: Name of the model
-    :param estimator: Model to analyze
-    :param data: Data used to train the model
-    :param metadata: Metadata of the data
-    :param shap_folder: Folder where the shap analysis will be saved
     :doc-author: baobab soluciones
 
     Usage
@@ -41,7 +35,7 @@ class ShapAnalyzer:
         model_name: str,
         estimator: object,
         data: Union[pd.DataFrame, np.ndarray],
-        metadata: pd.DataFrame = None,
+        metadata: Union[str, List[str]] = None,
         shap_folder: str = None,
     ):
         # Tree Explainer models name
@@ -65,7 +59,7 @@ class ShapAnalyzer:
         self._model_name = model_name
         self.shap_folder = shap_folder
         self.data = data
-        self._metadata = metadata
+        self.metadata = metadata
 
         # Assign model
         self._get_estimator(estimator)
@@ -151,6 +145,37 @@ class ShapAnalyzer:
         if isinstance(data, pd.DataFrame):
             data.reset_index(drop=True, inplace=True)
         self._data = data
+
+    @property
+    def metadata(self):
+        """
+        This property is the data used to train the model.
+        :return: Data used to train the model with metadata
+        :doc-author: baobab soluciones
+        """
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, metadata: Union[str, List[str]]):
+        """
+        Validate the data and set the data attribute of the class.
+        """
+        if not isinstance(metadata, (pd.DataFrame, np.ndarray)):
+            raise ValueError(f"data must be a pandas DataFrame or a numpy array")
+        if isinstance(metadata, pd.DataFrame):
+            metadata.reset_index(drop=True, inplace=True)
+
+        # Get columns that are not in data
+        metadata_columns = [
+            col for col in metadata.columns if col not in self._data.columns
+        ]
+        # Compare data with metadata without the columns that are not in data
+        if not self._data.equals(metadata.drop(columns=metadata_columns)):
+            raise ValueError(
+                f"Metadata must have the same columns as data except for the following columns: {metadata_columns}"
+            )
+
+        self._metadata = metadata
 
     @property
     def shap_explainer(self):
@@ -265,6 +290,7 @@ class ShapAnalyzer:
 
         if path_save != None:
             fig1 = plt.gcf()
+            fig1.suptitle("Bar Summary Plot")
             fig1.tight_layout()
             fig1.savefig(
                 f"{path_save}.png" if not path_save.endswith(".png") else path_save
@@ -290,7 +316,9 @@ class ShapAnalyzer:
                 raise ValueError(f"Path {os.path.dirname(path_save)} does not exist")
 
         shap.summary_plot(
-            self.shap_values[class_index],
+            self.shap_values[class_index]
+            if self._problem_type != "regression"
+            else self.shap_values,
             self._x_transformed,
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
@@ -299,6 +327,11 @@ class ShapAnalyzer:
 
         if path_save != None:
             fig1 = plt.gcf()
+            fig1.suptitle(
+                f"Summary Plot class {self._model.classes_[class_index]}"
+                if self._problem_type != "regression"
+                else "Summary Plot"
+            )
             fig1.tight_layout()
             fig1.savefig(
                 f"{path_save}.png" if not path_save.endswith(".png") else path_save
@@ -306,21 +339,21 @@ class ShapAnalyzer:
             plt.close()
 
     def waterfall_plot(self, query: str, path_save: str = None):
-        filter_data = self._data.query(query).copy()
+        filter_data = self._metadata.query(query).copy()
         if filter_data.shape[0] == 0:
             raise ValueError(f"No data found for query: {query}")
         else:
             list_idx = self._data.query(query).index.to_list()
-            for idx in list_idx:
+            for i, idx in enumerate(list_idx):
                 if self._problem_type in [
                     "binary_classification",
                     "multiclass_classification",
                 ]:
-                    for i, class_name in enumerate(self._model.classes_):
+                    for j, class_name in enumerate(self._model.classes_):
                         shap.waterfall_plot(
                             shap.Explanation(
-                                values=self.shap_values[i][idx],
-                                base_values=self._explainer.expected_value[i],
+                                values=self.shap_values[j][idx],
+                                base_values=self._explainer.expected_value[j],
                                 data=self._data.iloc[idx],
                                 feature_names=self._feature_names,
                             ),
@@ -329,13 +362,35 @@ class ShapAnalyzer:
 
                         if path_save != None:
                             fig1 = plt.gcf()
+                            fig1.suptitle(f"Waterfall plot query: {query} (Sample {i})")
                             fig1.tight_layout()
                             fig1.savefig(
-                                f"{path_save[:-4]}_{class_name}{path_save[-4:]}"
+                                f"{path_save[:-4]}_class_{class_name}_sample_{i}{path_save[-4:]}"
                                 if path_save.endswith(".png")
                                 else f"{path_save}_{class_name}.png"
                             )
                             plt.close()
+                else:
+                    shap.waterfall_plot(
+                        shap.Explanation(
+                            values=self.shap_values[idx],
+                            base_values=self._explainer.expected_value,
+                            data=self._data.iloc[idx],
+                            feature_names=self._feature_names,
+                        ),
+                        show=False,
+                    )
+
+                    if path_save != None:
+                        fig1 = plt.gcf()
+                        fig1.suptitle(f"Waterfall plot query: {query} (Sample {i})")
+                        fig1.tight_layout()
+                        fig1.savefig(
+                            f"{path_save[:-4]}_sample_{i}{path_save[-4:]}"
+                            if path_save.endswith(".png")
+                            else f"{path_save}.png"
+                        )
+                        plt.close()
 
     def get_sample_by_shap_value(
         self, shap_value, feature_name, class_name: str = None, operator: str = ">="
@@ -426,26 +481,31 @@ class ShapAnalyzer:
                     path_save=os.path.join(
                         base_path,
                         "individual",
-                        f"sample_{query}.png",
+                        f"{query}.png",
                     ),
                 )
 
         elif self._problem_type == "regression":
             self.summary_plot(
                 path_save=os.path.join(
-                    self._shap_folder,
-                    "shap_analysis",
-                    self.model_name,
+                    base_path,
                     "summary",
                     "summary.png",
                 )
             )
             self.bar_summary_plot(
                 path_save=os.path.join(
-                    self._shap_folder,
-                    "shap_analysis",
-                    self.model_name,
+                    base_path,
                     "summary",
                     "barplot.png",
                 )
             )
+            for query in queries:
+                self.waterfall_plot(
+                    query=query,
+                    path_save=os.path.join(
+                        base_path,
+                        "individual",
+                        f"{query}.png",
+                    ),
+                )
