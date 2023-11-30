@@ -46,7 +46,6 @@ class ShapAnalyzer:
     ):
         # Tree Explainer models name
         self._TREE_EXPLAINER_MODELS = [
-            "XGBClassifier",
             "XGBRegressor",
             "LGBMClassifier",
             "LGBMRegressor",
@@ -169,16 +168,15 @@ class ShapAnalyzer:
         :return: Shap explainer
         :doc-author: baobab soluciones
         """
-        for model_name in self._TREE_EXPLAINER_MODELS:
-            if model_name in type(self._model).__name__:
-                self._explainer = shap.TreeExplainer(self._model)
+        if type(self._model).__name__ in self._TREE_EXPLAINER_MODELS:
+            self._explainer = shap.TreeExplainer(self._model)
 
-        for model_name in self._KERNEL_EXPLAINER_MODELS:
-            if model_name in type(self._model).__name__:
-                self._explainer = shap.KernelExplainer(
-                    self._model.predict, shap.sample(self._data, 5)
-                )
-        if self._explainer is None:
+        elif type(self._model).__name__ in self._KERNEL_EXPLAINER_MODELS:
+            self._explainer = shap.KernelExplainer(
+                self._model.predict, shap.sample(self._data, 5)
+            )
+
+        else:
             raise ValueError(
                 f"Model {type(self._model).__name__} is not supported by ShapAnalyzer class"
             )
@@ -267,6 +265,7 @@ class ShapAnalyzer:
 
         if path_save != None:
             fig1 = plt.gcf()
+            fig1.tight_layout()
             fig1.savefig(
                 f"{path_save}.png" if not path_save.endswith(".png") else path_save
             )
@@ -290,16 +289,8 @@ class ShapAnalyzer:
             if not os.path.exists(os.path.dirname(path_save)):
                 raise ValueError(f"Path {os.path.dirname(path_save)} does not exist")
 
-        # Get shap_values
-        if isinstance(self.shap_values, list):
-            sh_values = self.shap_values[class_index]
-        elif isinstance(self.shap_values, np.ndarray):
-            sh_values = self.shap_values
-        else:
-            raise ValueError(f"shap_values must be a list or a numpy array")
-
         shap.summary_plot(
-            sh_values,
+            self.shap_values[class_index],
             self._x_transformed,
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
@@ -308,48 +299,43 @@ class ShapAnalyzer:
 
         if path_save != None:
             fig1 = plt.gcf()
+            fig1.tight_layout()
             fig1.savefig(
                 f"{path_save}.png" if not path_save.endswith(".png") else path_save
             )
             plt.close()
 
-    def waterfall_plot(self, query: str, path_save: str = None, **kwargs):
+    def waterfall_plot(self, query: str, path_save: str = None):
         filter_data = self._data.query(query).copy()
         if filter_data.shape[0] == 0:
             raise ValueError(f"No data found for query: {query}")
-        elif filter_data.shape[0] > 1:
-            # Get the index of the sample in self._data
+        else:
             list_idx = self._data.query(query).index.to_list()
             for idx in list_idx:
-                shap.waterfall_plot(
-                    shap.Explanation(
-                        values=self.shap_values[idx],
-                        base_values=self._explainer.expected_value,
-                        data=self._data.iloc[idx],
-                        feature_names=self._feature_names,
-                    ),
-                    show=False,
-                )
+                if self._problem_type in [
+                    "binary_classification",
+                    "multiclass_classification",
+                ]:
+                    for i, class_name in enumerate(self._model.classes_):
+                        shap.waterfall_plot(
+                            shap.Explanation(
+                                values=self.shap_values[i][idx],
+                                base_values=self._explainer.expected_value[i],
+                                data=self._data.iloc[idx],
+                                feature_names=self._feature_names,
+                            ),
+                            show=False,
+                        )
 
-                if path_save != None:
-                    fig1 = plt.gcf()
-                    fig1.savefig(
-                        f"{path_save.replace('.png', '')}_{idx}.png"
-                        if path_save.endswith(".png")
-                        else f"{path_save}_{idx}.png"
-                    )
-                    plt.close()
-
-        else:
-            # Get the index of the sample in self._data
-            idx = self._data.query(query).index[0]
-            shap.waterfall_plot(shap_values=self.shap_values[idx, :])
-            if path_save != None:
-                fig1 = plt.gcf()
-                fig1.savefig(
-                    f"{path_save}.png" if not path_save.endswith(".png") else path_save
-                )
-                plt.close()
+                        if path_save != None:
+                            fig1 = plt.gcf()
+                            fig1.tight_layout()
+                            fig1.savefig(
+                                f"{path_save[:-4]}_{class_name}{path_save[-4:]}"
+                                if path_save.endswith(".png")
+                                else f"{path_save}_{class_name}.png"
+                            )
+                            plt.close()
 
     def get_sample_by_shap_value(
         self, shap_value, feature_name, class_name: str = None, operator: str = ">="
@@ -370,14 +356,12 @@ class ShapAnalyzer:
             ">=": lambda x, y: x >= y,
             "<=": lambda x, y: x <= y,
         }
-        if self._problem_type != "regression":
-            if class_name not in self._model.classes_:
-                raise ValueError(
-                    f"Clase {class_name} no asociada al modelo. Debe ser uno de {self._model.classes_}"
-                )
-            index_class = self._model.classes_.tolist().index(class_name)
-        else:
-            index_class = 0
+        if (
+            self._problem_type in ["binary_classification", "multiclass_classification"]
+        ) and (class_name not in self._model.classes_):
+            raise ValueError(
+                f"Clase {class_name} no asociada al modelo. Debe ser uno de {self._model.classes_}"
+            )
 
         if feature_name not in self._feature_names:
             raise ValueError(
@@ -385,16 +369,8 @@ class ShapAnalyzer:
             )
         index_feature = list(self._feature_names).index(feature_name)
 
-        # Get shap_values
-        if isinstance(self.shap_values, list):
-            sh_values = self.shap_values[index_class]
-        elif isinstance(self.shap_values, np.ndarray):
-            sh_values = self.shap_values
-        else:
-            raise ValueError(f"shap_values must be a list or a numpy array")
-
         return self._data[
-            operator_dict[operator](sh_values[:, index_feature], shap_value)
+            operator_dict[operator](self.shap_values[:, index_feature], shap_value)
         ].copy()
 
     def make_shap_analysis(self, queries: List[str] = None):
