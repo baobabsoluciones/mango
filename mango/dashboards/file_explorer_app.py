@@ -174,16 +174,21 @@ class FileExplorerApp:
         # Create columns display
         col3_1, col3_2, col3_3 = st.columns(3)
         with col3_1:
-            st.image(
-                Image.open(
-                    (
-                        os.path.join(
-                            os.path.dirname(__file__), self._APP_CONFIG["logo_path"]
-                        )
-                        if not os.path.exists(self.config["logo_path"])
-                        else self.config["logo_path"]
+            if self.config.get("logo_path") is not None:
+                path_logo = (
+                    self.config["logo_path"]
+                    if os.path.exists(self.config["logo_path"])
+                    else os.path.join(
+                        os.path.dirname(__file__), self._APP_CONFIG["logo_path"]
                     )
-                ),
+                )
+            else:
+                path_logo = os.path.join(
+                    os.path.dirname(__file__), self._APP_CONFIG["logo_path"]
+                )
+
+            st.image(
+                Image.open(path_logo),
                 width=150,
             )
             st.markdown(
