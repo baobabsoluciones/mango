@@ -35,6 +35,9 @@ jobs:
       id: filter
       with:
         filters: |
+          initialization:
+            - 'mango/__init__.py'
+            - 'mango/tests/initialization_library/**'
           clients:
             - 'mango/clients/**'
             - 'mango/tests/clients_module/**'
@@ -62,6 +65,12 @@ jobs:
           table:
             - 'mango/table/**'
             - 'mango/tests/table_module/**'
+    - name: Run initialization testing
+      if: steps.filter.outputs.initialization == 'true'
+      run: |
+        coverage run --source=./mango/clients/ -m unittest discover -s mango/tests/clients_module
+        coverage report -m
+        coverage xml
     - name: Run clients testing
       if: steps.filter.outputs.clients == 'true'
       run: |
