@@ -58,14 +58,14 @@ class ShapAnalyzer:
         self.problem_type = problem_type
         self._model_name = model_name
         self.shap_folder = shap_folder
-        self.data = data
         self.metadata = metadata
+        self.data = data
 
         # Assign model
-        self._get_estimator(estimator)
+        self._set_estimator(estimator)
 
         # Assign shap explainer
-        self._get_explainer()
+        self._set_explainer()
 
         # Get shap values
         self.shap_values = self._explainer.shap_values(self._x_transformed)
@@ -144,13 +144,20 @@ class ShapAnalyzer:
             raise ValueError(f"data must be a pandas DataFrame or a numpy array")
         if isinstance(data, pd.DataFrame):
             data.reset_index(drop=True, inplace=True)
+
+        # Filter to drop metadata columns
+        if self._metadata:
+            if isinstance(data, pd.DataFrame):
+                self._data_with_metadata = data.copy()
+                data = data.drop(columns=self._metadata)
+
         self._data = data
 
     @property
     def metadata(self):
         """
         This property is the data used to train the model.
-        :return: Data used to train the model with metadata
+        :return: Columns of data that are metadata
         :doc-author: baobab soluciones
         """
         return self._metadata
@@ -160,20 +167,10 @@ class ShapAnalyzer:
         """
         Validate the data and set the data attribute of the class.
         """
-        if not isinstance(metadata, (pd.DataFrame, np.ndarray)):
+        if not isinstance(metadata, (str, list)):
             raise ValueError(f"data must be a pandas DataFrame or a numpy array")
-        if isinstance(metadata, pd.DataFrame):
-            metadata.reset_index(drop=True, inplace=True)
-
-        # Get columns that are not in data
-        metadata_columns = [
-            col for col in metadata.columns if col not in self._data.columns
-        ]
-        # Compare data with metadata without the columns that are not in data
-        if not self._data.equals(metadata.drop(columns=metadata_columns)):
-            raise ValueError(
-                f"Metadata must have the same columns as data except for the following columns: {metadata_columns}"
-            )
+        if isinstance(metadata, str):
+            metadata = [metadata]
 
         self._metadata = metadata
 
@@ -186,7 +183,7 @@ class ShapAnalyzer:
         """
         return self._explainer
 
-    def _get_explainer(self):
+    def _set_explainer(self):
         """
         Get the shap explainer based on the model type.
 
@@ -206,9 +203,9 @@ class ShapAnalyzer:
                 f"Model {type(self._model).__name__} is not supported by ShapAnalyzer class"
             )
 
-    def _get_estimator(self, estimator):
+    def _set_estimator(self, estimator):
         """
-        The _get_estimator function is used to extract the model from a pipeline.
+        The _set_estimator function is used to extract the model from a pipeline.
         It also extracts the feature names and transformed data if there are any transformers in the pipeline.
 
 
@@ -270,7 +267,7 @@ class ShapAnalyzer:
         :param self: Make the function a method of the class
         :param path_save: str: Specify the path to save the plot
         :param **kwargs: Pass keyword arguments to the function
-        :return: A bar plot of the shap values of all features
+        :return: None
         :doc-author: baobab soluciones
         """
         if path_save != None:
@@ -308,7 +305,7 @@ class ShapAnalyzer:
         :param class_index: int: Specify which class to plot the summary for
         :param path_save: str: Save the plot as a png file
         :param **kwargs: Pass keyworded, variable-length argument list to a function
-        :return: A plot of the shap values for each feature
+        :return: None
         :doc-author: baobab soluciones
         """
         if path_save != None:
@@ -338,12 +335,22 @@ class ShapAnalyzer:
             )
             plt.close()
 
-    def waterfall_plot(self, query: str, path_save: str = None):
-        filter_data = self._metadata.query(query).copy()
+    def waterfall_plot(self, query: str, path_save: str = None, **kwargs):
+        """
+        The waterfall_plot function plots the SHAP values for a single sample.
+
+        :param self: Make the method belong to the class
+        :param str query: Filter the data
+        :param str path_save: Specify the path to save the waterfall plot
+        :param **kwargs: Pass keyworded, variable-length argument list
+        :return: None
+        :doc-author: baobab soluciones
+        """
+        filter_data = self._data_with_metadata.query(query).copy()
         if filter_data.shape[0] == 0:
             raise ValueError(f"No data found for query: {query}")
         else:
-            list_idx = self._data.query(query).index.to_list()
+            list_idx = filter_data.index.to_list()
             for i, idx in enumerate(list_idx):
                 if self._problem_type in [
                     "binary_classification",
@@ -357,7 +364,7 @@ class ShapAnalyzer:
                                 data=self._data.iloc[idx],
                                 feature_names=self._feature_names,
                             ),
-                            show=False,
+                            show=kwargs.get("show", False),
                         )
 
                         if path_save != None:
@@ -378,7 +385,7 @@ class ShapAnalyzer:
                             data=self._data.iloc[idx],
                             feature_names=self._feature_names,
                         ),
-                        show=False,
+                        show=kwargs.get("show", False),
                     )
 
                     if path_save != None:
@@ -434,7 +441,8 @@ class ShapAnalyzer:
         It also checks if the shap folder exists, and creates it if not. It then saves all plots to this folder.
 
         :param self: Bind the method to an object
-        :return: The summary plot and the barplot for each class
+        :param List[str] queries: Specify the queries to use in the waterfall plot
+        :return: None
         :doc-author: baobab soluciones
         """
         # Check path to save plots
