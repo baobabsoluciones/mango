@@ -1,13 +1,4 @@
-import pyomo.environ as pyo
-from pytups import SuperDict
-from mango.table import Table
-from mango.processing import (
-    as_list,
-    load_json,
-    write_json,
-    load_excel_light,
-    write_excel_light,
-)
+from pyomo.core import value, Var
 from pyomo.opt import (
     SolverResults,
     UndefinedData,
@@ -15,6 +6,16 @@ from pyomo.opt import (
     TerminationCondition,
     SolutionStatus,
 )
+from pytups import SuperDict
+
+from mango.processing import (
+    as_list,
+    load_json,
+    write_json,
+    load_excel_light,
+    write_excel_light,
+)
+from mango.table import Table
 
 
 def is_feasible(status):
@@ -24,8 +25,8 @@ def is_feasible(status):
     :param status: a status (string or pyomo object)
     :return: True if the status is optimal or maxTimeLimit
     """
-    return str(status) == str(pyo.TerminationCondition.optimal) or str(status) == str(
-        pyo.TerminationCondition.maxTimeLimit
+    return str(status) == str(TerminationCondition.optimal) or str(status) == str(
+        TerminationCondition.maxTimeLimit
     )
 
 
@@ -41,7 +42,7 @@ def safe_value(x):
     """
     try:
         if x is not None:
-            return pyo.value(x)
+            return value(x)
         else:
             return 0
     except:
@@ -148,7 +149,7 @@ def variables_to_excel(
     """
     variables = {
         k: var_to_table(v, keys=None, clean=clean, rounding=rounding)
-        for k, v in model_solution.component_map(ctype=pyo.Var).items()
+        for k, v in model_solution.component_map(ctype=Var).items()
     }
     write_excel_light(path + file_name, variables)
 
@@ -165,7 +166,7 @@ def variables_to_json(model_solution, path, file_name="variables.json", clean=Tr
     """
     variables = {
         k: var_to_table(v, keys=None, clean=clean)
-        for k, v in model_solution.component_map(ctype=pyo.Var).items()
+        for k, v in model_solution.component_map(ctype=Var).items()
     }
     write_json(variables, path + file_name)
 

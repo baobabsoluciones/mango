@@ -11,7 +11,7 @@ def plotly_plot_lines(
     df,
     x_axis: str,
     y_axis: Union[list, str],
-    output_path: str,
+    output_path: str = None,
     color_by: str = None,
     hover_list: list = None,
     show: bool = False,
@@ -49,10 +49,12 @@ def plotly_plot_lines(
         fig.show()
 
     # Save the plot as an html file
-    if output_path != None:
+    if output_path:
         fig.write_html(
             output_path + ".html" if not output_path.endswith(".html") else output_path
         )
+    else:
+        return fig
 
 
 def plotly_plot_scatter(
@@ -91,10 +93,12 @@ def plotly_plot_scatter(
         fig.show()
 
     # Save the plot as an html file
-    if output_path != None:
+    if output_path:
         fig.write_html(
             output_path + ".html" if not output_path.endswith(".html") else output_path
         )
+    else:
+        return fig
 
 
 def join_html(

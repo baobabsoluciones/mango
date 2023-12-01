@@ -387,9 +387,9 @@ class TestAemet(TestCase):
         client = AEMETClient(api_key="123456789", wait_time=0)
         client.connect()
         # Test error response snd no data due to error
-        with self.assertWarns(Warning) and self.assertRaises(Exception):
+        with self.assertRaises(Exception):
             client.get_meteo_data(station_code="3194U")
-        with self.assertWarns(Warning) and self.assertRaises(Exception):
+        with self.assertRaises(Exception):
             client.get_meteo_data(station_code="3194U", start_date=datetime(2020, 1, 1))
 
     @mock.patch("mango.clients.rest_client.requests")

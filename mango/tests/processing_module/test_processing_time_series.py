@@ -1,8 +1,9 @@
 import random
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from mango.data import get_ts_dataset
 from mango.processing import create_lags_col, create_recurrent_dataset
+
 try:
     import pandas as pd
 except ImportError:
@@ -33,6 +34,18 @@ class ProcessingTests(TestCase):
                 self.assertIn(f"target_lag{lag}", df_result.columns)
             elif lag < 0:
                 self.assertIn(f"target_lead{abs(lag)}", df_result.columns)
+
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            with self.assertRaises(
+                ImportError,
+            ) as context:
+                create_lags_col(self.df, col="target", lags=lags)
+
+            self.assertEqual(
+                str(context.exception),
+                "pandas need to be installed to use this function",
+            )
 
     def test_create_for_recurrent_network(self):
         random.seed(42)
