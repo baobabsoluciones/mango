@@ -68,7 +68,7 @@ jobs:
     - name: Run initialization testing
       if: steps.filter.outputs.initialization == 'true'
       run: |
-        coverage run --source=./mango/clients/ -m unittest discover -s mango/tests/initialization_library
+        coverage run --source=./mango/__init__.py -m unittest discover -s mango/tests/initialization_library
         coverage report -m
         coverage xml
     - name: Run clients testing
