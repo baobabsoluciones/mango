@@ -1,7 +1,14 @@
 from math import sin, cos
 
 
-def dolan_function_no2(x):
+def dolan_function_no2(x: list) -> float:
+    """
+    Dolan function No 2.
+
+    :param list x: list of floats
+    :return: the value of the function
+    :rtype: float
+    """
     return (
         (x[0] + 1.7 * x[1]) * sin(x[0])
         - 1.5 * x[2]

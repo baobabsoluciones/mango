@@ -5,6 +5,8 @@ def bukin_function_6(x: list) -> float:
     """
     Bukin function N. 6.
 
+    The sixth Bukin function has many local minima, all of which lie in a ridge.
+
     :param list x: list of floats
     :return: the value of the function
     :rtype: float

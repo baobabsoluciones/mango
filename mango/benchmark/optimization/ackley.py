@@ -5,6 +5,11 @@ def ackley(x: list) -> float:
     """
     General Ackley function.
 
+    The Ackley function is widely used for testing optimization algorithms.
+    In its two-dimensional form, it is characterized by a nearly flat outer region, and a large hole at the centre.
+    The function poses a risk for optimization algorithms, particularly hillclimbing algorithms,
+    to be trapped in one of its many local minima.
+
     :param list x: list of floats
     :return: the value of the function
     :rtype: float
