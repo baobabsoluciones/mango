@@ -2,6 +2,7 @@
 from logging import log
 from typing import Union
 
+import pandas as pd
 # Import from external modules
 import plotly.express as px
 from bs4 import BeautifulSoup
@@ -16,6 +17,9 @@ def plotly_plot_lines(
     hover_list: list = None,
     show: bool = False,
     title: str = None,
+    legend: bool = True,
+    position: str = None,
+    size: int = None,
     **kwargs_plotly,
 ):
     """
@@ -44,26 +48,31 @@ def plotly_plot_lines(
         df, x=x_axis, y=y_axis, hover_data=hover_list, color=color_by, **kwargs_plotly
     )
 
-    position_dict = {"topright": {"xanchor": "right", "yanchor": "top"},
-                      "topleft": {"xanchor": "left", "yanchor": "top"},
-                      "bottomright": {"xanchor":"right", "yanchor":"bottom"},
-                      "bottomleft": {"xanchor":"left", "yanchor":"bottom"}}
+    position_dict = {
+        "topright": {"xanchor": "right", "yanchor": "top"},
+        "topleft": {"xanchor": "left", "yanchor": "top"},
+        "bottomright": {"xanchor": "right", "yanchor": "bottom"},
+        "bottomleft": {"xanchor": "left", "yanchor": "bottom"},
+    }
 
     if legend and position is not None:
         try:
             # add title and legend inside the plot
             fig.update_layout(
                 title_text=title,
-                legend=dict(title="",
-                    yanchor=position_dict[position]['yanchor'],
+                legend=dict(
+                    title="",
+                    yanchor=position_dict[position]["yanchor"],
                     y=0.99,
-                    xanchor=position_dict[position]['xanchor'],
+                    xanchor=position_dict[position]["xanchor"],
                     x=0.99,
                     font=dict(size=size),
                 ),
             )
-        except:
-            print(f"{position} must be a one of the following {list(translate_args.keys())}")
+        except KeyError:
+            print(
+                f"{position} must be a one of the following {list(position_dict.keys())}"
+            )
             fig.update_layout(title_text=title)
     else:
         # add title
