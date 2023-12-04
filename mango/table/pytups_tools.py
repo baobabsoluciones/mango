@@ -23,7 +23,7 @@ def mutate(table, **kwargs):
     The values can be:
      - a single value which will be applied to each row. ex: a=3
      - a list with all the values of the column. ex: b=[4,5,6]
-     - a evaluator to apply to the row. ex: c=lambda v: v["a"]+v["b"]
+     - a function to apply to the row. ex: c=lambda v: v["a"]+v["b"]
     :return: a TupList
     """
     assert isinstance(table, TupList)
@@ -105,8 +105,8 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
 
     :param table: a table (TupList of dict).
     :param group_by: name of the columns to group.
-    :param default: default evaluator to apply to non-grouped columns.
-    :param func: evaluator to apply to the named column. ex: a = first, b = mean
+    :param default: default function to apply to non-grouped columns.
+    :param func: function to apply to the named column. ex: a = first, b = mean
     :return: a table (TupList of dict).
     """
     assert isinstance(table, TupList)
@@ -149,7 +149,7 @@ def group_mutate(table, group_by, **func):
      {'a': 3, 'b': 6, 'c': 6, 'sum_b': 12, 'count': 1},
      {'a': 3, 'b': 6, 'c': 5, 'sum_b': 12, 'count': 2}]
 
-    In this example the evaluator are applied to this grouped object:
+    In this example the function are applied to this grouped object:
     grouped: [{'a': [2], 'b': [3], 'c': [3]}, {'a': [3, 3], 'b': [6, 6], 'c': [6, 5]}]
 
     :param table: a table (TupList of dict).
@@ -158,7 +158,7 @@ def group_mutate(table, group_by, **func):
     The values can be:
      - a single value which will be applied to each row
      - a list with all the values of the column
-     - a evaluator to apply to the row.
+     - a function to apply to the row.
     :return: a TupList
     """
     assert isinstance(table, TupList)
@@ -886,7 +886,7 @@ def drop_nested(df):
     """
     Drop any nested value from a tuplist.
     Nested value are dict or lists nested as dict values in the tuplist.
-    This evaluator assume df structure is homogenous and only look at the first row to find nested values.
+    This function assume df structure is homogenous and only look at the first row to find nested values.
 
     :param df: a tuplist
     :return: the tuplist without nested values.

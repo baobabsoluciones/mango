@@ -196,7 +196,7 @@ class Table(TupList):
         The values can be:
          - a single value which will be applied to each row
          - a list with all the values of the column
-         - a evaluator to apply to the row.
+         - a function to apply to the row.
         :return: a table
         """
         return Table(mutate(self, **kwargs))
@@ -215,7 +215,7 @@ class Table(TupList):
         Group by the given columns and apply the given functions to the others.
 
         :param group_by: name of the columns to group.
-        :param func: evaluator to apply to the named column. ex: a = first, b = mean
+        :param func: function to apply to the named column. ex: a = first, b = mean
         :return: a table (Tuplist of dict).
         """
         return Table(group_mutate(self, group_by, **func))
@@ -234,8 +234,8 @@ class Table(TupList):
         Group by the given columns and apply the given functions to the others.
 
         :param group_by: name of the columns to group.
-        :param default: default evaluator to apply to non-grouped columns.
-        :param func: evaluator to apply to the named column. ex: a = first, b = mean
+        :param default: default function to apply to non-grouped columns.
+        :param func: function to apply to the named column. ex: a = first, b = mean
         :return: a table (Tuplist of dict).
         """
         return Table(summarise(self, group_by, default=default, **func))
@@ -477,7 +477,7 @@ class Table(TupList):
         """
         Filter a table.
 
-        :param func: evaluator to use to filter
+        :param func: function to use to filter
         :return: the filtered table.
         """
         if not self.len():
@@ -629,7 +629,7 @@ class Table(TupList):
         """
         Drop any nested column from a table.
         Nested value are dict or lists nested as dict values in the table.
-        This evaluator assume df structure is homogenous and only look at the first row to find nested values.
+        This function assume df structure is homogenous and only look at the first row to find nested values.
 
         :return: the table without nested values.
         """
@@ -828,13 +828,13 @@ class Table(TupList):
 
     def apply(self, func: Callable, *args, **kwargs):
         """
-        Apply a evaluator to the entire table.
+        Apply a function to the entire table.
         Useful to chain varius functions applied to the entire table.
 
-        :param func: a evaluator which take the table as a first argument.
-        :param args: args of the evaluator
-        :param kwargs: kwargs of the evaluator
-        :return: what the evaluator returns.
+        :param func: a function which take the table as a first argument.
+        :param args: args of the function
+        :param kwargs: kwargs of the function
+        :return: what the function returns.
         """
         return func(self, *args, **kwargs)
 

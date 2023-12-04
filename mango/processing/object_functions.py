@@ -9,7 +9,7 @@ except ImportError:
 
 def pickle_copy(instance):
     """
-    The pickle_copy evaluator accepts an instance of a class and returns a copy of that
+    The pickle_copy function accepts an instance of a class and returns a copy of that
     instance. The pickle module is used to create the copy, so it can be unpickled again.
 
     :param instance: specify the object to be copied
@@ -21,7 +21,7 @@ def pickle_copy(instance):
 
 def unique(lst: list):
     """
-    The unique evaluator takes a list and returns the unique elements of that list.
+    The unique function takes a list and returns the unique elements of that list.
     For example, if given [2, 2, 3], it will return [2, 3].
 
     :param lst: the list from where to extract the unique values
@@ -33,7 +33,7 @@ def unique(lst: list):
 
 def reverse_dict(data):
     """
-    The reverse_dict evaluator takes a dictionary and returns a dictionary with the keys and values
+    The reverse_dict function takes a dictionary and returns a dictionary with the keys and values
     reversed.
 
     :param data: the dictionary to be reversed
@@ -45,7 +45,7 @@ def reverse_dict(data):
 
 def cumsum(lst: list) -> list:
     """
-    The cumsum evaluator takes a list of numbers and returns a list of the cumulative sum of those numbers.
+    The cumsum function takes a list of numbers and returns a list of the cumulative sum of those numbers.
 
     :param lst: the list of numbers to be summed
     :return: a list of the cumulative sum of the inputted list
@@ -56,7 +56,7 @@ def cumsum(lst: list) -> list:
 
 def lag_list(lst: list, lag: int = 1) -> list:
     """
-    The lag_list evaluator takes a list and returns a list with the values lagged by the specified amount.
+    The lag_list function takes a list and returns a list with the values lagged by the specified amount.
 
     :param lst: the list to be lagged
     :param lag: the amount by which to lag the list
@@ -68,7 +68,7 @@ def lag_list(lst: list, lag: int = 1) -> list:
 
 def lead_list(lst: list, lead: int = 1) -> list:
     """
-    The lead_list evaluator takes a list and returns a list with the values led by the specified amount.
+    The lead_list function takes a list and returns a list with the values led by the specified amount.
 
     :param lst: the list to be led
     :param lead: the amount by which to lead the list
@@ -80,7 +80,7 @@ def lead_list(lst: list, lead: int = 1) -> list:
 
 def row_number(lst: list, start: int = 0) -> list:
     """
-    The row_number evaluator takes a list and returns a list with the row number of each element.
+    The row_number function takes a list and returns a list with the row number of each element.
 
     :param lst: the list to be numbered
     :param start: the number to start the row numbering at
@@ -92,7 +92,7 @@ def row_number(lst: list, start: int = 0) -> list:
 
 def flatten(lst: Iterable) -> list:
     """
-    The flatten evaluator takes a list of lists and returns a flattened list.
+    The flatten function takes a list of lists and returns a flattened list.
 
     :param lst: the list of lists to be flattened
     :return: a flattened list
@@ -103,7 +103,7 @@ def flatten(lst: Iterable) -> list:
 
 def df_to_list(df: pd.DataFrame) -> list:
     """
-    The data_frame_to_list evaluator takes a DataFrame and returns a list of dictionaries with the
+    The data_frame_to_list function takes a DataFrame and returns a list of dictionaries with the
     column names as keys and the values as values.
 
     :param df: the DataFrame to be converted to a list of dictionaries
@@ -115,7 +115,7 @@ def df_to_list(df: pd.DataFrame) -> list:
 
 def df_to_dict(df: pd.DataFrame) -> dict:
     """
-    The data_frame_to_dict evaluator takes a dict of DataFrames and returns a dictionary with the
+    The data_frame_to_dict function takes a dict of DataFrames and returns a dictionary with the
     sheet names as keys and the DataFrames in records as values.
 
     :param dict df: the dict of DataFrames to be converted to a dictionary
