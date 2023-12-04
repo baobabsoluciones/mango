@@ -1,3 +1,40 @@
+version 0.1.2
+--------------
+
+- **released**: 2023-11-17
+- **description**: some small bugfixes and add haversine function
+- **changelog**:
+    - fixed a bug on streamlit app saving the config file.
+    - Add edit excels, csv and json files in streamlit app.
+    - Add haversine function to calculate distance between two points.
+
+version 0.1.1
+--------------
+
+- **released**: 2023-11-08
+- **description**: some small bugfixes
+- **changelog**:
+    - fixed a bug on left join on class Table.
+    - fixed a small bug on AEMET pydantic validation.
+
+version 0.1.0
+--------------
+
+- **released**: 2023-11-07
+- **description**: first beta release of the library.
+- **changelog**:
+    - fix bug fix on left join of Table class.
+    - added improvements to Table class.
+    - adapt load_excel function to return a list of dictionaries.
+    - added new date functions.
+    - drop images module.
+    - removed pandas as a main dependency of the library. It is still needed in some submodules.
+    - changed from setup.py to pyproject.toml.
+    - added calendar datasets for Spain.
+    - added a REST client to the AEMET to gather meteorological data.
+    - added pydantic validation as a decorator that can be used in any function.
+
+
 version 0.0.6
 --------------
 

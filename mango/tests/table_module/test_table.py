@@ -1,11 +1,13 @@
-import os
 import io
+import os
+from unittest import TestCase, mock
+
 import numpy as np
 from pytups import TupList, SuperDict
-from unittest import TestCase, mock
+
+from mango.processing import row_number
 from mango.table.pytups_table import Table
 from mango.table.table_tools import mean
-from mango.processing import row_number
 from mango.tests.const import normalize_path
 
 
@@ -98,6 +100,14 @@ class TestTable(TestCase):
 
     def test_take_tup(self):
         result = Table(self.default_data).take(("Name", "Age"))
+        expected = TupList(
+            [("Albert", 20), ("Bernard", 25), ("Charlie", 30), ("Daniel", 35)]
+        )
+        self.assertIsInstance(result, TupList, msg="take create a TupList")
+        self.assertEqual(result, expected, msg="take works as expected")
+
+    def test_take_tup_2(self):
+        result = Table(self.default_data).take("Name", "Age")
         expected = TupList(
             [("Albert", 20), ("Bernard", 25), ("Charlie", 30), ("Daniel", 35)]
         )
@@ -452,6 +462,30 @@ class TestTable(TestCase):
         df = (
             Table(self.default_data2)
             .left_join(df_id, by=dict(Name="N"))
+            .select("Name", "Id")
+        )
+        expected = Table(
+            [
+                {"Name": "Albert", "Id": 1},
+                {"Name": "Albert", "Id": 5},
+                {"Name": "Bernard", "Id": 2},
+                {"Name": "Charlie", "Id": 3},
+                {"Name": "Daniel", "Id": None},
+            ]
+        )
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_left_join_with_by_dict4(self):
+        msg = "left join with by as a dict with two keys and common keys"
+        df_id = (
+            Table(self.df_id + [{"Name": "Albert", "Id": 5}])
+            .rename(Name="N")
+            .mutate(other=1)
+        )
+        df = (
+            Table(self.default_data2)
+            .mutate(N=1)
+            .left_join(df_id, by=dict(Name="N", N="other"))
             .select("Name", "Id")
         )
         expected = Table(
@@ -988,6 +1022,12 @@ class TestTable(TestCase):
         ]
         self.assertEqual(df, expected, msg=msg)
 
+    def test_distinct_empty(self):
+        msg = "distinct on empty table is empty table"
+        df = Table().distinct("Under_25")
+        expected = []
+        self.assertEqual(df, expected, msg=msg)
+
     def test_order_by(self):
         msg = "order_by in ascending order (default)"
         df = Table(self.default_data2).select("Name", "Points").order_by("Points")
@@ -999,7 +1039,13 @@ class TestTable(TestCase):
         ]
         self.assertEqual(df, expected, msg=msg)
 
-    def test_oder_by_reverse(self):
+    def test_order_by_empty(self):
+        msg = "order_by on empty table is empty table"
+        df = Table().order_by("Points")
+        expected = []
+        self.assertEqual(df, expected, msg=msg)
+
+    def test_order_by_reverse(self):
         msg = "order_by in descending order"
         df = (
             Table(self.default_data2)
@@ -1264,6 +1310,12 @@ class TestTable(TestCase):
         self.assertEqual(result1, expected1, msg=msg1)
         self.assertEqual(result2, expected2, msg=msg2)
 
+    def test_to_set2_empty(self):
+        msg1 = "to_set2 on empty table returns empty table"
+        result1 = Table().to_set2("Points")
+        expected1 = []
+        self.assertEqual(result1, expected1, msg=msg1)
+
     def test_to_param(self):
         msg1 = "to_param creates a dict"
         result1 = Table(self.default_data2).to_param("Name", "Points")
@@ -1322,6 +1374,18 @@ class TestTable(TestCase):
         self.assertEqual(result, self.default_data2, msg=msg)
         self.assertIsInstance(result, Table)
 
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            with self.assertRaises(
+                ImportError,
+            ) as context:
+                Table.from_pandas(df)
+
+            self.assertEqual(
+                str(context.exception),
+                "Pandas is not present in your system. Try: pip install pandas",
+            )
+
     def test_to_pandas(self):
         try:
             import pandas as pd
@@ -1332,6 +1396,18 @@ class TestTable(TestCase):
         result = table.to_pandas()
         expected = pd.DataFrame.from_records(self.default_data2)
         pd.testing.assert_frame_equal(result, expected)
+
+        # Test pandas ImportError
+        with mock.patch.dict("sys.modules", {"pandas": None}):
+            with self.assertRaises(
+                ImportError,
+            ) as context:
+                table.to_pandas()
+
+            self.assertEqual(
+                str(context.exception),
+                "Pandas is not present in your system. Try: pip install pandas",
+            )
 
     def test_to_from_json(self):
         msg = "to_json and from_json allow to write and load json files into a Table"

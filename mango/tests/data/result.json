@@ -1,0 +1,42 @@
+{
+    "Problem": [
+        {
+            "Name": "unknown",
+            "Lower bound": -3.0,
+            "Upper bound": -3.0,
+            "Number of objectives": 1,
+            "Number of constraints": 0,
+            "Number of variables": 0,
+            "Number of binary variables": 3,
+            "Number of integer variables": 3,
+            "Number of continuous variables": null,
+            "Number of nonzeros": 0,
+            "Sense": "maximize"
+        }
+    ],
+    "Solver": [
+        {
+            "Name": null,
+            "Status": "ok",
+            "Return code": null,
+            "Message": null,
+            "User time": -1.0,
+            "System time": 0.02,
+            "Wallclock time": 0.02,
+            "Termination condition": "optimal",
+            "Termination message": "Model was solved to optimality (subject to tolerances), and an optimal solution is available.",
+            "Statistics": null
+        }
+    ],
+    "Solution": [
+        {
+            "Gap": null,
+            "Status": "unknown",
+            "Message": null,
+            "Problem": {},
+            "Objective": {},
+            "Variable": {},
+            "Constraint": {}
+        }
+    ]
+}
