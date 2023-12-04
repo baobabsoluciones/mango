@@ -3,10 +3,10 @@ from math import exp, sqrt, cos, pi, e
 
 def ackley(x: list) -> float:
     """
-    General Ackley evaluator.
+    General Ackley function.
 
     :param list x: list of floats
-    :return: the value of the evaluator
+    :return: the value of the function
     :rtype: float
     """
     return (

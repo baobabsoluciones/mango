@@ -23,7 +23,7 @@ class ConfigParameter:
         secondary_type: callable = None,
     ):
         """
-        The __init__ evaluator is called when a new instance of the class is created.
+        The __init__ function is called when a new instance of the class is created.
         It sets up the object with attributes that were defined in the class definition.
 
         :param str name: set the name of the parameter
@@ -43,7 +43,7 @@ class ConfigParameter:
         self, section: str, config_parser: ConfigParser
     ) -> Union[int, float, bool, str, List]:
         """
-        The parse evaluator takes a section name and a ConfigParser object.
+        The parse function takes a section name and a ConfigParser object.
         It returns the value of the parameter with name `name` from that section.
 
         :param str section: specify the section in the config file
@@ -78,7 +78,7 @@ class ConfigParameter:
 
     def __repr__(self):
         """
-        The __repr__ evaluator is what gets called when you try to &quot;print&quot; an object.
+        The __repr__ function is what gets called when you try to &quot;print&quot; an object.
 
         :return: A string representation of the object
         :doc-author: baobab soluciones
@@ -100,7 +100,7 @@ class BaseConfig:
 
     def __init__(self, file_name: str, extend_params: Dict):
         """
-        The __init__ evaluator is called when an instance of the class is created.
+        The __init__ function is called when an instance of the class is created.
         It handles the initial parsing of the config file
 
         :param file_name: specify the name of the config file
@@ -154,7 +154,7 @@ class BaseConfig:
 
     def __call__(self, key):
         """
-        The __call__ evaluator allows the class to be called as a evaluator.
+        The __call__ function allows the class to be called as a function.
 
         :param key: the name of the parameter we want to extract
         :return: The value of the parameter
