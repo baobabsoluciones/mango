@@ -118,7 +118,9 @@ class ShapAnalyzer:
         """
         Validate the shap_folder and set the shap_folder attribute of the class.
         """
-        if not os.path.exists(shap_folder):
+        if shap_folder is None:
+            pass
+        elif not os.path.exists(shap_folder):
             try:
                 os.makedirs(shap_folder)
             except OSError:
@@ -146,10 +148,10 @@ class ShapAnalyzer:
             data.reset_index(drop=True, inplace=True)
 
         # Filter to drop metadata columns
+        self._data_with_metadata = data.copy()
         if self._metadata:
             if isinstance(data, pd.DataFrame):
-                self._data_with_metadata = data.copy()
-                data = data.drop(columns=self._metadata)
+                data = data.drop(columns=self._metadata, errors="ignore")
 
         self._data = data
 
@@ -167,6 +169,8 @@ class ShapAnalyzer:
         """
         Validate the data and set the data attribute of the class.
         """
+        if metadata is None:
+            metadata = []
         if not isinstance(metadata, (str, list)):
             raise ValueError(f"data must be a pandas DataFrame or a numpy array")
         if isinstance(metadata, str):
@@ -400,7 +404,7 @@ class ShapAnalyzer:
                         plt.close()
 
     def get_sample_by_shap_value(
-        self, shap_value, feature_name, class_name: str = None, operator: str = ">="
+        self, shap_value, feature_name, class_name=None, operator: str = ">="
     ):
         """
         The get_sample_by_shap_value function returns a sample of the data that has a shap value for
@@ -431,9 +435,19 @@ class ShapAnalyzer:
             )
         index_feature = list(self._feature_names).index(feature_name)
 
-        return self._data[
-            operator_dict[operator](self.shap_values[:, index_feature], shap_value)
-        ].copy()
+        if self._problem_type in ["binary_classification", "multiclass_classification"]:
+            return self._data[
+                operator_dict[operator](
+                    self.shap_values[list(self._model.classes_).index(class_name)][
+                        :, index_feature
+                    ],
+                    shap_value,
+                )
+            ].copy()
+        else:
+            return self._data[
+                operator_dict[operator](self.shap_values[:, index_feature], shap_value)
+            ].copy()
 
     def make_shap_analysis(self, queries: List[str] = None):
         """
@@ -483,15 +497,16 @@ class ShapAnalyzer:
                     "barplot.png",
                 )
             )
-            for query in queries:
-                self.waterfall_plot(
-                    query=query,
-                    path_save=os.path.join(
-                        base_path,
-                        "individual",
-                        f"{query}.png",
-                    ),
-                )
+            if queries != None:
+                for i, query in enumerate(queries):
+                    self.waterfall_plot(
+                        query=query,
+                        path_save=os.path.join(
+                            base_path,
+                            "individual",
+                            f"query_{i}.png",
+                        ),
+                    )
 
         elif self._problem_type == "regression":
             self.summary_plot(
@@ -508,12 +523,13 @@ class ShapAnalyzer:
                     "barplot.png",
                 )
             )
-            for query in queries:
-                self.waterfall_plot(
-                    query=query,
-                    path_save=os.path.join(
-                        base_path,
-                        "individual",
-                        f"{query}.png",
-                    ),
-                )
+            if queries != None:
+                for i, query in enumerate(queries):
+                    self.waterfall_plot(
+                        query=query,
+                        path_save=os.path.join(
+                            base_path,
+                            "individual",
+                            f"query_{i}.png",
+                        ),
+                    )
