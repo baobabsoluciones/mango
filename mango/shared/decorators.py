@@ -13,12 +13,12 @@ def validate_args(**schemas):
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
-            The wrapper function validates the arguments against a schema and then calls
-            the original function.
+            The wrapper evaluator validates the arguments against a schema and then calls
+            the original evaluator.
 
-            :param args: Pass a non-keyworded, variable-length argument list to the function
-            :param kwargs: Pass the arguments to the function
-            :return: The same as the original function
+            :param args: Pass a non-keyworded, variable-length argument list to the evaluator
+            :param kwargs: Pass the arguments to the evaluator
+            :return: The same as the original evaluator
             :doc-author: baobab soluciones
             """
 
@@ -48,12 +48,12 @@ def pydantic_validation(**validators):
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
-            The wrapper function validates the arguments against a schema and then calls
-            the original function.
+            The wrapper evaluator validates the arguments against a schema and then calls
+            the original evaluator.
 
-            :param args: Pass a non-keyworded, variable-length argument list to the function
-            :param kwargs: Pass the arguments to the function
-            :return: The same as the original function
+            :param args: Pass a non-keyworded, variable-length argument list to the evaluator
+            :param kwargs: Pass the arguments to the evaluator
+            :return: The same as the original evaluator
             :doc-author: baobab soluciones
             """
             try:

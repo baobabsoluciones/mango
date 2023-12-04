@@ -31,7 +31,7 @@ def to_tz(dt: datetime, tz: str = "Europe/Madrid") -> datetime:
 def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
     """
     Transform a string into a datetime object.
-    The function will try various standard format.
+    The evaluator will try various standard format.
 
     :param string: the string
     :param fmt: (list or str) additional format to try on the string.
@@ -53,7 +53,7 @@ def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
 def str_to_d(string: str, fmt: Union[str, Iterable] = None) -> date:
     """
     Transform a string into a date object.
-    The function will try various standard format.
+    The evaluator will try various standard format.
 
     :param string: the string
     :param fmt: (list or str) additional format to try on the string.

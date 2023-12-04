@@ -1,5 +1,10 @@
 from mango.config import BaseConfig, ConfigParameter
-from mango.models.genetic.const import INDIVIDUAL_ENCODINGS
+from mango.models.genetic.const import (
+    INDIVIDUAL_ENCODINGS,
+    SELECTION_METHODS,
+    CROSSOVER_METHODS,
+    REPLACEMENT_METHODS,
+)
 
 
 class GeneticBaseConfig(BaseConfig):
@@ -7,23 +12,19 @@ class GeneticBaseConfig(BaseConfig):
         "main": [
             ConfigParameter("population_size", int, 100),
             ConfigParameter("max_generations", int, 500),
-            ConfigParameter("fitness_threshold", float),
+            ConfigParameter("optimization_objective", str, validate=["max", "min"]),
+            ConfigParameter("selection", str, validate=SELECTION_METHODS),
+            ConfigParameter("crossover", str, validate=CROSSOVER_METHODS),
+            ConfigParameter("replacement", str, validate=REPLACEMENT_METHODS),
             ConfigParameter("mutation_rate", float, 0.1),
-            ConfigParameter("max_stagnation", int, 50),
-            ConfigParameter("verbose", bool, False),
-            ConfigParameter("save_log", bool, False),
-            ConfigParameter("save_backups", bool, False),
-            ConfigParameter("backup_population_frequency", int, 100),
-            ConfigParameter("backup_individual_frequency", int, 10),
-            ConfigParameter("import_from_backup", bool, False),
-            ConfigParameter("backup_import_path", str, ""),
-            ConfigParameter("backup_export_path", str, ""),
-            ConfigParameter("exec_name", str, ""),
         ],
         "individual": [
-            ConfigParameter("individual_encoding", str, validate=INDIVIDUAL_ENCODINGS),
-            ConfigParameter("individual_values", list, secondary_type=float),
-            ConfigParameter("individual_gene_min_value", float),
-            ConfigParameter("individual_gene_max_value", float),
+            ConfigParameter("encoding", str, validate=INDIVIDUAL_ENCODINGS),
+            ConfigParameter("gene_length", int, default=0),
+            ConfigParameter("gene_min_value", float),
+            ConfigParameter("gene_max_value", float),
         ],
     }
+
+    def __init__(self, filename):
+        super().__init__(filename, self.__params)

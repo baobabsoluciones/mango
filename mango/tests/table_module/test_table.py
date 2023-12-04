@@ -53,9 +53,9 @@ class TestTable(TestCase):
     @mock.patch("sys.stdout", new_callable=io.StringIO)
     def assertStdout(self, func, expected_output, mock_stdout, msg=None):
         """
-        Assert that function func print the expected output with argument arg
+        Assert that evaluator func print the expected output with argument arg
 
-        :param func: a function
+        :param func: a evaluator
         :param expected_output: the expected output
         :param mock_stdout: passed automatically by mock.patch
         :param msg: message
@@ -157,7 +157,7 @@ class TestTable(TestCase):
         self.assertRaises(TypeError, try_mutate)
 
     def test_mutate_func(self):
-        msg = "mutate with a function for the new column."
+        msg = "mutate with a evaluator for the new column."
         df = Table(self.default_data).mutate(under_25=lambda v: v["Age"] <= 25)
         expected = Table(
             [
@@ -170,7 +170,7 @@ class TestTable(TestCase):
         self.assertEqual(df, expected, msg=msg)
 
     def test_mutate_exist(self):
-        msg = "mutate with a function for an existing column."
+        msg = "mutate with a evaluator for an existing column."
         df = Table(self.default_data).mutate(Age=lambda v: v["Age"] * 2)
         expected = Table(
             [
@@ -1044,7 +1044,6 @@ class TestTable(TestCase):
         self.assertEqual(result, expected, msg=msg)
 
     def test_empty_table(self):
-
         self.assertEqual(Table([]), [], msg="create empty table with empty list")
         self.assertEqual(Table(None), [], msg="create empty table with None")
         self.assertEqual(Table(), [], msg="create empty table with no arg")
@@ -1360,7 +1359,7 @@ class TestTable(TestCase):
         self.assertEqual(result, expected, msg=msg)
 
     def test_apply(self):
-        msg = "apply a function to a table"
+        msg = "apply a evaluator to a table"
         result = Table(self.default_data2).apply(len)
         expected = len(Table(self.default_data2))
         self.assertEqual(result, expected, msg=msg)

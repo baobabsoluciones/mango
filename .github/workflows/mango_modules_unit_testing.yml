@@ -111,7 +111,7 @@ jobs:
     - name: Run models testing
       if: steps.filter.outputs.models == 'true'
       run: |
-          coverage run --source=./mango/models/ -m unittest discover -s mango/tests/models_module
+          coverage run --source=./mango/models/,./mango/benchmark/optimization/ -m unittest discover -s mango/tests/models_module
           coverage report -m
           coverage xml
     - name: Upload coverage to Codecov

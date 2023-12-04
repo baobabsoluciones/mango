@@ -12,8 +12,8 @@ from openpyxl.utils import get_column_letter
 
 def list_files_directory(directory: str, extensions: list = None):
     """
-    The list_files_directory function returns a list of files in the directory specified by the user.
-    The function takes two arguments:
+    The list_files_directory evaluator returns a list of files in the directory specified by the user.
+    The evaluator takes two arguments:
         1) The directory to search for files in (str).
         2) A list of file extensions to filter by (list). If no extensions are provided, all files will be returned.
 
@@ -33,7 +33,7 @@ def list_files_directory(directory: str, extensions: list = None):
 
 def check_extension(path: str, extension: str):
     """
-    The check_extension function checks if a file has the specified extension.
+    The check_extension evaluator checks if a file has the specified extension.
 
     :param path: Specify the path of the file to be checked
     :param extension: Specify the extension to check against
@@ -45,7 +45,7 @@ def check_extension(path: str, extension: str):
 
 def is_excel_file(path: str):
     """
-    The is_excel_file function checks if a file is an Excel file.
+    The is_excel_file evaluator checks if a file is an Excel file.
 
     :param path: Specify the path of the file to be checked
     :return: A boolean
@@ -60,7 +60,7 @@ def is_excel_file(path: str):
 
 def is_json_file(path: str):
     """
-    The is_json_file function checks if a file is a JSON file.
+    The is_json_file evaluator checks if a file is a JSON file.
 
     :param path: Specify the path of the file to be checked
     :return: A boolean
@@ -71,7 +71,7 @@ def is_json_file(path: str):
 
 def load_json(path: str, **kwargs):
     """
-    The load_json function loads a json file from the specified path and returns it as a dictionary.
+    The load_json evaluator loads a json file from the specified path and returns it as a dictionary.
 
     :param path: Specify the path of the file to be loaded
     :return: A dictionary
@@ -83,9 +83,9 @@ def load_json(path: str, **kwargs):
 
 def write_json(data: Union[dict, list], path):
     """
-    The write_json function writes a dictionary or list to a JSON file.
+    The write_json evaluator writes a dictionary or list to a JSON file.
 
-    :param data: allow the function to accept both a dictionary and list object
+    :param data: allow the evaluator to accept both a dictionary and list object
     :param path: Specify the path of the file that you want to write to
     :return: None
     :doc-author: baobab soluciones
@@ -97,7 +97,7 @@ def write_json(data: Union[dict, list], path):
 
 def load_excel_sheet(path: str, sheet: str, **kwargs):
     """
-    The load_excel_sheet function loads a sheet from an Excel file and returns it as a DataFrame.
+    The load_excel_sheet evaluator loads a sheet from an Excel file and returns it as a DataFrame.
 
     :param path: Specify the path of the file to be loaded
     :param sheet: Specify the name of the sheet to be loaded
@@ -108,7 +108,7 @@ def load_excel_sheet(path: str, sheet: str, **kwargs):
     try:
         import pandas as pd
     except ImportError as e:
-        raise NotImplementedError("function not yet implemented without pandas")
+        raise NotImplementedError("evaluator not yet implemented without pandas")
 
     if not is_excel_file(path):
         raise FileNotFoundError(
@@ -127,7 +127,7 @@ def load_excel(
     **kwargs,
 ):
     """
-    The load_excel function loads an Excel file and returns it as a dictionary of DataFrames.
+    The load_excel evaluator loads an Excel file and returns it as a dictionary of DataFrames.
 
     :param path: Specify the path of the file to be loaded.
     :param dtype: pandas parameter dtype. Data type for data or columns. E.g. {‘a’: np.float64, ‘b’: np.int32}.
@@ -159,7 +159,7 @@ def load_excel(
 
 def write_excel(path, data):
     """
-    The write_excel function writes a dictionary of DataFrames to an Excel file.
+    The write_excel evaluator writes a dictionary of DataFrames to an Excel file.
 
     :param path: Specify the path of the file that you want to write to
     :param data: Specify the dictionary to be written
@@ -192,7 +192,7 @@ def write_excel(path, data):
 
 def write_df_to_excel(path, data, **kwargs):
     """
-    The write_df_to_excel function writes a DataFrame to an Excel file.
+    The write_df_to_excel evaluator writes a DataFrame to an Excel file.
 
     :param path: Specify the path of the file that you want to write to
     :param data: Specify the DataFrame to be written
@@ -202,7 +202,7 @@ def write_df_to_excel(path, data, **kwargs):
     try:
         import pandas as pd
     except ImportError as e:
-        raise NotImplementedError("function not yet implemented without pandas")
+        raise NotImplementedError("evaluator not yet implemented without pandas")
 
     if not is_excel_file(path):
         raise FileNotFoundError(
@@ -215,7 +215,7 @@ def write_df_to_excel(path, data, **kwargs):
 
 def load_csv(path, **kwargs):
     """
-    The load_csv function loads a CSV file and returns it as a DataFrame.
+    The load_csv evaluator loads a CSV file and returns it as a DataFrame.
 
     :param path: Specify the path of the file to be loaded
     :return: A DataFrame
@@ -262,7 +262,7 @@ def load_csv_light(path, sep=None, encoding=None):
 
 def write_csv(path, data, **kwargs):
     """
-    The write_csv function writes a DataFrame to a CSV file.
+    The write_csv evaluator writes a DataFrame to a CSV file.
 
     :param path: Specify the path of the file that you want to write to
     :param data: Specify the DataFrame to be written
@@ -312,7 +312,7 @@ def write_csv_light(path, data, sep=None, encoding=None):
 
 def write_df_to_csv(path, data, **kwargs):
     """
-    The write_csv function writes a DataFrame to a CSV file.
+    The write_csv evaluator writes a DataFrame to a CSV file.
 
     :param path: Specify the path of the file that you want to write to
     :param data: Specify the DataFrame to be written
@@ -343,7 +343,7 @@ def adjust_excel_col_width(writer, df, table_name: str, min_len: int = 7):
 
 def load_excel_light(path, sheets=None):
     """
-    The load_excel function loads an Excel file and returns it as a dictionary of DataFrames.
+    The load_excel evaluator loads an Excel file and returns it as a dictionary of DataFrames.
     It doesn't use pandas.
 
     :param path: Specify the path of the file to be loaded.
@@ -372,7 +372,7 @@ def load_excel_light(path, sheets=None):
 
 def write_excel_light(path, data):
     """
-    The write_excel function writes a dictionary of DataFrames to an Excel file.
+    The write_excel evaluator writes a dictionary of DataFrames to an Excel file.
 
     :param path: Specify the path of the file that you want to write to
     :param data: Specify the dictionary to be written

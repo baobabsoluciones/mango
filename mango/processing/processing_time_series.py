@@ -31,7 +31,7 @@ def create_dense_data(
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("pandas need to be installed to use this function")
+        raise ImportError("pandas need to be installed to use this evaluator")
     df_w = df.copy()
 
     # get cols id_cols from df and drop duplicates
@@ -95,8 +95,8 @@ def create_lags_col(
     df: pd.DataFrame, col: str, lags: List[int], check_col: List[str] = None
 ) -> pd.DataFrame:
     """
-    The create_lags_col function creates lagged columns for a given dataframe.
-    The function takes three arguments: df, col, and lags. The df argument is the
+    The create_lags_col evaluator creates lagged columns for a given dataframe.
+    The evaluator takes three arguments: df, col, and lags. The df argument is the
     dataframe to which we want to add lagged columns. The col argument is the name of
     the column in the dataframe that we want to create lag variables for (e.g., 'sales').
     The lags argument should be a list of integers representing how far back in time we
@@ -111,7 +111,7 @@ def create_lags_col(
     try:
         import pandas as pd
     except ImportError:
-        raise ImportError("pandas need to be installed to use this function")
+        raise ImportError("pandas need to be installed to use this evaluator")
 
     df_c = df.copy()
 
@@ -149,16 +149,16 @@ def create_recurrent_dataset(
     output_last: bool = True,
 ):
     """
-    The create_recurrent_dataset function creates a dataset for recurrent neural networks.
-    The function takes in an array of data, and returns two arrays: one containing the input data,
+    The create_recurrent_dataset evaluator creates a dataset for recurrent neural networks.
+    The evaluator takes in an array of data, and returns two arrays: one containing the input data,
     and another containing the output labels. The input is a 2D array with shape (num_samples, num_features).
     The input data output is a 3D array with shape (num_samples, look_back, num_features), while the labels output
     have a 1D array with shape (num_samples, ).
 
-    The function allows to include the output lags in the input output data. If include_output_lags is True,
-    the function will create the lags indicated on the lags' argument.
+    The evaluator allows to include the output lags in the input output data. If include_output_lags is True,
+    the evaluator will create the lags indicated on the lags' argument.
 
-    The function allows for the label to be the first "column" of the input data, or the last "column" of the input data
+    The evaluator allows for the label to be the first "column" of the input data, or the last "column" of the input data
     by setting the output_last argument to False or True, respectively.
 
     :param :class:`np.array` data: pass the data to be used for training
@@ -185,7 +185,6 @@ def create_recurrent_dataset(
         max_lag = max(lags)
 
     for i in range(max_lag, data.shape[0] - look_back):
-
         a = x_in[i : (i + look_back), :]
 
         if include_output_lags:

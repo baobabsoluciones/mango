@@ -123,12 +123,12 @@ class Chrono:
 
     def __call__(self, func: callable, *args, **kwargs):
         """
-        Method to use the chrono as a callable with a function inside
+        Method to use the chrono as a callable with a evaluator inside
 
-        :param func: function to decorate
-        :param args: arguments to pass to the function
-        :param kwargs: keyword arguments to pass to the function
-        :return: the result of the function
+        :param func: evaluator to decorate
+        :param args: arguments to pass to the evaluator
+        :param kwargs: keyword arguments to pass to the evaluator
+        :return: the result of the evaluator
         """
         self.start(func.__name__)
         result = func(*args, **kwargs)

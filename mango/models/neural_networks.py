@@ -12,9 +12,9 @@ def calculate_network_output(
     output_nodes: int,
 ) -> np.array:
     """
-    The calculate_network_output function takes in a set of inputs, weights, and nodes.
+    The calculate_network_output evaluator takes in a set of inputs, weights, and nodes.
     It then calculates the output of the network by multiplying each input with its corresponding weight
-    and adding it to a bias term for that layer. The function then passes this value through an activation function
+    and adding it to a bias term for that layer. The evaluator then passes this value through an activation evaluator
     (sigmoid) and returns the result.
 
     :param :class:`np.array` x: the input data

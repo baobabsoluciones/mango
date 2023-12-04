@@ -16,7 +16,7 @@ def get_calendar(
     name_transformations: bool = True,
 ):
     """
-    The get_calendar function returns a pandas DataFrame with the following columns:
+    The get_calendar evaluator returns a pandas DataFrame with the following columns:
         - date: Date of the holiday.
         - name: Name of the holiday.
         - country_code: Country code (ISO 3166-2). Only if communities=True
@@ -133,7 +133,7 @@ def get_calendar(
 
 def _get_code_name_dict(country: str) -> dict:
     """
-    The _get_code_name_dict function takes a country code as an argument and returns a dictionary of the state/province codes and names for that country.
+    The _get_code_name_dict evaluator takes a country code as an argument and returns a dictionary of the state/province codes and names for that country.
 
     :param country: str: Specify the country that we want to get the subdivisions for
     :return: A dictionary that maps a subdivision code to its name
@@ -147,7 +147,7 @@ def _get_code_name_dict(country: str) -> dict:
 
 def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
     """
-    The _name_transformations function performs the following transformations on the name column:
+    The _name_transformations evaluator performs the following transformations on the name column:
         1. Drop special characters in column name
         2. Replace characters with accents in columns Name
         3. Drop non-ascii characters
@@ -155,7 +155,7 @@ def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
         5. Drop extra whitespace in column name
         6. Remove "observed" and "trasladado" in column name
 
-    :param pd.DataFrame df: Specify the dataframe that will be used in the function
+    :param pd.DataFrame df: Specify the dataframe that will be used in the evaluator
     :return: A dataframe with the name column transformed
     :doc-author: baobab soluciones
     """

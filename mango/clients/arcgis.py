@@ -28,9 +28,9 @@ class ArcGisClient:
 
     def connect(self):
         """
-        The connect function is used to authenticate the user and get a token.
+        The connect evaluator is used to authenticate the user and get a token.
         It takes in two parameters, client_id and client_secret, which are both strings.
-        The function then makes a POST request to the ArcGIS API for Python login URL
+        The evaluator then makes a POST request to the ArcGIS API for Python login URL
         with these parameters as form data.
         If successful, it stores an access token that can be used for subsequent requests.
 
