@@ -24,6 +24,14 @@ class GeneticBaseConfig(BaseConfig):
             ConfigParameter("gene_min_value", float),
             ConfigParameter("gene_max_value", float),
         ],
+        "selection": [
+            ConfigParameter("rank_size", int, 20, required=False),
+            ConfigParameter("tournament_size", int, 2, required=False),
+            ConfigParameter("tournament_winnings", float, 0.5, required=False),
+        ],
+        "crossover": [
+            ConfigParameter("offspring_size", int, 100, required=False),
+        ],
     }
 
     def __init__(self, filename):

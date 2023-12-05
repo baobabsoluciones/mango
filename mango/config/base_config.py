@@ -21,6 +21,7 @@ class ConfigParameter:
         default: Union[int, float, bool, str, List] = None,
         validate: List = None,
         secondary_type: callable = None,
+        required: bool = True,
     ):
         """
         The __init__ function is called when a new instance of the class is created.
@@ -31,6 +32,7 @@ class ConfigParameter:
         :param default: set the default value of the parameter
         :param validate: specify a list of values the parameter can take
         :param callable secondary_type: if the value_type is a list, specify the type of data that is allowed in the list
+        :param bool required: specify if the parameter is required or not
         :doc-author: baobab soluciones
         """
         self.name = name
@@ -38,6 +40,7 @@ class ConfigParameter:
         self.secondary_type = secondary_type
         self.default = default
         self.validate = validate
+        self.required = required
 
     def parse(
         self, section: str, config_parser: ConfigParser
@@ -134,25 +137,26 @@ class BaseConfig:
                         self.parameters[section][p.name] = p.parse(section, parser)
                         self.map_key_to_section[p.name] = section
                     except (ValueError, NoOptionError, NoSectionError) as excep:
-                        self.parameters[section][p.name] = p.default
-                        self.map_key_to_section[p.name] = section
-                        if isinstance(excep, ValueError):
-                            warnings.warn(
-                                f"Config {self.file_name}. Section {section}, parameter {p.name} "
-                                f"has an incorrect format, using default value: {p.default}"
-                            )
-                        elif isinstance(excep, NoOptionError):
-                            warnings.warn(
-                                f"Config {self.file_name}. Section {section}, parameter {p.name} is not set, "
-                                f"using default value: {p.default}"
-                            )
-                        elif isinstance(excep, NoSectionError):
-                            warnings.warn(
-                                f"Config {self.file_name}. Section {section} does not appear on file, "
-                                f"setting parameter {p.name} to default value: {p.default}"
-                            )
+                        if p.required:
+                            self.parameters[section][p.name] = p.default
+                            self.map_key_to_section[p.name] = section
+                            if isinstance(excep, ValueError):
+                                warnings.warn(
+                                    f"Config {self.file_name}. Section {section}, parameter {p.name} "
+                                    f"has an incorrect format, using default value: {p.default}"
+                                )
+                            elif isinstance(excep, NoOptionError):
+                                warnings.warn(
+                                    f"Config {self.file_name}. Section {section}, parameter {p.name} is not set, "
+                                    f"using default value: {p.default}"
+                                )
+                            elif isinstance(excep, NoSectionError):
+                                warnings.warn(
+                                    f"Config {self.file_name}. Section {section} does not appear on file, "
+                                    f"setting parameter {p.name} to default value: {p.default}"
+                                )
 
-    def __call__(self, key):
+    def __call__(self, key, default=None):
         """
         The __call__ function allows the class to be called as a function.
 
@@ -162,8 +166,10 @@ class BaseConfig:
         """
         section = self.map_key_to_section.get(key, None)
         if section is None:
-            raise KeyError(f"The parameter: {key} does not exist on the configuration")
+            warnings.warn(f"The parameter: {key} does not exist on the configuration")
+            return default
         value = self.parameters.get(section).get(key, None)
         if value is None:
-            raise KeyError(f"The parameter: {key} does not exist on the configuration")
+            warnings.warn(f"The parameter: {key} does not exist on the configuration")
+            return default
         return value
