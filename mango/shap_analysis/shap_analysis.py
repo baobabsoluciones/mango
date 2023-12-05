@@ -25,7 +25,6 @@ class ShapAnalyzer:
     ... )
     >>> shap_analyzer.summary_plot(show=True)
     >>> shap_analyzer.bar_summary_plot(show=True)
-    >>> sample_shap = shap_analyzer.get_sample_by_shap_value(shap_value=0.5, feature_name="feature_name")
     """
 
     def __init__(
@@ -227,14 +226,18 @@ class ShapAnalyzer:
             else:
                 self._x_transformed = self._data
                 if isinstance(self._data, np.ndarray):
-                    self._feature_names = [f"x{i}" for i in range(self._data.shape[1])]
+                    self._feature_names = [
+                        f"Feature {i}" for i in range(self._data.shape[1])
+                    ]
                 else:
                     self._feature_names = self._get_feature_names(self._model)
         else:
             self._model = estimator
             self._x_transformed = self._data
             if isinstance(self._data, np.ndarray):
-                self._feature_names = [f"x{i}" for i in range(self._data.shape[1])]
+                self._feature_names = [
+                    f"Feature {i}" for i in range(self._data.shape[1])
+                ]
             else:
                 self._feature_names = self._get_feature_names(self._model)
 
@@ -262,21 +265,40 @@ class ShapAnalyzer:
                 )
         return feature_names
 
-    def bar_summary_plot(self, path_save: str = None, **kwargs):
+    @staticmethod
+    def _save_fig(title: str, file_path_save: str):
+        """
+        The _save_fig function takes in a title and path_save as arguments.
+        It then saves the current figure with the given title to the specified path.
+
+        :param str title: Set the title of the figure
+        :param str path_save: Save the figure to a specific location
+        :return: A plot with a title and saves it in the path_save directory
+        :doc-author: baobab soluciones
+        """
+        fig1 = plt.gcf()
+        fig1.suptitle(title)
+        fig1.tight_layout()
+        fig1.savefig(file_path_save)
+        plt.close()
+
+    def bar_summary_plot(self, file_path_save: str = None, **kwargs):
         """
         The bar_summary_plot function is a wrapper for the SHAP summary_plot function.
         It takes in the shap values and plots them as a bar chart, with each feature on the x-axis and its corresponding
         SHAP value on the y-axis. The plot can be sorted by mean absolute value or not, depending on user preference.
 
         :param self: Make the function a method of the class
-        :param path_save: str: Specify the path to save the plot
+        :param str file_path_save: Specify the path to save the plot
         :param **kwargs: Pass keyword arguments to the function
         :return: None
         :doc-author: baobab soluciones
         """
-        if path_save != None:
-            if not os.path.exists(os.path.dirname(path_save)):
-                raise ValueError(f"Path: {os.path.dirname(path_save)} does not exist")
+        if file_path_save != None:
+            if not os.path.exists(os.path.dirname(file_path_save)):
+                raise ValueError(
+                    f"Path: {os.path.dirname(file_path_save)} does not exist"
+                )
 
         shap.summary_plot(
             self.shap_values,
@@ -286,19 +308,18 @@ class ShapAnalyzer:
             else None,
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
-            sort=kwargs.get("sort", True),
+            **kwargs,
         )
 
-        if path_save != None:
-            fig1 = plt.gcf()
-            fig1.suptitle("Bar Summary Plot")
-            fig1.tight_layout()
-            fig1.savefig(
-                f"{path_save}.png" if not path_save.endswith(".png") else path_save
+        if file_path_save != None:
+            self._save_fig(
+                title="Bar Summary Plot",
+                file_path_save=f"{file_path_save}.png"
+                if not file_path_save.endswith(".png")
+                else file_path_save,
             )
-            plt.close()
 
-    def summary_plot(self, class_index: int = 1, path_save: str = None, **kwargs):
+    def summary_plot(self, class_index: int = 1, file_path_save: str = None, **kwargs):
         """
         The summary_plot function plots the SHAP values of every feature for all samples.
         The plot is a standard deviation centered histogram of the impacts each feature has on the model output.
@@ -306,15 +327,17 @@ class ShapAnalyzer:
         This function works with Numpy arrays or pandas DataFrames as input, and can plot either regression or classification models.
 
         :param self: Refer to the object itself
-        :param class_index: int: Specify which class to plot the summary for
-        :param path_save: str: Save the plot as a png file
+        :param int class_index: Specify which class to plot the summary for
+        :param str file_path_save: Save the plot as a png file
         :param **kwargs: Pass keyworded, variable-length argument list to a function
         :return: None
         :doc-author: baobab soluciones
         """
-        if path_save != None:
-            if not os.path.exists(os.path.dirname(path_save)):
-                raise ValueError(f"Path {os.path.dirname(path_save)} does not exist")
+        if file_path_save != None:
+            if not os.path.exists(os.path.dirname(file_path_save)):
+                raise ValueError(
+                    f"Path {os.path.dirname(file_path_save)} does not exist"
+                )
 
         shap.summary_plot(
             self.shap_values[class_index]
@@ -322,22 +345,19 @@ class ShapAnalyzer:
             else self.shap_values,
             self._x_transformed,
             feature_names=self._feature_names,
-            show=kwargs.get("show", False),
-            sort=kwargs.get("sort", True),
+            show=kwargs.get("show", True),
+            **kwargs,
         )
 
-        if path_save != None:
-            fig1 = plt.gcf()
-            fig1.suptitle(
-                f"Summary Plot class {self._model.classes_[class_index]}"
+        if file_path_save != None:
+            self._save_fig(
+                title=f"Summary Plot class {self._model.classes_[class_index]}"
                 if self._problem_type != "regression"
-                else "Summary Plot"
+                else "Summary Plot",
+                file_path_save=f"{file_path_save}.png"
+                if not file_path_save.endswith(".png")
+                else file_path_save,
             )
-            fig1.tight_layout()
-            fig1.savefig(
-                f"{path_save}.png" if not path_save.endswith(".png") else path_save
-            )
-            plt.close()
 
     def waterfall_plot(self, query: str, path_save: str = None, **kwargs):
         """
@@ -369,9 +389,15 @@ class ShapAnalyzer:
                                 feature_names=self._feature_names,
                             ),
                             show=kwargs.get("show", False),
+                            **kwargs,
                         )
 
                         if path_save != None:
+                            # TODO
+                            self._save_fig(
+                                title=f"Waterfall plot query: {query} (Sample {i})",
+                                path_save="",
+                            )
                             fig1 = plt.gcf()
                             fig1.suptitle(f"Waterfall plot query: {query} (Sample {i})")
                             fig1.tight_layout()
@@ -390,21 +416,58 @@ class ShapAnalyzer:
                             feature_names=self._feature_names,
                         ),
                         show=kwargs.get("show", False),
+                        **kwargs,
                     )
 
                     if path_save != None:
-                        fig1 = plt.gcf()
-                        fig1.suptitle(f"Waterfall plot query: {query} (Sample {i})")
-                        fig1.tight_layout()
-                        fig1.savefig(
-                            f"{path_save[:-4]}_sample_{i}{path_save[-4:]}"
+                        self._save_fig(
+                            title=f"Waterfall plot query: {query} (Sample {i})",
+                            file_path_save=f"{path_save[:-4]}_sample_{i}{path_save[-4:]}"
                             if path_save.endswith(".png")
-                            else f"{path_save}.png"
+                            else f"{path_save}.png",
                         )
-                        plt.close()
+
+    def partial_dependence_plot(
+        self,
+        feature: Union[str, int],
+        interaction_feature: Union[str, int],
+        file_path_save: str = None,
+        **kwargs,
+    ):
+        """
+        The partial_dependence_plot function is a wrapper around the shap.dependence_plot function, which plots the partial dependence of a feature on another feature.
+
+        :param self: Make the function a method of the class
+        :param Union[str, int] feature: Specify the feature for which we want to plot the partial dependence
+        :param Union[str, int] interaction_feature: Specify the feature that will be used to interact with the feature specified in the first parameter
+        :param str file_path_save: Save the plot to a file
+        :param **kwargs: Pass a variable number of keyword arguments to a function
+        :return: None
+        :doc-author: baobab soluciones
+        """
+        shap.dependence_plot(
+            feature,
+            self.shap_values,
+            self._x_transformed,
+            interaction_index=interaction_feature,
+            feature_names=self._feature_names,
+            show=kwargs.get("show", False),
+            **kwargs,
+        )
+        if file_path_save != None:
+            self._save_fig(
+                title=f"Partial dependence plot: {feature} and {interaction_feature}"
+                if interaction_feature != None
+                else f"Partial dependence plot: {feature}",
+                file_path_save=file_path_save,
+            )
 
     def get_sample_by_shap_value(
-        self, shap_value, feature_name, class_name=None, operator: str = ">="
+        self,
+        shap_value,
+        feature_name: Union[str, int],
+        class_name: Union[str, int] = None,
+        operator: str = ">=",
     ):
         """
         The get_sample_by_shap_value function returns a sample of the data that has a shap value for
@@ -412,8 +475,8 @@ class ShapAnalyzer:
 
         :param self: Bind the method to a class
         :param shap_value: Specify the value of shap that we want to use as a filter
-        :param feature_name: Specify the feature name that we want to use in our analysis
-        :param class_name: str: Specify the class for which we want to get samples
+        :param Union[str, int] feature_name: Specify the feature name that we want to use in our analysis
+        :param Union[str, int] class_name: Specify the class for which we want to get samples
         :param operator: str: Specify the operator to use when comparing the shap_value with the feature value
         :return: A dataframe with the samples that have a shap value greater than or equal to the one specified
         :doc-author: baobab soluciones
@@ -422,6 +485,10 @@ class ShapAnalyzer:
             ">=": lambda x, y: x >= y,
             "<=": lambda x, y: x <= y,
         }
+        if operator not in operator_dict.keys():
+            raise ValueError(
+                f"Operator {operator} not valid. Valid operators are: {operator_dict.keys()}"
+            )
         if (
             self._problem_type in ["binary_classification", "multiclass_classification"]
         ) and (class_name not in self._model.classes_):
@@ -449,7 +516,9 @@ class ShapAnalyzer:
                 operator_dict[operator](self.shap_values[:, index_feature], shap_value)
             ].copy()
 
-    def make_shap_analysis(self, queries: List[str] = None):
+    def make_shap_analysis(
+        self, queries: List[str] = None, pdp_tuples: List[tuple] = None
+    ):
         """
         The make_shap_analysis function is a wrapper function that calls the summary_plot and bar_summary_plot functions.
         It also checks if the shap folder exists, and creates it if not. It then saves all plots to this folder.
@@ -473,6 +542,7 @@ class ShapAnalyzer:
         list_paths = [
             os.path.join(base_path, "summary/"),
             os.path.join(base_path, "individual/"),
+            os.path.join(base_path, "partial_dependence/"),
         ]
         # Make dirs to save plots
         _ = [os.makedirs(os.path.dirname(path), exist_ok=True) for path in list_paths]
@@ -482,7 +552,7 @@ class ShapAnalyzer:
             _ = [
                 self.summary_plot(
                     class_index=class_index,
-                    path_save=os.path.join(
+                    file_path_save=os.path.join(
                         base_path,
                         "summary",
                         f"summary_class_{class_index}.png",
@@ -491,7 +561,7 @@ class ShapAnalyzer:
                 for class_index in range(len(self._model.classes_))
             ]
             self.bar_summary_plot(
-                path_save=os.path.join(
+                file_path_save=os.path.join(
                     base_path,
                     "summary",
                     "barplot.png",
@@ -510,14 +580,14 @@ class ShapAnalyzer:
 
         elif self._problem_type == "regression":
             self.summary_plot(
-                path_save=os.path.join(
+                file_path_save=os.path.join(
                     base_path,
                     "summary",
                     "summary.png",
                 )
             )
             self.bar_summary_plot(
-                path_save=os.path.join(
+                file_path_save=os.path.join(
                     base_path,
                     "summary",
                     "barplot.png",
@@ -531,5 +601,16 @@ class ShapAnalyzer:
                             base_path,
                             "individual",
                             f"query_{i}.png",
+                        ),
+                    )
+            if pdp_tuples:
+                for pdp_tuple in pdp_tuples:
+                    self.partial_dependence_plot(
+                        feature=pdp_tuple[0],
+                        interaction_feature=pdp_tuple[1],
+                        file_path_save=os.path.join(
+                            base_path,
+                            "partial_dependence",
+                            f"pdp_{pdp_tuple[0]}{'_'+pdp_tuple[1] if pdp_tuple[1] != None else ''}.png",
                         ),
                     )
