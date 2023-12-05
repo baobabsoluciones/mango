@@ -1,4 +1,5 @@
 import logging
+from collections import Counter
 from random import choices, choice, sample
 
 from mango.models.genetic.individual import Individual
@@ -21,7 +22,7 @@ class Population:
 
         # selection params
         self._selection_type = self.config("selection")
-        self._rank_size = self.config("rank_size")
+        self._elitism_size = self.config("elitism_size")
         self._tournament_size = self.config("tournament_size")
         self._tournament_winnings = self.config("tournament_winnings")
 
@@ -47,7 +48,8 @@ class Population:
             self.update_population()
             self.replace()
             self.update_best()
-            self.stop()
+            if self.stop():
+                break
 
             self.generation += 1
 
@@ -86,7 +88,7 @@ class Population:
         if self._selection_type == "roulette":
             self._roulette_selection()
         elif self._selection_type == "rank":
-            self._rank_selection()
+            self._elitism_selection()
         elif self._selection_type == "random":
             self._random_selection()
         elif self._selection_type == "tournament":
@@ -156,7 +158,21 @@ class Population:
         """
         Method to implement stop conditions based on information about the population or the genetic diversity.
         """
-        pass
+        # TODO: add more stop conditions
+        fitness_diversity = Counter([ind.fitness for ind in self.population])
+        if len(fitness_diversity) == 1:
+            print(
+                f"Exited due to low genetic diversity on generation: {self.generation+1}"
+            )
+            return True
+        if len(fitness_diversity) == 2:
+            if fitness_diversity.most_common(1)[0][1] == self.population_size - 1:
+                print(
+                    f"Exited due to low genetic diversity on generation: {self.generation+1}"
+                )
+                return True
+
+        return False
 
     # -------------------
     # Internal methods.
@@ -170,9 +186,9 @@ class Population:
         """
         self.selection_probs = [1 for _ in self.population]
 
-    def _rank_selection(self):
+    def _elitism_selection(self):
         """
-        Method to perform rank selection.
+        Method to perform elitism selection.
 
         Based on the config parameter rank_size (k), the k-best individuals are selected for crossover.
         That means that k individuals will have the same selection probability and the rest will have zero.
@@ -182,27 +198,42 @@ class Population:
         """
         if self._optimization_objective == "max":
             temp = sorted(self.population, key=lambda x: x.fitness, reverse=True)[
-                : self._rank_size
+                : self._elitism_size
             ]
         else:
-            temp = sorted(self.population, key=lambda x: x.fitness)[: self._rank_size]
+            temp = sorted(self.population, key=lambda x: x.fitness)[
+                : self._elitism_size
+            ]
 
         self.selection_probs = [1 if ind in temp else 0 for ind in self.population]
 
-    def _stochastic_rank_selection(self):
+    def _rank_selection(self):
+        """
+        Method to perform rank selection.
+        """
         pass
 
     def _roulette_selection(self):
+        max_fitness = max(self.population, key=lambda x: x.fitness).fitness
+        min_fitness = min(self.population, key=lambda x: x.fitness).fitness
+
         if self._optimization_objective == "max":
-            ref_fitness = min(self.population, key=lambda x: x.fitness).fitness
+            ref_fitness = min_fitness
+
             self.selection_probs = [
-                ind.fitness - ref_fitness + 1 for ind in self.population
+                ind.fitness - ref_fitness for ind in self.population
             ]
+
         else:
-            ref_fitness = max(self.population, key=lambda x: x.fitness).fitness
+            ref_fitness = max_fitness
             self.selection_probs = [
-                ref_fitness - ind.fitness + 1 for ind in self.population
+                ref_fitness - ind.fitness for ind in self.population
             ]
+
+        # self.selection_probs = [
+        #     x + (max_fitness - min_fitness) / 1000 if x == 0 else x
+        #     for x in self.selection_probs
+        # ]
 
     def _tournament_selection(self):
         wins = dict()

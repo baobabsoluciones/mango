@@ -25,7 +25,7 @@ class GeneticBaseConfig(BaseConfig):
             ConfigParameter("gene_max_value", float),
         ],
         "selection": [
-            ConfigParameter("rank_size", int, 20, required=False),
+            ConfigParameter("elitism_size", int, 20, required=False),
             ConfigParameter("tournament_size", int, 2, required=False),
             ConfigParameter("tournament_winnings", float, 0.5, required=False),
         ],
