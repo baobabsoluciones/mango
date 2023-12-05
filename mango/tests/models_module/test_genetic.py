@@ -40,19 +40,19 @@ class TestGeneticAlgorithms(TestCase):
         population.run()
 
         solution = [
-            -0.01309971982828273,
-            -0.009824236218179294,
-            0.21234663465939008,
-            -0.11366943556181752,
-            -0.026285307242666534,
-            0.035387828688868694,
-            0.07015370065710158,
-            0.24108637455136517,
-            0.031190632457850143,
-            -0.010530681520364737,
+            0.005780531584417341,
+            0.002532981327856094,
+            -0.0002830464196912103,
+            0.0035978701682818507,
+            -0.009297998564329687,
+            -0.010876453380193416,
+            0.006082857233110294,
+            0.002257310630493114,
+            0.009310106593683124,
+            0.03773227021181778,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, 0.9591826136127466)
+        self.assertAlmostEqual(population.best.fitness, 0.06340265929127753)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
@@ -83,13 +83,13 @@ class TestGeneticAlgorithms(TestCase):
         population.run()
 
         solution = [
-            99.00684234446081,
+            92.44640776087473,
             98.4839235540964,
-            99.44389866360481,
-            -99.77425278761257,
-            1.205824914327124,
+            97.18940541471056,
+            -75.34867669478973,
+            1.565332634923024,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, -523.8876176268644)
+        self.assertAlmostEqual(population.best.fitness, -505.022072557116)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])

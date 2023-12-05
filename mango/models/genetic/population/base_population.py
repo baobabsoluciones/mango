@@ -1,8 +1,9 @@
-import logging
 from collections import Counter
-from random import choices, choice, sample
+from collections import Counter
+from random import choices, choice, sample, randint, uniform
 
 from mango.models.genetic.individual import Individual
+from mango.models.genetic.shared.exceptions import GeneticDiversity
 
 
 class Population:
@@ -19,6 +20,7 @@ class Population:
         self.offspring = []
         self.best = None
         self._count_individuals = 0
+        self._gene_length = self.config("gene_length")
 
         # selection params
         self._selection_type = self.config("selection")
@@ -29,6 +31,7 @@ class Population:
         # crossover params
         self._crossover_type = self.config("crossover")
         self._offspring_size = self.config("offspring_size") or self.population_size
+        self._generalized_expansion = self.config("generalized_expansion")
 
         # replacement params
         self._replacement_type = self.config("replacement")
@@ -37,21 +40,25 @@ class Population:
         """
         Main method to run the Genetic Algorithm.
         """
-        if self.generation == 1:
-            self.init_population()
-            self.update_population()
+        try:
+            if self.generation == 1:
+                self.init_population()
+                self.update_population()
 
-        while self.generation <= self.max_generations:
-            self.selection()
-            self.crossover()
-            self.mutate()
-            self.update_population()
-            self.replace()
-            self.update_best()
-            if self.stop():
-                break
+            while self.generation <= self.max_generations:
+                self.selection()
+                self.crossover()
+                self.mutate()
+                self.update_population()
+                self.replace()
+                self.update_best()
+                self.stop()
+                self.generation += 1
 
-            self.generation += 1
+        except GeneticDiversity:
+            print(
+                f"Exited due to low genetic diversity on generation: {self.generation + 1}"
+            )
 
     def continue_running(self, generations: int):
         """
@@ -105,6 +112,12 @@ class Population:
         """
         if self._crossover_type == "mask":
             self._mask_crossover()
+        elif self._crossover_type == "generalized":
+            self._generalized_crossover()
+        elif self._crossover_type == "one-split":
+            self._one_split_crossover()
+        elif self._crossover_type == "two-split":
+            self._two_split_crossover()
         else:
             raise NotImplementedError("Crossover method not implemented")
 
@@ -161,16 +174,10 @@ class Population:
         # TODO: add more stop conditions
         fitness_diversity = Counter([ind.fitness for ind in self.population])
         if len(fitness_diversity) == 1:
-            print(
-                f"Exited due to low genetic diversity on generation: {self.generation+1}"
-            )
-            return True
+            raise GeneticDiversity
         if len(fitness_diversity) == 2:
             if fitness_diversity.most_common(1)[0][1] == self.population_size - 1:
-                print(
-                    f"Exited due to low genetic diversity on generation: {self.generation+1}"
-                )
-                return True
+                raise GeneticDiversity
 
         return False
 
@@ -257,7 +264,7 @@ class Population:
             k += 1
             if k >= 2 * self.population_size:
                 # TODO: add custom exception here
-                raise Exception("Could not find two different parents")
+                raise GeneticDiversity
         return p1, p2
 
     # -------------------
@@ -268,6 +275,77 @@ class Population:
             p1, p2 = self._select_parents()
 
             genes_offspring = [choice([g1, g2]) for g1, g2 in zip(p1.genes, p2.genes)]
+
+            self._count_individuals += 1
+
+            offspring = Individual(
+                genes=genes_offspring,
+                idx=self._count_individuals,
+                parents=(p1, p2),
+                config=self.config,
+            )
+
+            self.offspring.append(offspring)
+
+    def _generalized_crossover(self):
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
+
+            max_c = [max(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
+            min_c = [min(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
+            interval = [max_c[i] - min_c[i] for i in range(len(max_c))]
+
+            genes_offspring = [
+                uniform(
+                    min_c[i] - interval[i] * self._generalized_expansion,
+                    max_c[i] + interval[i] * self._generalized_expansion,
+                )
+                for i in range(len(max_c))
+            ]
+
+            self._count_individuals += 1
+
+            offspring = Individual(
+                genes=genes_offspring,
+                idx=self._count_individuals,
+                parents=(p1, p2),
+                config=self.config,
+            )
+
+            self.offspring.append(offspring)
+
+    def _one_split_crossover(self):
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
+
+            split = randint(1, self._gene_length - 2)
+            genes_offspring = p1.genes[:split] + p2.genes[split:]
+
+            self._count_individuals += 1
+
+            offspring = Individual(
+                genes=genes_offspring,
+                idx=self._count_individuals,
+                parents=(p1, p2),
+                config=self.config,
+            )
+
+            self.offspring.append(offspring)
+
+    def _two_split_crossover(self):
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
+
+            split_1 = randint(1, self._gene_length - 2)
+            split_2 = randint(1, self._gene_length - 2)
+            while split_1 == split_2:
+                split_2 = randint(1, self._gene_length - 2)
+
+            split_1, split_2 = sorted([split_1, split_2])
+
+            genes_offspring = (
+                p1.genes[:split_1] + p2.genes[split_1:split_2] + p1.genes[split_2:]
+            )
 
             self._count_individuals += 1
 

@@ -166,10 +166,8 @@ class BaseConfig:
         """
         section = self.map_key_to_section.get(key, None)
         if section is None:
-            warnings.warn(f"The parameter: {key} does not exist on the configuration")
             return default
         value = self.parameters.get(section).get(key, None)
         if value is None:
-            warnings.warn(f"The parameter: {key} does not exist on the configuration")
             return default
         return value

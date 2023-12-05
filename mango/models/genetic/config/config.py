@@ -31,6 +31,7 @@ class GeneticBaseConfig(BaseConfig):
         ],
         "crossover": [
             ConfigParameter("offspring_size", int, 100, required=False),
+            ConfigParameter("generalized_expansion", float, 0.1, required=False),
         ],
     }
 

@@ -3,7 +3,6 @@ from random import uniform, randint
 
 class Individual:
     def __init__(self, genes=None, idx: int = 0, parents: tuple = None, config=None):
-        self._genes = genes
         self.fitness = None
         self.idx = idx
         self._hash = self.__hash__()
@@ -14,6 +13,8 @@ class Individual:
         self.max_bound = config("gene_max_value")
         self.gene_length = config("gene_length")
         self.mutation_prob = config("mutation_rate")
+
+        self.genes = genes
 
         self.parents_idx = None
         if parents is not None:
@@ -41,6 +42,9 @@ class Individual:
 
     @genes.setter
     def genes(self, value: list = None):
+        if value is not None:
+            value = [self.min_bound if x < self.min_bound else x for x in value]
+            value = [self.max_bound if x > self.max_bound else x for x in value]
         self._genes = value
 
     @property
