@@ -365,7 +365,7 @@ class ShapAnalyzer:
 
         :param self: Make the method belong to the class
         :param str query: Filter the data
-        :param str path_save: Specify the path to save the waterfall plot
+        :param str path_save: Specify the path to save all the waterfall plots
         :param **kwargs: Pass keyworded, variable-length argument list
         :return: None
         :doc-author: baobab soluciones
@@ -393,20 +393,13 @@ class ShapAnalyzer:
                         )
 
                         if path_save != None:
-                            # TODO
                             self._save_fig(
                                 title=f"Waterfall plot query: {query} (Sample {i})",
-                                path_save="",
+                                file_path_save=os.path.join(
+                                    path_save,
+                                    f"waterfall_class_{class_name}_sample_{i}.png",
+                                ),
                             )
-                            fig1 = plt.gcf()
-                            fig1.suptitle(f"Waterfall plot query: {query} (Sample {i})")
-                            fig1.tight_layout()
-                            fig1.savefig(
-                                f"{path_save[:-4]}_class_{class_name}_sample_{i}{path_save[-4:]}"
-                                if path_save.endswith(".png")
-                                else f"{path_save}_{class_name}.png"
-                            )
-                            plt.close()
                 else:
                     shap.waterfall_plot(
                         shap.Explanation(
@@ -422,9 +415,9 @@ class ShapAnalyzer:
                     if path_save != None:
                         self._save_fig(
                             title=f"Waterfall plot query: {query} (Sample {i})",
-                            file_path_save=f"{path_save[:-4]}_sample_{i}{path_save[-4:]}"
-                            if path_save.endswith(".png")
-                            else f"{path_save}.png",
+                            file_path_save=os.path.join(
+                                path_save, f"waterfall_sample_{i}.png"
+                            ),
                         )
 
     def partial_dependence_plot(
