@@ -428,7 +428,8 @@ class ShapAnalyzer:
         **kwargs,
     ):
         """
-        The partial_dependence_plot function is a wrapper around the shap.dependence_plot function, which plots the partial dependence of a feature on another feature.
+        The partial_dependence_plot function is a wrapper around the shap.dependence_plot function,
+        which plots the partial dependence of a feature on another feature.
 
         :param self: Make the function a method of the class
         :param Union[str, int] feature: Specify the feature for which we want to plot the partial dependence
@@ -486,12 +487,12 @@ class ShapAnalyzer:
             self._problem_type in ["binary_classification", "multiclass_classification"]
         ) and (class_name not in self._model.classes_):
             raise ValueError(
-                f"Clase {class_name} no asociada al modelo. Debe ser uno de {self._model.classes_}"
+                f"Class {class_name} is not in model classes. Must be one of: {self._model.classes_}"
             )
 
         if feature_name not in self._feature_names:
             raise ValueError(
-                f"Feature {feature_name} no asociada al modelo. Debe ser uno de {self._feature_names}"
+                f"Feature {feature_name} is not in model. Must be one of: {self._feature_names}"
             )
         index_feature = list(self._feature_names).index(feature_name)
 
