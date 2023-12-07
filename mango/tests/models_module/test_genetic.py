@@ -28,7 +28,6 @@ class TestGeneticAlgorithms(TestCase):
         population.run()
 
         solution = [-0.02712333924382193, -0.008804580617919555]
-        print(population.best.genes)
 
         self.assertAlmostEqual(population.best.fitness, 0.10217623013362598)
         for position, value in enumerate(population.best.genes):
@@ -62,7 +61,7 @@ class TestGeneticAlgorithms(TestCase):
         config = GeneticBaseConfig(normalize_path("./data/test_bukin.cfg"))
         population = Population(config, bukin_function_6)
         population.run()
-        print(population.best.genes)
+
         solution = [-5.790515976826087, 0.3353007527787817]
 
         self.assertAlmostEqual(population.best.fitness, 0.042094840231739136)
@@ -92,8 +91,6 @@ class TestGeneticAlgorithms(TestCase):
             -5.180918017635875,
         ]
 
-        print(population.best.genes)
-
         self.assertAlmostEqual(population.best.fitness, -172.58125836935054)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
@@ -118,7 +115,6 @@ class TestGeneticAlgorithms(TestCase):
             0.020649306128330058,
             -9.885140546843235,
         ]
-        print(population.best.genes)
 
         self.assertAlmostEqual(population.best.fitness, -0.08601455153606641)
         for position, value in enumerate(population.best.genes):
