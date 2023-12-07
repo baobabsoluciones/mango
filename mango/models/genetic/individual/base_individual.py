@@ -12,7 +12,6 @@ class Individual:
         self.min_bound = config("gene_min_value")
         self.max_bound = config("gene_max_value")
         self.gene_length = config("gene_length")
-        self.mutation_prob = config("mutation_rate")
 
         self.genes = genes
 
@@ -56,10 +55,10 @@ class Individual:
         # might not be needed
         self._idx = value
 
-    def mutate(self):
+    def mutate(self, mutation_prob: float = None):
         while True:
             chance = uniform(0, 1)
-            if chance <= self.mutation_prob:
+            if chance <= mutation_prob:
                 if self.encoding == "real":
                     self._mutate_real()
                 else:

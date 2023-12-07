@@ -22,6 +22,8 @@ class ConfigParameter:
         validate: List = None,
         secondary_type: callable = None,
         required: bool = True,
+        min_value: Union[int, float] = None,
+        max_value: Union[int, float] = None,
     ):
         """
         The __init__ function is called when a new instance of the class is created.
@@ -33,6 +35,8 @@ class ConfigParameter:
         :param validate: specify a list of values the parameter can take
         :param callable secondary_type: if the value_type is a list, specify the type of data that is allowed in the list
         :param bool required: specify if the parameter is required or not
+        :param min_value: specify the minimum value of the parameter (only works if value_type is int or float)
+        :param max_value: specify the maximum value of the parameter (only works if value_type is int or float)
         :doc-author: baobab soluciones
         """
         self.name = name
@@ -41,6 +45,8 @@ class ConfigParameter:
         self.default = default
         self.validate = validate
         self.required = required
+        self.min_value = min_value
+        self.max_value = max_value
 
     def parse(
         self, section: str, config_parser: ConfigParser
@@ -57,8 +63,28 @@ class ConfigParameter:
         """
         if int == self.value_type:
             value = config_parser.getint(section, self.name)
+            if self.min_value is not None and value < self.min_value:
+                raise ValueError(
+                    f"The value for config parameter {self.name} is not valid. "
+                    f"It must be greater than {self.min_value}"
+                )
+            if self.max_value is not None and value > self.max_value:
+                raise ValueError(
+                    f"The value for config parameter {self.name} is not valid. "
+                    f"It must be less than {self.max_value}"
+                )
         elif float == self.value_type:
             value = config_parser.getfloat(section, self.name)
+            if self.min_value is not None and value < self.min_value:
+                raise ValueError(
+                    f"The value for config parameter {self.name} is not valid. "
+                    f"It must be greater than {self.min_value}"
+                )
+            if self.max_value is not None and value > self.max_value:
+                raise ValueError(
+                    f"The value for config parameter {self.name} is not valid. "
+                    f"It must be less than {self.max_value}"
+                )
         elif bool == self.value_type:
             value = config_parser.getboolean(section, self.name)
         elif str == self.value_type:

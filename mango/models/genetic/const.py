@@ -1,12 +1,13 @@
 """ This file contains the constants used to validate the configuration parameters for the config """
 
 INDIVIDUAL_ENCODINGS = ["real", "binary", "integer", "non-negative-real"]
-SELECTION_METHODS = ["roulette", "tournament", "rank", "random", "stochastic_rank"]
-CROSSOVER_METHODS = ["mask", "generalized", "one-split", "two-split"]
+SELECTION_METHODS = ["roulette", "tournament", "rank", "random", "elitism"]
+CROSSOVER_METHODS = ["mask", "blend", "one-split", "two-split", "linear", "flat"]
+MUTATION_CONTROL_METHODS = ["none", "adaptative", "gene-based", "population-based"]
 
 REPLACEMENT_METHODS = [
     "elitist",
-    "elitist-pseudo-random",
+    "elitist-stochastic",
     "random",
     "only-offspring",
 ]

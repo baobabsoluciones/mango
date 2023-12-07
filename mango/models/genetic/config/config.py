@@ -4,6 +4,7 @@ from mango.models.genetic.const import (
     SELECTION_METHODS,
     CROSSOVER_METHODS,
     REPLACEMENT_METHODS,
+    MUTATION_CONTROL_METHODS,
 )
 
 
@@ -16,7 +17,20 @@ class GeneticBaseConfig(BaseConfig):
             ConfigParameter("selection", str, validate=SELECTION_METHODS),
             ConfigParameter("crossover", str, validate=CROSSOVER_METHODS),
             ConfigParameter("replacement", str, validate=REPLACEMENT_METHODS),
-            ConfigParameter("mutation_rate", float, 0.1),
+            ConfigParameter(
+                "mutation_control",
+                str,
+                validate=MUTATION_CONTROL_METHODS,
+                default="none",
+            ),
+            ConfigParameter(
+                "mutation_base_rate",
+                float,
+                0.1,
+                required=False,
+                min_value=0,
+                max_value=1,
+            ),
         ],
         "individual": [
             ConfigParameter("encoding", str, validate=INDIVIDUAL_ENCODINGS),
@@ -27,9 +41,17 @@ class GeneticBaseConfig(BaseConfig):
         "selection": [
             ConfigParameter("elitism_size", int, 20, required=False),
             ConfigParameter("tournament_size", int, 2, required=False),
-            ConfigParameter("tournament_winnings", float, 0.5, required=False),
+            ConfigParameter(
+                "rank_pressure",
+                float,
+                2.0,
+                required=False,
+                min_value=1.0,
+                max_value=2.0,
+            ),
         ],
         "crossover": [
+            ConfigParameter("morphology_parents", int, 3, required=False),
             ConfigParameter("offspring_size", int, 100, required=False),
             ConfigParameter("generalized_expansion", float, 0.1, required=False),
         ],

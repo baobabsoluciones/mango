@@ -1,9 +1,9 @@
 from collections import Counter
-from collections import Counter
+from math import sqrt
 from random import choices, choice, sample, randint, uniform
 
 from mango.models.genetic.individual import Individual
-from mango.models.genetic.shared.exceptions import GeneticDiversity
+from mango.models.genetic.shared.exceptions import GeneticDiversity, ConfigurationError
 
 
 class Population:
@@ -21,20 +21,49 @@ class Population:
         self.best = None
         self._count_individuals = 0
         self._gene_length = self.config("gene_length")
+        self._encoding = self.config("encoding")
 
         # selection params
         self._selection_type = self.config("selection")
         self._elitism_size = self.config("elitism_size")
         self._tournament_size = self.config("tournament_size")
-        self._tournament_winnings = self.config("tournament_winnings")
+        self._rank_pressure = self.config("rank_pressure")
 
         # crossover params
         self._crossover_type = self.config("crossover")
         self._offspring_size = self.config("offspring_size") or self.population_size
-        self._generalized_expansion = self.config("generalized_expansion")
+        self._blend_expansion = self.config("generalized_expansion")
+        self._morphology_parents = self.config("morphology_parents")
+
+        # mutation params
+        self._mutation_type = self.config("mutation_control")
+        self._mutation_rate = self.config("mutation_base_rate")
+
+        if self._mutation_type == "gene_based":
+            """
+            Based on a proposal by Kenneth De Jong (1975)
+            """
+            self._mutation_rate = 1 / self._gene_length
+        elif self._mutation_type == "population_based":
+            """
+            Based on the proposal by Schaffer (1989) on A Study of Control Parameters Affecting Online Performance
+            of Genetic Algorithms for Function Optimization
+            """
+            self._mutation_rate = 1 / (
+                pow(self.population_size, 0.9318) * pow(self._gene_length, 0.4535)
+            )
 
         # replacement params
         self._replacement_type = self.config("replacement")
+
+        if self._encoding != "real" and self._crossover_type in [
+            "blend",
+            "linear",
+            "flat",
+        ]:
+            raise ConfigurationError(
+                f"Encoding {self._encoding} not supported for crossover type {self._crossover_type}"
+            )
 
     def run(self):
         """
@@ -94,12 +123,16 @@ class Population:
         """
         if self._selection_type == "roulette":
             self._roulette_selection()
-        elif self._selection_type == "rank":
+        elif self._selection_type == "elitism":
             self._elitism_selection()
         elif self._selection_type == "random":
             self._random_selection()
         elif self._selection_type == "tournament":
             self._tournament_selection()
+        elif self._selection_type == "rank":
+            self._rank_selection()
+        elif self._selection_type == "order":
+            self._order_selection()
         else:
             raise NotImplementedError("Selection method not implemented")
 
@@ -112,12 +145,16 @@ class Population:
         """
         if self._crossover_type == "mask":
             self._mask_crossover()
-        elif self._crossover_type == "generalized":
-            self._generalized_crossover()
+        elif self._crossover_type == "blend":
+            self._blend_crossover()
         elif self._crossover_type == "one-split":
             self._one_split_crossover()
         elif self._crossover_type == "two-split":
             self._two_split_crossover()
+        elif self._crossover_type == "linear":
+            self._linear_crossover()
+        elif self._crossover_type == "flat":
+            self._flat_crossover()
         else:
             raise NotImplementedError("Crossover method not implemented")
 
@@ -127,8 +164,10 @@ class Population:
 
         The actual implementation of the mutation is done in the individual as it is heavily dependent on the encoding.
         """
-        for ind in self.offspring:
-            ind.mutate()
+        if self._mutation_type in ["none", "gene_based", "population_based"]:
+            self._base_mutation()
+        elif self._mutation_type == "adaptative":
+            self._adaptative_mutation()
 
     def update_population(self):
         """
@@ -145,6 +184,12 @@ class Population:
         """
         if self._replacement_type == "elitist":
             self._elitist_replacement()
+        elif self._replacement_type == "only-offspring":
+            self._offspring_replacement()
+        elif self._replacement_type == "random":
+            self._random_replacement()
+        elif self._replacement_type == "elitist-stochastic":
+            self._elitist_stochastic_replacement()
         else:
             raise NotImplementedError("Replacement method not implemented")
 
@@ -218,9 +263,41 @@ class Population:
         """
         Method to perform rank selection.
         """
-        pass
+        if self._optimization_objective == "max":
+            temp = sorted(self.population, key=lambda x: x.fitness, reverse=True)
+        else:
+            temp = sorted(self.population, key=lambda x: x.fitness)
+
+        self.selection_probs = [
+            1
+            / len(self.population)
+            * (
+                self._rank_pressure
+                - (2 * self._rank_pressure - 2)
+                * ((temp.index(ind)) / (len(self.population) - 1))
+            )
+            for ind in self.population
+        ]
+
+    def _order_selection(self):
+        """
+        Method to perform order selection
+        """
+        if self._optimization_objective == "max":
+            temp = sorted(self.population, key=lambda x: x.fitness)
+        else:
+            temp = sorted(self.population, key=lambda x: x.fitness, reverse=True)
+
+        self.selection_probs = [
+            (temp.index(ind) + 1)
+            / (len(self.population) * (len(self.population) + 1) / 2)
+            for ind in self.population
+        ]
 
     def _roulette_selection(self):
+        """
+        Method to perform roulette selection.
+        """
         max_fitness = max(self.population, key=lambda x: x.fitness).fitness
         min_fitness = min(self.population, key=lambda x: x.fitness).fitness
 
@@ -254,18 +331,35 @@ class Population:
 
         self.selection_probs = [wins.get(ind.idx, 0) for ind in self.population]
 
-    def _select_parents(self):
-        p1 = choices(self.population, weights=self.selection_probs)[0]
-        p2 = p1
+    def _boltzmann_selection(self):
+        pass
 
-        k = 0
-        while p1 == p2:
-            p2 = choices(self.population, weights=self.selection_probs)[0]
-            k += 1
-            if k >= 2 * self.population_size:
-                # TODO: add custom exception here
-                raise GeneticDiversity
-        return p1, p2
+    def _select_parents(self, n: int = 2) -> tuple:
+        """
+        Method to select n parents from the population based on the selection probabilities
+        established on the selection phase.
+
+        :param int n: number of parents to select from the population. It defaults to two,
+        but it has the capability to be a different number.
+        :return: a tuple with the selected parents
+        :rtype: tuple
+        """
+
+        p1 = choices(self.population, weights=self.selection_probs)[0]
+        parents = [p1 for _ in range(n)]
+
+        for i in range(1, n):
+            k = 0
+            pi = parents[i]
+            while pi in parents:
+                pi = choices(self.population, weights=self.selection_probs)[0]
+                k += 1
+                if k >= 2 * self.population_size:
+                    raise GeneticDiversity
+
+            parents[i] = pi
+
+        return tuple(parents)
 
     # -------------------
     # Crossover
@@ -276,18 +370,56 @@ class Population:
 
             genes_offspring = [choice([g1, g2]) for g1, g2 in zip(p1.genes, p2.genes)]
 
-            self._count_individuals += 1
+            self._add_offspring(genes_offspring, p1, p2)
 
-            offspring = Individual(
-                genes=genes_offspring,
-                idx=self._count_individuals,
-                parents=(p1, p2),
-                config=self.config,
-            )
+    def _flat_crossover(self):
+        """
+        This method implements Radcliffe's flat crossover (1990).
 
-            self.offspring.append(offspring)
+        It creates two child individuals with each gene created randomly inside the interval defined by the parents.
+        """
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
 
-    def _generalized_crossover(self):
+            max_c = [max(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
+            min_c = [min(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
+
+            genes_offspring_1 = [uniform(min_c[i], max_c[i]) for i in range(len(max_c))]
+            genes_offspring_2 = [uniform(min_c[i], max_c[i]) for i in range(len(max_c))]
+
+            self._add_offspring(genes_offspring_1, p1, p2)
+            self._add_offspring(genes_offspring_2, p1, p2)
+
+    def _linear_crossover(self):
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
+
+            genes_offspring_1 = [
+                (p1.genes[i] + p2.genes[i]) / 2 for i in range(len(p1.genes))
+            ]
+
+            genes_offspring_2 = [
+                1.5 * p1.genes[i] - 0.5 * p2.genes[i] for i in range(len(p1.genes))
+            ]
+
+            genes_offspring_3 = [
+                -0.5 * p1.genes[i] + 1.5 * p2.genes[i] for i in range(len(p1.genes))
+            ]
+
+            self._add_offspring(genes_offspring_1, p1, p2)
+            self._add_offspring(genes_offspring_2, p1, p2)
+            self._add_offspring(genes_offspring_3, p1, p2)
+
+    def _blend_crossover(self):
+        """
+        This method implements the Blend crossover proposed by Eshelman and Schaffer (1993).
+
+        The alpha parameter defined for the crossover is defined as blend_expansion parameter.
+        With a value of 0 it is equal toa a Radcliffe's flat crossover while a value of 0.5 is
+        equal to Wright's linear crossover intervals (but the values are randomly selected).
+
+        The main difference with Wrights linear crossover is that only two childs are created instead of two
+        """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
@@ -295,24 +427,19 @@ class Population:
             min_c = [min(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
             interval = [max_c[i] - min_c[i] for i in range(len(max_c))]
 
-            genes_offspring = [
+            genes_offspring_1 = [
                 uniform(
-                    min_c[i] - interval[i] * self._generalized_expansion,
-                    max_c[i] + interval[i] * self._generalized_expansion,
+                    min_c[i] - interval[i] * self._blend_expansion,
+                    max_c[i] + interval[i] * self._blend_expansion,
                 )
                 for i in range(len(max_c))
             ]
+            genes_offspring_2 = [
+                interval[i] - genes_offspring_1[i] for i in range(len(max_c))
+            ]
 
-            self._count_individuals += 1
-
-            offspring = Individual(
-                genes=genes_offspring,
-                idx=self._count_individuals,
-                parents=(p1, p2),
-                config=self.config,
-            )
-
-            self.offspring.append(offspring)
+            self._add_offspring(genes_offspring_1, p1, p2)
+            self._add_offspring(genes_offspring_2, p1, p2)
 
     def _one_split_crossover(self):
         while len(self.offspring) < len(self.population):
@@ -321,16 +448,7 @@ class Population:
             split = randint(1, self._gene_length - 2)
             genes_offspring = p1.genes[:split] + p2.genes[split:]
 
-            self._count_individuals += 1
-
-            offspring = Individual(
-                genes=genes_offspring,
-                idx=self._count_individuals,
-                parents=(p1, p2),
-                config=self.config,
-            )
-
-            self.offspring.append(offspring)
+            self._add_offspring(genes_offspring, p1, p2)
 
     def _two_split_crossover(self):
         while len(self.offspring) < len(self.population):
@@ -347,16 +465,73 @@ class Population:
                 p1.genes[:split_1] + p2.genes[split_1:split_2] + p1.genes[split_2:]
             )
 
-            self._count_individuals += 1
+            self._add_offspring(genes_offspring, p1, p2)
 
-            offspring = Individual(
-                genes=genes_offspring,
-                idx=self._count_individuals,
-                parents=(p1, p2),
-                config=self.config,
+    def _gaussian_crossover(self):
+        """
+        Method to perform the Gaussian crossover, also known as Unimodal Normal Distribution Crossover
+        or UNDX, proposed by Ono (2003).
+        """
+        # TODO: finish implementation
+        while len(self.offspring) < len(self.population):
+            p1, p2, p3 = self._select_parents(n=3)
+
+            pm = [(p1.genes[i] + p2.genes[i]) / 2 for i in range(len(p1.genes))]
+            pd = [p2.genes[i] - p1.genes[i] for i in range(len(p1.genes))]
+
+            dist_13 = [p3.genes[i] - p1.genes[i] for i in range(len(p1.genes))]
+            base = sqrt(sum([x**2 for x in pd]))
+            area = sqrt(
+                sum([x**2 for x in dist_13]) * sum([x**2 for x in pd])
+                - sum([pd[i] * dist_13[i] for i in range(len(pd))]) ** 2
             )
 
-            self.offspring.append(offspring)
+            if base == 0 or base is None:
+                dist3 = sqrt(sum([x**2 for x in dist_13]))
+            else:
+                dist3 = area / base
+
+            raise NotImplementedError("Gaussian crossover not implemented")
+
+    def _morphology_crossover(self):
+        """ """
+        raise NotImplementedError("Morphology crossover not implemented")
+
+    def _add_offspring(self, genes, p1, p2):
+        self._count_individuals += 1
+
+        offspring = Individual(
+            genes=genes,
+            idx=self._count_individuals,
+            parents=(p1, p2),
+            config=self.config,
+        )
+
+        self.offspring.append(offspring)
+
+    # -------------------
+    # Mutation
+    # -------------------
+
+    def _base_mutation(self):
+        """
+        This is the based mutation applied for the base mutation rate or
+        the ones calculated based on gene length or population size.
+        """
+        for ind in self.offspring:
+            ind.mutate(mutation_prob=self._mutation_rate)
+
+    def _adaptative_mutation(self):
+        """
+        Method to implement adaptative mutation operator.
+
+        In this case the mutation rate is evaluated every X generations.
+        If the genetic diversity has decreased then the mutation rate is increased,
+        if the genetic diversity has decreased then the mutation rate is lowered.
+        This should help the algorithm converge faster in some cases but
+        keep some exploration alive in order to avoid local optima.
+        """
+        raise NotImplementedError("Adaptative mutation not implemented")
 
     # -------------------
     # Update fitness
@@ -370,6 +545,9 @@ class Population:
     # Replacement
     # -------------------
     def _elitist_replacement(self):
+        """
+        The best adapted individuals on the population are the ones that pass to the next generation
+        """
         if self._optimization_objective == "max":
             self.population = sorted(
                 self.population + self.offspring, key=lambda x: x.fitness, reverse=True
@@ -381,3 +559,62 @@ class Population:
 
         self.population = self.population[: self.population_size]
         self.offspring = []
+
+    def _offspring_replacement(self):
+        """
+        The population gets completely substituted by the offspring.
+        """
+        self.population = list(self.offspring)
+        self.offspring = []
+
+    def _random_replacement(self):
+        """
+        Method to implement a random replacement operator.
+        """
+        self.population = sample(
+            self.population + self.offspring, k=self.population_size
+        )
+        self.offspring = []
+
+    def _elitist_stochastic_replacement(self):
+        """
+        Method to implement an elitist stochastic replacement operator.
+
+        In this case each individual has a replacement probability based on their fitness.
+        """
+        self.population = self.population + self.offspring
+
+        max_fitness = max(self.population, key=lambda x: x.fitness).fitness
+        min_fitness = min(self.population, key=lambda x: x.fitness).fitness
+
+        if self._optimization_objective == "max":
+            self.population = sorted(
+                self.population + self.offspring, key=lambda x: x.fitness, reverse=True
+            )
+
+            ref_fitness = min_fitness
+
+            self._replacement_probs = [
+                ind.fitness - ref_fitness for ind in self.population
+            ]
+
+        else:
+            self.population = sorted(
+                self.population + self.offspring, key=lambda x: x.fitness
+            )
+
+            ref_fitness = max_fitness
+
+            self._replacement_probs = [
+                ref_fitness - ind.fitness for ind in self.population
+            ]
+
+        temp = []
+        for _ in range(self.population_size):
+            individual = choices(self.population, weights=self._replacement_probs)[0]
+            temp.append(individual)
+            position = self.population.index(individual)
+            del self._replacement_probs[position]
+            self.population.remove(individual)
+
+        self.population = list(temp)
