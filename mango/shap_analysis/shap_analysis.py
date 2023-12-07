@@ -345,7 +345,7 @@ class ShapAnalyzer:
             else self.shap_values,
             self._x_transformed,
             feature_names=self._feature_names,
-            show=kwargs.get("show", True),
+            show=kwargs.get("show", False),
             **kwargs,
         )
 
@@ -370,6 +370,8 @@ class ShapAnalyzer:
         :return: None
         :doc-author: baobab soluciones
         """
+        if not os.path.isdir(path_save):
+            raise ValueError("path_save must be a directory")
         filter_data = self._data_with_metadata.query(query).copy()
         if filter_data.shape[0] == 0:
             raise ValueError(f"No data found for query: {query}")
@@ -497,7 +499,7 @@ class ShapAnalyzer:
         index_feature = list(self._feature_names).index(feature_name)
 
         if self._problem_type in ["binary_classification", "multiclass_classification"]:
-            return self._data[
+            return self._data_with_metadata[
                 operator_dict[operator](
                     self.shap_values[list(self._model.classes_).index(class_name)][
                         :, index_feature
@@ -506,7 +508,7 @@ class ShapAnalyzer:
                 )
             ].copy()
         else:
-            return self._data[
+            return self._data_with_metadata[
                 operator_dict[operator](self.shap_values[:, index_feature], shap_value)
             ].copy()
 
@@ -568,7 +570,6 @@ class ShapAnalyzer:
                         path_save=os.path.join(
                             base_path,
                             "individual",
-                            f"query_{i}.png",
                         ),
                     )
 
@@ -594,7 +595,6 @@ class ShapAnalyzer:
                         path_save=os.path.join(
                             base_path,
                             "individual",
-                            f"query_{i}.png",
                         ),
                     )
             if pdp_tuples:

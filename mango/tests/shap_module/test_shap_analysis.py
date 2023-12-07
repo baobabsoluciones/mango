@@ -18,14 +18,8 @@ class ObjectTests(TestCase):
         # Classification models
         model_1 = Pipeline(
             [
-                (
-                    "scaler",
-                    StandardScaler(),
-                ),  # Standardize features by removing the mean and scaling to unit variance
-                (
-                    "classifier",
-                    RandomForestClassifier(random_state=42),
-                ),  # Random Forest Classifier
+                ("scaler", StandardScaler()),
+                ("classifier", RandomForestClassifier(random_state=42)),
             ]
         )
         model_2 = RandomForestClassifier(random_state=42)
@@ -54,18 +48,7 @@ class ObjectTests(TestCase):
         self._model_error.fit(self.X_train, self.y_train)
 
         # Regression models
-        model_4 = Pipeline(
-            [
-                (
-                    "scaler",
-                    StandardScaler(),
-                ),  # Standardize features by removing the mean and scaling to unit variance
-                (
-                    "classifier",
-                    RandomForestRegressor(random_state=42),
-                ),  # Random Forest Classifier
-            ]
-        )
+        model_4 = Pipeline([("classifier", RandomForestRegressor(random_state=42))])
         model_5 = RandomForestRegressor(random_state=42)
         model_6 = LGBMRegressor(random_state=42)
 
@@ -77,6 +60,10 @@ class ObjectTests(TestCase):
         X = pd.DataFrame(X, columns=feature_names)
         y = pd.Series(y, name="target")
 
+        # X Reset index and rename column with "metadata_index" name
+        X.reset_index(drop=False, inplace=True)
+        X.rename(columns={"index": "metadata_index"}, inplace=True)
+
         # Split the dataset into train and test sets
         self.X_train_reg, X_test_reg, self.y_train_reg, y_test_reg = train_test_split(
             X, y, test_size=0.2, random_state=42
@@ -86,10 +73,10 @@ class ObjectTests(TestCase):
         self._regression_models = [model_4, model_5, model_6]
         for model in self._regression_models:
             model.fit(self.X_train, self.y_train)
+
     def tearDown(self):
         # Remove shap_folder and its content
         shutil.rmtree(normalize_path(f"shap_module/test_shap"))
-
 
     @staticmethod
     def _test_shap(
@@ -100,6 +87,7 @@ class ObjectTests(TestCase):
         shap_folder,
         queries=None,
         metadata=None,
+        pdp_tuples=None,
     ):
         # ShapAnalyzer
         instance = ShapAnalyzer(
@@ -112,7 +100,7 @@ class ObjectTests(TestCase):
         )
 
         # Make shap analysis
-        instance.make_shap_analysis(queries=queries)
+        instance.make_shap_analysis(queries=queries, pdp_tuples=pdp_tuples)
 
         return instance
 
@@ -151,6 +139,9 @@ class ObjectTests(TestCase):
                 [],
             )
 
+            # Check explainer property
+            assert instance.shap_explainer
+
     def test_regression_report(self):
         for model in self._regression_models:
             instance = self._test_shap(
@@ -159,6 +150,9 @@ class ObjectTests(TestCase):
                 model_name=type(model).__name__,
                 X_train=self.X_train_reg,
                 shap_folder=normalize_path(f"shap_module/test_shap/regression"),
+                pdp_tuples=[("feature_0", "feature_1")],
+                metadata="metadata_index",
+                queries=["metadata_index == 1"],
             )
 
             # Check properties
@@ -175,12 +169,12 @@ class ObjectTests(TestCase):
                 normalize_path(f"shap_module/test_shap/regression"),
             )
             self.assertEqual(
-                instance.data.shape,
+                instance._data_with_metadata.shape,
                 self.X_train_reg.shape,
             )
             self.assertEqual(
                 instance.metadata,
-                [],
+                ["metadata_index"],
             )
 
     def test_get_sample_by_shap_values(self):
@@ -221,6 +215,7 @@ class ObjectTests(TestCase):
             model_name=type(model).__name__,
             X_train=self.X_train_reg,
             shap_folder=normalize_path(f"shap_module/test_shap/regression"),
+            metadata=["metadata_index"],
         )
         sample = instance.get_sample_by_shap_value(
             shap_value=0.05, feature_name="feature_5"
@@ -234,6 +229,11 @@ class ObjectTests(TestCase):
 
         with self.assertRaises(ValueError):
             instance.get_sample_by_shap_value(shap_value=10, feature_name="feature_S")
+
+        with self.assertRaises(ValueError):
+            instance.get_sample_by_shap_value(
+                shap_value=10, feature_name="feature_1", operator=">>"
+            )
 
     def test_values_errors(self):
         # Train
@@ -297,3 +297,15 @@ class ObjectTests(TestCase):
                 shap_folder=None,
             )
             instance.make_shap_analysis()
+
+        # Assert value error when problem_type is not supported
+        with self.assertRaises(ValueError):
+            instance = ShapAnalyzer(
+                problem_type="regression",
+                model_name=type(model).__name__,
+                estimator=self._regression_models[1],
+                data=self.X_train_reg,
+                metadata="metadata_index",
+                shap_folder=normalize_path(f"shap_module/test_shap/regression"),
+            )
+            instance.make_shap_analysis(queries=["metadata_index == -1"])
