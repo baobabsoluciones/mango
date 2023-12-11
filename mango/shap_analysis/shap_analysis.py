@@ -186,6 +186,29 @@ class ShapAnalyzer:
         """
         return self._explainer
 
+    def _get_class_index(self, class_ind_name: Union[str, int]):
+        """
+        Get the index of a class based on its name or index.
+
+        :param class_name: Name or index of the class
+        :return: Index of the class
+        :doc-author: baobab soluciones
+        """
+        if isinstance(class_ind_name, str):
+            try:
+                class_index = list(self._model.classes_).index(class_ind_name)
+            except ValueError:
+                raise ValueError(f"class_name must be one of {self._model.classes_}")
+        elif isinstance(class_ind_name, int):
+            if len(self._model.classes_) <= class_ind_name:
+                raise ValueError(
+                    f"class_index must be less than {len(self._model.classes_)}"
+                )
+            class_index = class_ind_name
+        else:
+            raise ValueError(f"class_name must be a string or an integer")
+        return class_index
+
     def _set_explainer(self):
         """
         Get the shap explainer based on the model type.
@@ -319,7 +342,9 @@ class ShapAnalyzer:
                 else file_path_save,
             )
 
-    def summary_plot(self, class_index: int = 1, file_path_save: str = None, **kwargs):
+    def summary_plot(
+        self, class_name: Union[str, int] = 1, file_path_save: str = None, **kwargs
+    ):
         """
         The summary_plot function plots the SHAP values of every feature for all samples.
         The plot is a standard deviation centered histogram of the impacts each feature has on the model output.
@@ -327,7 +352,7 @@ class ShapAnalyzer:
         This function works with Numpy arrays or pandas DataFrames as input, and can plot either regression or classification models.
 
         :param self: Refer to the object itself
-        :param int class_index: Specify which class to plot the summary for
+        :param int class_name: Specify which class to plot the summary for
         :param str file_path_save: Save the plot as a png file
         :param **kwargs: Pass keyworded, variable-length argument list to a function
         :return: None
@@ -340,7 +365,7 @@ class ShapAnalyzer:
                 )
 
         shap.summary_plot(
-            self.shap_values[class_index]
+            self.shap_values[self._get_class_index(class_name)]
             if self._problem_type != "regression"
             else self.shap_values,
             self._x_transformed,
@@ -351,7 +376,7 @@ class ShapAnalyzer:
 
         if file_path_save != None:
             self._save_fig(
-                title=f"Summary Plot class {self._model.classes_[class_index]}"
+                title=f"Summary Plot class {self._model.classes_[self._get_class_index(class_name)]}"
                 if self._problem_type != "regression"
                 else "Summary Plot",
                 file_path_save=f"{file_path_save}.png"
@@ -426,6 +451,7 @@ class ShapAnalyzer:
         self,
         feature: Union[str, int],
         interaction_feature: Union[str, int],
+        class_name: Union[str, int] = None,
         file_path_save: str = None,
         **kwargs,
     ):
@@ -443,7 +469,9 @@ class ShapAnalyzer:
         """
         shap.dependence_plot(
             feature,
-            self.shap_values,
+            self.shap_values[self._get_class_index(class_name)]
+            if self._problem_type != "regression"
+            else self.shap_values,
             self._x_transformed,
             interaction_index=interaction_feature,
             feature_names=self._feature_names,
@@ -485,12 +513,6 @@ class ShapAnalyzer:
             raise ValueError(
                 f"Operator {operator} not valid. Valid operators are: {operator_dict.keys()}"
             )
-        if (
-            self._problem_type in ["binary_classification", "multiclass_classification"]
-        ) and (class_name not in self._model.classes_):
-            raise ValueError(
-                f"Class {class_name} is not in model classes. Must be one of: {self._model.classes_}"
-            )
 
         if feature_name not in self._feature_names:
             raise ValueError(
@@ -501,9 +523,11 @@ class ShapAnalyzer:
         if self._problem_type in ["binary_classification", "multiclass_classification"]:
             return self._data_with_metadata[
                 operator_dict[operator](
-                    self.shap_values[list(self._model.classes_).index(class_name)][
-                        :, index_feature
-                    ],
+                    self.shap_values[
+                        list(self._model.classes_).index(
+                            self._get_class_index(class_name)
+                        )
+                    ][:, index_feature],
                     shap_value,
                 )
             ].copy()
@@ -547,7 +571,7 @@ class ShapAnalyzer:
         if self._problem_type in ["binary_classification", "multiclass_classification"]:
             _ = [
                 self.summary_plot(
-                    class_index=class_index,
+                    class_name=self._get_class_index(class_index),
                     file_path_save=os.path.join(
                         base_path,
                         "summary",
@@ -572,6 +596,21 @@ class ShapAnalyzer:
                             "individual",
                         ),
                     )
+            if pdp_tuples:
+                for pdp_tuple in pdp_tuples:
+                    _ = [
+                        self.partial_dependence_plot(
+                            feature=pdp_tuple[0],
+                            interaction_feature=pdp_tuple[1],
+                            class_name=self._get_class_index(class_index),
+                            file_path_save=os.path.join(
+                                base_path,
+                                "partial_dependence",
+                                f"pdp_class_{class_index}_{pdp_tuple[0]}{'_' + pdp_tuple[1] if pdp_tuple[1] != None else ''}.png",
+                            ),
+                        )
+                        for class_index in range(len(self._model.classes_))
+                    ]
 
         elif self._problem_type == "regression":
             self.summary_plot(
