@@ -63,7 +63,8 @@ dashboard = [
 gcloud = ["google-cloud-storage<=2.12.0"]
 
 models = [
-    "pyomo<=6.6.2"
+    "pyomo<=6.6.2",
+    "tfp-causalimpact @ git+https://github.com/google/tfp-causalimpact"
 ]
 
 plot = [
