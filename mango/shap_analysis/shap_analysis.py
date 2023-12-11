@@ -20,11 +20,31 @@ class ShapAnalyzer:
     >>> from mango.shap_analysis import ShapAnalyzer
     >>> shap_analyzer = ShapAnalyzer(
     ...     problem_type="regression",
+    ...     model_name="model_name",
     ...     estimator=estimator,
-    ...     data=data
+    ...     data=data,
+    ...     metadata=metadata,
+    ...     shap_folder=shap_folder,
     ... )
-    >>> shap_analyzer.summary_plot(show=True)
-    >>> shap_analyzer.bar_summary_plot(show=True)
+    >>> shap_analyzer.summary_plot(show=True, file_path_save=file_path_save)
+    >>> shap_analyzer.bar_summary_plot(show=True, file_path_save=file_path_save)
+    >>> shap_analyzer.waterfall_plot(query="age > 30", path_save=path_save)
+    >>> shap_analyzer.partial_dependence_plot(
+    ...     feature="age",
+    ...     interaction_feature="height",
+    ...     class_name=1,
+    ...     file_path_save=file_path_save,
+    ... )
+    >>> shap_analyzer.get_sample_by_shap_value(
+    ...     shap_value=0.5,
+    ...     feature_name="age",
+    ...     class_name=1,
+    ...     operator=">=",
+    ... )
+    >>> shap_analyzer.make_shap_analysis(
+    ...     queries=["age > 30"],
+    ...     pdp_tuples=[("age", "height")],
+    ... )
     """
 
     def __init__(
@@ -545,6 +565,7 @@ class ShapAnalyzer:
 
         :param self: Bind the method to an object
         :param List[str] queries: Specify the queries to use in the waterfall plot
+        :param List[tuple] pdp_tuples: Specify the features to use in the partial dependence plot
         :return: None
         :doc-author: baobab soluciones
         """
