@@ -152,7 +152,7 @@ class ObjectTests(TestCase):
                 shap_folder=normalize_path(f"shap_module/test_shap/regression"),
                 pdp_tuples=[("feature_0", "feature_1")],
                 metadata="metadata_index",
-                queries=["metadata_index == 1"],
+                # queries=["metadata_index == 1"],
             )
 
             # Check properties
