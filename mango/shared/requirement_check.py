@@ -1,6 +1,11 @@
 import os
 import pathlib
-import tomllib as toml
+
+# Compatibility with Python < 3.11
+try:
+    import tomllib as toml
+except ImportError:
+    from pip._vendor import tomli as toml
 
 # Trick for testing suite mockup
 import pkg_resources
@@ -19,11 +24,13 @@ def check_dependencies(dependencies_name: str, pyproject_path: str = None):
     # Handle path
     if not pyproject_path:
         pyproject_path = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), "..", "pyproject.toml"
-            )
-    pyproject= pathlib.Path(pyproject_path)
+            os.path.dirname(os.path.dirname(__file__)), "..", "pyproject.toml"
+        )
+    pyproject = pathlib.Path(pyproject_path)
     if not pyproject.exists():
-        raise FileNotFoundError(f"{pyproject} does not exist. You may pass the path to the function as an argument")
+        raise FileNotFoundError(
+            f"{pyproject} does not exist. You may pass the path to the function as an argument"
+        )
 
     # Extact data
     pyproject_text = pyproject.read_text()
