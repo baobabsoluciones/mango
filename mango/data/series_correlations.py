@@ -13,6 +13,20 @@ def get_corr_matrix(
     years_corr: List = None,
     subset=None,
 ):
+    """
+    The get_corr_matrix function takes a dataframe and returns the correlation matrix of the top n_top correlated
+    columns. The function also allows to specify a date column, which will be used to compute correlations for each year.
+    The user can also specify which years should be considered in the computation of correlations.
+
+    :param df: pd.DataFrame: Pass the dataframe to be used in the function
+    :param n_top: int: Select the top n correlated variables
+    :param date_col: str: Specify the column name of the date
+    :param years_corr: List: Specify the years to use for calculating correlations
+    :param subset: Select a subset of columns to calculate the correlation matrix
+    :param : Get the correlation matrix of a subset of columns
+    :return: A dataframe with the correlation matrix
+    :doc-author: baobab soluciones
+    """
     if not date_col:
         date_col, as_index = get_date_col_candidate(df)
     else:
@@ -24,6 +38,15 @@ def get_corr_matrix(
 
 
 def get_date_col_candidate(df: pd.DataFrame):
+    """
+    The get_date_col_candidate function takes a dataframe as an input and returns the name of the column that is
+    a datetime type. If there are no columns with datetime types, it will return None. It also returns a boolean value
+    that indicates whether or not the index is a datetime type.
+
+    :param df: pd.DataFrame: Pass the dataframe to the function
+    :return: A list of columns that have datetime dtypes
+    :doc-author: baobab soluciones
+    """
     date_column = [
         column
         for column in df.columns
@@ -44,6 +67,15 @@ def get_date_col_candidate(df: pd.DataFrame):
 
 
 def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool):
+    """
+    The raise_if_inconsistency function raises a ValueError if the input dataframe is not in the correct format.
+
+    :param df: pd.DataFrame: Pass the dataframe to the function
+    :param date_col: str: Specify the name of the column that contains the date
+    :param as_index: bool: Check if the dataframe is pivoted or not
+    :return: A valueerror if the dataframe is not in the correct format
+    :doc-author: baobab soluciones
+    """
     if date_col is None and as_index is False:
         raise ValueError("Dataframe must contain one datetime column")
     elif date_col is None and as_index:
@@ -105,6 +137,17 @@ def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool):
 def get_corr_matrix_aux(
     df: pd.DataFrame, years_corr, n_top, subset=None
 ) -> Dict[str, List[str]]:
+    """
+    The get_corr_matrix_aux function computes the correlation matrix for a given dataframe.
+    It then filters by years and subset, if specified. It returns a dictionary with the top n correlations for each time series in the dataframe.
+
+    :param df: pd.DataFrame: Pass the dataframe to the function
+    :param years_corr: Filter the dataframe by year
+    :param n_top: Specify the number of top correlations to return for each time series
+    :param subset: Filter the dataframe by a subset of time series
+    :return: A dictionary with the top n correlations for each time series
+    :doc-author: baobab soluciones
+    """
     if n_top >= df.shape[1]:
         warnings.warn(
             "Number of n_top is bigger than number of columns of the dataframe"
