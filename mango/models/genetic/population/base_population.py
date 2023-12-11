@@ -1,6 +1,6 @@
 from collections import Counter
 from math import sqrt
-from random import choices, choice, sample, randint, uniform
+from random import choices, choice, sample, randint, uniform, gauss
 
 from mango.models.genetic.individual import Individual
 from mango.models.genetic.shared.exceptions import GeneticDiversity, ConfigurationError
@@ -60,6 +60,7 @@ class Population:
             "blend",
             "linear",
             "flat",
+            "gaussian",
         ]:
             raise ConfigurationError(
                 f"Encoding {self._encoding} not supported for crossover type {self._crossover_type}"
@@ -155,6 +156,8 @@ class Population:
             self._linear_crossover()
         elif self._crossover_type == "flat":
             self._flat_crossover()
+        elif self._crossover_type == "gaussian":
+            self._gaussian_crossover()
         else:
             raise NotImplementedError("Crossover method not implemented")
 
@@ -471,39 +474,94 @@ class Population:
         """
         Method to perform the Gaussian crossover, also known as Unimodal Normal Distribution Crossover
         or UNDX, proposed by Ono (2003).
+
+        This method is only implemented for real encoding.
         """
-        # TODO: finish implementation
         while len(self.offspring) < len(self.population):
+            # First we select three parents. The first two are going to be the primary search space,
+            # while the third is going to create the secondary search space with the midpoint between parents 1 and 2
             p1, p2, p3 = self._select_parents(n=3)
 
-            pm = [(p1.genes[i] + p2.genes[i]) / 2 for i in range(len(p1.genes))]
-            pd = [p2.genes[i] - p1.genes[i] for i in range(len(p1.genes))]
+            # TODO: this could be changed by config in the future
+            # This are parameters for the randomness of the gaussian distribution used in the crossover.
+            sigma_eta = 0.35 / sqrt(self._gene_length)
+            sigma_xi = 1 / 4
 
-            dist_13 = [p3.genes[i] - p1.genes[i] for i in range(len(p1.genes))]
-            base = sqrt(sum([x**2 for x in pd]))
-            area = sqrt(
-                sum([x**2 for x in dist_13]) * sum([x**2 for x in pd])
-                - sum([pd[i] * dist_13[i] for i in range(len(pd))]) ** 2
+            # We calculate the distance vector, the unit distance vector and the mean point in the primary search space
+            dist_p1p2 = [p2.genes[i] - p1.genes[i] for i in range(self._gene_length)]
+            dist_p1p2_norm = sqrt(
+                sum([dist_p1p2[i] * dist_p1p2[i] for i in range(self._gene_length)])
             )
 
-            if base == 0 or base is None:
-                dist3 = sqrt(sum([x**2 for x in dist_13]))
-            else:
-                dist3 = area / base
+            dist_p1p2_unit = [
+                dist_p1p2[i] / dist_p1p2_norm for i in range(self._gene_length)
+            ]
 
-            raise NotImplementedError("Gaussian crossover not implemented")
+            mean_p1p2 = [
+                (p1.genes[i] + p2.genes[i]) / 2 for i in range(self._gene_length)
+            ]
+
+            # We calculate the distance vector between the third parent and the first one
+            dist_p3p1 = [p3.genese[i] - p1.genes[i] for i in range(self._gene_length)]
+
+            # This proportion is used to calculate the vector between the third parent and the primary search space
+            proportion = sum(
+                [dist_p1p2[i] * dist_p3p1[i] for i in range(self._gene_length)]
+            ) / sum([dist_p1p2[i] * dist_p1p2[i] for i in range(self._gene_length)])
+
+            # Formula for the distance vector from the third parent to the primary search line.
+            # This formula should be able to be applied to any dimension space and this distance vector is orthogonal
+            # to the distance vector between the first and second parent.
+            distance_vector = [
+                dist_p3p1[i] - proportion * dist_p1p2[i]
+                for i in range(self._gene_length)
+            ]
+
+            # Distance
+            distance = sqrt(
+                sum(
+                    [
+                        distance_vector[i] * distance_vector[i]
+                        for i in range(self._gene_length)
+                    ]
+                )
+            )
+
+            # Random vector based in the basis of the distance between the third parent and the primary search space
+            # then we substract the component of the primary search
+            t = [
+                gauss(0, (distance * sigma_eta) ** 2) for _ in range(self._gene_length)
+            ]
+
+            t_dot_parents = [t[i] * dist_p1p2_unit[i] for i in range(self._gene_length)]
+
+            t = [t[i] - t_dot_parents * dist_p1p2[i] for i in range(self._gene_length)]
+
+            # and we add the parallel component
+            t = [
+                t[i] + gauss(0, sigma_xi) * dist_p1p2[i]
+                for i in range(self._gene_length)
+            ]
+
+            # We create two children
+            offspring_1 = [mean_p1p2[i] + t[i] for i in range(self._gene_length)]
+            offspring_2 = [mean_p1p2[i] - t[i] for i in range(self._gene_length)]
+
+            # And we add them to the population
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
 
     def _morphology_crossover(self):
         """ """
         raise NotImplementedError("Morphology crossover not implemented")
 
-    def _add_offspring(self, genes, p1, p2):
+    def _add_offspring(self, genes, *parents):
         self._count_individuals += 1
 
         offspring = Individual(
             genes=genes,
             idx=self._count_individuals,
-            parents=(p1, p2),
+            parents=parents,
             config=self.config,
         )
 

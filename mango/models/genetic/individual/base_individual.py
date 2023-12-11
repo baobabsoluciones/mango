@@ -17,8 +17,7 @@ class Individual:
 
         self.parents_idx = None
         if parents is not None:
-            p1, p2 = parents
-            self.parents_idx = (p1.idx, p2.idx)
+            self.parents_idx = tuple([p.idx for p in parents])
 
     @classmethod
     def create_random_individual(cls, idx, config):

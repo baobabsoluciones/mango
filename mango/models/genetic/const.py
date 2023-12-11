@@ -2,7 +2,16 @@
 
 INDIVIDUAL_ENCODINGS = ["real", "binary", "integer", "non-negative-real"]
 SELECTION_METHODS = ["roulette", "tournament", "rank", "random", "elitism"]
-CROSSOVER_METHODS = ["mask", "blend", "one-split", "two-split", "linear", "flat"]
+CROSSOVER_METHODS = [
+    "mask",
+    "blend",
+    "one-split",
+    "two-split",
+    "linear",
+    "flat",
+    "gaussian",
+]
+
 MUTATION_CONTROL_METHODS = ["none", "adaptative", "gene-based", "population-based"]
 
 REPLACEMENT_METHODS = [
