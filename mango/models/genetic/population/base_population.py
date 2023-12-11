@@ -39,12 +39,12 @@ class Population:
         self._mutation_type = self.config("mutation_control")
         self._mutation_rate = self.config("mutation_base_rate")
 
-        if self._mutation_type == "gene_based":
+        if self._mutation_type == "gene-based":
             """
             Based on a proposal by Kenneth De Jong (1975)
             """
             self._mutation_rate = 1 / self._gene_length
-        elif self._mutation_type == "population_based":
+        elif self._mutation_type == "population-based":
             """
             Based on the proposal by Schaffer (1989) on A Study of Control Parameters Affecting Online Performance
             of Genetic Algorithms for Function Optimization
@@ -167,7 +167,7 @@ class Population:
 
         The actual implementation of the mutation is done in the individual as it is heavily dependent on the encoding.
         """
-        if self._mutation_type in ["none", "gene_based", "population_based"]:
+        if self._mutation_type in ["none", "gene-based", "population-based"]:
             self._base_mutation()
         elif self._mutation_type == "adaptative":
             self._adaptative_mutation()
@@ -676,3 +676,4 @@ class Population:
             self.population.remove(individual)
 
         self.population = list(temp)
+        self.offspring = []
