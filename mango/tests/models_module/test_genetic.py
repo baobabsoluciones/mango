@@ -1,7 +1,7 @@
 from random import seed
 from unittest import TestCase
 
-from mango.benchmark.optimization import ackley, inverted_griewank
+from mango.benchmark.optimization import ackley, inverted_griewank, levy
 from mango.benchmark.optimization import bukin_function_6
 from mango.benchmark.optimization import dolan_function_no2
 from mango.models.genetic.config.config import GeneticBaseConfig
@@ -27,9 +27,9 @@ class TestGeneticAlgorithms(TestCase):
         population = Population(config, ackley)
         population.run()
 
-        solution = [-0.02712333924382193, -0.008804580617919555]
+        solution = [0.04688254566426053, 0.05306303160494963]
 
-        self.assertAlmostEqual(population.best.fitness, 0.10217623013362598)
+        self.assertAlmostEqual(population.best.fitness, 0.3294397837892582)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
@@ -85,13 +85,13 @@ class TestGeneticAlgorithms(TestCase):
 
         solution = [
             86.02924663796051,
-            76.54353717642641,
+            91.34626467166257,
             75.75079061521132,
             71.17276815342376,
             -5.180918017635875,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, -390.4093018581022)
+        self.assertAlmostEqual(population.best.fitness, -428.72294223517395)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
@@ -104,18 +104,61 @@ class TestGeneticAlgorithms(TestCase):
         population.run()
 
         solution = [
-            -0.011761282771751104,
-            4.444224598525348,
-            -5.431886103415204,
-            0.0906272308977834,
-            7.022521500918264,
-            -7.673298084983652,
-            -8.071904722069078,
-            -0.0920485550041308,
-            0.020649306128330058,
-            -9.885140546843235,
+            6.309391234006169,
+            4.50874683190745,
+            5.452981628160172,
+            0.21102096139689291,
+            0.06444193222575913,
+            -7.708571022040515,
+            -8.2408106578037,
+            0.14757221958266184,
+            -0.11088277433051322,
+            0.03817064084575229,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, -0.08601455153606641)
+        self.assertAlmostEqual(population.best.fitness, -0.06420897800089553)
+        for position, value in enumerate(population.best.genes):
+            self.assertAlmostEqual(value, solution[position])
+
+    def test_continue_running(self):
+        seed(22)
+        config = GeneticBaseConfig(normalize_path("./data/test_levy_10d.cfg"))
+
+        population = Population(config, levy)
+        population.run()
+
+        solution = [
+            1.046293677436979,
+            1.045425234956985,
+            0.6827048260235041,
+            1.0766023419009219,
+            -0.16208100990762414,
+            -0.04221658979108796,
+            0.9614474113850087,
+            0.9998592579526275,
+            0.92876804413118,
+            1.5299647554782438,
+        ]
+
+        self.assertAlmostEqual(population.best.fitness, 0.2533584234516954)
+        for position, value in enumerate(population.best.genes):
+            self.assertAlmostEqual(value, solution[position])
+
+        population.continue_running(200)
+
+        solution = [
+            1.043084062453158,
+            1.0463364506301889,
+            0.6839910498994877,
+            1.0762212536890368,
+            -0.162226471527582,
+            -0.04224756064612065,
+            0.9650844883660079,
+            0.9991564122982302,
+            0.9286365696445134,
+            1.0113621127349337,
+        ]
+
+        self.assertAlmostEqual(population.best.fitness, 0.22555413869389201)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])

@@ -502,7 +502,7 @@ class Population:
             ]
 
             # We calculate the distance vector between the third parent and the first one
-            dist_p3p1 = [p3.genese[i] - p1.genes[i] for i in range(self._gene_length)]
+            dist_p3p1 = [p3.genes[i] - p1.genes[i] for i in range(self._gene_length)]
 
             # This proportion is used to calculate the vector between the third parent and the primary search space
             proportion = sum(
@@ -533,7 +533,9 @@ class Population:
                 gauss(0, (distance * sigma_eta) ** 2) for _ in range(self._gene_length)
             ]
 
-            t_dot_parents = [t[i] * dist_p1p2_unit[i] for i in range(self._gene_length)]
+            t_dot_parents = sum(
+                [t[i] * dist_p1p2_unit[i] for i in range(self._gene_length)]
+            )
 
             t = [t[i] - t_dot_parents * dist_p1p2[i] for i in range(self._gene_length)]
 

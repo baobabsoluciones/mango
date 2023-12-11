@@ -5,7 +5,6 @@ class Individual:
     def __init__(self, genes=None, idx: int = 0, parents: tuple = None, config=None):
         self.fitness = None
         self.idx = idx
-        self._hash = self.__hash__()
 
         # Info to get from config file
         self.encoding = config("encoding")
@@ -19,6 +18,8 @@ class Individual:
         if parents is not None:
             self.parents_idx = tuple([p.idx for p in parents])
 
+        self._hash = self.__hash__()
+
     @classmethod
     def create_random_individual(cls, idx, config):
         ind = cls(idx=idx, config=config)
@@ -31,6 +32,7 @@ class Individual:
             self.genes = [
                 uniform(self.min_bound, self.max_bound) for _ in range(self.gene_length)
             ]
+            self._hash = self.__hash__()
         else:
             raise NotImplemented("Only real encoding is implemented for now")
 
@@ -75,7 +77,9 @@ class Individual:
         raise NotImplemented
 
     def __hash__(self):
-        return hash(self.idx)
+        if self.genes is None:
+            return None
+        return hash(tuple(self.genes))
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
