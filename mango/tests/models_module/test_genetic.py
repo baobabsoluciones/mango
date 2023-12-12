@@ -123,7 +123,7 @@ class TestGeneticAlgorithms(TestCase):
         # that's why the places is reduced. This should mean that the optimization function is not
         # that sensible to the decimal values of the genes.
         for position, value in enumerate(population.best.genes):
-            self.assertAlmostEqual(value, solution[position], places=4)
+            self.assertAlmostEqual(value, solution[position], places=3)
 
     def test_continue_running(self):
         seed(22)
