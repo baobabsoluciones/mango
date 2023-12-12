@@ -19,3 +19,14 @@ def levy(x: list) -> float:
     term2 = sum(termi)
 
     return term1 + term2 + term3
+
+
+def inverted_levy(x: list) -> float:
+    """
+    Inverted Levy function.
+
+    :param list x: list of floats. Each value is usually between -10 and 10.
+    :return: the value of the function
+    :rtype: float
+    """
+    return -levy(x)

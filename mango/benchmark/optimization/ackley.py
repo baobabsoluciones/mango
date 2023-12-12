@@ -20,3 +20,14 @@ def ackley(x: list) -> float:
         + e
         + 20
     )
+
+
+def inverted_ackley(x: list) -> float:
+    """
+    Inverted Ackley function.
+
+    :param list x: list of floats
+    :return: the value of the function
+    :rtype: float
+    """
+    return -ackley(x)

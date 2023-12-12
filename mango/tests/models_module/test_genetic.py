@@ -103,21 +103,20 @@ class TestGeneticAlgorithms(TestCase):
         population = Population(config, inverted_griewank)
         population.run()
 
-        print(population.best.genes)
         solution = [
-            3.161125877306374,
-            4.448707862009415,
-            -5.3214272979939,
-            12.549091940027397,
-            -0.05577705855964103,
-            -7.68174333609206,
-            -0.08806220610374582,
-            0.06895148861192626,
-            9.292342541432618,
-            -9.842446811680716,
+            9.400534995830206,
+            -0.010451610601925003,
+            -5.221250725626277,
+            -0.03330709338035823,
+            -7.044277160830001,
+            -0.002978278385936796,
+            8.336302884968692,
+            -0.27866380329469886,
+            0.16482261366646916,
+            -0.5942571749002777,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, -0.11965750101533157)
+        self.assertAlmostEqual(population.best.fitness, -0.09104404989454684)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 

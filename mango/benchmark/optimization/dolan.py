@@ -17,3 +17,14 @@ def dolan_function_no2(x: list) -> float:
         - x[1]
         - 1
     )
+
+
+def inverted_dolan_function_no2(x: list) -> float:
+    """
+    Inverted Dolan function No 2.
+
+    :param list x: list of floats
+    :return: the value of the function
+    :rtype: float
+    """
+    return -dolan_function_no2(x)

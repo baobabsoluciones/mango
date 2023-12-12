@@ -39,6 +39,7 @@ class Population:
         self._mutation_type = self.config("mutation_control")
         self._mutation_rate = self.config("mutation_base_rate")
         self._coefficient_variation = None
+        self._generation_adaptative = self.config("generation_adaptative")
 
         if self._mutation_type == "gene-based":
             """
@@ -589,15 +590,16 @@ class Population:
 
         For the calculation of this
         """
-        temp_cv = self._calculate_coefficient_variation()
 
-        if temp_cv < self._coefficient_variation:
-            self._mutation_rate *= 1.1
-        elif temp_cv > self._coefficient_variation:
-            self._mutation_rate /= 1.1
+        if self.generation % self._generation_adaptative == 0:
+            temp_cv = self._calculate_coefficient_variation()
 
-        self._coefficient_variation = temp_cv
-        print(self._coefficient_variation)
+            if temp_cv < self._coefficient_variation:
+                self._mutation_rate *= 1.1
+            elif temp_cv > self._coefficient_variation:
+                self._mutation_rate /= 1.1
+
+            self._coefficient_variation = temp_cv
 
         if self._mutation_rate > 1:
             self._mutation_rate = 0.9

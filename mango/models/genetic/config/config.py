@@ -55,6 +55,9 @@ class GeneticBaseConfig(BaseConfig):
             ConfigParameter("offspring_size", int, 100, required=False),
             ConfigParameter("generalized_expansion", float, 0.1, required=False),
         ],
+        "mutation": [
+            ConfigParameter("generation_adaptative", int, default=10, required=False),
+        ],
     }
 
     def __init__(self, filename):
