@@ -96,7 +96,7 @@ class TestGeneticAlgorithms(TestCase):
             self.assertAlmostEqual(value, solution[position])
 
     def test_inverted_griewank(self):
-        seed(34)
+        seed(1)
         config = GeneticBaseConfig(
             normalize_path("./data/test_inverted_griewank_10d.cfg")
         )
