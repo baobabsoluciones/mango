@@ -33,8 +33,15 @@ class Individual:
                 uniform(self.min_bound, self.max_bound) for _ in range(self.gene_length)
             ]
             self._hash = self.__hash__()
-        else:
-            raise NotImplemented("Only real encoding is implemented for now")
+        elif self.encoding == "binary":
+            self.genes = [randint(0, 1) for _ in range(self.gene_length)]
+
+        elif self.encoding == "integer":
+            self.genes = [
+                randint(self.min_bound, self.max_bound) for _ in range(self.gene_length)
+            ]
+
+        self._hash = self.__hash__()
 
     @property
     def genes(self):
@@ -57,23 +64,52 @@ class Individual:
         self._idx = value
 
     def mutate(self, mutation_prob: float = None):
-        while True:
+        keep = True
+        while keep:
             chance = uniform(0, 1)
             if chance <= mutation_prob:
                 if self.encoding == "real":
                     self._mutate_real()
+                elif self.encoding == "binary":
+                    self._mutate_binary()
+                elif self.encoding == "integer":
+                    self._mutate_integer()
                 else:
                     raise NotImplemented("Only real encoding is implemented for now")
             else:
-                break
+                keep = False
 
     def _mutate_real(self):
+        """
+        Mutation method for the real values encoding
+        """
         gene_position = randint(0, self.gene_length - 1)
         self.genes[gene_position] = uniform(self.min_bound, self.max_bound)
 
+    def _mutate_binary(self):
+        """
+        Mutation method for the binary values encoding.
+
+        This mutation is a simple bit flip on the calculated gene position
+        """
+        gene_position = randint(0, self.gene_length - 1)
+        self.genes[gene_position] = 1 - self.genes[gene_position]
+
+    def _mutate_integer(self):
+        """
+        Mutation method for the integer values encoding.
+        """
+        gene_position = randint(0, self.gene_length - 1)
+        self.genes[gene_position] = randint(self.min_bound, self.max_bound)
+
     def dominates(self, other):
-        """This method should implement the logic to check if one individual dominates another one"""
-        # Implemented on inherited classes
+        """
+        This method should implement the logic to check if one individual dominates another one
+
+        The domination concept is mainly used in multiobjective optimization problems.
+        A solution dominates another when the first one is equal or better in all objectives and one objective
+        is at least better than the other solution
+        """
         raise NotImplemented
 
     def __hash__(self):

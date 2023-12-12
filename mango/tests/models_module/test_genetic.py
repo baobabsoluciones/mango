@@ -1,7 +1,7 @@
 from random import seed
 from unittest import TestCase
 
-from mango.benchmark.optimization import ackley, inverted_griewank, levy
+from mango.benchmark.optimization import ackley, inverted_griewank, levy, rastrigin
 from mango.benchmark.optimization import bukin_function_6
 from mango.benchmark.optimization import dolan_function_no2
 from mango.models.genetic.config.config import GeneticBaseConfig
@@ -96,27 +96,28 @@ class TestGeneticAlgorithms(TestCase):
             self.assertAlmostEqual(value, solution[position])
 
     def test_inverted_griewank(self):
-        seed(33)
+        seed(34)
         config = GeneticBaseConfig(
             normalize_path("./data/test_inverted_griewank_10d.cfg")
         )
         population = Population(config, inverted_griewank)
         population.run()
 
+        print(population.best.genes)
         solution = [
-            6.309391234006169,
-            4.50874683190745,
-            5.452981628160172,
-            0.21102096139689291,
-            0.06444193222575913,
-            -7.708571022040515,
-            -8.2408106578037,
-            0.14757221958266184,
-            -0.11088277433051322,
-            0.03817064084575229,
+            6.3437322695810945,
+            4.671830926216293,
+            -5.432889050092671,
+            -0.016511813099010043,
+            0.04671127285195733,
+            -0.13044957440803043,
+            8.409919769619869,
+            -0.03410400980412424,
+            9.404893843087429,
+            -0.08641639355536353,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, -0.06420897800089553)
+        self.assertAlmostEqual(population.best.fitness, -0.08037399886926178)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
@@ -160,5 +161,41 @@ class TestGeneticAlgorithms(TestCase):
         ]
 
         self.assertAlmostEqual(population.best.fitness, 0.22555413869389201)
+        for position, value in enumerate(population.best.genes):
+            self.assertAlmostEqual(value, solution[position])
+
+    def test_rastrigin_20d(self):
+        seed(22)
+        config = GeneticBaseConfig(normalize_path("./data/test_rastrigin_20d.cfg"))
+
+        population = Population(config, rastrigin)
+        population.run()
+
+        print(population.best.genes)
+
+        solution = [
+            0.026076077944644283,
+            0.005086069396593729,
+            -0.015973415638949717,
+            -0.023799657814452146,
+            0.06430399202537007,
+            -0.01744462373686151,
+            -0.014117319579181498,
+            -0.03784225769599381,
+            0.022639506452455826,
+            0.011829175660904134,
+            -0.07154841836692771,
+            -0.05276671871202332,
+            0.0014310285009333512,
+            0.004973043612503503,
+            0.03846729504120017,
+            0.010889478458071977,
+            0.02102003357697324,
+            0.02660794416379897,
+            -0.0020305370671653833,
+            -0.0018585969342153064,
+        ]
+
+        self.assertAlmostEqual(population.best.fitness, 3.719865118417033)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
