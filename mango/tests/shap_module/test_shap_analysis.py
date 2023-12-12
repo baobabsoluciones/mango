@@ -14,7 +14,17 @@ from mango.tests.const import normalize_path
 
 
 class ObjectTests(TestCase):
-    def setUp(self):
+    # Init parameters
+    X_train = None
+    y_train = None
+    X_train_reg = None
+    y_train_reg = None
+    _classification_models = None
+    _regression_models = None
+    _model_error = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
         # Classification models
         model_1 = Pipeline(
             [
@@ -24,7 +34,7 @@ class ObjectTests(TestCase):
         )
         model_2 = RandomForestClassifier(random_state=42)
         model_3 = LGBMClassifier(random_state=42)
-        self._model_error = XGBClassifier(random_state=42)
+        cls._model_error = XGBClassifier(random_state=42)
 
         # Create a synthetic dataset
         X, y = make_classification(
@@ -37,15 +47,15 @@ class ObjectTests(TestCase):
         y = pd.Series(y, name="target")
 
         # Split the dataset into train and test sets
-        self.X_train, X_test, self.y_train, y_test = train_test_split(
+        cls.X_train, X_test, cls.y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
 
         # Train models
-        self._classification_models = [model_1, model_2, model_3]
-        for model in self._classification_models:
-            model.fit(self.X_train, self.y_train)
-        self._model_error.fit(self.X_train, self.y_train)
+        cls._classification_models = [model_1, model_2, model_3]
+        for model in cls._classification_models:
+            model.fit(cls.X_train, cls.y_train)
+        cls._model_error.fit(cls.X_train, cls.y_train)
 
         # Regression models
         model_4 = Pipeline([("classifier", RandomForestRegressor(random_state=42))])
@@ -65,14 +75,14 @@ class ObjectTests(TestCase):
         X.rename(columns={"index": "metadata_index"}, inplace=True)
 
         # Split the dataset into train and test sets
-        self.X_train_reg, X_test_reg, self.y_train_reg, y_test_reg = train_test_split(
+        cls.X_train_reg, X_test_reg, cls.y_train_reg, y_test_reg = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
 
         # Train models
-        self._regression_models = [model_4, model_5, model_6]
-        for model in self._regression_models:
-            model.fit(self.X_train, self.y_train)
+        cls._regression_models = [model_4, model_5, model_6]
+        for model in cls._regression_models:
+            model.fit(cls.X_train, cls.y_train)
 
     def tearDown(self):
         # Remove shap_folder and its content
