@@ -7,6 +7,8 @@ import pandas as pd
 import shap
 from sklearn.pipeline import Pipeline
 
+from mango.shap_analysis.const import TREE_EXPLAINER_MODELS, KERNEL_EXPLAINER_MODELS
+
 
 class ShapAnalyzer:
     """
@@ -57,22 +59,6 @@ class ShapAnalyzer:
         metadata: Union[str, List[str]] = None,
         shap_folder: str = None,
     ):
-        # Tree Explainer models name
-        self._TREE_EXPLAINER_MODELS = [
-            "XGBRegressor",
-            "LGBMClassifier",
-            "LGBMRegressor",
-            "CatBoostClassifier",
-            "CatBoostRegressor",
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "ExtraTreesClassifier",
-            "ExtraTreesRegressor",
-        ]
-
-        # Kernel Explainer models name
-        self._KERNEL_EXPLAINER_MODELS = ["LogisticRegression", "LinearRegression"]
-
         # Set attributes
         self.problem_type = problem_type
         self._model_name = model_name
@@ -236,10 +222,10 @@ class ShapAnalyzer:
         :return: Shap explainer
         :doc-author: baobab soluciones
         """
-        if type(self._model).__name__ in self._TREE_EXPLAINER_MODELS:
+        if type(self._model).__name__ in TREE_EXPLAINER_MODELS:
             self._explainer = shap.TreeExplainer(self._model)
 
-        elif type(self._model).__name__ in self._KERNEL_EXPLAINER_MODELS:
+        elif type(self._model).__name__ in KERNEL_EXPLAINER_MODELS:
             self._explainer = shap.KernelExplainer(
                 self._model.predict, shap.sample(self._data, 5)
             )
