@@ -679,3 +679,79 @@ class Population:
 
         self.population = list(temp)
         self.offspring = []
+
+    # -------------------
+    # Property methods to override any configuration
+    # -------------------
+
+    @property
+    def selection_type(self):
+        return self._selection_type
+
+    @selection_type.setter
+    def selection_type(self, value):
+        self._selection_type = value
+
+    @property
+    def elitism_size(self):
+        return self._elitism_size
+
+    @elitism_size.setter
+    def elitism_size(self, value):
+        self._elitism_size = value
+
+    @property
+    def tournament_size(self):
+        return self._tournament_size
+
+    @tournament_size.setter
+    def tournament_size(self, value):
+        self._tournament_size = value
+
+    @property
+    def rank_pressure(self):
+        return self._rank_pressure
+
+    @rank_pressure.setter
+    def rank_pressure(self, value):
+        self._rank_pressure = value
+
+    @property
+    def crossover_type(self):
+        return self._crossover_type
+
+    @crossover_type.setter
+    def crossover_type(self, value):
+        self._crossover_type = value
+
+    @property
+    def offspring_size(self):
+        return self._offspring_size
+
+    @offspring_size.setter
+    def offspring_size(self, value):
+        self._offspring_size = value
+
+    @property
+    def blend_expansion(self):
+        return self._blend_expansion
+
+    @blend_expansion.setter
+    def blend_expansion(self, value):
+        self._blend_expansion = value
+
+    @property
+    def mutation_type(self):
+        return self._mutation_type
+
+    @mutation_type.setter
+    def mutation_type(self, value):
+        self._mutation_type = value
+
+    @property
+    def mutation_rate(self):
+        return self._mutation_rate
+
+    @mutation_rate.setter
+    def mutation_rate(self, value):
+        self._mutation_rate = value
