@@ -38,6 +38,7 @@ class Population:
         # mutation params
         self._mutation_type = self.config("mutation_control")
         self._mutation_rate = self.config("mutation_base_rate")
+        self._coefficient_variation = None
 
         if self._mutation_type == "gene-based":
             """
@@ -74,6 +75,7 @@ class Population:
             if self.generation == 1:
                 self.init_population()
                 self.update_population()
+                self._coefficient_variation = self._calculate_coefficient_variation()
 
             while self.generation <= self.max_generations:
                 self.selection()
@@ -585,13 +587,36 @@ class Population:
         """
         Method to implement adaptative mutation operator.
 
-        In this case the mutation rate is evaluated every X generations.
-        If the genetic diversity has decreased then the mutation rate is increased,
-        if the genetic diversity has decreased then the mutation rate is lowered.
-        This should help the algorithm converge faster in some cases but
-        keep some exploration alive in order to avoid local optima.
+        For the calculation of this
         """
-        raise NotImplementedError("Adaptative mutation not implemented")
+        temp_cv = self._calculate_coefficient_variation()
+
+        if temp_cv < self._coefficient_variation:
+            self._mutation_rate *= 1.1
+        elif temp_cv > self._coefficient_variation:
+            self._mutation_rate /= 1.1
+
+        self._coefficient_variation = temp_cv
+        print(self._coefficient_variation)
+
+        if self._mutation_rate > 1:
+            self._mutation_rate = 0.9
+
+        self._base_mutation()
+
+    def _calculate_coefficient_variation(self):
+        """
+        Method to calculate the coefficient of variation of the fitness of the population.
+        """
+        mean_fitness = sum([ind.fitness for ind in self.population]) / len(
+            self.population
+        )
+        std_fitness = sqrt(
+            sum([(ind.fitness - mean_fitness) ** 2 for ind in self.population])
+            / len(self.population)
+        )
+
+        return std_fitness / mean_fitness
 
     # -------------------
     # Update fitness

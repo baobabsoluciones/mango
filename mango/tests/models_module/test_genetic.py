@@ -105,19 +105,19 @@ class TestGeneticAlgorithms(TestCase):
 
         print(population.best.genes)
         solution = [
-            6.3437322695810945,
-            4.671830926216293,
-            -5.432889050092671,
-            -0.016511813099010043,
-            0.04671127285195733,
-            -0.13044957440803043,
-            8.409919769619869,
-            -0.03410400980412424,
-            9.404893843087429,
-            -0.08641639355536353,
+            3.161125877306374,
+            4.448707862009415,
+            -5.3214272979939,
+            12.549091940027397,
+            -0.05577705855964103,
+            -7.68174333609206,
+            -0.08806220610374582,
+            0.06895148861192626,
+            9.292342541432618,
+            -9.842446811680716,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, -0.08037399886926178)
+        self.assertAlmostEqual(population.best.fitness, -0.11965750101533157)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
