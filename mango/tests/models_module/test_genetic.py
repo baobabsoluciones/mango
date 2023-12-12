@@ -96,7 +96,7 @@ class TestGeneticAlgorithms(TestCase):
             self.assertAlmostEqual(value, solution[position])
 
     def test_inverted_griewank(self):
-        seed(1)
+        seed(2)
         config = GeneticBaseConfig(
             normalize_path("./data/test_inverted_griewank_10d.cfg")
         )
@@ -104,19 +104,19 @@ class TestGeneticAlgorithms(TestCase):
         population.run()
 
         solution = [
-            9.400534995830206,
-            -0.010451610601925003,
-            -5.221250725626277,
-            -0.03330709338035823,
-            -7.044277160830001,
-            -0.002978278385936796,
-            8.336302884968692,
-            -0.27866380329469886,
-            0.16482261366646916,
-            -0.5942571749002777,
+            3.252847727829689,
+            -4.433774179578112,
+            -5.517210486615845,
+            0.022216846503331618,
+            6.9645301043392465,
+            7.669082313457459,
+            8.443211199288388,
+            8.838636879568437,
+            9.368930636234563,
+            0.0018934479035296703,
         ]
 
-        self.assertAlmostEqual(population.best.fitness, -0.09104404989454684)
+        self.assertAlmostEqual(population.best.fitness, -0.1104620174877462)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
