@@ -4,7 +4,7 @@ from unittest import TestCase
 import pandas as pd
 
 from mango.data import get_corr_matrix
-
+from datetime import datetime
 
 class CorrelationMatrix(TestCase):
     valid_df1 = None
@@ -21,6 +21,20 @@ class CorrelationMatrix(TestCase):
     expected_result_invalid_df6 = None
     invalid_df7 = None
     expected_result_invalid_df7 = None
+    invalid_df8 = None
+    expected_result_invalid_df8 = None
+    invalid_df9 = None
+    expected_result_invalid_df9 = None
+    invalid_df10 = None
+    expected_result_invalid_df10 = None
+    invalid_df11 = None
+    expected_result_invalid_df11 = None
+    invalid_df12 = None
+    expected_result_invalid_df12 = None
+    invalid_df13 = None
+    expected_result_invalid_df13 = None
+    invalid_df14 = None
+    expected_result_invalid_df14 = None
 
     def setUp(self):
         pass
@@ -122,6 +136,155 @@ class CorrelationMatrix(TestCase):
         cls.invalid_df7 = pd.DataFrame(data_7)
         cls.expected_result_invalid_df7 = dict()
 
+        data_8 = {
+            "fecha": pd.date_range("2023-01-01", "2023-01-14"),
+            "fecha2": pd.date_range("2022-01-01", "2022-01-14"),
+            "value_l1": [random.randint(20, 40) for _ in range(14)],
+            "value_l2": [random.randint(30, 60) for _ in range(14)],
+            "value_l3": [random.randint(1, 15) for _ in range(14)],
+            "value_l4": [random.randint(20, 60) for _ in range(14)],
+            "value_l5": [random.randint(40, 80) for _ in range(14)],
+            "value_l6": [random.randint(15, 60) for _ in range(14)],
+            "value_l7": [random.randint(20, 50) for _ in range(14)],
+        }
+        cls.invalid_df8 = pd.DataFrame(data_8)
+        cls.expected_result_invalid_df8 = dict()
+
+        data_9 = {
+            "fecha": [
+                "2023-01-01",
+                "2023-01-02",
+                "2023-01-03",
+                "2023-01-03",
+                "2023-01-04",
+                "2023-01-05",
+                "2023-01-06",
+                "2023-01-07",
+                "2023-01-08",
+                "2023-01-09",
+                "2023-01-10",
+                "2023-01-11",
+                "2023-01-12",
+                "2023-01-13",
+            ],
+            "value_l1": [random.randint(20, 40) for _ in range(14)],
+            "value_l2": [random.randint(30, 60) for _ in range(14)],
+            "value_l3": [random.randint(1, 15) for _ in range(14)],
+            "value_l4": [random.randint(20, 60) for _ in range(14)],
+            "value_l5": [random.randint(40, 80) for _ in range(14)],
+            "value_l6": [random.randint(15, 60) for _ in range(14)],
+            "value_l7": [random.randint(20, 50) for _ in range(14)],
+        }
+        data_9 = pd.DataFrame(data_9)
+        data_9['fecha'] = pd.to_datetime(data_9['fecha'])
+        cls.invalid_df9 = data_9.set_index('fecha')
+        cls.expected_result_invalid_df9 = dict()
+
+        data_10 = {
+            "fecha": [
+                "2023-01-01",
+                "2023-01-02",
+                "2023-01-03",
+                "2023-01-03",
+                "2023-01-04",
+                "2023-01-05",
+                "2023-01-06",
+                "2023-01-07",
+                "2023-01-08",
+                "2023-01-09",
+                "2023-01-10",
+                "2023-01-11",
+                "2023-01-12",
+                "2023-01-13",
+            ],
+            "value_l1": [random.randint(20, 40) for _ in range(14)],
+            "value_l2": [random.randint(30, 60) for _ in range(14)],
+            "value_l3": [random.randint(1, 15) for _ in range(14)],
+            "value_l4": [random.randint(20, 60) for _ in range(14)],
+            "value_l5": [random.randint(40, 80) for _ in range(14)],
+            "value_l6": [random.randint(15, 60) for _ in range(14)],
+            "value_l7": [random.randint(20, 50) for _ in range(14)],
+            "var_str": ["a","b","c","c","a","a","b","c","c","a","b","c","c","a"]
+        }
+        data_10 = pd.DataFrame(data_10)
+        data_10['fecha'] = pd.to_datetime(data_10['fecha'])
+        cls.invalid_df10 = data_10.set_index('fecha')
+        cls.expected_result_invalid_df10 = dict()
+
+        data_11 = {
+            "fecha": pd.date_range("2023-01-01", "2023-01-14"),
+            "value_l1": [random.randint(20, 40) for _ in range(14)],
+            "value_l2": [random.randint(30, 60) for _ in range(14)],
+            "value_l3": [random.randint(1, 15) for _ in range(14)],
+            "value_l4": [random.randint(20, 60) for _ in range(14)],
+            "value_l5": [random.randint(40, 80) for _ in range(14)],
+            "value_l6": [random.randint(15, 60) for _ in range(14)],
+            "value_l7": [random.randint(20, 50) for _ in range(14)],
+            "var_str": ["a", "b", "c", "c", "a", "a", "b", "c", "c", "a", "b", "c", "c", "a"],
+        }
+        cls.invalid_df11 = pd.DataFrame(data_11).set_index("fecha")
+        cls.expected_result_invalid_df11 = dict()
+
+        data_12 = {
+            "fecha": pd.date_range("2023-01-01", "2023-01-14"),
+            "value_l1": [random.randint(20, 40) for _ in range(14)],
+            "value_l2": [random.randint(30, 60) for _ in range(14)],
+            "value_l3": [random.randint(1, 15) for _ in range(14)],
+            "value_l4": [random.randint(20, 60) for _ in range(14)],
+            "value_l5": [random.randint(40, 80) for _ in range(14)],
+            "value_l6": [random.randint(15, 60) for _ in range(14)],
+            "value_l7": [random.randint(20, 50) for _ in range(14)],
+        }
+        cls.invalid_df12 = pd.DataFrame(data_12)
+        cls.expected_result_invalid_df12 = dict()
+
+        data_13 = {
+            "fecha": [
+                "2023-01-01",
+                "2023-01-02",
+                "2023-01-03",
+                "2023-01-03",
+                "2023-01-04",
+                "2023-01-05",
+                "2023-01-06",
+                "2023-01-07",
+                "2023-01-08",
+                "2023-01-09",
+                "2023-01-10",
+                "2023-01-11",
+                "2023-01-12",
+                "2023-01-13",
+            ],
+            "value_l1": [random.randint(20, 40) for _ in range(14)],
+            "value_l2": [random.randint(30, 60) for _ in range(14)],
+            "value_l3": [random.randint(1, 15) for _ in range(14)],
+            "value_l4": [random.randint(20, 60) for _ in range(14)],
+            "value_l5": [random.randint(40, 80) for _ in range(14)],
+            "value_l6": [random.randint(15, 60) for _ in range(14)],
+            "value_l7": [random.randint(20, 50) for _ in range(14)],
+            "var_str": ["a", "b", "c", "c", "a", "a", "b", "c", "c", "a", "b", "c", "c", "a"],
+        }
+        data_13 = pd.DataFrame(data_13)
+        data_13['fecha'] = pd.to_datetime(data_13['fecha'])
+        cls.invalid_df13 = data_13
+        cls.expected_result_invalid_df13 = dict()
+
+        data_14 = {
+            "fecha": pd.date_range("2023-01-01", "2023-01-14"),
+            "value_l1": [random.randint(20, 40) for _ in range(14)],
+            "value_l2": [random.randint(30, 60) for _ in range(14)],
+            "value_l3": [random.randint(1, 15) for _ in range(14)],
+            "value_l4": [random.randint(20, 60) for _ in range(14)],
+            "value_l5": [random.randint(40, 80) for _ in range(14)],
+            "value_l6": [random.randint(15, 60) for _ in range(14)],
+            "value_l7": [random.randint(20, 50) for _ in range(14)],
+            "var_str": ["a", "b", "c", "c", "a", "a", "b", "c", "c", "a", "b", "c", "c", "a"],
+        }
+        data_14 = pd.DataFrame(data_14)
+        data_14['fecha'] = pd.to_datetime(data_14['fecha'])
+        cls.invalid_df14 = data_14
+        cls.expected_result_invalid_df14 = dict()
+
     def test_get_corr_matrix(self):
         # Call function get_corr_matrix with all the parameters: df, date_column, years_corr, n_top
         top_corr1 = get_corr_matrix(
@@ -135,7 +298,7 @@ class CorrelationMatrix(TestCase):
         )
 
         top_corr3 = get_corr_matrix(
-            self.valid_df3, date_col="fecha", years_corr=[2023], n_top=5
+            self.valid_df3, date_col="fecha", years_corr=[2023], n_top=5, subset=["value_l1","value_l2","value_l3","value_l4","value_l5"]
         )
         self.assertRaises(
             ValueError,
@@ -164,5 +327,55 @@ class CorrelationMatrix(TestCase):
             ValueError,
             get_corr_matrix,
             self.invalid_df7,
+            n_top=5,
+        )
+
+        # top_corr8 = get_corr_matrix(self.invalid_df8, n_top=5)
+        self.assertRaises(
+            ValueError,
+            get_corr_matrix,
+            self.invalid_df8,
+            n_top=5,
+        )
+
+        # top_corr9 = get_corr_matrix(self.invalid_df9, n_top=5)
+        self.assertRaises(
+            ValueError,
+            get_corr_matrix,
+            self.invalid_df9,
+            n_top=5,
+        )
+
+        # top_corr10 = get_corr_matrix(self.invalid_df10, n_top=5)
+        self.assertRaises(
+            ValueError,
+            get_corr_matrix,
+            self.invalid_df10,
+            n_top=5,
+        )
+
+        # top_corr11 = get_corr_matrix(self.invalid_df11, n_top=5)
+        self.assertRaises(
+            ValueError,
+            get_corr_matrix,
+            self.invalid_df11,
+            n_top=5,
+        )
+
+        top_corr12 = get_corr_matrix(self.invalid_df12, n_top=5)
+
+        # top_corr13 = get_corr_matrix(self.invalid_df13, n_top=5)
+        self.assertRaises(
+            ValueError,
+            get_corr_matrix,
+            self.invalid_df13,
+            n_top=5,
+        )
+
+        # top_corr14 = get_corr_matrix(self.invalid_df14, n_top=5)
+        self.assertRaises(
+            ValueError,
+            get_corr_matrix,
+            self.invalid_df14,
             n_top=5,
         )

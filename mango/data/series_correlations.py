@@ -92,7 +92,7 @@ def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool):
                     "ventas_loc1": [30, 50, 10, 25, 32, 45],
                     "ventas_loc2": [60, 31, 46, 43, 60, 20],
                 }
-                example = pd.DataFrame(data)
+                example = pd.DataFrame(data).set_index("fecha")
                 raise ValueError(
                     f"Dataframe must be pivot:{print(example.to_markdown())}"
                 )
@@ -121,7 +121,7 @@ def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool):
                     "ventas_loc1": [30, 50, 10, 25, 32, 45],
                     "ventas_loc2": [60, 31, 46, 43, 60, 20],
                 }
-                example = pd.DataFrame(data)
+                example = pd.DataFrame(data).set_index("fecha")
                 raise ValueError(
                     f"Dataframe must be pivot:{print(example.to_markdown())}"
                 )
