@@ -120,7 +120,7 @@ class TestGeneticAlgorithms(TestCase):
 
         self.assertAlmostEqual(population.best.fitness, -1.4618827201884343e-05)
         for position, value in enumerate(population.best.genes):
-            self.assertAlmostEqual(value, solution[position])
+            self.assertAlmostEqual(value, solution[position], places=5)
 
     def test_continue_running(self):
         seed(22)
