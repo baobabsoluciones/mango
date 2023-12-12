@@ -3,8 +3,9 @@ from unittest import TestCase
 
 import pandas as pd
 
-from mango.data import get_corr_matrix
+from mango.processing import get_corr_matrix
 from datetime import datetime
+
 
 class CorrelationMatrix(TestCase):
     valid_df1 = None
@@ -176,8 +177,8 @@ class CorrelationMatrix(TestCase):
             "value_l7": [random.randint(20, 50) for _ in range(14)],
         }
         data_9 = pd.DataFrame(data_9)
-        data_9['fecha'] = pd.to_datetime(data_9['fecha'])
-        cls.invalid_df9 = data_9.set_index('fecha')
+        data_9["fecha"] = pd.to_datetime(data_9["fecha"])
+        cls.invalid_df9 = data_9.set_index("fecha")
         cls.expected_result_invalid_df9 = dict()
 
         data_10 = {
@@ -204,11 +205,26 @@ class CorrelationMatrix(TestCase):
             "value_l5": [random.randint(40, 80) for _ in range(14)],
             "value_l6": [random.randint(15, 60) for _ in range(14)],
             "value_l7": [random.randint(20, 50) for _ in range(14)],
-            "var_str": ["a","b","c","c","a","a","b","c","c","a","b","c","c","a"]
+            "var_str": [
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+            ],
         }
         data_10 = pd.DataFrame(data_10)
-        data_10['fecha'] = pd.to_datetime(data_10['fecha'])
-        cls.invalid_df10 = data_10.set_index('fecha')
+        data_10["fecha"] = pd.to_datetime(data_10["fecha"])
+        cls.invalid_df10 = data_10.set_index("fecha")
         cls.expected_result_invalid_df10 = dict()
 
         data_11 = {
@@ -220,7 +236,22 @@ class CorrelationMatrix(TestCase):
             "value_l5": [random.randint(40, 80) for _ in range(14)],
             "value_l6": [random.randint(15, 60) for _ in range(14)],
             "value_l7": [random.randint(20, 50) for _ in range(14)],
-            "var_str": ["a", "b", "c", "c", "a", "a", "b", "c", "c", "a", "b", "c", "c", "a"],
+            "var_str": [
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+            ],
         }
         cls.invalid_df11 = pd.DataFrame(data_11).set_index("fecha")
         cls.expected_result_invalid_df11 = dict()
@@ -262,10 +293,25 @@ class CorrelationMatrix(TestCase):
             "value_l5": [random.randint(40, 80) for _ in range(14)],
             "value_l6": [random.randint(15, 60) for _ in range(14)],
             "value_l7": [random.randint(20, 50) for _ in range(14)],
-            "var_str": ["a", "b", "c", "c", "a", "a", "b", "c", "c", "a", "b", "c", "c", "a"],
+            "var_str": [
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+            ],
         }
         data_13 = pd.DataFrame(data_13)
-        data_13['fecha'] = pd.to_datetime(data_13['fecha'])
+        data_13["fecha"] = pd.to_datetime(data_13["fecha"])
         cls.invalid_df13 = data_13
         cls.expected_result_invalid_df13 = dict()
 
@@ -278,28 +324,82 @@ class CorrelationMatrix(TestCase):
             "value_l5": [random.randint(40, 80) for _ in range(14)],
             "value_l6": [random.randint(15, 60) for _ in range(14)],
             "value_l7": [random.randint(20, 50) for _ in range(14)],
-            "var_str": ["a", "b", "c", "c", "a", "a", "b", "c", "c", "a", "b", "c", "c", "a"],
+            "var_str": [
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+                "b",
+                "c",
+                "c",
+                "a",
+            ],
         }
         data_14 = pd.DataFrame(data_14)
-        data_14['fecha'] = pd.to_datetime(data_14['fecha'])
+        data_14["fecha"] = pd.to_datetime(data_14["fecha"])
         cls.invalid_df14 = data_14
         cls.expected_result_invalid_df14 = dict()
 
     def test_get_corr_matrix(self):
         # Call function get_corr_matrix with all the parameters: df, date_column, years_corr, n_top
-        top_corr1 = get_corr_matrix(
-            self.valid_df1, date_col="fecha", years_corr=[2023], n_top=5
-        )
+        # top_corr1 = get_corr_matrix(
+        #     self.valid_df1, date_col="fecha", years_corr=[2023], n_top=5
+        # )
         # self.assertEqual(top_corr1,self.expected_result_valid_df1)
         # self.assertRaises(ValueError, get_corr_matrix,self.valid_df1,date_col="fecha", years_corr=[2023], n_top=5)
 
-        top_corr2 = get_corr_matrix(
-            self.valid_df2, date_col="fecha", years_corr=[2023], n_top=5
+        # top_corr2 = get_corr_matrix(
+        #     self.valid_df2, date_col="fecha", years_corr=[2023], n_top=5
+        # )
+
+        top_corr3_ntop = get_corr_matrix(
+            self.valid_df3,
+            date_col="fecha",
+            years_corr=[2023],
+            n_top=5,
+            subset=["value_l1", "value_l2", "value_l3", "value_l4", "value_l5"],
+        )
+
+        top_corr3_threshold = get_corr_matrix(
+            self.valid_df3,
+            date_col="fecha",
+            years_corr=[2023],
+            # subset=["value_l1", "value_l2", "value_l3", "value_l4", "value_l5"],
+            threshold=0.2,
         )
 
         top_corr3 = get_corr_matrix(
-            self.valid_df3, date_col="fecha", years_corr=[2023], n_top=5, subset=["value_l1","value_l2","value_l3","value_l4","value_l5"]
+            self.valid_df3,
+            date_col="fecha",
+            years_corr=[2023],
+            # subset=["value_l1", "value_l2", "value_l3", "value_l4", "value_l5"],
         )
+
+        top_corr3_big_ntop = get_corr_matrix(
+            self.valid_df3,
+            date_col="fecha",
+            years_corr=[2023],
+            n_top=9,
+            # subset=["value_l1", "value_l2", "value_l3", "value_l4", "value_l5"],
+        )
+
+        top_corr3_big_threshold = get_corr_matrix(
+            self.valid_df3,
+            date_col="fecha",
+            years_corr=[2023],
+            # subset=["value_l1", "value_l2", "value_l3", "value_l4", "value_l5"],
+            threshold=0.99,
+        )
+
+        # top_corr4 = get_corr_matrix(
+        #     self.invalid_df4, date_col="fecha", years_corr=[2023], n_top=5
+        # )
         self.assertRaises(
             ValueError,
             get_corr_matrix,
@@ -308,9 +408,6 @@ class CorrelationMatrix(TestCase):
             years_corr=[2023],
             n_top=5,
         )
-        # top_corr4 = get_corr_matrix(
-        #     self.invalid_df4, date_col="fecha", years_corr=[2023], n_top=5
-        # )
 
         top_corr5 = get_corr_matrix(self.valid_df5, n_top=5)
 

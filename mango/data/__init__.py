@@ -3,7 +3,6 @@ import os
 import pandas
 
 from .calendar_data import get_calendar
-from .series_correlations import get_corr_matrix
 
 
 def get_ts_dataset():

@@ -1,5 +1,8 @@
+import logging
+import warnings
+
 import numpy as np
-from typing import List
+from typing import List, Dict
 
 try:
     import pandas as pd
@@ -185,7 +188,6 @@ def create_recurrent_dataset(
         max_lag = max(lags)
 
     for i in range(max_lag, data.shape[0] - look_back):
-
         a = x_in[i : (i + look_back), :]
 
         if include_output_lags:
@@ -210,3 +212,218 @@ def create_recurrent_dataset(
             y.append(y_in[i + look_back])
 
     return np.array(x), np.array(y).reshape((data.shape[0] - look_back - max_lag,))
+
+
+def get_corr_matrix(
+    df: pd.DataFrame,
+    n_top: int = None,
+    threshold: int = None,
+    date_col: str = None,
+    years_corr: List = None,
+    subset: List = None,
+):
+    """
+    The get_corr_matrix function takes a dataframe and returns the correlation matrix of the columns.
+
+    :param df: pd.DataFrame: Pass in the dataframe that we want to get the correlation matrix for
+    :param n_top: int: Select the top n correlated variables
+    :param threshold: int: Filter the correlation matrix by a threshold value
+    :param date_col: str: Specify the name of the column that contains dates
+    :param years_corr: List: Specify the years for which we want to calculate the correlation matrix
+    :param subset: List: Specify a subset of columns to be used in the correlation matrix
+    :param : Specify the number of top correlated variables to be returned
+    :return: A correlation matrix of the dataframe
+    :doc-author: baobab soluciones
+    """
+    if not date_col:
+        date_col, as_index = get_date_col_candidate(df)
+    else:
+        as_index = False
+    raise_if_inconsistency(df, date_col, as_index)  # Raises error if problems
+    if not as_index:
+        df = df.set_index(date_col)
+    return get_corr_matrix_aux(df, years_corr, n_top, threshold, subset)
+
+
+def get_date_col_candidate(df: pd.DataFrame):
+    """
+    The get_date_col_candidate function takes a dataframe as an input and returns the name of the column that is
+    a datetime type. If there are no columns with datetime types, it will return None. It also returns a boolean value
+    that indicates whether or not the index is a datetime type.
+
+    :param df: pd.DataFrame: Pass the dataframe to the function
+    :return: A list of columns that have datetime dtypes
+    :doc-author: baobab soluciones
+    """
+    date_column = [
+        column
+        for column in df.columns
+        if pd.api.types.is_datetime64_any_dtype(df[column])
+    ]
+    if len(date_column) == 0:
+        if isinstance(df.index, pd.DatetimeIndex):
+            as_index = True
+            date_column = None
+            return date_column, as_index
+        else:
+            as_index = False
+            date_column = None
+            return date_column, as_index
+    else:
+        as_index = False
+    return date_column, as_index
+
+
+def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool):
+    """
+    The raise_if_inconsistency function raises a ValueError if the input dataframe is not in the correct format.
+
+    :param df: pd.DataFrame: Pass the dataframe to the function
+    :param date_col: str: Specify the name of the column that contains the date
+    :param as_index: bool: Check if the dataframe is pivoted or not
+    :return: A valueerror if the dataframe is not in the correct format
+    :doc-author: baobab soluciones
+    """
+    if date_col is None and as_index is False:
+        raise ValueError("Dataframe must contain one datetime column")
+    elif date_col is None and as_index:
+        dupli = df.index.duplicated().sum()
+        if dupli > 0:
+            columns_num = sum(
+                pd.api.types.is_numeric_dtype(df[col]) for col in df.columns
+            )
+            if columns_num == len(df.columns):
+                raise ValueError("There are duplicates in the index")
+            else:
+                data = {
+                    "fecha": pd.date_range("2023-01-01", "2023-01-06"),
+                    "ventas_loc1": [30, 50, 10, 25, 32, 45],
+                    "ventas_loc2": [60, 31, 46, 43, 60, 20],
+                }
+                example = pd.DataFrame(data).set_index("fecha")
+                raise ValueError(
+                    f"Dataframe must be pivot:{print(example.to_markdown())}"
+                )
+        else:
+            columns_num = sum(
+                pd.api.types.is_numeric_dtype(df[col]) for col in df.columns
+            )
+
+            if columns_num != len(df.columns):
+                raise ValueError("Not all columns in Dataframe are numerics")
+    elif type(date_col) == list and len(date_col) > 1:
+        raise ValueError("Dataframe must contain one datetime column")
+    elif type(date_col) == list or type(date_col) == str:
+        if type(date_col) == list:
+            date_col = date_col[0]
+        dupli = df[date_col].duplicated().sum()
+        if dupli > 0:
+            columns_num = sum(
+                pd.api.types.is_numeric_dtype(df[col]) for col in df.columns
+            )
+            if columns_num == len(df.columns) - 1:
+                raise ValueError("There are duplicates in the index")
+            else:
+                data = {
+                    "fecha": pd.date_range("2023-01-01", "2023-01-06"),
+                    "ventas_loc1": [30, 50, 10, 25, 32, 45],
+                    "ventas_loc2": [60, 31, 46, 43, 60, 20],
+                }
+                example = pd.DataFrame(data).set_index("fecha")
+                raise ValueError(
+                    f"Dataframe must be pivot:{print(example.to_markdown())}"
+                )
+        else:
+            columns_num = sum(
+                pd.api.types.is_numeric_dtype(df[col]) for col in df.columns
+            )
+
+            if columns_num != len(df.columns) - 1:
+                raise ValueError("Not all columns in Dataframe are numerics")
+
+
+def get_corr_matrix_aux(
+    df: pd.DataFrame,
+    years_corr,
+    n_top,
+    threshold,
+    subset: List = None,
+) -> Dict[str]:
+    """
+    The get_corr_matrix_aux function computes the correlation matrix of a dataframe and returns
+    a dictionary with the top n correlations for each time series.
+    The function can also filter by years, subset and threshold.
+
+    :param df: pd.DataFrame: Pass the dataframe to the function
+    :param years_corr: Filter the dataframe by year
+    :param n_top: Get the top n correlations for each time series
+    :param threshold: Filter the correlation matrix by a threshold value
+    :param subset: List: Specify a subset of time series to compare the correlations with
+    :param : Filter the dataframe by years
+    :return: A dictionary with the names of the time series as keys and a list of tuples (name, correlation) as values
+    :doc-author: baobab soluciones
+    """
+    if n_top is not None and n_top >= df.shape[1]:
+        warnings.warn(
+            "Number of n_top is bigger than number of columns of the dataframe"
+        )
+
+    if years_corr is not None:
+        # Filter by years
+        df = df[df.index.year.isin(years_corr)]
+
+    if subset is None:
+        logging.debug(
+            f"Getting {n_top} top correlations for each time series in the dataframe"
+        )
+    else:
+        logging.debug(
+            f"Getting {n_top} top correlations for each time series in the dataframe with respect to the subset"
+        )
+
+    # Compute correlation matrix
+    correlation_matrix = df.corr(method="pearson")
+    # Make sure the correlation with itself is not the highest
+    np.fill_diagonal(correlation_matrix.values, -100)
+
+    # Filter by subset
+    if subset:
+        # Keep only as columns the time series in the subset
+        correlation_matrix = correlation_matrix[
+            correlation_matrix.columns.intersection(subset)
+        ]
+        # Drop rows in the subset to avoid comparing with the subset time series
+        correlation_matrix = correlation_matrix.drop(index=subset, errors="ignore")
+
+    # Get top n correlations for each time series
+    top_correlations = {}
+    if threshold is not None:
+        for column in correlation_matrix.columns:
+            name_correlations = correlation_matrix[column][
+                correlation_matrix[column] > threshold
+            ]
+            if name_correlations.empty:
+                warnings.warn(
+                    "There are no rows that have a value greater than threshold, so it returns all rows"
+                )
+                top_correlations[column] = dict(correlation_matrix[column])
+
+            else:
+                name_correlations = dict(name_correlations)
+                top_correlations[column] = name_correlations
+
+    elif n_top is not None:
+        for column in correlation_matrix.columns:
+            name_correlations = dict(correlation_matrix[column].nlargest(n_top))
+            top_correlations[column] = {
+                index: value for index, value in name_correlations.items()
+            }
+    else:
+        for column in correlation_matrix.columns:
+            name_correlations = dict(correlation_matrix[column])
+            top_correlations[column] = name_correlations
+        warnings.warn(
+            "n_top and threshold are None so top_correlations return all the correlations"
+        )
+
+    return top_correlations
