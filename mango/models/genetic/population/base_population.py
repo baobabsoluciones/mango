@@ -755,3 +755,11 @@ class Population:
     @mutation_rate.setter
     def mutation_rate(self, value):
         self._mutation_rate = value
+
+    @property
+    def replacement_type(self):
+        return self._replacement_type
+
+    @replacement_type.setter
+    def replacement_type(self, value):
+        self._replacement_type = value
