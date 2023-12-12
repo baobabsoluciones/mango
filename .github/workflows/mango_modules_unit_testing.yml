@@ -152,7 +152,7 @@ jobs:
       with:
         flags: processing-tests
     - name: Run shap testing
-      if: steps.filter.outputs.shap == 'true'
+      if: steps.filter.outputs.shap_analysis == 'true'
       run: |
           coverage run --source=./mango/shap_analysis/ -m unittest discover -s mango/tests/shap_module
           coverage report -m
