@@ -1,7 +1,8 @@
-from math import exp, sqrt, cos, pi, e
+from math import exp, sqrt, pi, e
+import numpy as np
 
 
-def ackley(x: list) -> float:
+def ackley(x: np.ndarray) -> float:
     """
     General Ackley function.
 
@@ -12,23 +13,23 @@ def ackley(x: list) -> float:
 
     The global minimum point of the function is: f(x) = 0, at x = (0, ..., 0)
 
-    :param list x: list of floats. The values are evaluated in the range [-32.768, 32.768]
+    :param :class:`np.ndarray` x: numpy array of floats. The values are evaluated in the range [-32.768, 32.768]
     :return: the value of the function
     :rtype: float
     """
     return (
-        -20 * exp(-0.2 * sqrt(1 / len(x) * sum([i**2 for i in x])))
-        - exp(1 / len(x) * sum([cos(2 * pi * i) for i in x]))
+        -20 * exp(-0.2 * sqrt(1 / len(x) * np.sum(np.square(x))))
+        - exp(1 / len(x) * np.sum(np.cos(2 * pi * x)))
         + e
         + 20
     )
 
 
-def inverted_ackley(x: list) -> float:
+def inverted_ackley(x: np.ndarray) -> float:
     """
     Inverted Ackley function.
 
-    :param list x: list of floats
+    :param :class:`np.ndarray` x: numpy array of floats
     :return: the value of the function
     :rtype: float
     """

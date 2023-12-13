@@ -1,32 +1,65 @@
 from math import sin, pi
 
+import numpy as np
 
-def levy(x: list) -> float:
+
+def levy(x: np.array) -> float:
     """
     Levy function.
 
-    :param list x: list of floats. Each value is usually between -10 and 10.
+    The global minima is at x = [1, 1, 1, ..., 1] and the function value is 0.
+
+    :param :class:`np.array` x: array of floats. Each value is usually between -10 and 10.
     :return: the value of the function
     :rtype: float
     """
-    w = [1 + (i - 1) / 4 for i in x]
+    w = 1 + (x - 1) / 4
 
     term1 = (sin(pi * w[0])) ** 2
+    term2 = np.sum((w[:-1] - 1) ** 2 * (1 + 10 * (np.sin(pi * w[:-1] + 1)) ** 2))
     term3 = (w[-1] - 1) ** 2 * (1 + (sin(2 * pi * w[-1])) ** 2)
-
-    termi = [(wi - 1) ** 2 * (1 + 10 * (sin(pi * wi + 1)) ** 2) for wi in w[:-1]]
-
-    term2 = sum(termi)
 
     return term1 + term2 + term3
 
 
-def inverted_levy(x: list) -> float:
+def inverted_levy(x: np.array) -> float:
     """
     Inverted Levy function.
 
-    :param list x: list of floats. Each value is usually between -10 and 10.
+    :param :class:`np.array` x: array of floats. Each value is usually between -10 and 10.
     :return: the value of the function
     :rtype: float
     """
     return -levy(x)
+
+
+def levy_function_no13(x: list) -> float:
+    """
+    Levy function N. 13.
+
+    The global minima is at x = [1, 1] and the function value is 0.
+
+    :param list x: list of floats. Each value is usually between -10 and 10.
+    :return: the value of the function
+    :rtype: float
+    :doc-author: baobab soluciones
+    """
+    return (
+        sin(3 * pi * x[0]) ** 2
+        + (x[0] - 1) ** 2 * (1 + sin(3 * pi * x[1]) ** 2)
+        + (x[1] - 1) ** 2 * (1 + sin(2 * pi * x[1]) ** 2)
+    )
+
+
+def inverted_levy_no13(x: list) -> float:
+    """
+    Inverted Levy function N. 13.
+
+    The global minima is at x = [1, 1] and the function value is 0.
+
+    :param list x: list of floats. Each value is usually between -10 and 10.
+    :return: the value of the function
+    :rtype: float
+    :doc-author: baobab soluciones
+    """
+    return -levy_function_no13(x)

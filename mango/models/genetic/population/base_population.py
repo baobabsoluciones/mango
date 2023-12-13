@@ -2,6 +2,8 @@ from collections import Counter
 from math import sqrt
 from random import choices, choice, sample, randint, uniform, gauss
 
+import numpy as np
+
 from mango.models.genetic.individual import Individual
 from mango.models.genetic.shared.exceptions import GeneticDiversity, ConfigurationError
 
@@ -15,9 +17,9 @@ class Population:
         self.max_generations = self.config("max_generations")
         self.population_size = self.config("population_size")
         self._optimization_objective = self.config("optimization_objective")
-        self.population = []
+        self.population = np.array([], dtype=Individual)
         self.selection_probs = []
-        self.offspring = []
+        self.offspring = np.array([], dtype=Individual)
         self.best = None
         self._count_individuals = 0
         self._gene_length = self.config("gene_length")
@@ -32,7 +34,7 @@ class Population:
         # crossover params
         self._crossover_type = self.config("crossover")
         self._offspring_size = self.config("offspring_size") or self.population_size
-        self._blend_expansion = self.config("generalized_expansion")
+        self._blend_expansion = self.config("blend_expansion")
         self._morphology_parents = self.config("morphology_parents")
 
         # mutation params
@@ -106,10 +108,13 @@ class Population:
         """
         Method to initialize the population in the Genetic Algorithm
         """
-        self.population = [
-            Individual.create_random_individual(i + 1, self.config)
-            for i in range(self.population_size)
-        ]
+        self.population = np.array(
+            [
+                Individual.create_random_individual(i + 1, self.config)
+                for i in range(self.population_size)
+            ],
+            dtype=Individual,
+        )
 
         self._count_individuals = len(self.population)
 
@@ -179,7 +184,7 @@ class Population:
         """
         Method to make sure that all individuals in the population have a fitness value.
         """
-        self._update_fitness(self.offspring + self.population)
+        self._update_fitness(np.concatenate((self.population, self.offspring)))
 
     def replace(self):
         """
@@ -289,16 +294,16 @@ class Population:
         """
         Method to perform order selection
         """
-        if self._optimization_objective == "max":
-            temp = sorted(self.population, key=lambda x: x.fitness)
-        else:
-            temp = sorted(self.population, key=lambda x: x.fitness, reverse=True)
+        temp = np.argsort(
+            np.array([self.sort_function(obj) for obj in self.population])
+        )
 
-        self.selection_probs = [
-            (temp.index(ind) + 1)
-            / (len(self.population) * (len(self.population) + 1) / 2)
-            for ind in self.population
-        ]
+        if self._optimization_objective == "min":
+            temp = self.population_size - 1 - temp
+
+        self.selection_probs = (temp + 1) / (
+            len(self.population) * (len(self.population) + 1) / 2
+        )
 
     def _roulette_selection(self):
         """
@@ -351,19 +356,9 @@ class Population:
         :rtype: tuple
         """
 
-        p1 = choices(self.population, weights=self.selection_probs)[0]
-        parents = [p1 for _ in range(n)]
-
-        for i in range(1, n):
-            k = 0
-            pi = parents[i]
-            while pi in parents:
-                pi = choices(self.population, weights=self.selection_probs)[0]
-                k += 1
-                if k >= 2 * self.population_size:
-                    raise GeneticDiversity
-
-            parents[i] = pi
+        parents = np.random.choice(
+            self.population, size=n, replace=False, p=self.selection_probs
+        )
 
         return tuple(parents)
 
@@ -374,9 +369,13 @@ class Population:
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
-            genes_offspring = [choice([g1, g2]) for g1, g2 in zip(p1.genes, p2.genes)]
+            random_indices = np.random.choice([0, 1], size=self._gene_length)
+            offspring_1 = np.where(random_indices, p1.genes, p2.genes)
+            random_indices = 1 - random_indices
+            offspring_2 = np.where(random_indices, p1.genes, p2.genes)
 
-            self._add_offspring(genes_offspring, p1, p2)
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
 
     def _flat_crossover(self):
         """
@@ -387,34 +386,26 @@ class Population:
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
-            max_c = [max(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
-            min_c = [min(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
+            max_c = np.maximum(p1.genes, p2.genes)
+            min_c = np.minimum(p1.genes, p2.genes)
 
-            genes_offspring_1 = [uniform(min_c[i], max_c[i]) for i in range(len(max_c))]
-            genes_offspring_2 = [uniform(min_c[i], max_c[i]) for i in range(len(max_c))]
+            offspring_1 = np.random.uniform(min_c, max_c)
+            offspring_2 = np.random.uniform(min_c, max_c)
 
-            self._add_offspring(genes_offspring_1, p1, p2)
-            self._add_offspring(genes_offspring_2, p1, p2)
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
 
     def _linear_crossover(self):
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
-            genes_offspring_1 = [
-                (p1.genes[i] + p2.genes[i]) / 2 for i in range(len(p1.genes))
-            ]
+            offspring_1 = (p1.genes + p2.genes) / 2
+            offspring_2 = 1.5 * p1.genes - 0.5 * p2.genes
+            offspring_3 = -0.5 * p1.genes + 1.5 * p2.genes
 
-            genes_offspring_2 = [
-                1.5 * p1.genes[i] - 0.5 * p2.genes[i] for i in range(len(p1.genes))
-            ]
-
-            genes_offspring_3 = [
-                -0.5 * p1.genes[i] + 1.5 * p2.genes[i] for i in range(len(p1.genes))
-            ]
-
-            self._add_offspring(genes_offspring_1, p1, p2)
-            self._add_offspring(genes_offspring_2, p1, p2)
-            self._add_offspring(genes_offspring_3, p1, p2)
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
+            self._add_offspring(offspring_3, p1, p2)
 
     def _blend_crossover(self):
         """
@@ -429,32 +420,30 @@ class Population:
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
-            max_c = [max(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
-            min_c = [min(g1, g2) for g1, g2 in zip(p1.genes, p2.genes)]
-            interval = [max_c[i] - min_c[i] for i in range(len(max_c))]
+            max_c = np.maximum(p1.genes, p2.genes)
+            min_c = np.minimum(p1.genes, p2.genes)
+            interval = max_c - min_c
 
-            genes_offspring_1 = [
-                uniform(
-                    min_c[i] - interval[i] * self._blend_expansion,
-                    max_c[i] + interval[i] * self._blend_expansion,
-                )
-                for i in range(len(max_c))
-            ]
-            genes_offspring_2 = [
-                interval[i] - genes_offspring_1[i] for i in range(len(max_c))
-            ]
+            offspring_1 = np.random.uniform(
+                min_c - interval * self._blend_expansion,
+                max_c + interval * self._blend_expansion,
+            )
 
-            self._add_offspring(genes_offspring_1, p1, p2)
-            self._add_offspring(genes_offspring_2, p1, p2)
+            offspring_2 = interval - offspring_1
+
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
 
     def _one_split_crossover(self):
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
             split = randint(1, self._gene_length - 2)
-            genes_offspring = p1.genes[:split] + p2.genes[split:]
+            offspring_1 = np.concatenate((p1.genes[:split], p2.genes[split:]))
+            offspring_2 = np.concatenate((p2.genes[:split], p1.genes[split:]))
 
-            self._add_offspring(genes_offspring, p1, p2)
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
 
     def _two_split_crossover(self):
         while len(self.offspring) < len(self.population):
@@ -467,11 +456,15 @@ class Population:
 
             split_1, split_2 = sorted([split_1, split_2])
 
-            genes_offspring = (
-                p1.genes[:split_1] + p2.genes[split_1:split_2] + p1.genes[split_2:]
+            offspring_1 = np.concatenate(
+                (p1.genes[:split_1], p2.genes[split_1:split_2], p1.genes[split_2:])
+            )
+            offspring_2 = np.concatenate(
+                (p2.genes[:split_1], p1.genes[split_1:split_2], p2.genes[split_2:])
             )
 
-            self._add_offspring(genes_offspring, p1, p2)
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
 
     def _gaussian_crossover(self):
         """
@@ -480,6 +473,8 @@ class Population:
 
         This method is only implemented for real encoding.
         """
+
+        # TODO: review bad results for huge genomes
         while len(self.offspring) < len(self.population):
             # First we select three parents. The first two are going to be the primary search space,
             # while the third is going to create the secondary search space with the midpoint between parents 1 and 2
@@ -491,66 +486,36 @@ class Population:
             sigma_xi = 1 / 4
 
             # We calculate the distance vector, the unit distance vector and the mean point in the primary search space
-            dist_p1p2 = [p2.genes[i] - p1.genes[i] for i in range(self._gene_length)]
-            dist_p1p2_norm = sqrt(
-                sum([dist_p1p2[i] * dist_p1p2[i] for i in range(self._gene_length)])
-            )
-
-            dist_p1p2_unit = [
-                dist_p1p2[i] / dist_p1p2_norm for i in range(self._gene_length)
-            ]
-
-            mean_p1p2 = [
-                (p1.genes[i] + p2.genes[i]) / 2 for i in range(self._gene_length)
-            ]
+            dist_p1p2 = p2.genes - p1.genes
+            dist_p1p2_norm = np.linalg.norm(dist_p1p2)
+            dist_p1p2_unit = dist_p1p2 / dist_p1p2_norm
+            mean_p1p2 = (p1.genes + p2.genes) / 2
 
             # We calculate the distance vector between the third parent and the first one
-            dist_p3p1 = [p3.genes[i] - p1.genes[i] for i in range(self._gene_length)]
+            dist_p3p1 = p3.genes - p1.genes
 
             # This proportion is used to calculate the vector between the third parent and the primary search space
-            proportion = sum(
-                [dist_p1p2[i] * dist_p3p1[i] for i in range(self._gene_length)]
-            ) / sum([dist_p1p2[i] * dist_p1p2[i] for i in range(self._gene_length)])
+            proportion = np.dot(dist_p1p2, dist_p3p1) / np.dot(dist_p1p2, dist_p1p2)
 
             # Formula for the distance vector from the third parent to the primary search line.
             # This formula should be able to be applied to any dimension space and this distance vector is orthogonal
             # to the distance vector between the first and second parent.
-            distance_vector = [
-                dist_p3p1[i] - proportion * dist_p1p2[i]
-                for i in range(self._gene_length)
-            ]
+            distance_vector = dist_p3p1 - proportion * dist_p1p2
 
             # Distance
-            distance = sqrt(
-                sum(
-                    [
-                        distance_vector[i] * distance_vector[i]
-                        for i in range(self._gene_length)
-                    ]
-                )
-            )
+            distance = np.linalg.norm(distance_vector)
 
             # Random vector based in the basis of the distance between the third parent and the primary search space
             # then we substract the component of the primary search
-            t = [
-                gauss(0, (distance * sigma_eta) ** 2) for _ in range(self._gene_length)
-            ]
-
-            t_dot_parents = sum(
-                [t[i] * dist_p1p2_unit[i] for i in range(self._gene_length)]
-            )
-
-            t = [t[i] - t_dot_parents * dist_p1p2[i] for i in range(self._gene_length)]
+            t = np.random.normal(0, (distance * sigma_eta) ** 2, self._gene_length)
+            t = t - np.dot(t, dist_p1p2_unit) * dist_p1p2
 
             # and we add the parallel component
-            t = [
-                t[i] + gauss(0, sigma_xi) * dist_p1p2[i]
-                for i in range(self._gene_length)
-            ]
+            t = t + np.random.normal(0, sigma_xi) * dist_p1p2
 
             # We create two children
-            offspring_1 = [mean_p1p2[i] + t[i] for i in range(self._gene_length)]
-            offspring_2 = [mean_p1p2[i] - t[i] for i in range(self._gene_length)]
+            offspring_1 = mean_p1p2 + t
+            offspring_2 = mean_p1p2 - t
 
             # And we add them to the population
             self._add_offspring(offspring_1, p1, p2)
@@ -570,7 +535,7 @@ class Population:
             config=self.config,
         )
 
-        self.offspring.append(offspring)
+        self.offspring = np.append(self.offspring, np.array(offspring))
 
     # -------------------
     # Mutation
@@ -635,17 +600,17 @@ class Population:
         """
         The best adapted individuals on the population are the ones that pass to the next generation
         """
-        if self._optimization_objective == "max":
-            self.population = sorted(
-                self.population + self.offspring, key=lambda x: x.fitness, reverse=True
-            )
-        else:
-            self.population = sorted(
-                self.population + self.offspring, key=lambda x: x.fitness
-            )
+        self.population = np.concatenate((self.population, self.offspring))
+        temp = np.argsort(
+            np.array([self.sort_function(obj) for obj in self.population])
+        )
 
-        self.population = self.population[: self.population_size]
-        self.offspring = []
+        if self._optimization_objective == "max":
+            temp = self.population_size - 1 - temp
+
+        self.population = self.population[temp][: self.population_size]
+
+        self.offspring = np.array([], dtype=Individual)
 
     def _offspring_replacement(self):
         """
@@ -706,6 +671,13 @@ class Population:
 
         self.population = list(temp)
         self.offspring = []
+
+    # -------------------
+    # Sort function
+    # -------------------
+    @staticmethod
+    def sort_function(obj):
+        return obj.fitness
 
     # -------------------
     # Property methods to override any configuration

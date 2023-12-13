@@ -1,3 +1,6 @@
+import time
+
+import numpy as np
 from random import seed, uniform
 from unittest import TestCase
 

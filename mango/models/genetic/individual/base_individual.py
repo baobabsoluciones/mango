@@ -1,4 +1,5 @@
 from random import uniform, randint
+import numpy as np
 
 
 class Individual:
@@ -18,8 +19,6 @@ class Individual:
         if parents is not None:
             self.parents_idx = tuple([p.idx for p in parents])
 
-        self._hash = self.__hash__()
-
     @classmethod
     def create_random_individual(cls, idx, config):
         ind = cls(idx=idx, config=config)
@@ -29,30 +28,30 @@ class Individual:
 
     def create_random_genes(self):
         if self.encoding == "real":
-            self.genes = [
-                uniform(self.min_bound, self.max_bound) for _ in range(self.gene_length)
-            ]
-            self._hash = self.__hash__()
+            self.genes = np.random.uniform(
+                self.min_bound, self.max_bound, self.gene_length
+            )
+
         elif self.encoding == "binary":
-            self.genes = [randint(0, 1) for _ in range(self.gene_length)]
+            self.genes = np.random.randint(0, 2, self.gene_length)
 
         elif self.encoding == "integer":
-            self.genes = [
-                randint(self.min_bound, self.max_bound) for _ in range(self.gene_length)
-            ]
-
-        self._hash = self.__hash__()
+            self.genes = np.random.randint(
+                self.min_bound, self.max_bound + 1, self.gene_length
+            )
 
     @property
     def genes(self):
         return self._genes
 
     @genes.setter
-    def genes(self, value: list = None):
+    def genes(self, value: np.ndarray = None):
         if value is not None:
-            value = [self.min_bound if x < self.min_bound else x for x in value]
-            value = [self.max_bound if x > self.max_bound else x for x in value]
+            value[np.greater(value, self.max_bound)] = self.max_bound
+            value[np.less(value, self.min_bound)] = self.min_bound
         self._genes = value
+        if self._genes is not None:
+            self._hash = self.__hash__()
 
     @property
     def idx(self):
@@ -113,29 +112,19 @@ class Individual:
         raise NotImplemented
 
     def __hash__(self):
-        if self.genes is None:
-            return None
-        return hash(tuple(self.genes))
+        return hash(self.genes.tobytes())
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self._hash == other._hash
+
+            # for i, j in zip(self.genes.flat, other.genes.flat):
+            #     if i != j:
+            #         return False
+            # return True
+
+            # return np.array_equal(self.genes, other.genes)
         return False
-
-    def __lt__(self, other):
-        if isinstance(other, self.__class__):
-            return self._hash < other._hash
-        raise NotImplemented("The objects do not share the same class")
-
-    def __le__(self, other):
-        if isinstance(other, self.__class__):
-            return self._hash <= other._hash
-        raise NotImplemented("The objects do not share the same class")
-
-    def _eq_genotype(self, other):
-        if isinstance(other, self.__class__):
-            return self.genes == other.genes
-        raise NotImplemented("The objects do not share the same class")
 
     def __repr__(self):
         return f"Individual {self.idx}"
