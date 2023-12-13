@@ -5,7 +5,9 @@ def dolan_function_no2(x: list) -> float:
     """
     Dolan function No 2.
 
-    :param list x: list of floats
+    The global minima is at [8.39045925, 4.81424707, 7.34574133, 68.88246895, 3.85470806] with a value of 10^-5
+
+    :param list x: list of floats. Values are evaluated between [-100, 100]
     :return: the value of the function
     :rtype: float
     """

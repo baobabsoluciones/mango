@@ -10,7 +10,9 @@ def ackley(x: list) -> float:
     The function poses a risk for optimization algorithms, particularly hillclimbing algorithms,
     to be trapped in one of its many local minima.
 
-    :param list x: list of floats
+    The global minimum point of the function is: f(x) = 0, at x = (0, ..., 0)
+
+    :param list x: list of floats. The values are evaluated in the range [-32.768, 32.768]
     :return: the value of the function
     :rtype: float
     """

@@ -7,7 +7,9 @@ def bukin_function_6(x: list) -> float:
 
     The sixth Bukin function has many local minima, all of which lie in a ridge.
 
-    :param list x: list of floats
+    The global minima is at (-10, 1) with a value of 0.
+
+    :param list x: list of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
     :return: the value of the function
     :rtype: float
     """
