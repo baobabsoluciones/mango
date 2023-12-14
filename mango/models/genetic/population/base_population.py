@@ -24,8 +24,6 @@ class Population:
         self._count_individuals = 0
         self._gene_length = self.config("gene_length")
         self._encoding = self.config("encoding")
-        self.internal_debug_counter = 0
-        self.select_parent_counter = 0
 
         # selection params
         self._selection_type = self.config("selection")
@@ -262,7 +260,7 @@ class Population:
         if k is small compared to the population size.
         """
         temp = np.argsort(
-            np.array([self.sort_function(obj) for obj in self.population])
+            np.array([self.extract_fitness(obj) for obj in self.population])
         )
 
         if self._optimization_objective == "max":
@@ -283,7 +281,9 @@ class Population:
         """
         Method to perform rank selection.
         """
-        fitness_values = np.array([self.sort_function(obj) for obj in self.population])
+        fitness_values = np.array(
+            [self.extract_fitness(obj) for obj in self.population]
+        )
         temp = np.argsort(fitness_values)
 
         if self._optimization_objective == "min":
@@ -304,7 +304,7 @@ class Population:
         Method to perform order selection
         """
         temp = np.argsort(
-            np.array([self.sort_function(obj) for obj in self.population])
+            np.array([self.extract_fitness(obj) for obj in self.population])
         )
 
         if self._optimization_objective == "min":
@@ -318,8 +318,9 @@ class Population:
         """
         Method to perform roulette selection.
         """
-
-        fitness_values = np.array([self.sort_function(obj) for obj in self.population])
+        fitness_values = np.array(
+            [self.extract_fitness(obj) for obj in self.population]
+        )
         temp = np.argsort(fitness_values)
         fitness_values = fitness_values[temp]
 
@@ -350,19 +351,26 @@ class Population:
 
     def _tournament_selection(self):
         self.selection_probs = np.zeros(self.population_size)
+        fitness_values = np.array(
+            [self.extract_fitness(obj) for obj in self.population]
+        )
         for _ in range(self._offspring_size * 2):
-            individuals = np.random.choice(self.population, size=self._tournament_size)
-            temp = np.argsort(
-                np.array([self.sort_function(obj) for obj in individuals])
+            temp = np.zeros(self.population_size)
+            individuals = np.random.choice(
+                self.population_size, size=self._tournament_size, replace=False
             )
-            individuals = individuals[temp]
+
+            temp[individuals] = 1
+            temp = temp * fitness_values
 
             if self._optimization_objective == "max":
-                winner = individuals.item(-1)
+                temp[np.where(temp == 0)] = -np.inf
+                winner = np.argmax(temp)
             else:
-                winner = individuals.item(0)
+                temp[np.where(temp == 0)] = np.inf
+                winner = np.argmin(temp)
 
-            self.selection_probs[np.where(self.population == winner)] += 1
+            self.selection_probs[winner] += 1
 
         self.selection_probs = self.selection_probs / np.sum(self.selection_probs)
 
@@ -383,25 +391,23 @@ class Population:
         parents = np.random.choice(
             self.population, size=1, replace=False, p=self.selection_probs
         )
-        self.internal_debug_counter += 1
 
         for i in range(n - 1):
             next_parent = np.random.choice(
                 self.population, size=1, replace=False, p=self.selection_probs
             )
             k = 0
-            self.select_parent_counter += 1
+
             while next_parent in parents:
                 k += 1
                 next_parent = np.random.choice(
                     self.population, size=1, replace=False, p=self.selection_probs
                 )
-                self.select_parent_counter += 1
 
                 if k >= self.population_size:
                     raise GeneticDiversity
 
-            parents = np.append(parents, next_parent)
+            parents = np.concatenate((parents, next_parent))
 
         return tuple(parents)
 
@@ -492,10 +498,8 @@ class Population:
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
-            split_1 = randint(1, self._gene_length - 2)
-            split_2 = randint(1, self._gene_length - 2)
-            while split_1 == split_2:
-                split_2 = randint(1, self._gene_length - 2)
+            split_1 = randint(1, self._gene_length - 3)
+            split_2 = randint(split_1 + 1, self._gene_length - 2)
 
             split_1, split_2 = sorted([split_1, split_2])
 
@@ -578,7 +582,7 @@ class Population:
             config=self.config,
         )
 
-        self.offspring = np.append(self.offspring, np.array(offspring))
+        self.offspring = np.concatenate((self.offspring, np.array([offspring])))
 
     # -------------------
     # Mutation
@@ -645,7 +649,7 @@ class Population:
         """
         self.population = np.concatenate((self.population, self.offspring))
         temp = np.argsort(
-            np.array([self.sort_function(obj) for obj in self.population])
+            np.array([self.extract_fitness(obj) for obj in self.population])
         )
 
         if self._optimization_objective == "max":
@@ -682,7 +686,9 @@ class Population:
         """
         self.population = np.concatenate((self.population, self.offspring))
 
-        fitness_values = np.array([self.sort_function(obj) for obj in self.population])
+        fitness_values = np.array(
+            [self.extract_fitness(obj) for obj in self.population]
+        )
         temp = np.argsort(fitness_values)
         fitness_values = fitness_values[temp]
 
@@ -723,5 +729,5 @@ class Population:
     # Sort function
     # -------------------
     @staticmethod
-    def sort_function(obj):
+    def extract_fitness(obj):
         return obj.fitness
