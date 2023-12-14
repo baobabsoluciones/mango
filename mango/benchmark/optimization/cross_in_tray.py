@@ -1,7 +1,9 @@
 from math import sin, exp, sqrt, pi
 
+import numpy as np
 
-def cross_in_tray(x: list) -> float:
+
+def cross_in_tray(x: np.array) -> float:
     """
     Cross-in-tray function.
 
@@ -11,7 +13,7 @@ def cross_in_tray(x: list) -> float:
     The global mínima is located at x = (1.34941, 1.34941), (-1.34941, 1.34941), (1.34941, -1.34941)
     and (-1.34941, -1.34941) with a value of -2.06261
 
-    :param list x: list of floats
+    :param :class:`np.array` x: array of floats
     :return: the value of the function
     :rtype: float
     """
@@ -27,14 +29,14 @@ def cross_in_tray(x: list) -> float:
     )
 
 
-def inverted_cross_in_tray(x: list) -> float:
+def inverted_cross_in_tray(x: np.array) -> float:
     """
     Inverted Cross-in-tray function.
 
     The Cross-in-tray function has many widespread local minima, which are regularly distributed
     This implementation inverts the function to test out the maximization
 
-    :param list x: list of floats
+    :param :class:`np.array` x: array of floats
     :return: the value of the function
     :rtype: float
     """
