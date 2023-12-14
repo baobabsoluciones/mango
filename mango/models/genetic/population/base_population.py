@@ -1,6 +1,6 @@
 from collections import Counter
 from math import sqrt
-from random import choices, choice, sample, randint, uniform, gauss
+from random import randint
 
 import numpy as np
 
@@ -24,6 +24,8 @@ class Population:
         self._count_individuals = 0
         self._gene_length = self.config("gene_length")
         self._encoding = self.config("encoding")
+        self.internal_debug_counter = 0
+        self.select_parent_counter = 0
 
         # selection params
         self._selection_type = self.config("selection")
@@ -247,7 +249,7 @@ class Population:
         Method to perform random selection.
         In this case the probability to select any individual is equal.
         """
-        self.selection_probs = [1 for _ in self.population]
+        self.selection_probs = np.ones(self.population_size) / self.population_size
 
     def _elitism_selection(self):
         """
@@ -259,36 +261,43 @@ class Population:
         This selection method could create a diversity problem on the long run
         if k is small compared to the population size.
         """
-        if self._optimization_objective == "max":
-            temp = sorted(self.population, key=lambda x: x.fitness, reverse=True)[
-                : self._elitism_size
-            ]
-        else:
-            temp = sorted(self.population, key=lambda x: x.fitness)[
-                : self._elitism_size
-            ]
+        temp = np.argsort(
+            np.array([self.sort_function(obj) for obj in self.population])
+        )
 
-        self.selection_probs = [1 if ind in temp else 0 for ind in self.population]
+        if self._optimization_objective == "max":
+            temp = self.population_size - 1 - temp
+
+        self.population = self.population[temp]
+
+        self.selection_probs = np.concatenate(
+            (
+                np.ones(self._elitism_size),
+                np.zeros(self.population_size - self._elitism_size),
+            ),
+        )
+
+        self.selection_probs = self.selection_probs / sum(self.selection_probs)
 
     def _rank_selection(self):
         """
         Method to perform rank selection.
         """
-        if self._optimization_objective == "max":
-            temp = sorted(self.population, key=lambda x: x.fitness, reverse=True)
-        else:
-            temp = sorted(self.population, key=lambda x: x.fitness)
+        fitness_values = np.array([self.sort_function(obj) for obj in self.population])
+        temp = np.argsort(fitness_values)
 
-        self.selection_probs = [
+        if self._optimization_objective == "min":
+            temp = self.population_size - 1 - temp
+
+        self.population = self.population[temp]
+
+        self.selection_probs = (
             1
-            / len(self.population)
-            * (
-                self._rank_pressure
-                - (2 * self._rank_pressure - 2)
-                * ((temp.index(ind)) / (len(self.population) - 1))
-            )
-            for ind in self.population
-        ]
+            / self.population_size
+            * (2 * self._rank_pressure - 2)
+            * np.arange(self.population_size)
+            / (self.population_size - 1)
+        )
 
     def _order_selection(self):
         """
@@ -309,38 +318,53 @@ class Population:
         """
         Method to perform roulette selection.
         """
-        max_fitness = max(self.population, key=lambda x: x.fitness).fitness
-        min_fitness = min(self.population, key=lambda x: x.fitness).fitness
+
+        fitness_values = np.array([self.sort_function(obj) for obj in self.population])
+        temp = np.argsort(fitness_values)
+        fitness_values = fitness_values[temp]
+
+        self.population = self.population[temp]
+
+        max_fitness = self.population.item(-1).fitness
+        min_fitness = self.population.item(0).fitness
 
         if self._optimization_objective == "max":
             ref_fitness = min_fitness
-
-            self.selection_probs = [
-                ind.fitness - ref_fitness for ind in self.population
-            ]
+            self.selection_probs = fitness_values - ref_fitness
 
         else:
             ref_fitness = max_fitness
-            self.selection_probs = [
-                ref_fitness - ind.fitness for ind in self.population
-            ]
+            self.selection_probs = ref_fitness - fitness_values
 
-        # self.selection_probs = [
-        #     x + (max_fitness - min_fitness) / 1000 if x == 0 else x
-        #     for x in self.selection_probs
-        # ]
+        # The last one will have probability zero, but we want to add some small probability.
+        # It is going to be half of the second to last
+        self.selection_probs[np.where(self.selection_probs == 0)] = (
+            self.selection_probs[
+                np.argmin(self.selection_probs[np.where(self.selection_probs > 0)])
+            ]
+            / 2
+        )
+
+        # Then we make sure that it adds up to one
+        self.selection_probs = self.selection_probs / sum(self.selection_probs)
 
     def _tournament_selection(self):
-        wins = dict()
+        self.selection_probs = np.zeros(self.population_size)
         for _ in range(self._offspring_size * 2):
-            individuals = sample(self.population, k=self._tournament_size)
-            if self._optimization_objective == "max":
-                winner = max(individuals, key=lambda x: x.fitness)
-            else:
-                winner = min(individuals, key=lambda x: x.fitness)
-            wins[winner.idx] = wins.get(winner.idx, 0) + 1
+            individuals = np.random.choice(self.population, size=self._tournament_size)
+            temp = np.argsort(
+                np.array([self.sort_function(obj) for obj in individuals])
+            )
+            individuals = individuals[temp]
 
-        self.selection_probs = [wins.get(ind.idx, 0) for ind in self.population]
+            if self._optimization_objective == "max":
+                winner = individuals.item(-1)
+            else:
+                winner = individuals.item(0)
+
+            self.selection_probs[np.where(self.population == winner)] += 1
+
+        self.selection_probs = self.selection_probs / np.sum(self.selection_probs)
 
     def _boltzmann_selection(self):
         pass
@@ -357,8 +381,27 @@ class Population:
         """
 
         parents = np.random.choice(
-            self.population, size=n, replace=False, p=self.selection_probs
+            self.population, size=1, replace=False, p=self.selection_probs
         )
+        self.internal_debug_counter += 1
+
+        for i in range(n - 1):
+            next_parent = np.random.choice(
+                self.population, size=1, replace=False, p=self.selection_probs
+            )
+            k = 0
+            self.select_parent_counter += 1
+            while next_parent in parents:
+                k += 1
+                next_parent = np.random.choice(
+                    self.population, size=1, replace=False, p=self.selection_probs
+                )
+                self.select_parent_counter += 1
+
+                if k >= self.population_size:
+                    raise GeneticDiversity
+
+            parents = np.append(parents, next_parent)
 
         return tuple(parents)
 
@@ -616,17 +659,20 @@ class Population:
         """
         The population gets completely substituted by the offspring.
         """
-        self.population = list(self.offspring)
-        self.offspring = []
+        self.population = self.offspring
+        self.offspring = np.array([], dtype=Individual)
 
     def _random_replacement(self):
         """
         Method to implement a random replacement operator.
         """
-        self.population = sample(
-            self.population + self.offspring, k=self.population_size
+        self.population = np.concatenate((self.population, self.offspring))
+
+        self.population = np.random.choice(
+            self.population, size=self.population_size, replace=False
         )
-        self.offspring = []
+
+        self.offspring = np.array([], dtype=Individual)
 
     def _elitist_stochastic_replacement(self):
         """
@@ -634,42 +680,43 @@ class Population:
 
         In this case each individual has a replacement probability based on their fitness.
         """
-        self.population = self.population + self.offspring
+        self.population = np.concatenate((self.population, self.offspring))
 
-        max_fitness = max(self.population, key=lambda x: x.fitness).fitness
-        min_fitness = min(self.population, key=lambda x: x.fitness).fitness
+        fitness_values = np.array([self.sort_function(obj) for obj in self.population])
+        temp = np.argsort(fitness_values)
+        fitness_values = fitness_values[temp]
+
+        self.population = self.population[temp]
+
+        max_fitness = self.population.item(-1).fitness
+        min_fitness = self.population.item(0).fitness
 
         if self._optimization_objective == "max":
-            self.population = sorted(
-                self.population + self.offspring, key=lambda x: x.fitness, reverse=True
-            )
-
             ref_fitness = min_fitness
-
-            self._replacement_probs = [
-                ind.fitness - ref_fitness for ind in self.population
-            ]
+            self._replacement_probs = fitness_values - ref_fitness
 
         else:
-            self.population = sorted(
-                self.population + self.offspring, key=lambda x: x.fitness
-            )
-
             ref_fitness = max_fitness
+            self._replacement_probs = ref_fitness - fitness_values
 
-            self._replacement_probs = [
-                ref_fitness - ind.fitness for ind in self.population
+        self._replacement_probs[np.where(self._replacement_probs == 0)] = (
+            self._replacement_probs[
+                np.argmin(
+                    self._replacement_probs[np.where(self._replacement_probs > 0)]
+                )
             ]
+            / 2
+        )
 
-        temp = []
-        for _ in range(self.population_size):
-            individual = choices(self.population, weights=self._replacement_probs)[0]
-            temp.append(individual)
-            position = self.population.index(individual)
-            del self._replacement_probs[position]
-            self.population.remove(individual)
+        self._replacement_probs = self._replacement_probs / sum(self._replacement_probs)
 
-        self.population = list(temp)
+        self.population = np.random.choice(
+            self.population,
+            size=self.population_size,
+            replace=False,
+            p=self._replacement_probs,
+        )
+
         self.offspring = []
 
     # -------------------
@@ -678,87 +725,3 @@ class Population:
     @staticmethod
     def sort_function(obj):
         return obj.fitness
-
-    # -------------------
-    # Property methods to override any configuration
-    # -------------------
-
-    @property
-    def selection_type(self):
-        return self._selection_type
-
-    @selection_type.setter
-    def selection_type(self, value):
-        self._selection_type = value
-
-    @property
-    def elitism_size(self):
-        return self._elitism_size
-
-    @elitism_size.setter
-    def elitism_size(self, value):
-        self._elitism_size = value
-
-    @property
-    def tournament_size(self):
-        return self._tournament_size
-
-    @tournament_size.setter
-    def tournament_size(self, value):
-        self._tournament_size = value
-
-    @property
-    def rank_pressure(self):
-        return self._rank_pressure
-
-    @rank_pressure.setter
-    def rank_pressure(self, value):
-        self._rank_pressure = value
-
-    @property
-    def crossover_type(self):
-        return self._crossover_type
-
-    @crossover_type.setter
-    def crossover_type(self, value):
-        self._crossover_type = value
-
-    @property
-    def offspring_size(self):
-        return self._offspring_size
-
-    @offspring_size.setter
-    def offspring_size(self, value):
-        self._offspring_size = value
-
-    @property
-    def blend_expansion(self):
-        return self._blend_expansion
-
-    @blend_expansion.setter
-    def blend_expansion(self, value):
-        self._blend_expansion = value
-
-    @property
-    def mutation_type(self):
-        return self._mutation_type
-
-    @mutation_type.setter
-    def mutation_type(self, value):
-        self._mutation_type = value
-
-    @property
-    def mutation_rate(self):
-        return self._mutation_rate
-
-    @mutation_rate.setter
-    def mutation_rate(self, value):
-        self._mutation_rate = value
-
-    @property
-    def replacement_type(self):
-        return self._replacement_type
-
-    @replacement_type.setter
-    def replacement_type(self, value):
-        self._replacement_type = value

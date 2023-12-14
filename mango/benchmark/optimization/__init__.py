@@ -16,3 +16,4 @@ from .schaffer import (
     schaffer_function_no4,
     inverted_schaffer_function_no4,
 )
+from .schwefel import schwefel, inverted_schwefel

@@ -1,3 +1,4 @@
+import hashlib
 from random import uniform, randint
 import numpy as np
 

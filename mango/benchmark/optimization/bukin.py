@@ -1,7 +1,9 @@
 from math import sqrt
 
+import numpy as np
 
-def bukin_function_6(x: list) -> float:
+
+def bukin_function_6(x: np.array) -> float:
     """
     Bukin function N. 6.
 
@@ -9,18 +11,18 @@ def bukin_function_6(x: list) -> float:
 
     The global minima is at (-10, 1) with a value of 0.
 
-    :param list x: list of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
+    :param :class:`np.array` x: array of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
     :return: the value of the function
     :rtype: float
     """
     return 100 * sqrt(abs(x[1] - 0.01 * x[0] ** 2)) + 0.01 * abs(x[0] + 10)
 
 
-def inverted_bukin_function_6(x: list) -> float:
+def inverted_bukin_function_6(x: np.array) -> float:
     """
     Inverted Bukin function N. 6.
 
-    :param list x: list of floats
+    :param :class:`np.array` x: array of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
     :return: the value of the function
     :rtype: float
     """
