@@ -197,3 +197,16 @@ class BaseConfig:
         if value is None:
             return default
         return value
+
+    def modify_value(self, key, value):
+        """
+        The modify value allows to modify the value of a parameter after it has been loaded
+
+        :param key: the name of the parameter we want to extract
+        :return: The value of the parameter
+        :doc-author: baobab soluciones
+        """
+        section = self.map_key_to_section.get(key, None)
+        if section is None:
+            return KeyError(f"Parameter {key} not found")
+        self.parameters.get(section)[key] = value

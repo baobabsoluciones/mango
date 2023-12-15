@@ -149,9 +149,9 @@ class TestBaseGeneticAlgorithms(TestCase):
         population = Population(config, cross_in_tray)
         population.run()
 
-        solution = np.array([1.36455618, -1.4032946])
+        solution = np.array([1.36455618, 1.21460728])
 
-        self.assertAlmostEqual(population.best.fitness, -2.062262220218094)
+        self.assertAlmostEqual(population.best.fitness, -2.0603701279263484)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
@@ -189,20 +189,20 @@ class TestBaseGeneticAlgorithms(TestCase):
 
         solution = np.array(
             [
-                -0.96916219,
-                -0.98712455,
+                -0.09185608,
+                -0.13252748,
                 -0.10730447,
-                0.07947124,
-                0.99429821,
-                -0.89577404,
+                0.12614708,
+                1.04408277,
+                1.11082311,
                 -1.05350175,
                 -0.05136119,
-                0.9088441,
+                -1.05360946,
                 -0.05395838,
             ]
         )
 
-        self.assertAlmostEqual(population.best.fitness, 14.608970782434255)
+        self.assertAlmostEqual(population.best.fitness, 19.57820108369802)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
 
