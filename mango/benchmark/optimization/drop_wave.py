@@ -1,7 +1,9 @@
 from math import cos, sqrt
 
+import numpy as np
 
-def drop_wave(x: list) -> float:
+
+def drop_wave(x: np.array) -> float:
     """
     Drop-Wave function.
 
@@ -9,16 +11,16 @@ def drop_wave(x: list) -> float:
 
     The global minima is located at x = (0, 0) with a value of -1
 
-    :param list x: list of floats. Values usually are between -5.12 and 5.12.
+    :param :class:`np.array` x: array of floats. Values usually are between -5.12 and 5.12.
     :return: the value of the function
     :rtype: float
     """
-    return -(1 + cos(12 * sqrt(sum([i**2 for i in x])))) / (
-        0.5 * sum([i**2 for i in x]) + 2
+    return -(1 + cos(12 * sqrt(np.sum(np.square(x))))) / (
+        0.5 * np.sum(np.square(x)) + 2
     )
 
 
-def inverted_drop_wave(x: list) -> float:
+def inverted_drop_wave(x: np.array) -> float:
     """
     Inverted Drop-Wave function.
 
@@ -27,7 +29,7 @@ def inverted_drop_wave(x: list) -> float:
 
     The global minima is located at x = (0, 0) with a value of -1
 
-    :param list x: list of floats. Values usually are between -5.12 and 5.12.
+    :param :class:`np.array` x: array of floats. Values usually are between -5.12 and 5.12.
     :return: the value of the function
     :rtype: float
     """

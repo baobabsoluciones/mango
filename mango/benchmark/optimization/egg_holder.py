@@ -1,7 +1,9 @@
 from math import sin, sqrt
 
+import numpy as np
 
-def egg_holder(x: list) -> float:
+
+def egg_holder(x: np.array) -> float:
     """
     Egg-holder function.
 
@@ -10,7 +12,7 @@ def egg_holder(x: list) -> float:
     The function is usually evaluated on the square xi ∈ [-512, 512], for all i = 1, 2.
     The global mínima is located at x = (512, 404.2319) with a value of -959.6407
 
-    :param list x: list of floats
+    :param :class:`np.array` x: array of floats
     :return: the value of the function
     :rtype: float
     """
@@ -19,14 +21,14 @@ def egg_holder(x: list) -> float:
     )
 
 
-def inverted_egg_holder(x: list) -> float:
+def inverted_egg_holder(x: np.array) -> float:
     """
     Inverted Egg-holder function.
 
     The Egg-holder function has many widespread local minima, which are regularly distributed
     This implementation inverts the function to test out the maximization
 
-    :param list x: list of floats
+    :param :class:`np.array` x: array of floats
     :return: the value of the function
     :rtype: float
     """

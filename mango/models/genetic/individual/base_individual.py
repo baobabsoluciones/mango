@@ -7,18 +7,20 @@ class Individual:
     def __init__(self, genes=None, idx: int = 0, parents: tuple = None, config=None):
         self.fitness = None
         self.idx = idx
+        self.config = config
+        self.parents = parents
 
         # Info to get from config file
-        self.encoding = config("encoding")
-        self.min_bound = config("gene_min_value")
-        self.max_bound = config("gene_max_value")
-        self.gene_length = config("gene_length")
+        self.encoding = self.config("encoding")
+        self.min_bound = self.config("gene_min_value")
+        self.max_bound = self.config("gene_max_value")
+        self.gene_length = self.config("gene_length")
 
         self.genes = genes
 
         self.parents_idx = None
-        if parents is not None:
-            self.parents_idx = tuple([p.idx for p in parents])
+        if self.parents is not None:
+            self.parents_idx = tuple([p.idx for p in self.parents])
 
     @classmethod
     def create_random_individual(cls, idx, config):
@@ -76,6 +78,7 @@ class Individual:
                     self._mutate_integer()
                 else:
                     raise NotImplemented("Only real encoding is implemented for now")
+                self._hash = self.__hash__()
             else:
                 keep = False
 
@@ -111,6 +114,14 @@ class Individual:
         is at least better than the other solution
         """
         raise NotImplemented
+
+    def copy(self):
+        return Individual(
+            genes=self.genes.copy(),
+            idx=self.idx,
+            config=self.config,
+            parents=self.parents,
+        )
 
     def __hash__(self):
         return hash(self.genes.tobytes())

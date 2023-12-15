@@ -14,9 +14,53 @@ from mango.benchmark.optimization import (
 from mango.benchmark.optimization import bukin_function_6
 from mango.benchmark.optimization import dolan_function_no2
 from mango.models.genetic.config.config import GeneticBaseConfig
+from mango.models.genetic.individual import Individual
 from mango.models.genetic.population.base_population import Population
 from mango.models.genetic.problem.base_problem import Problem
 from mango.tests.const import normalize_path
+
+
+class TestIndividual(TestCase):
+    def setUp(self):
+        seed(42)
+        np.random.seed(42)
+
+    def tearDown(self):
+        pass
+
+    def test_individual(self):
+        config = GeneticBaseConfig(normalize_path("./data/test_ackley.cfg"))
+        individual = Individual(config=config)
+        self.assertEqual(individual.encoding, "real")
+        self.assertEqual(individual.min_bound, -32.768)
+        self.assertEqual(individual.max_bound, 32.768)
+        self.assertEqual(individual.gene_length, 100)
+        self.assertIsNone(individual.fitness)
+        self.assertIsNone(individual.genes)
+        self.assertIsNone(individual.parents_idx)
+        self.assertEqual(individual.idx, 0)
+
+    def test_create_random_individual(self):
+        config = GeneticBaseConfig(normalize_path("./data/test_ackley.cfg"))
+        individual = Individual.create_random_individual(1, config)
+        self.assertEqual(individual.encoding, "real")
+        self.assertEqual(individual.min_bound, -32.768)
+        self.assertEqual(individual.max_bound, 32.768)
+        self.assertEqual(individual.gene_length, 100)
+        self.assertIsNone(individual.fitness)
+        self.assertIsNotNone(individual.genes)
+        self.assertIsNone(individual.parents_idx)
+        self.assertEqual(individual.idx, 1)
+        self.assertIsNotNone(individual._hash)
+
+    def test_mutate_individual(self):
+        config = GeneticBaseConfig(normalize_path("./data/test_ackley.cfg"))
+        individual = Individual.create_random_individual(1, config)
+        old_individual = individual.copy()
+        old_hash = individual._hash
+        individual.mutate(mutation_prob=0.8)
+        self.assertNotEqual(old_hash, individual._hash)
+        self.assertFalse(old_individual == individual)
 
 
 class TestBaseGeneticAlgorithms(TestCase):

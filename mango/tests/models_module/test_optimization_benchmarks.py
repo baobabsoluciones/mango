@@ -81,3 +81,36 @@ class TestOptimizationBenchmarks(TestCase):
 
         self.assertEqual(7.233634216388971, dolan_function_no2(values))
         self.assertEqual(-7.233634216388971, inverted_dolan_function_no2(values))
+
+    def test_drop_wave_function(self):
+        pass
+
+    def test_egg_holder_function(self):
+        pass
+
+    def test_gramacy_lee_function(self):
+        pass
+
+    def test_griewank_function(self):
+        pass
+
+    def test_holder_table_function(self):
+        pass
+
+    def test_lagergren_function(self):
+        pass
+
+    def test_levy_function(self):
+        pass
+
+    def test_rastrigin_function(self):
+        pass
+
+    def test_rosenbrock_function(self):
+        pass
+
+    def test_schaffer_function(self):
+        pass
+
+    def test_schwefel_function(self):
+        pass

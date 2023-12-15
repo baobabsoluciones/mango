@@ -1,31 +1,33 @@
 from math import prod, cos, sqrt
 
+import numpy as np
 
-def griewank(x: list) -> float:
+
+def griewank(x: np.array) -> float:
     """
     Griewank function.
 
     The Griewank function has many widespread local minima, which are regularly distributed
 
-    :param list x: list of floats
+    :param :class:`np.array` x: array of floats
     :return: the value of the function
     :rtype: float
     """
     return (
-        sum([i**2 / 4000 for i in x])
-        - prod([cos(i / sqrt(idx + 1)) for idx, i in enumerate(x)])
+        np.sum(np.square(x)) / 4000
+        - np.prod(np.cos(x / np.sqrt(np.arange(1, x.shape[0] + 1))))
         + 1
     )
 
 
-def inverted_griewank(x: list) -> float:
+def inverted_griewank(x: np.array) -> float:
     """
     Inverted Griewank function.
 
     The Griewank function has many widespread local minima, which are regularly distributed
     This implementation inverts the function to test out the maximization
 
-    :param list x: list of floats
+    :param :class:`np.array` x: array of floats
     :return: the value of the function
     :rtype: float
     """
