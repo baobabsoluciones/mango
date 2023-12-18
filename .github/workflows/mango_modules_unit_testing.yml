@@ -59,6 +59,9 @@ jobs:
           processing:
             - 'mango/processing/**'
             - 'mango/tests/processing_module/**'
+          shap_analysis:
+            - 'mango/shap_analysis/**'
+            - 'mango/tests/shap_module/**'
           shared:
             - 'mango/shared/**'
             - 'mango/tests/shared_module/**'
@@ -148,6 +151,12 @@ jobs:
       if: steps.filter.outputs.processing == 'true'
       with:
         flags: processing-tests
+    - name: Run shap testing
+      if: steps.filter.outputs.shap_analysis == 'true'
+      run: |
+          coverage run --source=./mango/shap_analysis/ -m unittest discover -s mango/tests/shap_module
+          coverage report -m
+          coverage xml
     - name: Run shared testing
       if: steps.filter.outputs.shared == 'true'
       run: |
