@@ -348,15 +348,15 @@ class CorrelationMatrix(TestCase):
 
     def test_get_corr_matrix(self):
         # Call function get_corr_matrix with all the parameters: df, date_column, years_corr, n_top
-        # top_corr1 = get_corr_matrix(
-        #     self.valid_df1, date_col="fecha", years_corr=[2023], n_top=5
-        # )
+        top_corr1 = get_corr_matrix(
+            self.valid_df1, date_col="fecha", years_corr=[2023], n_top=5
+        )
         # self.assertEqual(top_corr1,self.expected_result_valid_df1)
         # self.assertRaises(ValueError, get_corr_matrix,self.valid_df1,date_col="fecha", years_corr=[2023], n_top=5)
 
-        # top_corr2 = get_corr_matrix(
-        #     self.valid_df2, date_col="fecha", years_corr=[2023], n_top=5
-        # )
+        top_corr2 = get_corr_matrix(
+            self.valid_df2, date_col="fecha", years_corr=[2023], n_top=5
+        )
 
         top_corr3_ntop = get_corr_matrix(
             self.valid_df3,

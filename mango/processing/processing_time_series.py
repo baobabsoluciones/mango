@@ -348,7 +348,7 @@ def get_corr_matrix_aux(
     n_top,
     threshold,
     subset: List = None,
-) -> Dict[str]:
+) -> Dict[str, Dict[str, float]]:
     """
     The get_corr_matrix_aux function computes the correlation matrix of a dataframe and returns
     a dictionary with the top n correlations for each time series.
