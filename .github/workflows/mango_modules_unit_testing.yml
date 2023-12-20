@@ -35,6 +35,9 @@ jobs:
       id: filter
       with:
         filters: |
+          initialization:
+            - 'mango/__init__.py'
+            - 'mango/tests/initialization_library/**'
           clients:
             - 'mango/clients/**'
             - 'mango/tests/clients_module/**'
@@ -56,12 +59,21 @@ jobs:
           processing:
             - 'mango/processing/**'
             - 'mango/tests/processing_module/**'
+          shap_analysis:
+            - 'mango/shap_analysis/**'
+            - 'mango/tests/shap_module/**'
           shared:
             - 'mango/shared/**'
             - 'mango/tests/shared_module/**'
           table:
             - 'mango/table/**'
             - 'mango/tests/table_module/**'
+    - name: Run initialization testing
+      if: steps.filter.outputs.initialization == 'true'
+      run: |
+        coverage run --include=./mango/__init__.py -m unittest discover -s mango/tests/initialization_library
+        coverage report -m
+        coverage xml
     - name: Run clients testing
       if: steps.filter.outputs.clients == 'true'
       run: |
@@ -109,7 +121,7 @@ jobs:
     - name: Run models testing
       if: steps.filter.outputs.models == 'true'
       run: |
-          coverage run --source=./mango/models/ -m unittest discover -s mango/tests/models_module
+          coverage run --source=./mango/models/,./mango/benchmark/optimization/ -m unittest discover -s mango/tests/models_module
           coverage report -m
           coverage xml
     - name: Upload coverage to Codecov
@@ -139,6 +151,12 @@ jobs:
       if: steps.filter.outputs.processing == 'true'
       with:
         flags: processing-tests
+    - name: Run shap testing
+      if: steps.filter.outputs.shap_analysis == 'true'
+      run: |
+          coverage run --source=./mango/shap_analysis/ -m unittest discover -s mango/tests/shap_module
+          coverage report -m
+          coverage xml
     - name: Run shared testing
       if: steps.filter.outputs.shared == 'true'
       run: |

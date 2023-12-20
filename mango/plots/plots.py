@@ -2,6 +2,7 @@
 from logging import log
 from typing import Union
 
+import pandas as pd
 # Import from external modules
 import plotly.express as px
 from bs4 import BeautifulSoup
@@ -11,11 +12,14 @@ def plotly_plot_lines(
     df,
     x_axis: str,
     y_axis: Union[list, str],
-    output_path: str,
+    output_path: str = None,
     color_by: str = None,
     hover_list: list = None,
     show: bool = False,
     title: str = None,
+    legend: bool = True,
+    position: str = None,
+    size: int = None,
     **kwargs_plotly,
 ):
     """
@@ -33,6 +37,9 @@ def plotly_plot_lines(
     :param list hover_list: Add the name of the column to be shown when hovering over a point in the plot
     :param bool show: Set to True if you want to show the plot
     :param str title: Set the title of the plot
+    :param legend: bool: Show or hide the legend
+    :param position: str: Specify the position of the legend in a plot
+    :param size: int: Set the size of the legend
     :param kwargs_plotly: Additional arguments that will be passed to the plotly express line function.
         See https://plotly.com/python-api-reference/generated/plotly.express.line.html for more information
     """
@@ -41,18 +48,47 @@ def plotly_plot_lines(
         df, x=x_axis, y=y_axis, hover_data=hover_list, color=color_by, **kwargs_plotly
     )
 
-    # add title
-    fig.update_layout(title_text=title)
+    position_dict = {
+        "topright": {"xanchor": "right", "yanchor": "top"},
+        "topleft": {"xanchor": "left", "yanchor": "top"},
+        "bottomright": {"xanchor": "right", "yanchor": "bottom"},
+        "bottomleft": {"xanchor": "left", "yanchor": "bottom"},
+    }
+
+    if legend and position is not None:
+        try:
+            # add title and legend inside the plot
+            fig.update_layout(
+                title_text=title,
+                legend=dict(
+                    title="",
+                    yanchor=position_dict[position]["yanchor"],
+                    y=0.99,
+                    xanchor=position_dict[position]["xanchor"],
+                    x=0.99,
+                    font=dict(size=size),
+                ),
+            )
+        except KeyError:
+            print(
+                f"{position} must be a one of the following {list(position_dict.keys())}"
+            )
+            fig.update_layout(title_text=title)
+    else:
+        # add title
+        fig.update_layout(title_text=title)
 
     # Show
     if show == True:
         fig.show()
 
     # Save the plot as an html file
-    if output_path != None:
+    if output_path:
         fig.write_html(
             output_path + ".html" if not output_path.endswith(".html") else output_path
         )
+    else:
+        return fig
 
 
 def plotly_plot_scatter(
@@ -91,10 +127,12 @@ def plotly_plot_scatter(
         fig.show()
 
     # Save the plot as an html file
-    if output_path != None:
+    if output_path:
         fig.write_html(
             output_path + ".html" if not output_path.endswith(".html") else output_path
         )
+    else:
+        return fig
 
 
 def join_html(
