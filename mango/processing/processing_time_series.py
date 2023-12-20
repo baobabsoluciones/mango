@@ -185,7 +185,6 @@ def create_recurrent_dataset(
         max_lag = max(lags)
 
     for i in range(max_lag, data.shape[0] - look_back):
-
         a = x_in[i : (i + look_back), :]
 
         if include_output_lags:

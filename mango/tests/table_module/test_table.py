@@ -1090,7 +1090,6 @@ class TestTable(TestCase):
         self.assertEqual(result, expected, msg=msg)
 
     def test_empty_table(self):
-
         self.assertEqual(Table([]), [], msg="create empty table with empty list")
         self.assertEqual(Table(None), [], msg="create empty table with None")
         self.assertEqual(Table(), [], msg="create empty table with no arg")
