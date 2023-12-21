@@ -3,8 +3,6 @@ name: mango full unit testing
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
-    branches:
-      - master
     paths:
       - 'mango/**'
   push:
