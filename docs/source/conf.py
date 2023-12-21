@@ -9,7 +9,7 @@
 project = "mango"
 copyright = "2023, baobab soluciones"
 author = "baobab soluciones"
-release = "2023-12-21"
+release = "2023"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
