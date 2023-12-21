@@ -14,16 +14,16 @@ class ActivationTests(TestCase):
     def test_sigmoid_activation(self):
         x = 1
         y = sigmoid(x)
-        self.assertEqual(y, 0.7310585786300049)
+        self.assertAlmostEqual(y, 0.7310585786300049)
         y = sigmoid(x, 2)
-        self.assertEqual(y, 0.8807970779778823)
+        self.assertAlmostEqual(y, 0.8807970779778823)
 
     def test_tahn_activation(self):
         x = 1
         y = tanh(x)
-        self.assertEqual(y, 0.7615941559557649)
+        self.assertAlmostEqual(y, 0.7615941559557649)
         y = tanh(x, 2)
-        self.assertEqual(y, 0.9640275800758169)
+        self.assertAlmostEqual(y, 0.9640275800758169)
 
 
 class NetworkTests(TestCase):

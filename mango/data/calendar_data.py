@@ -37,6 +37,7 @@ def get_calendar(
     weight_communities: dict = _WEIGHT_DICT,
     calendar_events: bool = False,
     name_transformations: bool = True,
+    pivot: bool = False,
 ):
     """
     The get_calendar function returns a pandas DataFrame with the following columns:
@@ -101,7 +102,7 @@ def get_calendar(
         list_com = []
         for community in holidays.ES.subdivisions:
             # Autonomous Community holidays
-            com_holidays = country_holidays("ES", years=years, prov=community)
+            com_holidays = country_holidays("ES", years=years, subdiv=community)
             # Dict to DataFrame
             df_com = pd.DataFrame.from_dict(com_holidays, orient="index").reset_index()
             df_com["country_code"] = country
@@ -149,6 +150,10 @@ def get_calendar(
     # Apply name transformations
     if name_transformations:
         df = _name_transformations(df)
+
+    # Pivot
+    if pivot:
+        df = _pivot_calendar(df_calendar=df, communities=communities)
 
     # Return dataframe
     return df
@@ -213,3 +218,33 @@ def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
     df["name"] = df["name"].str.strip()
 
     return df
+
+
+def _pivot_calendar(
+    df_calendar: pd.DataFrame, communities: bool = False
+) -> pd.DataFrame:
+    """
+    The pivot_calendar function takes a dataframe of calendar events and pivots it to get a column for each date.
+
+    :param pd.DataFrame df_calendar: Specify the dataframe that will be used in this function
+    :param bool communities: Specify if the dataframe has a column with the weight of each date
+    :return: A dataframe with a column for each date
+    :doc-author: baobab soluciones
+    """
+
+    # Pivot df_calendar to get a column for each date
+    df_calendar = pd.concat([df_calendar, pd.get_dummies(df_calendar["name"])], axis=1)
+    df_calendar.drop(["name"], axis=1, inplace=True)
+
+    # Group by fecha max()
+    df_calendar = df_calendar.groupby("date").max(numeric_only=True).reset_index()
+
+    # Multiply by weight
+    if communities:
+        for col in df_calendar.columns:
+            if col not in ["date", "weight"]:
+                df_calendar[col] = df_calendar[col] * df_calendar["weight"]
+
+        df_calendar.drop(["weight"], axis=1, inplace=True)
+
+    return df_calendar

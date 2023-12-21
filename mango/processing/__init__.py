@@ -12,10 +12,8 @@ from .file_functions import (
     write_json,
     write_excel,
     write_excel_light,
-    write_df_to_excel,
     write_csv,
     write_csv_light,
-    write_df_to_csv,
     is_excel_file,
     is_json_file,
 )
@@ -36,4 +34,5 @@ from .processing_time_series import (
     create_dense_data,
     create_lags_col,
     create_recurrent_dataset,
+    get_corr_matrix,
 )
