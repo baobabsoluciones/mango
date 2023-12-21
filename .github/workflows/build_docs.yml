@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - 'mango/docs/**'
-      - 'mango/README.rst'
+      - 'docs/**'
+      - 'README.rst'
       - 'mango/**'
 
 jobs:
