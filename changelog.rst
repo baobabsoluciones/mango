@@ -1,3 +1,15 @@
+version 0.2.0
+--------------
+
+- **released**: 2023-12-21
+- **description**: genetic algorithms and more!
+- **changelog**:
+    - added genetic algorithms that can be used in a wide range of problems.
+    - added a new function to calculate the distance between two points using the haversine formula.
+    - added a function to pivot the calendar
+    - added correlation calculation between series.
+    - bugfixes and improvements.
+
 version 0.1.3
 --------------
 
