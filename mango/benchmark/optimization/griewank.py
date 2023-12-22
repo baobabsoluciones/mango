@@ -9,7 +9,8 @@ def griewank(x: np.array) -> float:
 
     The Griewank function has many widespread local minima, which are regularly distributed
 
-    :param :class:`np.array` x: array of floats
+    :param x: array of floats
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """
@@ -27,7 +28,8 @@ def inverted_griewank(x: np.array) -> float:
     The Griewank function has many widespread local minima, which are regularly distributed
     This implementation inverts the function to test out the maximization
 
-    :param :class:`np.array` x: array of floats
+    :param x: array of floats
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """

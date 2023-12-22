@@ -11,7 +11,8 @@ def drop_wave(x: np.array) -> float:
 
     The global minima is located at x = (0, 0) with a value of -1
 
-    :param :class:`np.array` x: array of floats. Values usually are between -5.12 and 5.12.
+    :param x: array of floats. Values usually are between -5.12 and 5.12.
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """
@@ -29,7 +30,8 @@ def inverted_drop_wave(x: np.array) -> float:
 
     The global minima is located at x = (0, 0) with a value of -1
 
-    :param :class:`np.array` x: array of floats. Values usually are between -5.12 and 5.12.
+    :param x: array of floats. Values usually are between -5.12 and 5.12.
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """

@@ -12,7 +12,8 @@ def egg_holder(x: np.array) -> float:
     The function is usually evaluated on the square xi ∈ [-512, 512], for all i = 1, 2.
     The global mínima is located at x = (512, 404.2319) with a value of -959.6407
 
-    :param :class:`np.array` x: array of floats
+    :param x: array of floats
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """
@@ -28,7 +29,8 @@ def inverted_egg_holder(x: np.array) -> float:
     The Egg-holder function has many widespread local minima, which are regularly distributed
     This implementation inverts the function to test out the maximization
 
-    :param :class:`np.array` x: array of floats
+    :param x: array of floats
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """

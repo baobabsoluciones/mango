@@ -5,16 +5,21 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("../../"))
+
 
 project = "mango"
 copyright = "2023, baobab soluciones"
 author = "baobab soluciones"
-release = "0.2.0"
+# release = "0.2.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.intersphinx"]
 
 templates_path = ["templates"]
 exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
@@ -23,5 +28,16 @@ exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "furo"
+html_theme = "sphinxawesome_theme"
 html_static_path = ["static"]
+
+# autodoc_mock_imports = ["mango"]
+autodoc_member_order = "bysource"
+autodoc_default_options = {"members": True, "inherited-members": True}
+
+import mango
+
+version = mango.__version__
+release = mango.__version__
+
+

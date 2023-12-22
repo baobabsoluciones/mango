@@ -1,5 +1,5 @@
-MANGO
------
+Mango
+------
 
 This a library containing several modules developed by the team at baobab soluciones. These functions, classes and methods are based on their experience, understanding and knowledge of the Python language and its ecosystem.
 

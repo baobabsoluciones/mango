@@ -11,7 +11,8 @@ def bukin_function_6(x: np.array) -> float:
 
     The global minima is at (-10, 1) with a value of 0.
 
-    :param :class:`np.array` x: array of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
+    :param x: array of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """
@@ -22,7 +23,8 @@ def inverted_bukin_function_6(x: np.array) -> float:
     """
     Inverted Bukin function N. 6.
 
-    :param :class:`np.array` x: array of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
+    :param x: array of floats. Values are between [-15, 5] for x1 and [-3, 3] for x2
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """

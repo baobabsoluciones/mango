@@ -13,7 +13,8 @@ def cross_in_tray(x: np.array) -> float:
     The global mínima is located at x = (1.34941, 1.34941), (-1.34941, 1.34941), (1.34941, -1.34941)
     and (-1.34941, -1.34941) with a value of -2.06261
 
-    :param :class:`np.array` x: array of floats
+    :param x: array of floats
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """
@@ -36,7 +37,8 @@ def inverted_cross_in_tray(x: np.array) -> float:
     The Cross-in-tray function has many widespread local minima, which are regularly distributed
     This implementation inverts the function to test out the maximization
 
-    :param :class:`np.array` x: array of floats
+    :param x: array of floats
+    :type x: :class:`numpy.ndarray`
     :return: the value of the function
     :rtype: float
     """

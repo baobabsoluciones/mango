@@ -87,6 +87,7 @@ class AEMETClient(RESTClient):
     def all_stations(self) -> List[dict]:
         """
         This property will return all the meteorological stations in Spain.
+
         :return: List of dictionaries with the meteorological stations
         :doc-author: baobab soluciones
         """
@@ -96,6 +97,7 @@ class AEMETClient(RESTClient):
     def municipios(self) -> List[dict]:
         """
         This property will return all the municipios in Spain.
+
         :return: List of dictionaries with the municipios
         :doc-author: baobab soluciones
         """
@@ -401,6 +403,15 @@ class AEMETClient(RESTClient):
         Main method of the class. This method will return the meteorological data from the meteorological stations in
         Spain.
 
+        :param str station_code: meteorological station code
+        :param float lat: latitude
+        :param float long: longitude
+        :param str province: province
+        :param datetime start_date: start date
+        :param datetime end_date: end date
+        :return: a list of dictionaries with the meteorological data
+        :doc-author: baobab soluciones
+
         Usage
         -----
 
@@ -432,14 +443,7 @@ class AEMETClient(RESTClient):
 
         >>> data = client.get_meteo_data(lat=40.4165, long=-3.70256, province="Madrid", output_format="df")
 
-        :param str station_code: meteorological station code
-        :param float lat: latitude
-        :param float long: longitude
-        :param str province: province
-        :param datetime start_date: start date
-        :param datetime end_date: end date
-        :return: a list of dictionaries with the meteorological data
-        :doc-author: baobab soluciones
+
         """
         # Check datatype
         if station_code and not isinstance(station_code, str):
