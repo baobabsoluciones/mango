@@ -6,13 +6,16 @@
 <meta charset="utf-8"/>
 <meta content="white" media="(prefers-color-scheme: light)" name="theme-color"/>
 <meta content="black" metia="(prefers-color-scheme: dark)" name="theme-color"/>
-<title>Search | mango 0.2.0 documentation</title>
-<meta content="Search | mango 0.2.0 documentation" property="og:title"/>
-<meta content="Search | mango 0.2.0 documentation" name="twitter:title"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Changelog | mango 0.2.0 documentation</title>
+<meta content="Changelog | mango 0.2.0 documentation" property="og:title"/>
+<meta content="Changelog | mango 0.2.0 documentation" name="twitter:title"/>
 <link href="_static/pygments.css?v=8d216cef" rel="stylesheet" type="text/css"/>
 <link href="_static/theme.css?v=e43df443" rel="stylesheet" type="text/css"/>
-<link href="#" rel="search" title="Search"/>
+<link href="search.html" rel="search" title="Search"/>
 <link href="genindex.html" rel="index" title="Index"/>
+<link href="dev/index.html" rel="next" title="Code documentation"/>
+<link href="readme.html" rel="prev" title="Mango"/>
 <script>
     <!-- Prevent Flash of wrong theme -->
       const userPreference = localStorage.getItem('darkMode');
@@ -39,7 +42,7 @@
 <span class="sr-only">Toggle navigation menu</span>
 </button>
 <div class="flex items-center justify-between flex-1 space-x-2 sm:space-x-4 md:justify-end">
-<div class="flex-1 w-full md:w-auto md:flex-none"><form @keydown.k.window.meta="$refs.search.focus()" action="#" class="relative flex items-center group" id="searchbox" method="get">
+<div class="flex-1 w-full md:w-auto md:flex-none"><form @keydown.k.window.meta="$refs.search.focus()" action="search.html" class="relative flex items-center group" id="searchbox" method="get">
 <input aria-label="Search the docs" class="inline-flex items-center font-medium transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background border border-input hover:bg-accent focus:bg-accent hover:text-accent-foreground focus:text-accent-foreground hover:placeholder-accent-foreground py-2 px-4 relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64" id="search-input" name="q" placeholder="Search ..." type="search" x-ref="search"/>
 <kbd class="pointer-events-none absolute right-1.5 top-2 hidden h-5 select-none text-muted-foreground items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex group-hover:bg-accent group-hover:text-accent-foreground">
 <span class="text-xs">⌘</span>
@@ -66,9 +69,9 @@
 <div class="relative overflow-hidden md:overflow-auto my-4 md:my-0 h-[calc(100vh-8rem)] md:h-auto">
 <div class="overflow-y-auto h-full w-full relative pr-6"><nav class="table w-full min-w-full my-6 lg:my-8">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Mango</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dev/index.html">Code documentation</a></li>
 </ul>
 </nav>
@@ -89,14 +92,191 @@
 <path d="M240 856h120V616h240v240h120V496L480 316 240 496v360Zm-80 80V456l320-240 320 240v480H520V696h-80v240H160Zm320-350Z"></path>
 </svg>
 </a>
-<div class="mr-1">/</div><span aria-current="page" class="font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">Search</span>
+<div class="mr-1">/</div><span aria-current="page" class="font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">Changelog</span>
 </nav>
 <div id="content" role="main">
-<div class="my-8 text-sm text-red-700" id="fallback">
-<script>document.querySelector("#fallback").style.display = "none"</script>Please activate Javascript to enable searching the documentation.</div>
-<div id="search-results"></div>
+<section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading">¶</a></h1>
+<section id="version-0-2-0">
+<h2>version 0.2.0<a class="headerlink" href="#version-0-2-0" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-2-0'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-12-21</p></li>
+<li><p><strong>description</strong>: genetic algorithms and more!</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>added genetic algorithms that can be used in a wide range of problems.</p></li>
+<li><p>added a new function to calculate the distance between two points using the haversine formula.</p></li>
+<li><p>added a function to pivot the calendar</p></li>
+<li><p>added correlation calculation between series.</p></li>
+<li><p>bugfixes and improvements.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-1-3">
+<h2>version 0.1.3<a class="headerlink" href="#version-0-1-3" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-1-3'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-11-17</p></li>
+<li><p><strong>description</strong>: small bugfix</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>fixed a bug on save button with unique keys.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-1-2">
+<h2>version 0.1.2<a class="headerlink" href="#version-0-1-2" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-1-2'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-11-17</p></li>
+<li><p><strong>description</strong>: some small bugfixes and add haversine function</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>fixed a bug on streamlit app saving the config file.</p></li>
+<li><p>Add edit excels, csv and json files in streamlit app.</p></li>
+<li><p>Add haversine function to calculate distance between two points.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-1-1">
+<h2>version 0.1.1<a class="headerlink" href="#version-0-1-1" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-1-1'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-11-08</p></li>
+<li><p><strong>description</strong>: some small bugfixes</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>fixed a bug on left join on class Table.</p></li>
+<li><p>fixed a small bug on AEMET pydantic validation.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-1-0">
+<h2>version 0.1.0<a class="headerlink" href="#version-0-1-0" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-1-0'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-11-07</p></li>
+<li><p><strong>description</strong>: first beta release of the library.</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>fix bug fix on left join of Table class.</p></li>
+<li><p>added improvements to Table class.</p></li>
+<li><p>adapt load_excel function to return a list of dictionaries.</p></li>
+<li><p>added new date functions.</p></li>
+<li><p>drop images module.</p></li>
+<li><p>removed pandas as a main dependency of the library. It is still needed in some submodules.</p></li>
+<li><p>changed from setup.py to pyproject.toml.</p></li>
+<li><p>added calendar datasets for Spain.</p></li>
+<li><p>added a REST client to the AEMET to gather meteorological data.</p></li>
+<li><p>added pydantic validation as a decorator that can be used in any function.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-0-6">
+<h2>version 0.0.6<a class="headerlink" href="#version-0-0-6" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-0-6'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-05-31</p></li>
+<li><p><strong>description</strong>: improvements to Table class</p></li>
+</ul>
+</section>
+<section id="version-0-0-5">
+<h2>version 0.0.5<a class="headerlink" href="#version-0-0-5" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-0-5'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-04-26</p></li>
+<li><p><strong>description</strong>: fixed some bugs in Table class.</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>fixed error on mutate when table had one row.</p></li>
+<li><p>allow group by None in sum_all and summarise</p></li>
+<li><p>as_list applied on a dict returns a list of the dict instead of the keys.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-0-4">
+<h2>version 0.0.4<a class="headerlink" href="#version-0-0-4" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-0-4'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-04-19</p></li>
+<li><p><strong>description</strong>: logger classes and methods now can receive a logger name to be used</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>Chrono class now receives a logger name to be used</p></li>
+<li><p><cite>log_time</cite> decorator now receives a logger name to be used</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-0-3">
+<h2>version 0.0.3<a class="headerlink" href="#version-0-0-3" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-0-3'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-04-18</p></li>
+<li><p><strong>description</strong>: minor changes to logging class Chrono and to the default logger</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>minor changes to logging class Chrono: stop now reports the duration</p></li>
+<li><p>default logger has a info level set up</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-0-2">
+<h2>version 0.0.2<a class="headerlink" href="#version-0-0-2" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-0-2'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-04-11</p></li>
+<li><p><strong>description</strong>: added class Table and added direct requests for arcgis od matrix calculation</p></li>
+<li><dl class="simple">
+<dt><strong>changelog</strong>:</dt><dd><ul>
+<li><p>added class Table</p></li>
+<li><p>added direct requests for arcgis od matrix calculationThe request can be made in two modes, sync and async. It defaults to sync and changes to async in case the requests has more than 10 origins or destinations.</p></li>
+<li><p>minor fix to arcgis client</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="version-0-0-1">
+<h2>version 0.0.1<a class="headerlink" href="#version-0-0-1" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#version-0-0-1'">¶</a></h2>
+<ul class="simple">
+<li><p><strong>released</strong>: 2023-03-09</p></li>
+<li><p><strong>description</strong>: initial version of mango library</p></li>
+</ul>
+</section>
+</section>
+</div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
+<div class="sticky top-16 -mt-10 max-h-[calc(var(100vh)-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
+<ul>
+<li><a :data-current="activeSection === '#version-0-2-0'" class="reference internal" href="#version-0-2-0">version 0.2.0</a></li>
+<li><a :data-current="activeSection === '#version-0-1-3'" class="reference internal" href="#version-0-1-3">version 0.1.3</a></li>
+<li><a :data-current="activeSection === '#version-0-1-2'" class="reference internal" href="#version-0-1-2">version 0.1.2</a></li>
+<li><a :data-current="activeSection === '#version-0-1-1'" class="reference internal" href="#version-0-1-1">version 0.1.1</a></li>
+<li><a :data-current="activeSection === '#version-0-1-0'" class="reference internal" href="#version-0-1-0">version 0.1.0</a></li>
+<li><a :data-current="activeSection === '#version-0-0-6'" class="reference internal" href="#version-0-0-6">version 0.0.6</a></li>
+<li><a :data-current="activeSection === '#version-0-0-5'" class="reference internal" href="#version-0-0-5">version 0.0.5</a></li>
+<li><a :data-current="activeSection === '#version-0-0-4'" class="reference internal" href="#version-0-0-4">version 0.0.4</a></li>
+<li><a :data-current="activeSection === '#version-0-0-3'" class="reference internal" href="#version-0-0-3">version 0.0.3</a></li>
+<li><a :data-current="activeSection === '#version-0-0-2'" class="reference internal" href="#version-0-0-2">version 0.0.2</a></li>
+<li><a :data-current="activeSection === '#version-0-0-1'" class="reference internal" href="#version-0-0-1">version 0.0.1</a></li>
+</ul>
 </div>
-</div>
+</aside>
 </main>
 </div>
 </div><footer class="py-6 border-t border-border md:py-0">
@@ -111,8 +291,5 @@
 <script src="_static/doctools.js?v=888ff710"></script>
 <script src="_static/sphinx_highlight.js?v=4825356b"></script>
 <script defer="defer" src="_static/theme.js?v=e8bd915e"></script>
-<script defer="" src="_static/searchtools.js"></script>
-<script defer="" src="_static/language_data.js"></script>
-<script defer="" src="searchindex.js"></script>
 </body>
 </html>
