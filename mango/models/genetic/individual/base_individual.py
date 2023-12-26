@@ -65,6 +65,38 @@ class Individual:
         # might not be needed
         self._idx = value
 
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, value):
+        self._config = value
+
+    @property
+    def parents(self):
+        return self._parents
+
+    @parents.setter
+    def parents(self, value):
+        self._parents = value
+
+    @property
+    def encoding(self):
+        return self._encoding
+
+    @encoding.setter
+    def encoding(self, value):
+        self._encoding = value
+
+    @property
+    def fitness(self):
+        return self._fitness
+
+    @fitness.setter
+    def fitness(self, value):
+        self._fitness = value
+
     def mutate(self, mutation_prob: float = None):
         keep = True
         while keep:

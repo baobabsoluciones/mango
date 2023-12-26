@@ -12,4 +12,5 @@ Welcome to mango's documentation!
 
    readme
    changelog
+   genetic/index
    dev/index
