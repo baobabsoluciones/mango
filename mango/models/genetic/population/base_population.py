@@ -292,12 +292,11 @@ class Population:
         self.population = self.population[temp]
 
         self.selection_probs = (
-            1
-            / self.population_size
-            * (2 * self._rank_pressure - 2)
+            self._rank_pressure
+            - (2 * self._rank_pressure - 2)
             * np.arange(self.population_size)
             / (self.population_size - 1)
-        )
+        ) / self.population_size
 
     def _order_selection(self):
         """
@@ -382,8 +381,8 @@ class Population:
         Method to select n parents from the population based on the selection probabilities
         established on the selection phase.
 
-        :param int n: number of parents to select from the population. It defaults to two,
-        but it has the capability to be a different number.
+        :param int n: number of parents to select from the population. It defaults to two, but it has the capability
+            to be a different number.
         :return: a tuple with the selected parents
         :rtype: tuple
         """

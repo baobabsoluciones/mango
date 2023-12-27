@@ -14,6 +14,7 @@ This section of the documentation covers the module dedicated to genetic algorit
     selection
     crossover
     replacement
+    config
     usage
 
 Each of these sections should cover in enough detail the different aspects of the genetic algorithms implemented in this module. The last section, usage, will cover how to use the module with some code examples.

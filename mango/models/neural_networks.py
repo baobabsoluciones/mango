@@ -17,15 +17,16 @@ def calculate_network_output(
     and adding it to a bias term for that layer. The function then passes this value through an activation function
     (sigmoid) and returns the result.
 
-    :param :class:`np.array` x: the input data
-    :param :class:`np.array` weights: the weights of each layer
+    :param x: the input data
+    :type x: :class:`np.array`
+    :param weights: the weights of each layer
+    :type weights: :class:`np.array`
     :param int layers: the number of layers of the network
     :param int input_nodes: the number of input nodes
     :param list hidden_nodes: the list with the number of nodes in each layer
     :param int output_nodes: the number of output nodes
     :return: the result of the network for a given set of inputs
     :rtype: :class:`np.array`
-    :doc-author: baobab soluciones
     """
     start = 0
     for layer in range(layers + 1):
