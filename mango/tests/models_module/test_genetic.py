@@ -17,6 +17,7 @@ from mango.models.genetic.config.config import GeneticBaseConfig
 from mango.models.genetic.individual import Individual
 from mango.models.genetic.population.base_population import Population
 from mango.models.genetic.problem.base_problem import Problem
+from mango.models.genetic.shared.exceptions import GeneticDiversity
 from mango.tests.const import normalize_path
 
 
@@ -169,7 +170,7 @@ class TestBaseGeneticAlgorithms(TestCase):
         problem = CustomProblem()
 
         population = Population(config, problem)
-        population.run()
+        self.assertRaises(GeneticDiversity, population.run)
 
         solution = np.array(
             [48.50515125, 99.77861667, 94.66805598, -99.69796702, 6.61408047]
@@ -185,7 +186,7 @@ class TestBaseGeneticAlgorithms(TestCase):
         config = GeneticBaseConfig(normalize_path("./data/test_rastrigin.cfg"))
 
         population = Population(config, rastrigin)
-        population.run()
+        self.assertRaises(GeneticDiversity, population.run)
 
         solution = np.array(
             [

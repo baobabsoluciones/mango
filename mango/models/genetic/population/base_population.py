@@ -72,34 +72,42 @@ class Population:
 
     def run(self):
         """
-        Main method to run the Genetic Algorithm.
+        Method to run the evolution process on the population.
+
+        This method does not have any input argument as all the information should be passed through the config class.
+        This method does not return anything, but it can be stopped due to the exceptions that can be raised on
+        other parts of the algorithm.
+
+        :raise GeneticDiversity: When the genetic diversity is too low this exception gets raised. it can be raised
+            during the parent selection process or during the stop phase of the algorithm.
         """
-        try:
-            if self.generation == 1:
-                self.init_population()
-                self.update_population()
-                self._coefficient_variation = self._calculate_coefficient_variation()
 
-            while self.generation <= self.max_generations:
-                self.selection()
-                self.crossover()
-                self.mutate()
-                self.update_population()
-                self.replace()
-                self.update_best()
-                self.stop()
-                self.generation += 1
+        if self.generation == 1:
+            self.init_population()
+            self.update_population()
+            self._coefficient_variation = self._calculate_coefficient_variation()
 
-        except GeneticDiversity:
-            print(
-                f"Exited due to low genetic diversity on generation: {self.generation + 1}"
-            )
+        while self.generation <= self.max_generations:
+            self.selection()
+            self.crossover()
+            self.mutate()
+            self.update_population()
+            self.replace()
+            self.update_best()
+            self.stop()
+            self.generation += 1
 
     def continue_running(self, generations: int):
         """
         Method to rerun the Genetic Algorithm from the point it stopped for more generations.
 
+        This method only works if the algorithm has previously stopped due to reaching the initial generation limit,
+        if it is due to a :class:`GeneticDiversity<mango.models.genetic.shared.exceptions.GeneticDiversity>` exception,
+        it will probably raise said exception again.
+
         :param generations: Number of generations to run the Genetic Algorithm.
+        :raises GeneticDiversity: When the genetic diversity is too low this exception gets raised. it can be raised
+            during the parent selection process or during the stop phase of the algorithm.
         """
         self.max_generations += generations
         self.run()
@@ -107,6 +115,11 @@ class Population:
     def init_population(self):
         """
         Method to initialize the population in the Genetic Algorithm
+
+        The initialization of the population is done by creating a list of random individuals with size
+        equal to the population_size parameter.
+        The creation of the individuals is controlled by the create_random_individual class method of the
+        :class:`Individual<mango.models.genetic.individual.Individual>` class.
         """
         self.population = np.array(
             [
@@ -121,27 +134,34 @@ class Population:
     def selection(self):
         """
         Method to run the selection phase of the Genetic Algorithm.
-        Selection method actually just creates the list of probabilities of a given individual
-        to be chosen on the crossover phase. The values of said probabilities depend on the selection method.
+        The selection process actually just creates the list of probabilities of a given individual
+        to be chosen on the crossover phase. The values of said probabilities depend on the selection method chosen..
 
-        Currently, there is four selection methods implemented:
-            - Roulette
-            - Rank
-            - Random
-            - Tournament
+        Currently, there is seven selection methods implemented:
+            - Random (:meth:`_random_selection`).
+            - Elitism (:meth:`_elitism_selection`).
+            - Rank (:meth:`_rank_selection`).
+            - Order (:meth:`_order_selection`).
+            - Roulette (:meth:`_roulette_selection`).
+            - Tournament (:meth:`_tournament_selection`)
+            - Boltzmann (:meth:`_boltzmann_selection`, not implemented yet).
+
+        The details of how each of these methods work can be found on the :ref:`selection-label` documentation.
         """
-        if self._selection_type == "roulette":
-            self._roulette_selection()
+        if self._selection_type == "random":
+            self._random_selection()
         elif self._selection_type == "elitism":
             self._elitism_selection()
-        elif self._selection_type == "random":
-            self._random_selection()
-        elif self._selection_type == "tournament":
-            self._tournament_selection()
         elif self._selection_type == "rank":
             self._rank_selection()
         elif self._selection_type == "order":
             self._order_selection()
+        elif self._selection_type == "roulette":
+            self._roulette_selection()
+        elif self._selection_type == "tournament":
+            self._tournament_selection()
+        elif self._selection_type == "boltzmann":
+            self._boltzmann_selection()
         else:
             raise NotImplementedError("Selection method not implemented")
 
@@ -149,23 +169,34 @@ class Population:
         """
         Method to run the crossover phase of the Genetic Algorithm
 
-        Currently, there is one crossover method implemented:
-            - Mask
+        Currently, there is eight crossover method implemented:
+            - One-split (:meth:`_one_split_crossover`).
+            - Two-split (:meth:`_two_split_crossover`).
+            - Mask (:meth:`_mask_crossover`).
+            - Linear (:meth:`_linear_crossover`).
+            - Flat (:meth:`_flat_crossover`).
+            - Blend (:meth:`_blend_crossover`).
+            - Gaussian (:meth:`_gaussian_crossover`).
+            - Morphology (:meth:`_morphology_crossover`, not implemented yet).
+
+        The details of how each of these cross over works can be found on the :ref:`crossover-label` documentation.
         """
-        if self._crossover_type == "mask":
-            self._mask_crossover()
-        elif self._crossover_type == "blend":
-            self._blend_crossover()
-        elif self._crossover_type == "one-split":
+        if self._crossover_type == "one-split":
             self._one_split_crossover()
         elif self._crossover_type == "two-split":
             self._two_split_crossover()
+        elif self._crossover_type == "mask":
+            self._mask_crossover()
         elif self._crossover_type == "linear":
             self._linear_crossover()
         elif self._crossover_type == "flat":
             self._flat_crossover()
+        elif self._crossover_type == "blend":
+            self._blend_crossover()
         elif self._crossover_type == "gaussian":
             self._gaussian_crossover()
+        elif self._crossover_type == "morphology":
+            self._morphology_crossover()
         else:
             raise NotImplementedError("Crossover method not implemented")
 
@@ -413,6 +444,36 @@ class Population:
     # -------------------
     # Crossover
     # -------------------
+    def _one_split_crossover(self):
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
+
+            split = randint(1, self._gene_length - 2)
+            offspring_1 = np.concatenate((p1.genes[:split], p2.genes[split:]))
+            offspring_2 = np.concatenate((p2.genes[:split], p1.genes[split:]))
+
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
+
+    def _two_split_crossover(self):
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
+
+            split_1 = randint(1, self._gene_length - 3)
+            split_2 = randint(split_1 + 1, self._gene_length - 2)
+
+            split_1, split_2 = sorted([split_1, split_2])
+
+            offspring_1 = np.concatenate(
+                (p1.genes[:split_1], p2.genes[split_1:split_2], p1.genes[split_2:])
+            )
+            offspring_2 = np.concatenate(
+                (p2.genes[:split_1], p1.genes[split_1:split_2], p2.genes[split_2:])
+            )
+
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
+
     def _mask_crossover(self):
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -478,36 +539,6 @@ class Population:
             )
 
             offspring_2 = interval - offspring_1
-
-            self._add_offspring(offspring_1, p1, p2)
-            self._add_offspring(offspring_2, p1, p2)
-
-    def _one_split_crossover(self):
-        while len(self.offspring) < len(self.population):
-            p1, p2 = self._select_parents()
-
-            split = randint(1, self._gene_length - 2)
-            offspring_1 = np.concatenate((p1.genes[:split], p2.genes[split:]))
-            offspring_2 = np.concatenate((p2.genes[:split], p1.genes[split:]))
-
-            self._add_offspring(offspring_1, p1, p2)
-            self._add_offspring(offspring_2, p1, p2)
-
-    def _two_split_crossover(self):
-        while len(self.offspring) < len(self.population):
-            p1, p2 = self._select_parents()
-
-            split_1 = randint(1, self._gene_length - 3)
-            split_2 = randint(split_1 + 1, self._gene_length - 2)
-
-            split_1, split_2 = sorted([split_1, split_2])
-
-            offspring_1 = np.concatenate(
-                (p1.genes[:split_1], p2.genes[split_1:split_2], p1.genes[split_2:])
-            )
-            offspring_2 = np.concatenate(
-                (p2.genes[:split_1], p1.genes[split_1:split_2], p2.genes[split_2:])
-            )
 
             self._add_offspring(offspring_1, p1, p2)
             self._add_offspring(offspring_2, p1, p2)

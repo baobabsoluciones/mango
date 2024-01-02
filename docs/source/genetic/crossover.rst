@@ -1,2 +1,4 @@
+.. _crossover-label:
+
 Crossover
 ----------

@@ -14,6 +14,7 @@ This section of the documentation covers the module dedicated to genetic algorit
     selection
     crossover
     replacement
+    stop
     config
     usage
 

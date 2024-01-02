@@ -36,6 +36,8 @@ There is also some other helper classes thar are used by the genetic algorithm t
 
 .. autoclass:: mango.models.genetic.shared.exceptions.GeneticDiversity
 
+.. autoclass:: mango.models.genetic.shared.exceptions.ConfigurationError
+
 
 Neural Networks components
 ===========================
