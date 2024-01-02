@@ -99,14 +99,28 @@ Based on these formulas the worst individual should not have a selection probabi
 Tournament selection
 ~~~~~~~~~~~~~~~~~~~~
 
-PLACEHOLDER
+In this selection process a group of size :math:`k` set by the parameter :attr:`_tournament_size<mango.models.genetic.population.Population._tournament_size>` is randomly selected from the population. The individual with the best fitness in this group is awarded a win in their tournament. Then the selection probability is calculated based on the amount of wins each individual has and the total number of tournaments. The selection probability is calculated as:
+
+.. math::
+    p_i = \frac{w_i}{\sum_{j=1}^{n} w_j}
+
+where :math:`w_i` is the number of wins of the individual :math:`i` and :math:`n` is the size of the population.
+
+.. tip::
+    This selection process can be a process to control the diversity as well, as the bigger the tournament size the less diversity there is going to be among the possible parents so less diversity among the future children that can pass to the next generation.
+
+This selection process is implemented in the method: :meth:`_tournament_selection<mango.models.genetic.population.Population._tournament_selection>`.
+
+To select this selection process the parameter :attr:`selection` in the config has to be set up to be ``tournament``.
 
 Boltzmann selection
 ~~~~~~~~~~~~~~~~~~~
 
-PLACEHOLDER
+This selection process has not been implemented yet but it is planned as a future feature.
 
 Parent selection
 ================
 
-PLACEHOLDER
+Once each possible parent has a selection probability assigned to it a process is called to randomly select the number of parents needed (by default its 2). This process makes sure that the parents have different genes or genotype so that the crossover can have a chance to generate children with new genes.
+
+If after a certain number of tries the process is not able to find a set of parents with different genes, the genetic algorithm stops and an exception is raised. This exception is of type :class:`GeneticDiversity<mango.models.genetic.shared.exceptions.GeneticDiversity>`.
