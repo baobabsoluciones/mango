@@ -23,9 +23,11 @@ One-split crossover
 
 In this crossover a split point is randomly selected and two children are created from two parents. The first child is created by taking the first part of the first parent and the second part of the second parent. The second child is created by taking the first part of the second parent and the second part of the first parent. An example can be seen in the following figure:
 
-.. image:: ../static/img/one_split.png
-    :width: 400
+.. figure:: ../static/img/one_split.png
+    :width: 500
     :align: center
+
+    One split crossover
 
 .. tip::
     This crossover can be used for all types of encodings.
@@ -37,9 +39,11 @@ Two-split crossover
 
 In this crossover two split points are randomly selected and two children are created from two parents. The first child is created by taking the first part of the first parent, the second part of the second parent and the third part of the first parent. The second child is created by taking the first part of the second parent, the second part of the first parent and the third part of the second parent. An example can be seen in the following figure:
 
-.. image:: ../static/img/two_split.png
-    :width: 400
+.. figure:: ../static/img/two_split.png
+    :width: 500
     :align: center
+
+    Two split crossover
 
 .. tip::
     This crossover can be used for all types of encodings.
@@ -51,9 +55,11 @@ Mask crossover
 
 In this crossover a mask is randomly generated and two children are created from two parents. The first child is created by taking the values of the first parent where the mask is 1 and the values of the second parent where the mask is 0. The second child is created by taking the values of the second parent where the mask is 1 and the values of the first parent where the mask is 0. An example can be seen in the following figure:
 
-.. image:: ../static/img/mask.png
-    :width: 400
+.. figure:: ../static/img/mask.png
+    :width: 500
     :align: center
+
+    Mask crossover
 
 .. tip::
     This crossover can be used for all types of encodings.
@@ -63,7 +69,29 @@ This crossover process is implemented in the method: :meth:`mask_crossover<mango
 Linear crossover
 ~~~~~~~~~~~~~~~~
 
-asdasd
+In this crossover a linear combination of the two parents is created and three children are created. The linear combination is defined by the following formula:
+
+.. math::
+    \begin{align}
+        \text{child}_1 &= \frac{(\text{parent}_1 +  \text{parent}_2 )}{2}\\
+        \text{child}_2 &= 1.5 \cdot \text{parent}_1 - 0.5 \cdot \text{parent}_2\\
+        \text{child}_3 &= -0.5 \cdot \text{parent}_1 + 1.5 \cdot \text{parent}_2
+    \end{align}
+
+The objective of this crossover is to handle both exploration and exploitation. The first child is the average of the two parents and is used for exploitation. The second and third child are used for exploration. An example can be seen in the following figure:
+
+.. figure:: ../static/img/linear.png
+    :width: 700
+    :align: center
+
+    Linear crossover
+
+As it can be seen in the example the first child lies between both original parents while the second and third child are outside the range of the original parents. This is the reason why the second and third child are used for exploration.
+
+.. warning::
+    This crossover can only be used for real encodings as it will not work with binary or integer encodings where the linear combination is not possible
+
+This crossover process is implemented in the method: :meth:`linear_crossover<mango.models.genetic.population.Population._linear_crossover>`
 
 Flat crossover
 ~~~~~~~~~~~~~~
