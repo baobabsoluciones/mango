@@ -19,7 +19,7 @@ author = "baobab soluciones"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.intersphinx"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.intersphinx", "sphinxcontrib.bibtex"]
 
 templates_path = ["templates"]
 exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
@@ -41,3 +41,6 @@ version = mango.__version__
 release = mango.__version__
 
 
+# Options for bibtex
+bibtex_bibfiles = ["./refs.bib"]
+bibtex_default_style = "plain"

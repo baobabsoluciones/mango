@@ -18,6 +18,8 @@ Crossover processes
 
 In mango there is several crossover processes implemented that can be used for the different types of encodings that the :class:`Individual<mango.models.genetic.individual.Individual>` class supports.
 
+.. _one-split-label:
+
 One-split crossover
 ~~~~~~~~~~~~~~~~~~~
 
@@ -66,10 +68,12 @@ In this crossover a mask is randomly generated and two children are created from
 
 This crossover process is implemented in the method: :meth:`mask_crossover<mango.models.genetic.population.Population._mask_crossover>`
 
+.. _linear-label:
+
 Linear crossover
 ~~~~~~~~~~~~~~~~
 
-In this crossover a linear combination of the two parents is created and three children are created. The linear combination is defined by the following formula:
+In this crossover a linear combination of the two parents is created and three children are created, it was proposed by Wright :cite:p:`wright1991genetic`. The linear combination is defined by the following formula:
 
 .. math::
     \begin{align}
@@ -96,19 +100,88 @@ This crossover process is implemented in the method: :meth:`linear_crossover<man
 Flat crossover
 ~~~~~~~~~~~~~~
 
-asdasd
+This method is an implementation of Radcliffe's flat crossover :cite:p:`radcliffe1991equivalence`. In this crossover two children are created from two parents by taking a random value for each gene from a uniform distribution defined by the values of the father genes. An example can be seen in the following figure:
+
+.. figure:: ../static/img/flat.png
+    :width: 500
+    :align: center
+
+    Flat crossover
+
+.. warning::
+    This crossover can only be used with real encoding. In the future there will be an implementation for integer encoding as well.
+
+This crossover process is implemented in the method: :meth:`flat_crossover<mango.models.genetic.population.Population._flat_crossover>`
 
 Blend crossover
 ~~~~~~~~~~~~~~~
 
-adsasd
+This crossover is an implementation of Eshelman's blend crossover :cite:p:`eshelman1993real`. In this crossover two children are created from two parents by taking a random value for each gene from a uniform distribution defined by the interval defined by the parents.
+
+Fist we calculate the interval for the genes as follows:
+
+.. math::
+    \text{interval} = abs(\text{parent}_1 - \text{parent}_2)
+
+Then the first child gets generated from randomly sampling from a uniform distribution from the following interval:
+
+.. math::
+    [\text{min}(\text{parent}_1, \text{parent}_2) - \alpha \cdot \text{interval}, \text{max}(\text{parent}_1, \text{parent}_2) + \alpha \cdot \text{interval}]
+
+Where :math:`\alpha` is a parameter that controls the expansion of the interval and is set to 0.5 by default. To change its value we have to change the parameter :attr:`blend_expansion<mango.models.genetic.population.Population.blend_expansion>`.
+
+.. tip::
+    If the parameter is set to 0 then the first child is generated in the same way as the flat crossover.
+
+    If the parameter is set to 0.5 then the uniform distribution can generate numbers from the same interval that the linear crossover generates, but instead of having a linear combination of the two parents we have a random combination of the two parents.
+
+Then, the second child is calculated as:
+
+.. math::
+    \text{child}_2 = \text{parent}_1  + \text{parent}_2 - \text{child}_1
+
+An example can be seen in the following figure:
+
+.. figure:: ../static/img/blend.png
+    :width: 700
+    :align: center
+
+    Blend crossover
+
+.. warning::
+    This crossover can only be used with real encoding.
+
+This crossover process is implemented in the method: :meth:`blend_crossover<mango.models.genetic.population.Population._blend_crossover>`
 
 Gaussian crossover
 ~~~~~~~~~~~~~~~~~~
 
-asdasd
+This crossover is an implementation of Ono UNDX crossover method :cite:p:`ono2003real`. In this crossover two children are created from three parents.
+
+This is probably the most complex crossover method implemented in mango. The explanation here will be as brief as possible, and if further explanation is needed please refer to the original paper.
+
+The main idea is that from two parents we calculate the line defined by them, then we calculate the minimum distance between the third parent and said line. Then the children is calculated as the midpoint in said line and then modified by all the orthonormal vectors to the distance vector to the third parent multiplied by a random value from a normal distribution with mean 0 and standard deviation :math:`\sigma_{\eta} \cdot distance`.
+
+First two values are calculated for the process, :math:`\sigma_{\eta}` and :math:`\sigma_{\xi}`. The first one fixed value of :math:`\frac{0.35}{\sqrt{n}}` being :math:`n` the number of genes, the second one gets the fixed value of :math:`\frac{1}{4}`.
+
+The current implementation follows these steps:
+
+COMPLETE THE STEPS
+
+.. warning::
+    This crossover can only be used with real encoding.
+
+This crossover process is implemented in the method: :meth:`gaussian_crossover<mango.models.genetic.population.Population._gaussian_crossover>`.
 
 Morphology crossover
 ~~~~~~~~~~~~~~~~~~~~
 
-asdasd
+This crossover method is not yet implemented on mango.
+
+References
+==========
+
+.. bibliography:: ../refs.bib
+    :style: plain
+    :cited:
+

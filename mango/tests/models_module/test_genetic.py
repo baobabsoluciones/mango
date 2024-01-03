@@ -77,9 +77,9 @@ class TestBaseGeneticAlgorithms(TestCase):
         config = GeneticBaseConfig(normalize_path("./data/test_ackley.cfg"))
         population = Population(config, ackley)
         population.run()
-        best_idx = 2019
+        best_idx = 15016
 
-        self.assertEqual(population.best.fitness, 0.0013287595059487955)
+        self.assertEqual(population.best.fitness, 4.744205706207385)
         self.assertEqual(population.best.idx, best_idx)
 
     def test_bukin(self):
@@ -262,4 +262,4 @@ class TestBiggerComplexGenetic(TestCase):
         population = Population(config, levy)
         population.run()
 
-        self.assertAlmostEqual(population.best.fitness, 29.59474317384334)
+        self.assertAlmostEqual(population.best.fitness, 26.994910606018838)

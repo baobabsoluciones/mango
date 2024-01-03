@@ -453,6 +453,8 @@ class Population:
 
         This method creates two children individuals from two parents.
         It selects a random split point and creates two children by combining the genes of the parents.
+
+        More details of this crossover can be found on the :ref:`one-split-label` section of the documentation.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -496,6 +498,18 @@ class Population:
             self._add_offspring(offspring_2, p1, p2)
 
     def _linear_crossover(self):
+        """
+                Method to perform the linear crossover proposed by Wright (1991).
+
+                This method creates three child individuals. The first child is calculated as the midpoint between both parents.
+                The other two lie on the line defined by the parents are calculated as:
+
+                    - child2 = 1.5 * p1 - 0.5 * p2
+                    - child3 = -0.5 * p1 + 1.5 * p2
+
+        More details of this crossover can be found on the :ref:`linear-label` section of the documentation.
+        """
+
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
@@ -530,7 +544,7 @@ class Population:
         This method implements the Blend crossover proposed by Eshelman and Schaffer (1993).
 
         The alpha parameter defined for the crossover is defined as blend_expansion parameter.
-        With a value of 0 it is equal toa a Radcliffe's flat crossover while a value of 0.5 is
+        With a value of 0 it is equal to a Radcliffe's flat crossover while a value of 0.5 is
         equal to Wright's linear crossover intervals (but the values are randomly selected).
 
         The main difference with Wrights linear crossover is that only two childs are created instead of two
@@ -547,7 +561,7 @@ class Population:
                 max_c + interval * self._blend_expansion,
             )
 
-            offspring_2 = interval - offspring_1
+            offspring_2 = p1.genes + p2.genes - offspring_1
 
             self._add_offspring(offspring_1, p1, p2)
             self._add_offspring(offspring_2, p1, p2)

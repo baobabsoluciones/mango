@@ -14,3 +14,4 @@ Welcome to mango's documentation!
    changelog
    genetic/index
    dev/index
+   bib
