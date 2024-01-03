@@ -276,6 +276,7 @@ class Population:
     def _random_selection(self):
         """
         Method to perform random selection.
+
         In this case the probability to select any individual is equal.
         """
         self.selection_probs = np.ones(self.population_size) / self.population_size
@@ -287,8 +288,8 @@ class Population:
         Based on the config parameter rank_size (k), the k-best individuals are selected for crossover.
         That means that k individuals will have the same selection probability and the rest will have zero.
 
-        This selection method could create a diversity problem on the long run
-        if k is small compared to the population size.
+        This selection method could create a diversity problem on the long run if k is small compared
+        to the population size.
         """
         temp = np.argsort(
             np.array([self.extract_fitness(obj) for obj in self.population])
@@ -311,6 +312,8 @@ class Population:
     def _rank_selection(self):
         """
         Method to perform rank selection.
+
+        This method is based on the rank of the individuals on the population.
         """
         fitness_values = np.array(
             [self.extract_fitness(obj) for obj in self.population]
@@ -445,6 +448,12 @@ class Population:
     # Crossover
     # -------------------
     def _one_split_crossover(self):
+        """
+        Method to perform one-split crossover.
+
+        This method creates two children individuals from two parents.
+        It selects a random split point and creates two children by combining the genes of the parents.
+        """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
@@ -486,6 +495,18 @@ class Population:
             self._add_offspring(offspring_1, p1, p2)
             self._add_offspring(offspring_2, p1, p2)
 
+    def _linear_crossover(self):
+        while len(self.offspring) < len(self.population):
+            p1, p2 = self._select_parents()
+
+            offspring_1 = (p1.genes + p2.genes) / 2
+            offspring_2 = 1.5 * p1.genes - 0.5 * p2.genes
+            offspring_3 = -0.5 * p1.genes + 1.5 * p2.genes
+
+            self._add_offspring(offspring_1, p1, p2)
+            self._add_offspring(offspring_2, p1, p2)
+            self._add_offspring(offspring_3, p1, p2)
+
     def _flat_crossover(self):
         """
         This method implements Radcliffe's flat crossover (1990).
@@ -503,18 +524,6 @@ class Population:
 
             self._add_offspring(offspring_1, p1, p2)
             self._add_offspring(offspring_2, p1, p2)
-
-    def _linear_crossover(self):
-        while len(self.offspring) < len(self.population):
-            p1, p2 = self._select_parents()
-
-            offspring_1 = (p1.genes + p2.genes) / 2
-            offspring_2 = 1.5 * p1.genes - 0.5 * p2.genes
-            offspring_3 = -0.5 * p1.genes + 1.5 * p2.genes
-
-            self._add_offspring(offspring_1, p1, p2)
-            self._add_offspring(offspring_2, p1, p2)
-            self._add_offspring(offspring_3, p1, p2)
 
     def _blend_crossover(self):
         """
