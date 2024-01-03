@@ -25,7 +25,7 @@ Structure of a genetic algorithm
 
 Most genetic algorithms follow a similar structure that can be seen in the following figure, but some may include different operators based on the individuals or the population.
 
-.. figure:: ../static/ga.webp
+.. figure:: ../static/img/ga.webp
     :alt: Structure of a genetic algorithm
     :width: 75%
     :align: center
