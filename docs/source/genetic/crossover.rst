@@ -166,7 +166,14 @@ First two values are calculated for the process, :math:`\sigma_{\eta}` and :math
 
 The current implementation follows these steps:
 
-COMPLETE THE STEPS
+1. Calculate the vector for the line defined by the first two parents.
+2. Calculate the unit vector in said line.
+3. Calculate the mid point in said line.
+4. Calculate the distance vector from the third parent to the line and its norm.
+5. Calculate the random vectors in the base from :math:`\sigma_{\eta}` and the norm calculated on step 4.
+6. Substract from said vector the projection of the distance vector between the first two parents.
+7. Add the paralell component calculated with :math:`\sigma_{\xi}` and the distance between the first two parents.
+8. Calculate the two children by adding and substracting the calculated base from the mid point in the line.
 
 .. warning::
     This crossover can only be used with real encoding.
@@ -178,10 +185,5 @@ Morphology crossover
 
 This crossover method is not yet implemented on mango.
 
-References
-==========
 
-.. bibliography:: ../refs.bib
-    :style: plain
-    :cited:
 

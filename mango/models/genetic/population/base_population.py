@@ -206,7 +206,7 @@ class Population:
 
         The actual implementation of the mutation is done in the individual as it is heavily dependent on the encoding.
         """
-        if self._mutation_type in ["none", "gene-based", "population-based"]:
+        if self._mutation_type in ["static", "gene-based", "population-based"]:
             self._base_mutation()
         elif self._mutation_type == "adaptative":
             self._adaptative_mutation()
@@ -224,12 +224,12 @@ class Population:
         Currently, there is one replacement method implemented:
             - Elitist
         """
-        if self._replacement_type == "elitist":
-            self._elitist_replacement()
+        if self._replacement_type == "random":
+            self._random_replacement()
         elif self._replacement_type == "only-offspring":
             self._offspring_replacement()
-        elif self._replacement_type == "random":
-            self._random_replacement()
+        elif self._replacement_type == "elitist":
+            self._elitist_replacement()
         elif self._replacement_type == "elitist-stochastic":
             self._elitist_stochastic_replacement()
         else:
@@ -259,6 +259,8 @@ class Population:
         Method to implement stop conditions based on information about the population or the genetic diversity.
         """
         # TODO: add more stop conditions
+        # Some based on CV
+        # Based on fitness stagnation
         fitness_diversity = Counter([ind.fitness for ind in self.population])
         if len(fitness_diversity) == 1:
             raise GeneticDiversity
@@ -696,6 +698,25 @@ class Population:
     # -------------------
     # Replacement
     # -------------------
+    def _random_replacement(self):
+        """
+        Method to implement a random replacement operator.
+        """
+        self.population = np.concatenate((self.population, self.offspring))
+
+        self.population = np.random.choice(
+            self.population, size=self.population_size, replace=False
+        )
+
+        self.offspring = np.array([], dtype=Individual)
+
+    def _offspring_replacement(self):
+        """
+        The population gets completely substituted by the offspring.
+        """
+        self.population = self.offspring
+        self.offspring = np.array([], dtype=Individual)
+
     def _elitist_replacement(self):
         """
         The best adapted individuals on the population are the ones that pass to the next generation
@@ -709,25 +730,6 @@ class Population:
             temp = self.population_size - 1 - temp
 
         self.population = self.population[temp][: self.population_size]
-
-        self.offspring = np.array([], dtype=Individual)
-
-    def _offspring_replacement(self):
-        """
-        The population gets completely substituted by the offspring.
-        """
-        self.population = self.offspring
-        self.offspring = np.array([], dtype=Individual)
-
-    def _random_replacement(self):
-        """
-        Method to implement a random replacement operator.
-        """
-        self.population = np.concatenate((self.population, self.offspring))
-
-        self.population = np.random.choice(
-            self.population, size=self.population_size, replace=False
-        )
 
         self.offspring = np.array([], dtype=Individual)
 

@@ -13,6 +13,7 @@ This section of the documentation covers the module dedicated to genetic algorit
     population
     selection
     crossover
+    mutation
     replacement
     stop
     config

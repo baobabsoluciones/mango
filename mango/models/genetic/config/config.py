@@ -51,7 +51,6 @@ class GeneticBaseConfig(BaseConfig):
             ),
         ],
         "crossover": [
-            ConfigParameter("morphology_parents", int, 3, required=False),
             ConfigParameter("offspring_size", int, 100, required=False),
             ConfigParameter("blend_expansion", float, 0.1, required=False),
         ],

@@ -26,7 +26,7 @@ Here we have the code documentation for the main classes of the genetic algorith
     :private-members:
     :show-inheritance:
 
-.. autoclass:: mango.models.genetic.problem.base_problem.Problem
+.. autoclass:: mango.models.genetic.problem.Problem
     :members:
     :undoc-members:
     :private-members:

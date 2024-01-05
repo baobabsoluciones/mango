@@ -79,6 +79,8 @@ where :math:`n` the size of the population and :math:`i` is the order of the ind
 
 This selection process is implemented in the method: :meth:`_order_selection<mango.models.genetic.population.Population._order_selection>`.
 
+.. _roulette-wheel-selection-label:
+
 Roulette wheel selection
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
