@@ -32,7 +32,7 @@ Most genetic algorithms follow a similar structure that can be seen in the follo
 
     Höschel, K.; Lakshminarayanan, V. Genetic algorithms for lens design: A review. J. Opt. 2018, 48, 134–144.
 
-As it can be seen all genetic algorithms start from a similar point in which we need to generate an initial random population of solutions (individuals). This population is then evaluated and their fittness is calculated to see how they adapt to the problem that we are trying to solve. The quality of this initial population will determine the convergence progress of the population and have a crucial impact on the initial phases of exploration done by the algorithm.
+As it can be seen all genetic algorithms start from a similar point in which we need to generate an initial random population of solutions (individuals). This population is then evaluated and their fitness is calculated to see how they adapt to the problem that we are trying to solve. The quality of this initial population will determine the convergence progress of the population and have a crucial impact on the initial phases of exploration done by the algorithm.
 
 After this the genetic algorithm starts iterating and repeating the following steps or genetic operators.
 
@@ -42,7 +42,7 @@ After this the genetic algorithm starts iterating and repeating the following st
 - **Stopping criteria**: In this step we check if the algorithm has reached a stopping criteria. This can be a maximum number of iterations, a maximum number of generations without improvement, a maximum number of generations, etc. This is done to avoid the algorithm to run forever and to stop it when it has reached a good enough solution.
 - **Replacement**: In this step we replace the individuals of the current generation with the individuals of the next generation. This is done to simulate the death of the individuals that are not fit enough to survive and reproduce.
 
-Some of these steps have different versions that can be used in different situations, impacting how the population evolves and thus, how the population converges to a solution. The different versions of this operators that are implemented on mango will be explained on their given sections in order to enter into much detail as possible and explain the origin of each one of these operators.
+Some of these steps have different versions that can be used in different situations, impacting how the population evolves and thus, how the population converges to a solution. The different versions of this operators that are implemented on mango will be explained on their given sections in order to enter into as much detail as possible and explain the origin of each one of these operators.
 
 Glossary
 =========

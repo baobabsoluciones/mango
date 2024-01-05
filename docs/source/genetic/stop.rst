@@ -13,8 +13,8 @@ The following conditions will cause the algorithm to stop:
 
 In the future some other stopping conditions will be added:
 
-- Stagnation: if the best fitness does not improve over a given number of generations the algorithm should stop.
-- Time limit: if the algorithm has run for too long it should stop.
-- Convergence to a fitness value: if a good enough fitness value is know and indicated convergence can stop one that said value is reached.
+- Stagnation: If the best fitness does not improve over a given number of generations the algorithm should stop.
+- Time limit: If the algorithm has run for too long it should stop.
+- Convergence to a fitness value: If a good enough fitness value is known and indicated convergence can stop one that said value is reached.
 
-All this stopping criteria will be configurable and will be activated or deactivated at will.
+All these stopping criteria will be configurable and will be activated or deactivated at will.

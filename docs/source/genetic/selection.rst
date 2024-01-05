@@ -38,7 +38,7 @@ Elitism selection
 In this selection process the :math:`k` best individuals are assigned the same probability of selection (:math:`\frac{1}{k}`) while the rest of the individuals have a probability of zero.
 
 .. caution::
-    This selection process can reduce the genetic diversity of the population and it can lead to a premature convergence. If the value of :math:`k` to low it may happend that all possible choices of parent are actually the same individual causing the algorithm to stop.
+    This selection process can reduce the genetic diversity of the population and it can lead to a premature convergence. If the value of :math:`k` is to low it may happen that all possible choices of parents are actually the same individual causing the algorithm to stop.
 
     If :math:`k` is equal to the population size, this selection process is equivalent to the random selection process.
 

@@ -12,7 +12,7 @@ Understanding the dynamics of replacement involves a delicate balance between ex
 Replacement processes
 =====================
 
-In mango there is several replacement processes implemented that can be used.
+In mango there are several replacement processes implemented that can be used.
 
 Random replacement
 ~~~~~~~~~~~~~~~~~~
