@@ -32,7 +32,7 @@ Here we have the code documentation for the main classes of the genetic algorith
     :private-members:
     :show-inheritance:
 
-There is also some other helper classes thar are used by the genetic algorithm that are documented below.
+There is also some other helper classes that are used by the genetic algorithm that are documented below.
 
 .. autoclass:: mango.models.genetic.shared.exceptions.GeneticDiversity
 

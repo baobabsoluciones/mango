@@ -1,7 +1,7 @@
 Configuration
 --------------
 
-The genetic algorith (GA) has a helper class that is used to parse `.yml` files to read the configuration that has to be used.
+The genetic algorithm (GA) has a helper class that is used to parse `.yml` files to read the configuration that has to be used.
 
 This configuration :class:`GeneticBaseConfig<mango.models.genetic.config.GeneticBaseConfig>` class can be extended and modified at will.
 
@@ -10,7 +10,7 @@ The parameters that can be modified are divided by sections.
 Main section
 ============
 
-In this section we have tha main controls of the genetic algorithm:
+In this section we have the main controls of the genetic algorithm:
 
 - **population_size**: The size of the population that will be used in the GA. It has to be an integer value and it defaults to 100.
 - **max_generations**: The maximum number of generations that will be used in the GA. It has to be an integer value and it defaults to 500.
@@ -81,7 +81,7 @@ Crossover section
 The section for the crossover has the following parameters:
 
 - **offspring_size**: The size of the offspring that will be used in the GA. It has to be an integer value and it defaults to 100.
-- **blend_expansion**: The blend expansion that will be used in the GA. It has to be a float value  and defaults to 0.5.
+- **blend_expansion**: The blend expansion that will be used in the GA. It has to be a float value and defaults to 0.5.
 
 An example of the `.yml` file can be seen following:
 
