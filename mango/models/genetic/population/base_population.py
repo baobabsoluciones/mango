@@ -1,10 +1,13 @@
 from collections import Counter
 from math import sqrt
 from random import randint
+from typing import Union
 
 import numpy as np
 
+from mango.models.genetic.config import GeneticBaseConfig
 from mango.models.genetic.individual import Individual
+from mango.models.genetic.problem import Problem
 from mango.models.genetic.shared.exceptions import GeneticDiversity, ConfigurationError
 
 
@@ -69,6 +72,41 @@ class Population:
             raise ConfigurationError(
                 f"Encoding {self._encoding} not supported for crossover type {self._crossover_type}"
             )
+
+    # -------------------
+    # Property methods
+    # -------------------
+    @property
+    def config(self):
+        """
+        Property to store the configuration that the genetic algorithm has to use.
+
+        :getter: Returns the configuration object.
+        :setter: Sets the configuration object.
+        :param value: The configuration object.
+        :type value: :class:`GeneticBaseConfig<mango.models.genetic.config.GeneticBaseConfig>`
+        """
+        return self._config
+
+    @config.setter
+    def config(self, value: GeneticBaseConfig):
+        self._config = value
+
+    @property
+    def evaluator(self):
+        """
+        Property to store the function or class that evaluates the fitness of an individual.
+
+        :getter: Returns the evaluator function.
+        :setter: Sets the evaluator function.
+        :param value: The evaluator function or class.
+        :type value: Union[callable, :class:`Problem<mango.models.genetic.problem.Problem>`]
+        """
+        return self._evaluator
+
+    @evaluator.setter
+    def evaluator(self, value: Union[callable, Problem]):
+        self._evaluator = value
 
     def run(self):
         """
@@ -138,13 +176,13 @@ class Population:
         to be chosen on the crossover phase. The values of said probabilities depend on the selection method chosen..
 
         Currently, there is seven selection methods implemented:
-            - Random (:meth:`_random_selection`).
-            - Elitism (:meth:`_elitism_selection`).
-            - Rank (:meth:`_rank_selection`).
-            - Order (:meth:`_order_selection`).
-            - Roulette (:meth:`_roulette_selection`).
-            - Tournament (:meth:`_tournament_selection`)
-            - Boltzmann (:meth:`_boltzmann_selection`, not implemented yet).
+        - Random (:meth:`_random_selection`).
+        - Elitism (:meth:`_elitism_selection`).
+        - Rank (:meth:`_rank_selection`).
+        - Order (:meth:`_order_selection`).
+        - Roulette (:meth:`_roulette_selection`).
+        - Tournament (:meth:`_tournament_selection`)
+        - Boltzmann (:meth:`_boltzmann_selection`, not implemented yet).
 
         The details of how each of these methods work can be found on the :ref:`selection-label` documentation.
         """
@@ -170,14 +208,14 @@ class Population:
         Method to run the crossover phase of the Genetic Algorithm
 
         Currently, there is eight crossover method implemented:
-            - One-split (:meth:`_one_split_crossover`).
-            - Two-split (:meth:`_two_split_crossover`).
-            - Mask (:meth:`_mask_crossover`).
-            - Linear (:meth:`_linear_crossover`).
-            - Flat (:meth:`_flat_crossover`).
-            - Blend (:meth:`_blend_crossover`).
-            - Gaussian (:meth:`_gaussian_crossover`).
-            - Morphology (:meth:`_morphology_crossover`, not implemented yet).
+        - One-split (:meth:`_one_split_crossover`).
+        - Two-split (:meth:`_two_split_crossover`).
+        - Mask (:meth:`_mask_crossover`).
+        - Linear (:meth:`_linear_crossover`).
+        - Flat (:meth:`_flat_crossover`).
+        - Blend (:meth:`_blend_crossover`).
+        - Gaussian (:meth:`_gaussian_crossover`).
+        - Morphology (:meth:`_morphology_crossover`, not implemented yet).
 
         The details of how each of these cross over works can be found on the :ref:`crossover-label` documentation.
         """
@@ -205,6 +243,8 @@ class Population:
         Method to run the mutation phase of the Genetic Algorithm.
 
         The actual implementation of the mutation is done in the individual as it is heavily dependent on the encoding.
+        The only change is when using adaptative mutation that the mutation rate has to be updated before calling
+        the individual.
         """
         if self._mutation_type in ["static", "gene-based", "population-based"]:
             self._base_mutation()
@@ -222,7 +262,12 @@ class Population:
         Method to run the replacement phase of the Genetic Algorithm.
 
         Currently, there is one replacement method implemented:
-            - Elitist
+        - Random (:meth:`_random_replacement`).
+        - Offspring (:meth:`_offspring_replacement`).
+        - Elitist (:meth:`_elitist_replacement`).
+        - Elistist stochastic (:meth:`_elitist_stochastic_replacement`).
+
+        The details of how each of these replacement methods work can be found on the :ref:`replacement-label`
         """
         if self._replacement_type == "random":
             self._random_replacement()
@@ -238,6 +283,8 @@ class Population:
     def update_best(self):
         """
         Method to update the best adapted individual on the population.
+
+        The best individual gets updated based on the optimization objective of the problem.
         """
         if self._optimization_objective == "max":
             current_best = max(self.population, key=lambda x: x.fitness)
@@ -257,6 +304,8 @@ class Population:
     def stop(self):
         """
         Method to implement stop conditions based on information about the population or the genetic diversity.
+
+        Currently, the only check done is that the genetic diversity is not too low.
         """
         # TODO: add more stop conditions
         # Some based on CV
@@ -385,6 +434,9 @@ class Population:
         self.selection_probs = self.selection_probs / sum(self.selection_probs)
 
     def _tournament_selection(self):
+        """
+        Method to perform tournament selection
+        """
         self.selection_probs = np.zeros(self.population_size)
         fitness_values = np.array(
             [self.extract_fitness(obj) for obj in self.population]
@@ -410,6 +462,9 @@ class Population:
         self.selection_probs = self.selection_probs / np.sum(self.selection_probs)
 
     def _boltzmann_selection(self):
+        """
+        Not implemented yet
+        """
         pass
 
     def _select_parents(self, n: int = 2) -> tuple:
@@ -469,6 +524,14 @@ class Population:
             self._add_offspring(offspring_2, p1, p2)
 
     def _two_split_crossover(self):
+        """
+        Method to perform two-split crossover.
+
+        This method creates two children individuals from two parents.
+        It selects two random split points and creates two children by combining the genes of the parents.
+
+        More details of this crossover can be found on the :ref:`two-split-label` section of the documentation.
+        """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
@@ -488,6 +551,17 @@ class Population:
             self._add_offspring(offspring_2, p1, p2)
 
     def _mask_crossover(self):
+        """
+        Method to perform mask crossover.
+
+        This method creates two children individuals from two parents.
+        It selects a random mask and creates two children by combining the genes of the parents.
+        The first children is created by taking the genes of the first parent where the mask is 1 and the genes of
+        the second parent where the mask is 0. The second children is created by taking the genes of the first parent
+        where the mask is 0 and the genes of the second parent where the mask is 1.
+
+        More details of this crossover can be found on the :ref:`mask-label` section of the documentation.
+        """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
 
@@ -501,13 +575,13 @@ class Population:
 
     def _linear_crossover(self):
         """
-                Method to perform the linear crossover proposed by Wright (1991).
+        Method to perform the linear crossover proposed by Wright (1991).
 
-                This method creates three child individuals. The first child is calculated as the midpoint between both parents.
-                The other two lie on the line defined by the parents are calculated as:
+        This method creates three child individuals. The first child is calculated as the midpoint between both parents.
+        The other two lie on the line defined by the parents are calculated as:
 
-                    - child2 = 1.5 * p1 - 0.5 * p2
-                    - child3 = -0.5 * p1 + 1.5 * p2
+        - child2 = 1.5 * p1 - 0.5 * p2
+        - child3 = -0.5 * p1 + 1.5 * p2
 
         More details of this crossover can be found on the :ref:`linear-label` section of the documentation.
         """
@@ -528,6 +602,8 @@ class Population:
         This method implements Radcliffe's flat crossover (1990).
 
         It creates two child individuals with each gene created randomly inside the interval defined by the parents.
+
+        More details of this crossover can be found on the :ref:`flat-label` section of the documentation.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -549,7 +625,9 @@ class Population:
         With a value of 0 it is equal to a Radcliffe's flat crossover while a value of 0.5 is
         equal to Wright's linear crossover intervals (but the values are randomly selected).
 
-        The main difference with Wrights linear crossover is that only two childs are created instead of two
+        The main difference with Wrights linear crossover is that only two childs are created instead of two.
+
+        More details of this crossover can be found on the :ref:`blend-label` section of the documentation.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -574,6 +652,8 @@ class Population:
         or UNDX, proposed by Ono (2003).
 
         This method is only implemented for real encoding.
+
+        More details of this crossover can be found on the :ref:`gaussian-label` section of the documentation.
         """
 
         # TODO: review bad results for huge genomes
@@ -624,10 +704,20 @@ class Population:
             self._add_offspring(offspring_2, p1, p2)
 
     def _morphology_crossover(self):
-        """ """
+        """
+        This method is not yet implemented
+        """
         raise NotImplementedError("Morphology crossover not implemented")
 
-    def _add_offspring(self, genes, *parents):
+    def _add_offspring(self, genes: np.array, *parents: tuple):
+        """
+        Method to add an offspring to the offspring array
+
+        :param genes: Genes of the offspring
+        :type genes: :class:`numpy.array`
+        :param parents: Parents of the offspring
+        :type parents: tuple
+        """
         self._count_individuals += 1
 
         offspring = Individual(
@@ -655,7 +745,7 @@ class Population:
         """
         Method to implement adaptative mutation operator.
 
-        For the calculation of this
+        For the update of the mutation rate we use the coefficient of variation of the fitness of the population.
         """
 
         if self.generation % self._generation_adaptative == 0:
@@ -691,6 +781,9 @@ class Population:
     # Update fitness
     # -------------------
     def _update_fitness(self, population):
+        """
+        Internal method to update the fitness of a gioven population or subpopulation of the GA.
+        """
         for ind in population:
             if ind.fitness is None:
                 ind.fitness = self.evaluator(ind.genes)
@@ -701,6 +794,9 @@ class Population:
     def _random_replacement(self):
         """
         Method to implement a random replacement operator.
+
+        In this case the offspring is added to the population and then a random selection is done to select
+        the individuals that will pass to the next generation.
         """
         self.population = np.concatenate((self.population, self.offspring))
 
@@ -785,4 +881,7 @@ class Population:
     # -------------------
     @staticmethod
     def extract_fitness(obj):
+        """
+        Helper static method to extract the fitness of an individual.
+        """
         return obj.fitness

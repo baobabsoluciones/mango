@@ -1,3 +1,5 @@
+.. _replacement-label:
+
 Replacement
 -------------
 
@@ -7,7 +9,7 @@ The choice of replacement strategy significantly influences the performance and 
 
 Understanding the dynamics of replacement involves a delicate balance between exploration and exploitation. On one hand, the algorithm needs to explore different regions of the solution space by introducing diverse individuals. On the other hand, it must exploit promising solutions by allowing them to survive and propagate through generations.
 
-Replacement precesses
+Replacement processes
 =====================
 
 In mango there is several replacement processes implemented that can be used.
