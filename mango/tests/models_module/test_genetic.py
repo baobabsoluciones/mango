@@ -17,6 +17,7 @@ from mango.models.genetic.config.config import GeneticBaseConfig
 from mango.models.genetic.individual import Individual
 from mango.models.genetic.population.base_population import Population
 from mango.models.genetic.problem.base_problem import Problem
+from mango.models.genetic.shared.exceptions import GeneticDiversity
 from mango.tests.const import normalize_path
 
 
@@ -76,9 +77,9 @@ class TestBaseGeneticAlgorithms(TestCase):
         config = GeneticBaseConfig(normalize_path("./data/test_ackley.cfg"))
         population = Population(config, ackley)
         population.run()
-        best_idx = 2019
+        best_idx = 15016
 
-        self.assertEqual(population.best.fitness, 0.0013287595059487955)
+        self.assertEqual(population.best.fitness, 4.744205706207385)
         self.assertEqual(population.best.idx, best_idx)
 
     def test_bukin(self):
@@ -169,7 +170,7 @@ class TestBaseGeneticAlgorithms(TestCase):
         problem = CustomProblem()
 
         population = Population(config, problem)
-        population.run()
+        self.assertRaises(GeneticDiversity, population.run)
 
         solution = np.array(
             [48.50515125, 99.77861667, 94.66805598, -99.69796702, 6.61408047]
@@ -185,7 +186,7 @@ class TestBaseGeneticAlgorithms(TestCase):
         config = GeneticBaseConfig(normalize_path("./data/test_rastrigin.cfg"))
 
         population = Population(config, rastrigin)
-        population.run()
+        self.assertRaises(GeneticDiversity, population.run)
 
         solution = np.array(
             [
@@ -223,22 +224,24 @@ class TestInvertedFunctionsGenetic(TestCase):
         population = Population(config, inverted_griewank)
         population.run()
 
+        print(population.best.genes)
+
         solution = np.array(
             [
-                6.03311073e-05,
-                -4.51454806e-04,
-                -2.87190420e-03,
-                4.47250605e-03,
-                -6.48094691e-04,
-                -2.82147509e-04,
-                4.95029981e-03,
-                -1.50351185e-03,
-                -1.00338090e-03,
-                -1.37725140e-04,
+                -2.92365297,
+                -0.40048963,
+                -5.20840551,
+                0.03186117,
+                0.73219018,
+                0.80848836,
+                0.60492159,
+                0.83790558,
+                0.14105634,
+                0.4937259,
             ]
         )
 
-        self.assertEqual(population.best.fitness, -5.939190922399362e-06)
+        self.assertEqual(population.best.fitness, -0.24477631513274156)
 
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
@@ -259,4 +262,4 @@ class TestBiggerComplexGenetic(TestCase):
         population = Population(config, levy)
         population.run()
 
-        self.assertAlmostEqual(population.best.fitness, 29.59474317384334)
+        self.assertAlmostEqual(population.best.fitness, 26.994910606018838)

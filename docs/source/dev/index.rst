@@ -8,3 +8,4 @@ Code documentation
 
     benchmark
     clients
+    models

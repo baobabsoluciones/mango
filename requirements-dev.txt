@@ -5,3 +5,4 @@ lightgbm==4.1.0
 xgboost==2.0.2
 sphinx
 shibuya
+sphinxcontrib-bibtex
