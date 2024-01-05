@@ -1,3 +1,9 @@
+version 0.2.1
+==============
+- **released**: 2024-01-08
+- **description**: small bugfixes on genetic algorithms
+
+
 version 0.2.0
 ==============
 
