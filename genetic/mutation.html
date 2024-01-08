@@ -166,8 +166,9 @@
 <p>The mutation rate then will be calculated as follows:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\text{mutation_rate} = \frac{1}{}\]</div>
+\[\text{mutation_rate} = \frac{1}{p^{0.9318} \cdot n^{0.4535}}\]</div>
 </div>
+<p>being <span class="math notranslate nohighlight">\(p\)</span> the number of individuals the population has and <span class="math notranslate nohighlight">\(n\)</span> the number of genes the individual has.</p>
 </section>
 <section id="adaptative-mutation-control">
 <h2>Adaptative mutation control<a class="headerlink" href="#adaptative-mutation-control" title="Permalink to this heading">¶</a></h2>
@@ -175,7 +176,7 @@
 <p>This coefficient is calculated as follows:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\begin{split}CV = \\frac{\\sigma}{\\mu}\end{split}\]</div>
+\[CV = \frac{\sigma}{\mu}\]</div>
 </div>
 <p>Where <span class="math notranslate nohighlight">\(\\sigma\)</span> is the standard deviation and <span class="math notranslate nohighlight">\(\\mu\)</span> is the mean of the population.</p>
 <p>When the value of this coefficient decreases then the mutation rate is increased as it means the population is slowly converging towards one solution, where as if the value of the coefficient increases then the mutation rate is decreased as it means the population is diverging and we need to explore more the search space.</p>
