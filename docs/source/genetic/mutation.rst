@@ -29,7 +29,9 @@ The mutation rate then will be calculated as follows:
 
 .. math::
 
-    \text{mutation_rate} = \frac{1}{}
+    \text{mutation_rate} = \frac{1}{p^{0.9318} \cdot n^{0.4535}}
+
+being :math:`p` the number of individuals the population has and :math:`n` the number of genes the individual has.
 
 
 Adaptative mutation control
@@ -41,7 +43,7 @@ This coefficient is calculated as follows:
 
 .. math::
 
-    CV = \\frac{\\sigma}{\\mu}
+    CV = \frac{\sigma}{\mu}
 
 Where :math:`\\sigma` is the standard deviation and :math:`\\mu` is the mean of the population.
 
