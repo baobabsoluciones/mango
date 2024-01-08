@@ -1,49 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
+
+  <!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Benchmarks - mango 0.2.0 documentation</title>
+      <title>Benchmarks - mango 0.2.1 documentation</title>
     <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Clients" href="clients.html" /><link rel="prev" title="Code documentation" href="index.html" />
+
   <script>
-    const isDarkTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const sessionTheme = sessionStorage['_theme']
-    if (sessionTheme) {
-      document.documentElement.classList.add(sessionTheme)
-    } else if (isDarkTheme) {
-      document.documentElement.classList.add('dark')
-    }
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(sessionStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=aecf457f" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=28c32440" />
-    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=ee381b95" />
-    <style>
-:root {
-  --sy-f-sys:-apple-system, BlinkMacSystemFont, Segoe UI, Oxygen, Ubuntu, Droid Sans, Helvetica Neue;--sy-f-cjk:PingFang SC, Hiragino Sans GB, Droid Sans Fallback, Microsoft YaHei;--sy-f-heading:var(--sy-f-sys), var(--sy-f-cjk), sans-serif;--sy-f-text:var(--sy-f-sys), var(--sy-f-cjk), sans-serif;--sy-f-mono:Menlo, Monaco, Consolas, "Courier New", monospace;--sy-c-divider:rgba(var(--sy-rc-text), 0.1);--sy-c-divider-weak:rgba(var(--sy-rc-text), 0.05);--sy-c-border:rgba(var(--sy-rc-text), 0.14);--sy-s-banner-height:0rem;--sy-s-navbar-height:56px;--sy-s-offset-top:calc(var(--sy-s-navbar-height) + var(--sy-s-banner-height));--sy-c-link:rgb(var(--sy-rc-theme));--sy-c-link-weak:rgba(var(--sy-rc-theme), 0.86);
-  --sy-rc-theme:143, 118, 214;--sy-rc-bg:255, 255, 255;--sy-rc-invert:0, 0, 0;--sy-rc-text:0, 0, 0;--sy-c-bg:#fff;--sy-c-bg-weak:#f9f9f9;--sy-c-text:#374151;--sy-c-text-weak:#6b7280;--sy-c-heading:#111827;--sy-c-bold:#111827;--sy-c-foot-text:#232226;--sy-c-foot-bg:#fafafa;--sy-c-foot-divider:#f0f0f0;
-}
-@media (prefers-color-scheme: light) {
-  :root {
-    --sy-rc-theme:143, 118, 214;--sy-rc-bg:255, 255, 255;--sy-rc-invert:0, 0, 0;--sy-rc-text:0, 0, 0;--sy-c-bg:#fff;--sy-c-bg-weak:#f9f9f9;--sy-c-text:#374151;--sy-c-text-weak:#6b7280;--sy-c-heading:#111827;--sy-c-bold:#111827;--sy-c-foot-text:#232226;--sy-c-foot-bg:#fafafa;--sy-c-foot-divider:#f0f0f0;
-  }
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --sy-rc-theme:143, 118, 214;--sy-rc-bg:18, 18, 18;--sy-rc-invert:255, 255, 255;--sy-rc-text:255, 255, 255;--sy-c-bg:#121212;--sy-c-bg-weak:#212833;--sy-c-text:#cedbea;--sy-c-text-weak:#77889f;--sy-c-heading:#ebf0f4;--sy-c-bold:#ebf0f4;--sy-c-foot-text:#eee;--sy-c-foot-bg:#000;--sy-c-foot-divider:#000;
-  }
-}
-html.light {
-  --sy-rc-theme:143, 118, 214;--sy-rc-bg:255, 255, 255;--sy-rc-invert:0, 0, 0;--sy-rc-text:0, 0, 0;--sy-c-bg:#fff;--sy-c-bg-weak:#f9f9f9;--sy-c-text:#374151;--sy-c-text-weak:#6b7280;--sy-c-heading:#111827;--sy-c-bold:#111827;--sy-c-foot-text:#232226;--sy-c-foot-bg:#fafafa;--sy-c-foot-divider:#f0f0f0;
-}
-html.dark {
-  --sy-rc-theme:143, 118, 214;--sy-rc-bg:18, 18, 18;--sy-rc-invert:255, 255, 255;--sy-rc-text:255, 255, 255;--sy-c-bg:#121212;--sy-c-bg-weak:#212833;--sy-c-text:#cedbea;--sy-c-text-weak:#77889f;--sy-c-heading:#ebf0f4;--sy-c-bold:#ebf0f4;--sy-c-foot-text:#eee;--sy-c-foot-bg:#000;--sy-c-foot-divider:#000;
-}
-</style>
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=5d7d6ab7" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --sy-f-heading: Inter, var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
 }
 </style>
     <meta property="og:type" content="website"/><meta property="og:title" content="Benchmarks"/>
@@ -58,7 +34,8 @@ html.dark {
     </a>
     <div class="sy-head-links" id="NavLinks">
       <nav class="sy-head-nav"></nav>
-      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+      <div class="sy-head-extra flex items-center print:hidden">
+<form class="searchbox flex items-center" action="../search.html" method="get">
   <input type="text" name="q" placeholder="Search" />
   <kbd>/</kbd>
 </form>
@@ -69,7 +46,10 @@ html.dark {
       </div>
     </div>
     <div class="sy-head-actions flex items-center shrink-0 print:hidden">
-      <button class="js-theme theme-switch flex items-center" data-aria-light="Switch to dark mode" data-aria-dark="Switch to light mode">
+      <button class="js-theme theme-switch flex items-center"
+        data-aria-auto="Switch to light color mode"
+        data-aria-light="Switch to dark color mode"
+        data-aria-dark="Switch to auto color mode">
         <i class="i-icon theme-icon"></i>
       </button>
       <button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="NavLinks" aria-expanded="false">
@@ -90,11 +70,26 @@ html.dark {
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genetic/index.html">Genetic Algorithms (GA)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../genetic/usage.html">Usage</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Code documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Benchmarks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
 </ul>
 
         </div>
@@ -575,10 +570,10 @@ with a value of 19.2085.</p>
     </div>
   </div>
 </footer></div>
-      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b1f64a84"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=158ece9d"></script>
       <script src="../_static/doctools.js?v=888ff710"></script>
       <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="../_static/shibuya.js?v=3e5c8598"></script>
+      <script src="../_static/shibuya.js?v=ccb09f80"></script>
     
 </body>
 </html>

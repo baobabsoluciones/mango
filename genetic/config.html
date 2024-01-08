@@ -1,0 +1,297 @@
+
+  <!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Configuration - mango 0.2.1 documentation</title>
+    <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Usage" href="usage.html" /><link rel="prev" title="Stop conditions" href="stop.html" />
+
+  <script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(sessionStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=aecf457f" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=5d7d6ab7" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Configuration"/>
+<meta name="twitter:card" content="summary"/></head>
+<body><div class="document"><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand mr-4" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-links" id="NavLinks">
+      <nav class="sy-head-nav"></nav>
+      <div class="sy-head-extra flex items-center print:hidden">
+<form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form>
+        
+        
+        <div class="sy-head-social flex items-center">
+        </div>
+      </div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden">
+      <button class="js-theme theme-switch flex items-center"
+        data-aria-auto="Switch to light color mode"
+        data-aria-light="Switch to dark color mode"
+        data-aria-dark="Switch to auto color mode">
+        <i class="i-icon theme-icon"></i>
+      </button>
+      <button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="NavLinks" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Genetic Algorithms (GA)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stop.html">Stop conditions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/index.html">Code documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/models.html">Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-icon close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4">
+  <div class="localtoc">
+    <h3>On this page</h3>
+    <ul>
+<li><a class="reference internal" href="#main-section">Main section</a></li>
+<li><a class="reference internal" href="#individual-section">Individual section</a></li>
+<li><a class="reference internal" href="#selection-section">Selection section</a></li>
+<li><a class="reference internal" href="#crossover-section">Crossover section</a></li>
+<li><a class="reference internal" href="#mutation-section">Mutation section</a></li>
+</ul>
+
+  </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div>
+    </div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+    <div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-icon menu"></i>
+      </button>
+    </div>
+    <ul class="flex-1">
+      
+      
+      <li><a href="../index.html">mango</a><span>/</span></li>
+      
+      <li><a href="index.html">Genetic Algorithms (GA)</a><span>/</span></li>
+      
+      <li><strong>Configuration</strong></li>
+      
+      
+    </ul>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-icon outdent"></i>
+      </button>
+    </div>
+  </div>
+</div>
+    <div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">¶</a></h1>
+<p>The genetic algorithm (GA) has a helper class that is used to parse <cite>.yml</cite> files to read the configuration that has to be used.</p>
+<p>This configuration <a class="reference internal" href="../dev/models.html#mango.models.genetic.config.GeneticBaseConfig" title="mango.models.genetic.config.GeneticBaseConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneticBaseConfig</span></code></a> class can be extended and modified at will.</p>
+<p>The parameters that can be modified are divided by sections.</p>
+<section id="main-section">
+<h2>Main section<a class="headerlink" href="#main-section" title="Permalink to this heading">¶</a></h2>
+<p>In this section we have the main controls of the genetic algorithm:</p>
+<ul class="simple">
+<li><p><strong>population_size</strong>: The size of the population that will be used in the GA. It has to be an integer value and it defaults to 100.</p></li>
+<li><p><strong>max_generations</strong>: The maximum number of generations that will be used in the GA. It has to be an integer value and it defaults to 500.</p></li>
+<li><p><strong>optimization_objective</strong>: The objective of the optimization. It can be <cite>max</cite> or <cite>min</cite>. It has to be a string and can only be either <cite>max</cite> or <cite>min</cite>.</p></li>
+<li><p><strong>selection</strong>: The selection method that will be used in the GA. It can be any of the following values: <cite>random</cite>, <cite>elitism</cite>, <cite>rank</cite>, <cite>order</cite>, <cite>roulette</cite> or <cite>tournament</cite>.</p></li>
+<li><p><strong>crossover</strong>: The crossover method that will be used in the GA.It can be any of the following values: <cite>one-split</cite>, <cite>two-split</cite>, <cite>mask</cite>, <cite>linear</cite>, <cite>flat</cite>, <cite>blend</cite> or <cite>gaussian</cite>.</p></li>
+<li><p><strong>replacement</strong>: The replacement method that will be used in the GA. It can be any of the following values: <cite>random</cite>, <cite>only-offspring</cite>, <cite>elitist</cite> or <cite>elitist-stochastic</cite>.</p></li>
+<li><p><strong>mutation_control</strong>: The mutation control method that will be used in the GA. It can be <cite>static</cite>, <cite>gene-based</cite>, <cite>population-based</cite> or <cite>adaptative</cite>.</p></li>
+<li><p><strong>mutation_base_rate</strong>: The base mutation rate that will be used in the GA. It can be any float number between 0 and 1 and it defaults to 0.1.</p></li>
+</ul>
+<p>An example of the <cite>.yml</cite> file can be seen following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span id="1-1"><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
+</span><span id="1-2"><span class="l l-Scalar l-Scalar-Plain">population_size = 100</span>
+</span><span id="1-3"><span class="l l-Scalar l-Scalar-Plain">max_generations = 100</span>
+</span><span id="1-4"><span class="l l-Scalar l-Scalar-Plain">optimization_objective = max</span>
+</span><span id="1-5"><span class="l l-Scalar l-Scalar-Plain">selection = tournament</span>
+</span><span id="1-6"><span class="l l-Scalar l-Scalar-Plain">crossover = one_split</span>
+</span><span id="1-7"><span class="l l-Scalar l-Scalar-Plain">replacement = elitism</span>
+</span><span id="1-8"><span class="l l-Scalar l-Scalar-Plain">mutation_control = adaptative</span>
+</span><span id="1-9"><span class="l l-Scalar l-Scalar-Plain">mutation_base_rate = 0.1</span>
+</span></pre></div>
+</div>
+</section>
+<section id="individual-section">
+<h2>Individual section<a class="headerlink" href="#individual-section" title="Permalink to this heading">¶</a></h2>
+<p>The section for the individual has the following parameters:</p>
+<ul class="simple">
+<li><p><strong>encoding</strong>: The encoding that will be used in the GA. It can be <cite>binary</cite>, <cite>integer</cite> or <cite>real</cite>.</p></li>
+<li><p><strong>gene_length</strong>: The length of the genome that will be used in the GA. It has to be an integer value and it defaults to 0.</p></li>
+<li><p><strong>gene_min_value</strong>: The minimum value that a gene can have. It has to be a float value.</p></li>
+<li><p><strong>gene_max_value</strong>: The maximum value that a gene can have. It has to be a float value.</p></li>
+</ul>
+<p>An example of the <cite>.yml</cite> file can be seen following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span id="1-1"><span class="p p-Indicator">[</span><span class="nv">individual</span><span class="p p-Indicator">]</span>
+</span><span id="1-2"><span class="l l-Scalar l-Scalar-Plain">encoding = binary</span>
+</span><span id="1-3"><span class="l l-Scalar l-Scalar-Plain">gene_length = 10</span>
+</span><span id="1-4"><span class="l l-Scalar l-Scalar-Plain">gene_min_value = 0.0</span>
+</span><span id="1-5"><span class="l l-Scalar l-Scalar-Plain">gene_max_value = 1.0</span>
+</span></pre></div>
+</div>
+</section>
+<section id="selection-section">
+<h2>Selection section<a class="headerlink" href="#selection-section" title="Permalink to this heading">¶</a></h2>
+<p>The section for the selection has the following parameters:</p>
+<ul class="simple">
+<li><p><strong>elitism_size</strong>: The size of the elitism that will be used in the GA. It has to be an integer value and it defaults to 20.</p></li>
+<li><p><strong>tournament_size</strong>: The size of the tournament that will be used in the GA. It has to be an integer value and it defaults to 2.</p></li>
+<li><p><strong>rank_pressure</strong>: The rank pressure that will be used in the GA. It has to be a float value between 1 and 2 and defaults to 2.</p></li>
+</ul>
+<p>An example of the <cite>.yml</cite> file can be seen following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span id="1-1"><span class="p p-Indicator">[</span><span class="nv">selection</span><span class="p p-Indicator">]</span>
+</span><span id="1-2"><span class="l l-Scalar l-Scalar-Plain">elitism_size = 20</span>
+</span><span id="1-3"><span class="l l-Scalar l-Scalar-Plain">tournament_size = 2</span>
+</span><span id="1-4"><span class="l l-Scalar l-Scalar-Plain">rank_pressure = 2.0</span>
+</span></pre></div>
+</div>
+</section>
+<section id="crossover-section">
+<h2>Crossover section<a class="headerlink" href="#crossover-section" title="Permalink to this heading">¶</a></h2>
+<p>The section for the crossover has the following parameters:</p>
+<ul class="simple">
+<li><p><strong>offspring_size</strong>: The size of the offspring that will be used in the GA. It has to be an integer value and it defaults to 100.</p></li>
+<li><p><strong>blend_expansion</strong>: The blend expansion that will be used in the GA. It has to be a float value and defaults to 0.5.</p></li>
+</ul>
+<p>An example of the <cite>.yml</cite> file can be seen following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span id="1-1"><span class="p p-Indicator">[</span><span class="nv">crossover</span><span class="p p-Indicator">]</span>
+</span><span id="1-2"><span class="l l-Scalar l-Scalar-Plain">offspring_size = 100</span>
+</span><span id="1-3"><span class="l l-Scalar l-Scalar-Plain">blend_expansion = 0.5</span>
+</span></pre></div>
+</div>
+</section>
+<section id="mutation-section">
+<h2>Mutation section<a class="headerlink" href="#mutation-section" title="Permalink to this heading">¶</a></h2>
+<p>The section for the mutation has the following parameters:</p>
+<ul class="simple">
+<li><p><strong>generation_adaptative</strong>: The generation adaptative that will be used in the GA. It has to be an integer value and it defaults to 10.</p></li>
+</ul>
+<p>An example of the <cite>.yml</cite> file can be seen following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span id="1-1"><span class="p p-Indicator">[</span><span class="nv">mutation</span><span class="p p-Indicator">]</span>
+</span><span id="1-2"><span class="l l-Scalar l-Scalar-Plain">generation_adaptative = 10</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article>
+        
+        <div class="navigation flex print:hidden">
+  <div class="navigation-prev">
+    <a href="stop.html">
+      <i class="i-icon chevron"></i>
+      <div class="page-info">
+        <span>Previous</span>
+        
+        <div class="title">Stop conditions</div>
+        
+      </div>
+    </a>
+  </div>
+  <div class="navigation-next">
+    <a href="usage.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Usage</div>
+      </div>
+      <i class="i-icon chevron"></i>
+    </a>
+  </div>
+</div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+        
+        <p>
+          Made with
+          
+          <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+          
+          <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+        </p>
+      </div>
+      <div class="sy-foot-socials">
+      </div>
+    </div>
+  </div>
+</footer></div>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=158ece9d"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="../_static/shibuya.js?v=ccb09f80"></script>
+    
+</body>
+</html>

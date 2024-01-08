@@ -1,0 +1,254 @@
+
+  <!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Introduction - mango 0.2.1 documentation</title>
+    <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Individual" href="individual.html" /><link rel="prev" title="Genetic Algorithms (GA)" href="index.html" />
+
+  <script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(sessionStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=aecf457f" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=5d7d6ab7" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Introduction"/>
+<meta name="twitter:card" content="summary"/></head>
+<body><div class="document"><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand mr-4" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-links" id="NavLinks">
+      <nav class="sy-head-nav"></nav>
+      <div class="sy-head-extra flex items-center print:hidden">
+<form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form>
+        
+        
+        <div class="sy-head-social flex items-center">
+        </div>
+      </div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden">
+      <button class="js-theme theme-switch flex items-center"
+        data-aria-auto="Switch to light color mode"
+        data-aria-light="Switch to dark color mode"
+        data-aria-dark="Switch to auto color mode">
+        <i class="i-icon theme-icon"></i>
+      </button>
+      <button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="NavLinks" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Genetic Algorithms (GA)</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/index.html">Code documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/models.html">Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-icon close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4">
+  <div class="localtoc">
+    <h3>On this page</h3>
+    <ul>
+<li><a class="reference internal" href="#key-concepts-on-metaheuristic-search">Key concepts on metaheuristic search</a></li>
+<li><a class="reference internal" href="#structure-of-a-genetic-algorithm">Structure of a genetic algorithm</a></li>
+<li><a class="reference internal" href="#glossary">Glossary</a></li>
+</ul>
+
+  </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div>
+    </div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+    <div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-icon menu"></i>
+      </button>
+    </div>
+    <ul class="flex-1">
+      
+      
+      <li><a href="../index.html">mango</a><span>/</span></li>
+      
+      <li><a href="index.html">Genetic Algorithms (GA)</a><span>/</span></li>
+      
+      <li><strong>Introduction</strong></li>
+      
+      
+    </ul>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-icon outdent"></i>
+      </button>
+    </div>
+  </div>
+</div>
+    <div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h1>
+<p>Genetic Algorithms (GAs) represent a powerful and innovative approach to problem-solving inspired by the principles of natural selection and genetics. Developed by <a class="reference external" href="https://en.wikipedia.org/wiki/John_Henry_Holland">John Holland</a> in the 1960s, genetic algorithms are a subset of evolutionary algorithms that emulate the process of natural selection to find optimal solutions to complex problems.</p>
+<p>At their core, genetic algorithms draw inspiration from the mechanisms of biological evolution, incorporating concepts such as selection, crossover, and mutation. The fundamental idea is to mimic the process of natural selection in order to evolve a population of potential solutions (individuals) over successive generations. This population undergoes genetic operations, such as crossover (recombination of solutions) and mutation (introduction of small, random changes), simulating the genetic diversity seen in nature.</p>
+<p>Genetic algorithms have proven to be versatile and effective in solving optimization and search problems across various domains, ranging from engineering and computer science to finance and biology. Their ability to explore vast solution spaces and adapt to changing environments makes them particularly suitable for problems with multiple, interacting variables or when a direct analytical solution is difficult to obtain.</p>
+<p>This introduction will delve into the key components of genetic algorithms, their underlying principles, and explore real-world applications that showcase their adaptability and efficiency in addressing complex challenges. As we navigate through the intricacies of genetic algorithms, we will uncover how these algorithms have become a valuable tool in the computational toolkit, providing innovative solutions to some of the most intricate problems faced in science, engineering, and beyond.</p>
+<section id="key-concepts-on-metaheuristic-search">
+<h2>Key concepts on metaheuristic search<a class="headerlink" href="#key-concepts-on-metaheuristic-search" title="Permalink to this heading">¶</a></h2>
+<p><strong>Exploration</strong> and <strong>exploitation</strong> are fundamental concepts in the context of metaheuristic search algorithms, including genetic algorithms, particle swarm optimization, simulated annealing, and others. These two aspects represent a delicate balance that these algorithms must strike to effectively navigate the solution space and converge towards optimal or near-optimal solutions.</p>
+<p>Exploration involves the search for new regions in the solution space, aiming to discover novel and potentially better solutions. In the early stages of the algorithm, a focus on exploration is crucial to ensure that a diverse set of solutions is considered. This helps prevent premature convergence to suboptimal solutions and allows the algorithm to discover different regions of the solution space that may contain more promising candidates.</p>
+<p>On the other hand, exploitation is the process of intensifying the search in regions that have shown promise in terms of solution quality. As the algorithm progresses, an increased emphasis on exploitation becomes essential to refine and improve the current solutions. Exploitation allows the algorithm to zoom in on areas of the solution space that are likely to contain optimal solutions, leveraging the information gained during the exploration phase.</p>
+<p>The challenge for metaheuristic search algorithms lies in effectively balancing exploration and exploitation throughout the search process. Striking this balance ensures that the algorithm explores a sufficiently large portion of the solution space early on while gradually shifting focus towards refining and exploiting the most promising solutions as the search progresses. This dynamic interplay between exploration and exploitation is vital for the success of metaheuristic search algorithms in efficiently finding high-quality solutions to complex optimization problems.</p>
+</section>
+<section id="structure-of-a-genetic-algorithm">
+<h2>Structure of a genetic algorithm<a class="headerlink" href="#structure-of-a-genetic-algorithm" title="Permalink to this heading">¶</a></h2>
+<p>Most genetic algorithms follow a similar structure that can be seen in the following figure, but some may include different operators based on the individuals or the population.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/ga.webp"><img alt="Structure of a genetic algorithm" src="../_images/ga.webp" style="width: 75%;" /></a>
+<figcaption>
+<p><span class="caption-text">Höschel, K.; Lakshminarayanan, V. Genetic algorithms for lens design: A review. J. Opt. 2018, 48, 134–144.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>As it can be seen all genetic algorithms start from a similar point in which we need to generate an initial random population of solutions (individuals). This population is then evaluated and their fitness is calculated to see how they adapt to the problem that we are trying to solve. The quality of this initial population will determine the convergence progress of the population and have a crucial impact on the initial phases of exploration done by the algorithm.</p>
+<p>After this the genetic algorithm starts iterating and repeating the following steps or genetic operators.</p>
+<ul class="simple">
+<li><p><strong>Selection</strong>: In this step we select the individuals that will be used to generate the next generation. This selection is based on the fitness of the individuals, so the individuals with the highest fitness will have a higher probability of being selected. This is done to simulate the natural selection process in which the individuals with the highest fitness are more likely to survive and reproduce.</p></li>
+<li><p><strong>Crossover</strong>: In this step we generate new individuals by combining the genes of two (or more) individuals. This is done to simulate the reproduction process in which the genes of two individuals are combined to generate a new individual. In this case as we are not restricted to the species reproduction the crossover can be done from more than two “parents”.</p></li>
+<li><p><strong>Mutation</strong>: In this step we introduce random changes in the genes of the individuals. This is done to simulate the mutation process in which the genes of an individual can change randomly. This is done to introduce new genes in the population and to avoid the algorithm to get stuck in a local minimum. Usually the mutation rate is very low and this will help with the exploration part of the algorithm, even, in some cases, being the only source of exploration.</p></li>
+<li><p><strong>Stopping criteria</strong>: In this step we check if the algorithm has reached a stopping criteria. This can be a maximum number of iterations, a maximum number of generations without improvement, a maximum number of generations, etc. This is done to avoid the algorithm to run forever and to stop it when it has reached a good enough solution.</p></li>
+<li><p><strong>Replacement</strong>: In this step we replace the individuals of the current generation with the individuals of the next generation. This is done to simulate the death of the individuals that are not fit enough to survive and reproduce.</p></li>
+</ul>
+<p>Some of these steps have different versions that can be used in different situations, impacting how the population evolves and thus, how the population converges to a solution. The different versions of this operators that are implemented on mango will be explained on their given sections in order to enter into as much detail as possible and explain the origin of each one of these operators.</p>
+</section>
+<section id="glossary">
+<h2>Glossary<a class="headerlink" href="#glossary" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Crossover</strong>: The process of combining the genes of two (or more) individuals to generate a new individual. This is done to simulate the reproduction process in which the genes of two individuals are combined to generate a new individual.</p></li>
+<li><p><strong>Encoding</strong>: The process of representing the individuals of the population as a set of genes. This is done to simulate the genes of an individual in nature.</p></li>
+<li><p><strong>Fitness</strong>: A measure of how well an individual solves the problem that we are trying to solve. In the case of genetic algorithms this is usually a number that represents how close the individual is to the optimal solution.</p></li>
+<li><p><strong>Gene</strong>: A part of the individual that is used to represent a characteristic of the individual. In the case of genetic algorithms this is usually a number that represents a characteristic of the individual.</p></li>
+<li><p><strong>Genome</strong>: The set of genes that are used to represent an individual. In the case of genetic algorithms this is usually a set of numbers that represent the characteristics of the individual.</p></li>
+<li><p><strong>Genotype</strong>: The set of genes that are used to represent an individual. In the case of genetic algorithms this is usually a set of numbers that represent the characteristics of the individual.</p></li>
+<li><p><strong>Individual</strong>: A solution to the problem that we are trying to solve. In the case of genetic algorithms this solution is represented by a set of genes.</p></li>
+<li><p><strong>Mutation</strong>: The process of introducing random changes in the genes of the individuals. This is done to simulate the mutation process in which the genes of an individual can change randomly.</p></li>
+<li><p><strong>Phenotype</strong>: The solution represented by the individual through their genotype.</p></li>
+<li><p><strong>Population</strong>: A set of individuals that are used to solve the problem that we are trying to solve. In the case of genetic algorithms this set of individuals is called a population because it simulates a population of individuals in nature.</p></li>
+<li><p><strong>Replacement</strong>: The process of replacing the individuals of the current generation with the individuals of the next generation. This is done to simulate the death of the individuals that are not fit enough to survive and reproduce.</p></li>
+<li><p><strong>Selection</strong>: The process of selecting the individuals that will be used to generate the next generation. This is done to simulate the natural selection process in which the individuals with the highest fitness are more likely to survive and reproduce.</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+        
+        <div class="navigation flex print:hidden">
+  <div class="navigation-prev">
+    <a href="index.html">
+      <i class="i-icon chevron"></i>
+      <div class="page-info">
+        <span>Previous</span>
+        
+        <div class="title">Genetic Algorithms (GA)</div>
+        
+      </div>
+    </a>
+  </div>
+  <div class="navigation-next">
+    <a href="individual.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Individual</div>
+      </div>
+      <i class="i-icon chevron"></i>
+    </a>
+  </div>
+</div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+        
+        <p>
+          Made with
+          
+          <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+          
+          <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+        </p>
+      </div>
+      <div class="sy-foot-socials">
+      </div>
+    </div>
+  </div>
+</footer></div>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=158ece9d"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="../_static/shibuya.js?v=ccb09f80"></script>
+    
+</body>
+</html>

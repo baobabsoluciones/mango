@@ -1,0 +1,323 @@
+
+  <!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Selection - mango 0.2.1 documentation</title>
+    <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Crossover" href="crossover.html" /><link rel="prev" title="Population" href="population.html" />
+
+  <script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(sessionStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=aecf457f" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=5d7d6ab7" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Selection"/>
+<meta name="twitter:card" content="summary"/></head>
+<body><div class="document"><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand mr-4" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-links" id="NavLinks">
+      <nav class="sy-head-nav"></nav>
+      <div class="sy-head-extra flex items-center print:hidden">
+<form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form>
+        
+        
+        <div class="sy-head-social flex items-center">
+        </div>
+      </div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden">
+      <button class="js-theme theme-switch flex items-center"
+        data-aria-auto="Switch to light color mode"
+        data-aria-light="Switch to dark color mode"
+        data-aria-dark="Switch to auto color mode">
+        <i class="i-icon theme-icon"></i>
+      </button>
+      <button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="NavLinks" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Genetic Algorithms (GA)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="population.html">Population</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/index.html">Code documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/models.html">Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-icon close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4">
+  <div class="localtoc">
+    <h3>On this page</h3>
+    <ul>
+<li><a class="reference internal" href="#key-concepts-in-selection-implementation">Key concepts in selection implementation</a></li>
+<li><a class="reference internal" href="#selection-processes">Selection processes</a><ul>
+<li><a class="reference internal" href="#random-selection">Random selection</a></li>
+<li><a class="reference internal" href="#elitism-selection">Elitism selection</a></li>
+<li><a class="reference internal" href="#rank-selection">Rank selection</a></li>
+<li><a class="reference internal" href="#order-selection">Order selection</a></li>
+<li><a class="reference internal" href="#roulette-wheel-selection">Roulette wheel selection</a></li>
+<li><a class="reference internal" href="#tournament-selection">Tournament selection</a></li>
+<li><a class="reference internal" href="#boltzmann-selection">Boltzmann selection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#parent-selection">Parent selection</a></li>
+</ul>
+
+  </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div>
+    </div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+    <div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-icon menu"></i>
+      </button>
+    </div>
+    <ul class="flex-1">
+      
+      
+      <li><a href="../index.html">mango</a><span>/</span></li>
+      
+      <li><a href="index.html">Genetic Algorithms (GA)</a><span>/</span></li>
+      
+      <li><strong>Selection</strong></li>
+      
+      
+    </ul>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-icon outdent"></i>
+      </button>
+    </div>
+  </div>
+</div>
+    <div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="selection">
+<span id="selection-label"></span><h1>Selection<a class="headerlink" href="#selection" title="Permalink to this heading">¶</a></h1>
+<p>The selection process in genetic algorithms (GA) is a pivotal mechanism that emulates the principles of natural selection, allowing the propagation of individuals with higher fitness scores while gradually phasing out less fit solutions. This mimics the survival-of-the-fittest concept from Darwinian evolution, promoting the convergence of the population toward optimal or near-optimal solutions.</p>
+<p>One commonly employed selection method is proportional or roulette wheel selection, where individuals are assigned probabilities of being selected based on their fitness scores. Higher-fitness individuals have larger slices of the “roulette wheel,” making them more likely to be chosen for reproduction. This probabilistic approach ensures that individuals with superior fitness contribute more genetic material to the next generation, mirroring the biological concept that successful traits are more likely to be inherited.</p>
+<p>Another widely used selection mechanism is tournament selection, wherein individuals are randomly sampled from the population, and the one with the highest fitness is chosen as a parent for reproduction. This approach introduces an element of randomness and diversity, preventing the algorithm from fixating on a limited set of solutions.</p>
+<p>The careful design of the selection process is crucial in balancing exploration and exploitation, allowing the genetic algorithm to efficiently navigate the solution space. Effective selection mechanisms contribute to the algorithm’s ability to efficiently explore diverse regions early in the optimization process and converge towards promising solutions as generations progress. The interplay between selection and genetic operators ensures the continual refinement of the population, guiding it toward increasingly optimal solutions over successive generations.</p>
+<section id="key-concepts-in-selection-implementation">
+<h2>Key concepts in selection implementation<a class="headerlink" href="#key-concepts-in-selection-implementation" title="Permalink to this heading">¶</a></h2>
+<p>Mango’s selection process has to be separated in two steps:</p>
+<ul class="simple">
+<li><p>First, we calculate the selection probabilities for each individual in the population. This is done by the selected selection process on the configuration of the algorithm. The different selection processes will be explained in the following section.</p></li>
+<li><p>Secondly, based on the probabilities, a method is called to select the parents needed for the crossover (typically 2). The method used here is the <a class="reference internal" href="../dev/models.html#mango.models.genetic.population.Population._select_parents" title="mango.models.genetic.population.Population._select_parents"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_select_parents</span></code></a> method.</p></li>
+</ul>
+</section>
+<section id="selection-processes">
+<h2>Selection processes<a class="headerlink" href="#selection-processes" title="Permalink to this heading">¶</a></h2>
+<section id="random-selection">
+<h3>Random selection<a class="headerlink" href="#random-selection" title="Permalink to this heading">¶</a></h3>
+<p>In this selection process the probability of selection of each parent is the same (<span class="math notranslate nohighlight">\(\frac{1}{n}\)</span> with <span class="math notranslate nohighlight">\(n\)</span> being the population size).</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>This selection process is not recommended as it does not take into account the fitness of the individuals and it can lead to a very slow convergence.</p>
+</div>
+<p>This selection process is implemented in the method: <a class="reference internal" href="../dev/models.html#mango.models.genetic.population.Population._random_selection" title="mango.models.genetic.population.Population._random_selection"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_random_selection</span></code></a>.</p>
+</section>
+<section id="elitism-selection">
+<h3>Elitism selection<a class="headerlink" href="#elitism-selection" title="Permalink to this heading">¶</a></h3>
+<p>In this selection process the <span class="math notranslate nohighlight">\(k\)</span> best individuals are assigned the same probability of selection (<span class="math notranslate nohighlight">\(\frac{1}{k}\)</span>) while the rest of the individuals have a probability of zero.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>This selection process can reduce the genetic diversity of the population and it can lead to a premature convergence. If the value of <span class="math notranslate nohighlight">\(k\)</span> is to low it may happen that all possible choices of parents are actually the same individual causing the algorithm to stop.</p>
+<p>If <span class="math notranslate nohighlight">\(k\)</span> is equal to the population size, this selection process is equivalent to the random selection process.</p>
+</div>
+<p>This selection process is implemented in the method: <a class="reference internal" href="../dev/models.html#mango.models.genetic.population.Population._elitism_selection" title="mango.models.genetic.population.Population._elitism_selection"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_elitism_selection</span></code></a>.</p>
+</section>
+<section id="rank-selection">
+<h3>Rank selection<a class="headerlink" href="#rank-selection" title="Permalink to this heading">¶</a></h3>
+<p>This selection process assigns a selection probability to each individual based on its rank in the population. This value is calculated as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[p_i = \frac{1}{n} * \left( s - (2s -2)\frac{i-1}{n-1} \right)\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(s\)</span> is the selection pressure or rank pressure (usually 2), <span class="math notranslate nohighlight">\(n\)</span> the size of the population and <span class="math notranslate nohighlight">\(i\)</span> is the rank of the individual, a value between <span class="math notranslate nohighlight">\(1\)</span> and <span class="math notranslate nohighlight">\(n\)</span>, where the best individual has rank <span class="math notranslate nohighlight">\(n\)</span> and the worst rank <span class="math notranslate nohighlight">\(1\)</span>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The las individual in the population is going to have a probability of selection zero.</p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>If the rank pressure is set up to 1 this selection process es equivalent to the random selection process.</p>
+</div>
+<p>This selection process is implemented in the method: <a class="reference internal" href="../dev/models.html#mango.models.genetic.population.Population._rank_selection" title="mango.models.genetic.population.Population._rank_selection"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_rank_selection</span></code></a>.</p>
+<p>The rank pressure is a parameter that can be set up in the configuration of the algorithm. The default value is 2. The name of the parameter is <code class="docutils literal notranslate"><span class="pre">rank_pressure</span></code>.</p>
+</section>
+<section id="order-selection">
+<h3>Order selection<a class="headerlink" href="#order-selection" title="Permalink to this heading">¶</a></h3>
+<p>This selection process assigns a selection probability to each individual based on its order in the population. This value is calculated as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[p_i = \frac{i * 2}{n * (n+1)}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(n\)</span> the size of the population and <span class="math notranslate nohighlight">\(i\)</span> is the order of the individual, a value between <span class="math notranslate nohighlight">\(1\)</span> and <span class="math notranslate nohighlight">\(n\)</span>, where the best individual has order <span class="math notranslate nohighlight">\(n\)</span> and the worst order <span class="math notranslate nohighlight">\(1\)</span>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The probabilities assigned to each individual are very similar to those calculated by the rank selection (with rank pressure 2) but the last individual does have a probability of being selected in this case.</p>
+</div>
+<p>This selection process is implemented in the method: <a class="reference internal" href="../dev/models.html#mango.models.genetic.population.Population._order_selection" title="mango.models.genetic.population.Population._order_selection"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_order_selection</span></code></a>.</p>
+</section>
+<section id="roulette-wheel-selection">
+<span id="roulette-wheel-selection-label"></span><h3>Roulette wheel selection<a class="headerlink" href="#roulette-wheel-selection" title="Permalink to this heading">¶</a></h3>
+<p>This selection process is also known as proportional selection. In this selection process the probability of selection of each individual is proportional to its fitness.</p>
+<p>This selection process has two different methods to calculate the selection probabilities depending if the problem is to minimize or maximize. For minimization problems:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[p_i = \frac{max(f_i) - f_i}{\sum_{j=1}^{n} (max(f_j) - f_j)}\]</div>
+</div>
+<p>But for maximization problems:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[p_i = \frac{f_i - min(f_i)}{\sum_{j=1}^{n} (f_j - min(f_j)}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(f_i\)</span> is the fitness of the individual <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(n\)</span> is the size of the population.</p>
+<p>Based on these formulas the worst individual should not have a selection probability, but one is assigned based on the probability of the second worst.</p>
+</section>
+<section id="tournament-selection">
+<h3>Tournament selection<a class="headerlink" href="#tournament-selection" title="Permalink to this heading">¶</a></h3>
+<p>In this selection process a group of size <span class="math notranslate nohighlight">\(k\)</span> set by the parameter <code class="xref py py-attr docutils literal notranslate"><span class="pre">_tournament_size</span></code> is randomly selected from the population. The individual with the best fitness in this group is awarded a win in their tournament. Then the selection probability is calculated based on the amount of wins each individual has and the total number of tournaments. The selection probability is calculated as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[p_i = \frac{w_i}{\sum_{j=1}^{n} w_j}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(w_i\)</span> is the number of wins of the individual <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(n\)</span> is the size of the population.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This selection process can be a process to control the diversity as well, as the bigger the tournament size the less diversity there is going to be among the possible parents so less diversity among the future children that can pass to the next generation.</p>
+</div>
+<p>This selection process is implemented in the method: <a class="reference internal" href="../dev/models.html#mango.models.genetic.population.Population._tournament_selection" title="mango.models.genetic.population.Population._tournament_selection"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_tournament_selection</span></code></a>.</p>
+<p>To select this selection process the parameter <code class="xref py py-attr docutils literal notranslate"><span class="pre">selection</span></code> in the config has to be set up to be <code class="docutils literal notranslate"><span class="pre">tournament</span></code>.</p>
+</section>
+<section id="boltzmann-selection">
+<h3>Boltzmann selection<a class="headerlink" href="#boltzmann-selection" title="Permalink to this heading">¶</a></h3>
+<p>This selection process has not been implemented yet but it is planned as a future feature.</p>
+</section>
+</section>
+<section id="parent-selection">
+<h2>Parent selection<a class="headerlink" href="#parent-selection" title="Permalink to this heading">¶</a></h2>
+<p>Once each possible parent has a selection probability assigned to it a process is called to randomly select the number of parents needed (by default its 2). This process makes sure that the parents have different genes or genotype so that the crossover can have a chance to generate children with new genes.</p>
+<p>If after a certain number of tries the process is not able to find a set of parents with different genes, the genetic algorithm stops and an exception is raised. This exception is of type <a class="reference internal" href="../dev/models.html#mango.models.genetic.shared.exceptions.GeneticDiversity" title="mango.models.genetic.shared.exceptions.GeneticDiversity"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneticDiversity</span></code></a>.</p>
+</section>
+</section>
+
+        </article>
+        
+        <div class="navigation flex print:hidden">
+  <div class="navigation-prev">
+    <a href="population.html">
+      <i class="i-icon chevron"></i>
+      <div class="page-info">
+        <span>Previous</span>
+        
+        <div class="title">Population</div>
+        
+      </div>
+    </a>
+  </div>
+  <div class="navigation-next">
+    <a href="crossover.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Crossover</div>
+      </div>
+      <i class="i-icon chevron"></i>
+    </a>
+  </div>
+</div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+        
+        <p>
+          Made with
+          
+          <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+          
+          <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+        </p>
+      </div>
+      <div class="sy-foot-socials">
+      </div>
+    </div>
+  </div>
+</footer></div>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=158ece9d"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="../_static/shibuya.js?v=ccb09f80"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+</body>
+</html>
