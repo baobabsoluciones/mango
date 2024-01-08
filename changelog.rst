@@ -1,106 +1,153 @@
-version 0.2.0
+Version 0.2.1
 ==============
 
-- **released**: 2023-12-21
-- **description**: genetic algorithms and more!
-- **changelog**:
-    - added genetic algorithms that can be used in a wide range of problems.
-    - added a new function to calculate the distance between two points using the haversine formula.
-    - added a function to pivot the calendar
-    - added correlation calculation between series.
-    - bugfixes and improvements.
+**Released on Jan 8, 2024.**
 
-version 0.1.3
+Small bugfixes on genetic algorithms and code reordering for documentation.
+
+
+Version 0.2.0
 ==============
 
-- **released**: 2023-11-17
-- **description**: small bugfix
-- **changelog**:
-    - fixed a bug on save button with unique keys.
+**Released on Dec 21, 2023.**
 
-version 0.1.2
+This version includes a new module for genetic algorithms and more!
+
+**New features:**
+
+- Added genetic algorithms that can be used in a wide range of problems.
+- Added a new module to perform SHAP analysis.
+- Added a function to pivot the calendar.
+- Added correlation calculation between series.
+
+**Bugfixes:**
+
+- Minor bugfixes.
+
+Version 0.1.3
 ==============
 
-- **released**: 2023-11-17
-- **description**: some small bugfixes and add haversine function
-- **changelog**:
-    - fixed a bug on streamlit app saving the config file.
-    - Add edit excels, csv and json files in streamlit app.
-    - Add haversine function to calculate distance between two points.
+**Released on Nov 17, 2023.**
 
-version 0.1.1
+This version includes a small bugfix.
+
+**Bugfixes:**
+
+- Fixed a bug on save button with unique keys on the dashboard.
+
+Version 0.1.2
 ==============
 
-- **released**: 2023-11-08
-- **description**: some small bugfixes
-- **changelog**:
-    - fixed a bug on left join on class Table.
-    - fixed a small bug on AEMET pydantic validation.
+**Released on Nov 17, 2023.**
 
-version 0.1.0
+This version includes a function to calculate distances with the haversine formula.
+
+**New features:**
+
+- Added a function to calculate distances with the haversine formula.
+- Added the possibility to edit excels, csv and json files in the streamlit app.
+
+**Bugfixes:**
+
+- Fixed a bug on streamlit app saving the config file.
+
+Version 0.1.1
 ==============
 
-- **released**: 2023-11-07
-- **description**: first beta release of the library.
-- **changelog**:
-    - fix bug fix on left join of Table class.
-    - added improvements to Table class.
-    - adapt load_excel function to return a list of dictionaries.
-    - added new date functions.
-    - drop images module.
-    - removed pandas as a main dependency of the library. It is still needed in some submodules.
-    - changed from setup.py to pyproject.toml.
-    - added calendar datasets for Spain.
-    - added a REST client to the AEMET to gather meteorological data.
-    - added pydantic validation as a decorator that can be used in any function.
+**Released on Nov 8, 2023.**
 
+This version includes a small bugfix.
 
-version 0.0.6
+**Bugfixes:**
+
+- Fixed a bug on left join on class Table.
+- Fixed a small bug on AEMET pydantic validation.
+
+Version 0.1.0
 ==============
 
-- **released**: 2023-05-31
-- **description**: improvements to Table class
+**Released on Nov 7, 2023.**
 
-version 0.0.5
+This version includes new modules and bugfixes.
+
+**New features:**
+
+- Added improvements to ``Table`` class.
+- Adapted ``load_excel`` function to return a list of dictionaries.
+- Added new date functions.
+- Added a REST client to the AEMET to gather meteorological data.
+- Added pydantic validation as a decorator that can be used in any function.
+- Added calendar datasets for Spain.
+- Moved from setup.py to pyproject.toml.
+
+**Bugfixes:**
+
+- Fixed a bug on left join on class Table.
+
+**Breaking changes:**
+
+- Removed pandas as a main dependency of the library. It is still needed in some submodules.
+- Drop images module.
+
+Version 0.0.6
 ==============
 
-- **released**: 2023-04-26
-- **description**: fixed some bugs in Table class.
-- **changelog**:
-    - fixed error on mutate when table had one row.
-    - allow group by None in sum_all and summarise
-    - as_list applied on a dict returns a list of the dict instead of the keys.
+**Released on May 31, 2023.**
 
-version 0.0.4
+Improvements to Table class
+
+Version 0.0.5
 ==============
 
-- **released**: 2023-04-19
-- **description**: logger classes and methods now can receive a logger name to be used
-- **changelog**:
-    - Chrono class now receives a logger name to be used
-    - `log_time` decorator now receives a logger name to be used
+**Released on Apr 26, 2023.**
 
-version 0.0.3
+Fixed some bugs on ``Table`` class.
+
+**Bugfixes:**
+
+- Fixed error on ``mutate`` when table had one row.
+- Allow group by None in ``sum_all`` and ``summarise``.
+- ``as_list`` applied on a dict returns a list of the dict instead of the keys.
+
+Version 0.0.4
 ==============
 
-- **released**: 2023-04-18
-- **description**: minor changes to logging class Chrono and to the default logger
-- **changelog**:
-    - minor changes to logging class Chrono: stop now reports the duration
-    - default logger has a info level set up
+**Released on Apr 19, 2023.**
 
-version 0.0.2
+This versions includes changes to the logger class and methods.
+
+**New features:**
+
+- ``Chrono`` class can receive a logger name to be used.
+- ``log_time`` decorator can receive a logger name to be used.
+
+Version 0.0.3
 ==============
 
-- **released**: 2023-04-11
-- **description**: added class Table and added direct requests for arcgis od matrix calculation
-- **changelog**:
-    - added class Table
-    - added direct requests for arcgis od matrix calculationThe request can be made in two modes, sync and async. It defaults to sync and changes to async in case the requests has more than 10 origins or destinations.
-    - minor fix to arcgis client
+**Released on Apr 18, 2023.**
 
-version 0.0.1
+Minor changes to logging class ``Chrono`` and to the default logger.
+
+**New features:**
+
+- Minor changes to logging class ``Chrono``: ``stop`` now reports the duration.
+- Default logger has a info level set up.
+
+Version 0.0.2
 ==============
 
-- **released**: 2023-03-09
-- **description**: initial version of mango library
+**Released on Apr 11, 2023.**
+
+This version includes a new class ``Table`` and a new module to perform requests to ArcGIS.
+
+**New features:**
+
+- Added class ``Table``.
+- Added direct requests for arcgis od matrix calculation.
+
+Version 0.0.1
+==============
+
+Released on Mar 9, 2023.
+
+This is the first version of mango library.

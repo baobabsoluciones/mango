@@ -11,7 +11,7 @@ CROSSOVER_METHODS = [
     "gaussian",
 ]
 
-MUTATION_CONTROL_METHODS = ["none", "adaptative", "gene-based", "population-based"]
+MUTATION_CONTROL_METHODS = ["static", "adaptative", "gene-based", "population-based"]
 
 REPLACEMENT_METHODS = [
     "elitist",
