@@ -53,26 +53,26 @@ class TestOptimizationBenchmarks(TestCase):
         np.random.seed(22)
         values = np.zeros(100)
 
-        self.assertEqual(0.0, ackley(values))
-        self.assertEqual(0.0, inverted_ackley(values))
+        self.assertAlmostEqual(0.0, ackley(values))
+        self.assertAlmostEqual(0.0, inverted_ackley(values))
 
         values = np.random.uniform(-32.768, 32.768, 100)
 
-        self.assertEqual(21.380371270628963, ackley(values))
-        self.assertEqual(-21.380371270628963, inverted_ackley(values))
+        self.assertAlmostEqual(21.380371270628963, ackley(values))
+        self.assertAlmostEqual(-21.380371270628963, inverted_ackley(values))
 
     def test_bukin(self):
         seed(23)
         np.random.seed(23)
         values = np.array([-10, 1])
 
-        self.assertEqual(0.0, bukin_function_6(values))
-        self.assertEqual(0.0, inverted_bukin_function_6(values))
+        self.assertAlmostEqual(0.0, bukin_function_6(values))
+        self.assertAlmostEqual(0.0, inverted_bukin_function_6(values))
 
         values = np.random.uniform(15, 5, 2)
 
-        self.assertEqual(213.849165663974, bukin_function_6(values))
-        self.assertEqual(-213.849165663974, inverted_bukin_function_6(values))
+        self.assertAlmostEqual(213.849165663974, bukin_function_6(values))
+        self.assertAlmostEqual(-213.849165663974, inverted_bukin_function_6(values))
 
     def test_cross_in_tray(self):
         seed(24)
@@ -86,26 +86,28 @@ class TestOptimizationBenchmarks(TestCase):
         ]
 
         for group in values:
-            self.assertEqual(-2.062611870820258, cross_in_tray(group))
-            self.assertEqual(2.062611870820258, inverted_cross_in_tray(group))
+            self.assertAlmostEqual(-2.062611870820258, cross_in_tray(group))
+            self.assertAlmostEqual(2.062611870820258, inverted_cross_in_tray(group))
 
         values = np.random.uniform(-10, 10, 2)
 
-        self.assertEqual(-1.3383943647492602, cross_in_tray(values))
-        self.assertEqual(1.3383943647492602, inverted_cross_in_tray(values))
+        self.assertAlmostEqual(-1.3383943647492602, cross_in_tray(values))
+        self.assertAlmostEqual(1.3383943647492602, inverted_cross_in_tray(values))
 
     def test_dolan_function_no2(self):
         seed(25)
         np.random.seed(25)
         values = np.array([8.39045925, 4.81424707, 7.34574133, 68.88246895, 3.85470806])
 
-        self.assertEqual(2.2149074663246893e-07, dolan_function_no2(values))
-        self.assertEqual(-2.2149074663246893e-07, inverted_dolan_function_no2(values))
+        self.assertAlmostEqual(2.2149074663246893e-07, dolan_function_no2(values))
+        self.assertAlmostEqual(
+            -2.2149074663246893e-07, inverted_dolan_function_no2(values)
+        )
 
         values = np.random.uniform(-100, 100, 5)
 
-        self.assertEqual(7.233634216388971, dolan_function_no2(values))
-        self.assertEqual(-7.233634216388971, inverted_dolan_function_no2(values))
+        self.assertAlmostEqual(7.233634216388971, dolan_function_no2(values))
+        self.assertAlmostEqual(-7.233634216388971, inverted_dolan_function_no2(values))
 
     def test_drop_wave_function(self):
         seed(26)
@@ -113,13 +115,13 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.zeros(10)
 
-        self.assertEqual(-1.0, drop_wave(values))
-        self.assertEqual(1.0, inverted_drop_wave(values))
+        self.assertAlmostEqual(-1.0, drop_wave(values))
+        self.assertAlmostEqual(1.0, inverted_drop_wave(values))
 
         values = np.random.uniform(low=-5.12, high=5.12, size=10)
 
-        self.assertEqual(-0.0006846796655835945, drop_wave(values))
-        self.assertEqual(0.0006846796655835945, inverted_drop_wave(values))
+        self.assertAlmostEqual(-0.0006846796655835945, drop_wave(values))
+        self.assertAlmostEqual(0.0006846796655835945, inverted_drop_wave(values))
 
     def test_egg_holder_function(self):
         seed(27)
@@ -127,13 +129,13 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.array([512, 404.2319])
 
-        self.assertEqual(-959.6406627106155, egg_holder(values))
-        self.assertEqual(959.6406627106155, inverted_egg_holder(values))
+        self.assertAlmostEqual(-959.6406627106155, egg_holder(values))
+        self.assertAlmostEqual(959.6406627106155, inverted_egg_holder(values))
 
         values = np.random.uniform(-512, 512, 2)
 
-        self.assertEqual(283.54519834471273, egg_holder(values))
-        self.assertEqual(-283.54519834471273, inverted_egg_holder(values))
+        self.assertAlmostEqual(283.54519834471273, egg_holder(values))
+        self.assertAlmostEqual(-283.54519834471273, inverted_egg_holder(values))
 
     def test_gramacy_lee_function(self):
         seed(28)
@@ -142,16 +144,16 @@ class TestOptimizationBenchmarks(TestCase):
         values = (np.array([0.54]), [0.54], 0.54)
 
         for v in values:
-            self.assertEqual(-0.8358333254584753, gramacy_lee(v))
-            self.assertEqual(0.8358333254584753, inverted_gramacy_lee(v))
+            self.assertAlmostEqual(-0.8358333254584753, gramacy_lee(v))
+            self.assertAlmostEqual(0.8358333254584753, inverted_gramacy_lee(v))
 
         val = uniform(-0.5, 2.5)
         values = (np.array([val]), [val], val)
         print(values)
 
         for v in values:
-            self.assertEqual(-1.0976975693308988, gramacy_lee(v))
-            self.assertEqual(1.0976975693308988, inverted_gramacy_lee(v))
+            self.assertAlmostEqual(-1.0976975693308988, gramacy_lee(v))
+            self.assertAlmostEqual(1.0976975693308988, inverted_gramacy_lee(v))
 
     def test_griewank_function(self):
         seed(29)
@@ -159,13 +161,13 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.zeros(10)
 
-        self.assertEqual(0.0, griewank(values))
-        self.assertEqual(0.0, inverted_griewank(values))
+        self.assertAlmostEqual(0.0, griewank(values))
+        self.assertAlmostEqual(0.0, inverted_griewank(values))
 
         values = np.random.uniform(-600, 600, 10)
 
-        self.assertEqual(264.94761340544994, griewank(values))
-        self.assertEqual(-264.94761340544994, inverted_griewank(values))
+        self.assertAlmostEqual(264.94761340544994, griewank(values))
+        self.assertAlmostEqual(-264.94761340544994, inverted_griewank(values))
 
     def test_holder_table_function(self):
         seed(30)
@@ -175,13 +177,13 @@ class TestOptimizationBenchmarks(TestCase):
         values = (np.array(values), values)
 
         for v in values:
-            self.assertEqual(-19.208502567767606, holder_table(v))
-            self.assertEqual(19.208502567767606, inverted_holder_table(v))
+            self.assertAlmostEqual(-19.208502567767606, holder_table(v))
+            self.assertAlmostEqual(19.208502567767606, inverted_holder_table(v))
 
         values = np.random.uniform(-10, 10, 2)
 
-        self.assertEqual(-0.22520163548036162, holder_table(values))
-        self.assertEqual(0.22520163548036162, inverted_holder_table(values))
+        self.assertAlmostEqual(-0.22520163548036162, holder_table(values))
+        self.assertAlmostEqual(0.22520163548036162, inverted_holder_table(values))
 
     def test_langermann_function(self):
         seed(31)
@@ -189,8 +191,8 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.array([2.00299219, 1.00149609])
 
-        self.assertEqual(5.16143849872291, langermann(values))
-        self.assertEqual(-5.16143849872291, inverted_langermann(values))
+        self.assertAlmostEqual(5.16143849872291, langermann(values))
+        self.assertAlmostEqual(-5.16143849872291, inverted_langermann(values))
 
     def test_levy_function(self):
         seed(32)
@@ -203,8 +205,8 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.random.uniform(-10, 10, 10)
 
-        self.assertEqual(99.15281096751649, levy(values))
-        self.assertEqual(-99.15281096751649, inverted_levy(values))
+        self.assertAlmostEqual(99.15281096751649, levy(values))
+        self.assertAlmostEqual(-99.15281096751649, inverted_levy(values))
 
         values = [1, 1]
         values = (np.array(values), values)
@@ -215,8 +217,8 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.random.uniform(-10, 10, 2)
 
-        self.assertEqual(159.3253171412186, levy_function_no13(values))
-        self.assertEqual(-159.3253171412186, inverted_levy_no13(values))
+        self.assertAlmostEqual(159.3253171412186, levy_function_no13(values))
+        self.assertAlmostEqual(-159.3253171412186, inverted_levy_no13(values))
 
     def test_rastrigin_function(self):
         seed(33)
@@ -224,13 +226,13 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.zeros(10)
 
-        self.assertEqual(0.0, rastrigin(values))
-        self.assertEqual(0.0, inverted_rastrigin(values))
+        self.assertAlmostEqual(0.0, rastrigin(values))
+        self.assertAlmostEqual(0.0, inverted_rastrigin(values))
 
         values = np.random.uniform(-5.12, 5.12, 10)
 
-        self.assertEqual(188.77313402387063, rastrigin(values))
-        self.assertEqual(-188.77313402387063, inverted_rastrigin(values))
+        self.assertAlmostEqual(188.77313402387063, rastrigin(values))
+        self.assertAlmostEqual(-188.77313402387063, inverted_rastrigin(values))
 
     def test_rosenbrock_function(self):
         seed(34)
@@ -238,13 +240,13 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.ones(10)
 
-        self.assertEqual(0.0, rosenbrock(values))
-        self.assertEqual(0.0, inverted_rosenbrock(values))
+        self.assertAlmostEqual(0.0, rosenbrock(values))
+        self.assertAlmostEqual(0.0, inverted_rosenbrock(values))
 
         values = np.random.uniform(-5, 10, 10)
 
-        self.assertEqual(990518.5847981748, rosenbrock(values))
-        self.assertEqual(-990518.5847981748, inverted_rosenbrock(values))
+        self.assertAlmostEqual(990518.5847981748, rosenbrock(values))
+        self.assertAlmostEqual(-990518.5847981748, inverted_rosenbrock(values))
 
     def test_schaffer_function(self):
         seed(35)
@@ -253,13 +255,15 @@ class TestOptimizationBenchmarks(TestCase):
         values = (np.array([0, 0]), [0, 0])
 
         for v in values:
-            self.assertEqual(0.0, schaffer_function_no2(v))
-            self.assertEqual(0.0, inverted_schaffer_function_no2(v))
+            self.assertAlmostEqual(0.0, schaffer_function_no2(v))
+            self.assertAlmostEqual(0.0, inverted_schaffer_function_no2(v))
 
         values = np.random.uniform(-100, 100, 2)
 
-        self.assertEqual(0.5039215123824797, schaffer_function_no2(values))
-        self.assertEqual(-0.5039215123824797, inverted_schaffer_function_no2(values))
+        self.assertAlmostEqual(0.5039215123824797, schaffer_function_no2(values))
+        self.assertAlmostEqual(
+            -0.5039215123824797, inverted_schaffer_function_no2(values)
+        )
 
         values = (np.array([0, 1.25311]), [0, 1.253115])
 
@@ -271,8 +275,10 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.random.uniform(-100, 100, 2)
 
-        self.assertEqual(0.5032452712982894, schaffer_function_no4(values))
-        self.assertEqual(-0.5032452712982894, inverted_schaffer_function_no4(values))
+        self.assertAlmostEqual(0.5032452712982894, schaffer_function_no4(values))
+        self.assertAlmostEqual(
+            -0.5032452712982894, inverted_schaffer_function_no4(values)
+        )
 
     def test_schwefel_function(self):
         seed(36)
@@ -280,10 +286,10 @@ class TestOptimizationBenchmarks(TestCase):
 
         values = np.ones(10) * 420.968746
 
-        self.assertEqual(0.00012727566263492918, schwefel(values))
-        self.assertEqual(-0.00012727566263492918, inverted_schwefel(values))
+        self.assertAlmostEqual(0.00012727566263492918, schwefel(values))
+        self.assertAlmostEqual(-0.00012727566263492918, inverted_schwefel(values))
 
         values = np.random.uniform(-500, 500, 10)
 
-        self.assertEqual(4080.0940050073937, schwefel(values))
-        self.assertEqual(-4080.0940050073937, inverted_schwefel(values))
+        self.assertAlmostEqual(4080.0940050073937, schwefel(values))
+        self.assertAlmostEqual(-4080.0940050073937, inverted_schwefel(values))
