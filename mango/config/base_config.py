@@ -210,3 +210,25 @@ class BaseConfig:
         if section is None:
             return KeyError(f"Parameter {key} not found")
         self.parameters.get(section)[key] = value
+
+    @classmethod
+    def create_config_template(cls, output_path: str):
+        """
+        The create_config_template function creates a configuration file with default values for each parameter.
+        If the parameter has a default value, it will be used, otherwise an empty string will be used.
+
+        :param output_file: specify the output path for the template of the config file
+        :doc-author: baobab soluciones
+        """
+        parser = ConfigParser()
+        # Available params are attributes in the form _ChildClass__params
+        params = cls.__getattribute__(cls, "_{}__params".format(cls.__name__))
+        for section, params in params.items():
+            parser.add_section(section)
+            for p in params:
+                if p.default is None:
+                    parser.set(section, p.name, value="")
+                else:
+                    parser.set(section, p.name, value=str(p.default))
+        with open(output_path, "w") as f:
+            parser.write(f)
