@@ -1,4 +1,7 @@
+import os
+import pickle
 from collections import Counter
+from datetime import datetime
 from math import sqrt
 from random import randint
 from typing import Union
@@ -45,6 +48,12 @@ class Population:
         self._mutation_rate = self.config("mutation_base_rate")
         self._coefficient_variation = None
         self._generation_adaptative = self.config("generation_adaptative")
+
+        # Checkpoint params configuration
+        self._checkpoint_save_path = self.config("checkpoint_save_path")
+        self.checkpoint_save_period = self.config(
+            "checkpoint_save_period"
+        )
 
         if self._mutation_type == "gene-based":
             """
@@ -126,6 +135,7 @@ class Population:
             self._coefficient_variation = self._calculate_coefficient_variation()
 
         while self.generation <= self.max_generations:
+            # TODO: This should be here at top or after running the current generation? Implications?
             self.selection()
             self.crossover()
             self.mutate()
@@ -134,6 +144,70 @@ class Population:
             self.update_best()
             self.stop()
             self.generation += 1
+            if (self.generation-1) % self.checkpoint_save_period == 0:
+                self.save_checkpoint()
+
+    def save_checkpoint(self):
+        """
+        Method to save a checkpoint of the population.
+
+        This method saves the current state of the population in a file in the path specified in the configuration.
+        The file is saved in a pickle format.
+        """
+        # TODO: Population is a list of individuals, that have Individuals as parents, and Individuals have a config...
+        #   This is going to be a problem when saving the checkpoint due to recursion.
+        #   Bettet idea to save only the individual unique id and have on the problema global_list of all individuals
+        #   that have been created. Also need to change Individual class property parents to save the id instead of
+        #   the object.
+        if self._checkpoint_save_path is not None:
+            output_pkl = {
+                "generation": self.generation,
+                "population": self.population,
+                "selection_probs": self.selection_probs,
+                "offspring": self.offspring,
+                "best": self.best,
+                "count_individuals": self._count_individuals,
+                "coefficient_variation": self._coefficient_variation,
+                "mutation_rate": self._mutation_rate,
+            }
+            with open(
+                os.path.join(
+                    self._checkpoint_save_path,
+                    f"checkpoint_{datetime.now().strftime('%Y%m%d-%H%M%S')}.pkl",
+                ),
+                "wb",
+            ) as f:
+                pickle.dump(output_pkl, f)
+
+    @classmethod
+    def from_checkpoint(cls, path_checkpoint: str, config: GeneticBaseConfig, evaluator: Union[callable, Problem]):
+        """
+        Method to load a checkpoint of the population.
+
+        This method loads the current state of the population from a file in the path specified in the configuration.
+        The file is loaded in a pickle format.
+
+        :param path: Path to the file where the checkpoint is saved.
+        :type path: str
+        :return: The population object saved in the checkpoint.
+        :rtype: :class:`Population<mango.models.genetic.population.base_population.Population>`
+        """
+        with open(path_checkpoint, "rb") as f:
+            saved_population =  pickle.load(f)
+        # Initialize the population
+        population = cls(config, evaluator)
+        population.generation = saved_population["generation"]
+        population.population = saved_population["population"]
+        population.selection_probs = saved_population["selection_probs"]
+        population.offspring = saved_population["offspring"]
+        population.best = saved_population["best"]
+        population._count_individuals = saved_population["count_individuals"]
+        population._coefficient_variation = saved_population["coefficient_variation"]
+        population._mutation_rate = saved_population["mutation_rate"]
+
+        return population
+
+
 
     def continue_running(self, generations: int):
         """

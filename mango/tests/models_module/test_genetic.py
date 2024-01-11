@@ -1,3 +1,5 @@
+import os
+import shutil
 from random import seed
 from unittest import TestCase
 
@@ -66,10 +68,10 @@ class TestIndividual(TestCase):
 
 class TestBaseGeneticAlgorithms(TestCase):
     def setUp(self):
-        pass
-
+        self.created_folders = []
     def tearDown(self):
-        pass
+        for folder in self.created_folders:
+            shutil.rmtree(folder)
 
     def test_ackley(self):
         seed(42)
@@ -94,6 +96,30 @@ class TestBaseGeneticAlgorithms(TestCase):
         self.assertAlmostEqual(population.best.fitness, 0.83167899874918)
         for position, value in enumerate(population.best.genes):
             self.assertAlmostEqual(value, solution[position])
+
+    def test_bukin_with_checkpoint(self):
+        seed(23)
+        np.random.seed(23)
+        config = GeneticBaseConfig(normalize_path("./data/test_bukin_with_checkpoint.cfg"))
+        os.makedirs(config("checkpoint_save_path"), exist_ok=True)
+        self.created_folders.append(config("checkpoint_save_path"))
+        population = Population(config, bukin_function_6)
+        population.run()
+
+        self.assertAlmostEqual(population.best.fitness, 0.83167899874918)
+        solution = np.array([-4.01487863, 0.16113293])
+        for position, value in enumerate(population.best.genes):
+            self.assertAlmostEqual(value, solution[position])
+
+
+        # For each population in the assert if we rerun the population we get the same result
+        all_checkpoints = os.listdir(config("checkpoint_save_path"))
+        # Assert number of checkpoints must be config("max_generations") + 1/ config("checkpoint_save_period")
+        self.assertEqual(
+            len(all_checkpoints),
+            config("max_generations") // config("checkpoint_save_period") + 1,
+        )
+
 
     def test_continue_running(self):
         seed(34)

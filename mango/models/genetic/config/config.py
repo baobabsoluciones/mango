@@ -31,6 +31,19 @@ class GeneticBaseConfig(BaseConfig):
                 min_value=0,
                 max_value=1,
             ),
+            ConfigParameter(
+                "checkpoint_save_path",
+                str,
+                None,
+                required=False,
+            ),
+            ConfigParameter(
+                "checkpoint_save_period",
+                int,
+                None,
+                required=False,
+                min_value=0,
+            ),
         ],
         "individual": [
             ConfigParameter("encoding", str, validate=INDIVIDUAL_ENCODINGS),
@@ -61,3 +74,10 @@ class GeneticBaseConfig(BaseConfig):
 
     def __init__(self, filename):
         super().__init__(filename, self.__params)
+        # Add validation for checkpoint_save_path and checkpoint_save_rate
+        if (self("checkpoint_save_path") is None) != (
+            self("checkpoint_save_period") is None
+        ):
+            raise ValueError(
+                "Both 'checkpoint_save_path' and 'checkpoint_save_period' must be set together."
+            )
