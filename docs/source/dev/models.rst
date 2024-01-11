@@ -66,8 +66,9 @@ Machine Learning
 Metrics
 ~~~~~~~~
 
-.. autofunction:: mango.models.experiment_tracking.generate_metrics_classification
-.. autofunction:: mango.models.experiment_tracking.generate_metrics_regression
+As a part of mango we have implemented some metrics that are used to evaluate the performance of the models. The metrics are implemented in the following module.
+
+.. automodule:: mango.models.metrics
 
 Model tracking
 ~~~~~~~~~~~~~~~

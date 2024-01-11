@@ -4,20 +4,12 @@ import pickle
 import shutil
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Any
+from typing import Any
 
 import pandas as pd
 from sklearn.base import BaseEstimator
-from sklearn.metrics import (
-    mean_absolute_error,
-    mean_squared_error,
-    median_absolute_error,
-    r2_score,
-    confusion_matrix,
-    precision_score,
-    f1_score,
-    recall_score,
-)
+
+from mango.models.metrics import generate_metrics_regression, generate_metrics_classification
 
 
 class ProblemType(Enum):
@@ -37,97 +29,6 @@ class ModelLibrary(Enum):
     SCIKIT_LEARN = "scikit-learn"
     CATBOOST = "catboost"
     LIGHTGBM = "lightgbm"
-
-
-def generate_metrics_regression(
-    y_true: pd.Series, y_pred: pd.Series
-) -> Dict[str, float]:
-    """
-    Generate common metrics for regression and return them in a dictionary. The metrics are:
-        - R2 score
-        - Mean absolute error
-        - Mean squared error
-        - Root mean squared error
-        - Median absolute error
-
-    :param y_true: The true values.
-    :type y_true: :class:`pandas.Series`
-    :param y_pred: The predicted values.
-    :type y_pred: :class:`pandas.Series`
-    :return: A dictionary of metrics.
-    :rtype: :class:`dict`
-
-    Usage
-    -----
-    >>> y_true = pd.Series([3, -0.5, 2, 7])
-    >>> y_pred = pd.Series([2.5, 0.0, 2, 8])
-    >>> metrics = generate_metrics_regression(y_true, y_pred)
-    >>> print(metrics)
-    {'r2_score': 0.9486, 'mean_absolute_error': 0.5, 'mean_squared_error': 0.375, 'root_mean_squared_error': 0.6124, 'median_absolute_error': 0.5}
-    """
-    return {
-        "r2_score": round(r2_score(y_true, y_pred), 4),
-        "mean_absolute_error": round(mean_absolute_error(y_true, y_pred), 4),
-        "mean_squared_error": round(mean_squared_error(y_true, y_pred), 4),
-        "root_mean_squared_error": round(
-            mean_squared_error(y_true, y_pred, squared=False), 4
-        ),
-        "median_absolute_error": round(median_absolute_error(y_true, y_pred), 4),
-    }
-
-
-def generate_metrics_classification(
-    y_true: pd.Series, y_pred: pd.Series
-) -> Dict[str, float]:
-    """
-    Generate common metrics for classification and return them in a dictionary. The metrics for binary classification
-    are:
-        - Confusion matrix
-        - Accuracy
-        - Precision
-        - Recall
-        - F1 score
-
-    In case It is a multiclass classification, the metrics are:
-        - Confusion matrix
-        - Accuracy
-        - Precision macro
-        - Recall macro
-        - F1 score macro
-
-    :param y_true: The true values.
-    :type y_true: :class:`pandas.Series`
-    :param y_pred: The predicted values.
-    :type y_pred: :class:`pandas.Series`
-    :return: A dictionary of metrics.
-    :rtype: :class:`dict`
-
-    Usage
-    -----
-    >>> y_true = pd.Series([0, 1, 1, 0])
-    >>> y_pred = pd.Series([0, 0, 1, 1])
-    >>> metrics = generate_metrics_classification(y_true, y_pred)
-    >>> print(metrics)
-    {'confusion_matrix': [[1, 1], [1, 1]], 'accuracy': 0.5, 'precision': 0.5, 'recall': 0.5, 'f1_score': 0.5}
-    """
-    if len(y_true.unique()) == 2:
-        return {
-            "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
-            "accuracy": round((y_true == y_pred).sum() / len(y_true), 4),
-            "precision": round(precision_score(y_true, y_pred), 4),
-            "recall": round(recall_score(y_true, y_pred), 4),
-            "f1_score": round(f1_score(y_true, y_pred), 4),
-        }
-    else:
-        return {
-            "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
-            "accuracy": round((y_true == y_pred).sum() / len(y_true), 4),
-            "precision_macro": round(
-                precision_score(y_true, y_pred, average="macro"), 4
-            ),
-            "recall_macro": round(recall_score(y_true, y_pred, average="macro"), 4),
-            "f1_score_macro": round(f1_score(y_true, y_pred, average="macro"), 4),
-        }
 
 
 def export_model(
