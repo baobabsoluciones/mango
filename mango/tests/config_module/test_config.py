@@ -1,3 +1,5 @@
+import os
+from configparser import ConfigParser
 from unittest import TestCase
 
 from mango.config import BaseConfig, ConfigParameter
@@ -90,3 +92,25 @@ class ConfigTest(TestCase):
             other_param.__repr__(),
             "ConfigParameter('some_parameter', <class 'int'>, 1)",
         )
+
+    def test_empty_template(self):
+        TestConfig.create_config_template(output_path="empty_template.cfg")
+        # Test if file exists
+        self.assertTrue(os.path.exists("empty_template.cfg"))
+        # Read file and parse it with ConfigParser
+        parser = ConfigParser()
+        parser.read("empty_template.cfg")
+        self.assertEqual(parser.sections(), ["main", "other_section", "missing_section"])
+        self.assertEqual(parser["main"]["some_parameter"], "")
+        self.assertEqual(parser["main"]["other_parameter"], "")
+        self.assertEqual(parser["other_section"]["float_parameter"], "1.0")
+        self.assertEqual(parser["other_section"]["bool_parameter"], "")
+        self.assertEqual(parser["other_section"]["list_parameter"], "")
+        self.assertEqual(parser["other_section"]["another_list"], "")
+        self.assertEqual(parser["other_section"]["has_default"], "default")
+        self.assertEqual(parser["other_section"]["bad_value"], "1.0")
+        self.assertEqual(parser["missing_section"]["missing_parameter"], "default")
+
+        # Remove file
+        if os.path.exists("empty_template.cfg"):
+            os.remove("empty_template.cfg")

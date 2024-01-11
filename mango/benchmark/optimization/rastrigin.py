@@ -1,28 +1,34 @@
 from math import cos, pi
 
+import numpy as np
 
-def rastrigin(x: list) -> float:
+
+def rastrigin(x: np.array) -> float:
     """
     Rastrigin function.
 
     The Rastrigin function has several local minima. It is highly multimodal, but locations of the minima
     are regularly distributed.
 
-    :param list x: list of floats. Values usually are between -5.12 and 5.12.
+    The global minima is at [0, 0, ..., 0] with a value of 0
+
+    :param x: array of floats. Values usually are between -5.12 and 5.12.
+    :type x: :class:`npumpy.array`
     :return: the value of the function
     :rtype: float
     """
-    return 10 * len(x) + sum([i**2 - 10 * cos(2 * pi * i) for i in x])
+    return 10 * len(x) + np.sum(x**2 - 10 * np.cos(2 * pi * x))
 
 
-def inverse_rastrigin(x: list) -> float:
+def inverted_rastrigin(x: np.array) -> float:
     """
     Inverted Rastrigin function.
 
     The Rastrigin function has several local minima. It is highly multimodal, but locations of the minima
     are regularly distributed. This implementation inverts the function to test out the maximization
 
-    :param list x: list of floats. Values usually are between -5.12 and 5.12.
+    :param x: array of floats. Values usually are between -5.12 and 5.12.
+    :type x: :class:`npumpy.array`
     :return: the value of the function
     :rtype: float
     """

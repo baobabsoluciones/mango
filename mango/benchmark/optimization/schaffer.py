@@ -1,7 +1,10 @@
 from math import sin, cos
+from typing import Union
+
+import numpy as np
 
 
-def schaffer_function_no2(x: list) -> float:
+def schaffer_function_no2(x: Union[np.array, list]) -> float:
     """
     Schaffer function N. 2.
 
@@ -9,7 +12,8 @@ def schaffer_function_no2(x: list) -> float:
 
     The global minima is at x [0, 0] with value 0
 
-    :param list x: A list of values. Values are evaluated between [-100, 100]
+    :param x: A list of values. Values are evaluated between [-100, 100]
+    :type x: :class:`numpy.array` or list
     :return: The value of the Schaffer function N. 2.
     :rtype: float
     """
@@ -18,7 +22,7 @@ def schaffer_function_no2(x: list) -> float:
     )
 
 
-def inverted_schaffer_function_no2(x: list) -> float:
+def inverted_schaffer_function_no2(x: Union[np.array, list]) -> float:
     """
     Inverted Schaffer function N. 2.
 
@@ -28,14 +32,15 @@ def inverted_schaffer_function_no2(x: list) -> float:
 
     The global maxima is at x [0, 0] with value 0
 
-    :param list x: A list of values. Values are evaluated between [-100, 100]
+    :param x: A list of values. Values are evaluated between [-100, 100]
+    :type x: :class:`numpy.array` or list
     :return: The value of the Inverted Schaffer function N. 2.
     :rtype: float
     """
     return -schaffer_function_no2(x)
 
 
-def schaffer_function_no4(x: list) -> float:
+def schaffer_function_no4(x: Union[np.array, list]) -> float:
     """
     Schaffer function N. 4.
 
@@ -43,7 +48,8 @@ def schaffer_function_no4(x: list) -> float:
 
     The global minima is at x [0, 1.253115] with value 0.292579
 
-    :param list x: A list of values. Values are evaluated between [-100, 100]
+    :param x: array or list of values. Values are evaluated between [-100, 100]
+    :type x: :class:`numpy.array` or list
     :return: The value of the Schaffer function N. 4.
     :rtype: float
     """
@@ -52,7 +58,7 @@ def schaffer_function_no4(x: list) -> float:
     )
 
 
-def inverted_schaffer_function_no4(x: list) -> float:
+def inverted_schaffer_function_no4(x: Union[np.array, list]) -> float:
     """
     Inverted Schaffer function N. 4.
 
@@ -62,7 +68,8 @@ def inverted_schaffer_function_no4(x: list) -> float:
 
     The global maxima is at x [0, 1.253115] with value -0.292579
 
-    :param list x: A list of values. Values are evaluated between [-100, 100]
+    :param x: array or list of values. Values are evaluated between [-100, 100]
+    :type x: :class:`numpy.array` or list
     :return: The value of the Inverted Schaffer function N. 4.
     :rtype: float
     """

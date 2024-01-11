@@ -1,5 +1,3 @@
-from math import prod, cos, sqrt
-
 import numpy as np
 
 
@@ -8,6 +6,8 @@ def griewank(x: np.array) -> float:
     Griewank function.
 
     The Griewank function has many widespread local minima, which are regularly distributed
+
+    The global minima is located at [0, 0, ..., 0] with a value of 0
 
     :param x: array of floats
     :type x: :class:`numpy.ndarray`
