@@ -7,9 +7,7 @@ from enum import Enum
 from typing import Dict, Any
 
 import pandas as pd
-import sklearn.base
-from catboost import CatBoost
-from lightgbm import LGBMModel
+from sklearn.base import BaseEstimator
 from sklearn.metrics import (
     mean_absolute_error,
     mean_squared_error,
@@ -172,11 +170,21 @@ def export_model(
                 |- y_test.csv
             |- summary.json
     """
-    _SUPPORTED_LIBRARIES_CLASSES = {
-        ModelLibrary.SCIKIT_LEARN: sklearn.base.BaseEstimator,
-        ModelLibrary.CATBOOST: CatBoost,
-        ModelLibrary.LIGHTGBM: LGBMModel,
-    }
+    _SUPPORTED_LIBRARIES_CLASSES = {}
+    _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
+    try:
+        from catboost import CatBoost
+
+        _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.CATBOOST] = CatBoost
+    except ImportError:
+        pass
+    try:
+        from lightgbm import LGBMModel
+
+        _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.LIGHTGBM] = LGBMModel
+    except ImportError:
+        pass
+
     if not os.path.exists(base_path):
         raise FileNotFoundError(f"Folder {base_path} does not exist.")
     model_name = model.__class__.__name__
