@@ -7,9 +7,11 @@ from enum import Enum
 from typing import Any
 
 import pandas as pd
-from sklearn.base import BaseEstimator
 
-from mango.models.metrics import generate_metrics_regression, generate_metrics_classification
+from mango.models.metrics import (
+    generate_metrics_regression,
+    generate_metrics_classification,
+)
 
 
 class ProblemType(Enum):
@@ -79,7 +81,12 @@ def export_model(
     >>> print(output_folder) # /my_experiments_folder/experiment_LogisticRegression_YYYYMMDD-HHMMSS
     """
     _SUPPORTED_LIBRARIES_CLASSES = {}
-    _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
+    try:
+        from sklearn.base import BaseEstimator
+
+        _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
+    except ImportError:
+        pass
     try:
         from catboost import CatBoost
 

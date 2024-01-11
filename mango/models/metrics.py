@@ -1,5 +1,6 @@
 from typing import Dict
 
+import numpy as np
 import pandas as pd
 
 
@@ -99,7 +100,7 @@ def median_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
     return (y_true - y_pred).abs().median()
 
 
-def confusion_matrix(y_true: pd.Series, y_pred: pd.Series) -> pd.DataFrame:
+def confusion_matrix(y_true: pd.Series, y_pred: pd.Series) -> np.ndarray:
     """
     Calculate the confusion matrix for classification.
 
@@ -118,7 +119,7 @@ def confusion_matrix(y_true: pd.Series, y_pred: pd.Series) -> pd.DataFrame:
     array([[1, 1],
            [1, 1]])
     """
-    return pd.crosstab(y_true, y_pred)
+    return pd.crosstab(y_true, y_pred).to_numpy()
 
 
 def precision_score(
