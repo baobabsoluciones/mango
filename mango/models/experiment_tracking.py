@@ -51,8 +51,19 @@ def generate_metrics_regression(
         - Median absolute error
 
     :param y_true: The true values.
+    :type y_true: :class:`pandas.Series`
     :param y_pred: The predicted values.
+    :type y_pred: :class:`pandas.Series`
     :return: A dictionary of metrics.
+    :rtype: :class:`dict`
+
+    Usage
+    -----
+    >>> y_true = pd.Series([3, -0.5, 2, 7])
+    >>> y_pred = pd.Series([2.5, 0.0, 2, 8])
+    >>> metrics = generate_metrics_regression(y_true, y_pred)
+    >>> print(metrics)
+    {'r2_score': 0.9486, 'mean_absolute_error': 0.5, 'mean_squared_error': 0.375, 'root_mean_squared_error': 0.6124, 'median_absolute_error': 0.5}
     """
     return {
         "r2_score": round(r2_score(y_true, y_pred), 4),
@@ -84,10 +95,20 @@ def generate_metrics_classification(
         - Recall macro
         - F1 score macro
 
-
     :param y_true: The true values.
+    :type y_true: :class:`pandas.Series`
     :param y_pred: The predicted values.
+    :type y_pred: :class:`pandas.Series`
     :return: A dictionary of metrics.
+    :rtype: :class:`dict`
+
+    Usage
+    -----
+    >>> y_true = pd.Series([0, 1, 1, 0])
+    >>> y_pred = pd.Series([0, 0, 1, 1])
+    >>> metrics = generate_metrics_classification(y_true, y_pred)
+    >>> print(metrics)
+    {'confusion_matrix': [[1, 1], [1, 1]], 'accuracy': 0.5, 'precision': 0.5, 'recall': 0.5, 'f1_score': 0.5}
     """
     if len(y_true.unique()) == 2:
         return {
@@ -122,53 +143,39 @@ def export_model(
 ):
     """
     Register model and metrics in a json file and save the model and datasets in a folder.
-    :param model: A model from one of the supported libraries. Currently supported libraries are:
-            - scikit-learn
-            - catboost
-            - lightgbm
+
+    :param model: A model from one of the supported libraries.
+    :type model: :class:`Any`
     :param X_train: Training data as a pandas dataframe.
+    :type X_train: :class:`pandas.DataFrame`
     :param y_train: Training target as a pandas series.
+    :type y_train: :class:`pandas.Series`
     :param X_test: Test data as a pandas dataframe.
+    :type X_test: :class:`pandas.DataFrame`
     :param y_test: Test target as a pandas series.
+    :type y_test: :class:`pandas.Series`
     :param base_path: Path to the base folder where the model and datasets will be saved in a subfolder structure.
+    :type base_path: :class:`str`
     :param zip_files: Whether to zip the files or not.
+    :type zip_files: :class:`bool`
     :param save_datasets: Whether to save the datasets or not.
+    :type save_datasets: :class:`bool`
     :param save_model: Whether to save the model or not.
+    :type save_model: :class:`bool`
     :return: The path to the subfolder inside base_path where the model and datasets have been saved.
+    :rtype: :class:`str`
 
     Usage
     -----
     >>> from sklearn.datasets import fetch_california_housing
     >>> from sklearn.linear_model import LogisticRegression
     >>> from sklearn.model_selection import train_test_split
-    >>> from mango.models.experiment_tracking import export_model
-    >>>
-    >>>
     >>> X, y = fetch_california_housing(return_X_y=True, as_frame=True)
     >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
     >>> model = LogisticRegression()
     >>> model.fit(X_train, y_train)
     >>> output_folder = export_model(model, X_train, y_train, X_test, y_test, "/my_experiments_folder")
     >>> print(output_folder) # /my_experiments_folder/experiment_LogisticRegression_YYYYMMDD-HHMMSS
-
-    Subfolder structure
-    -------------------
-    The subfolder structure will be the following:
-    |- base_path
-        |- experiment_{model_name}_{datetime}
-            |- model
-                |- model.pkl
-
-                |- hyperparameters.json
-            |- data
-                |- X_train.csv
-
-                |- y_train.csv
-
-                |- X_test.csv
-
-                |- y_test.csv
-            |- summary.json
     """
     _SUPPORTED_LIBRARIES_CLASSES = {}
     _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
@@ -200,35 +207,6 @@ def export_model(
         problem_type = ProblemType.CLASSIFICATION
     else:
         problem_type = ProblemType.REGRESSION
-
-    # Intended structure
-    # summary = {
-    #     "model": {
-    #         "name": "",
-    #         "problem_type": "",
-    #         # Optional "num_classes": 0, if classification
-    #         "input": "",
-    #         "target": "",
-    #         "hyperparameters": {},
-    #         "library": "",
-    #     },
-    #     "results": {},
-    #     # Optional
-    #     # "files": {
-    #     #     "model": {
-    #     #         "zip": "",
-    #     #         "model.pkl": "",
-    #     #         "hyperparameters.json": "",
-    #     #     },
-    #     #     "data": {
-    #     #         "zip": "",
-    #     #         "X_train.csv": "",
-    #     #         "y_train.csv": "",
-    #     #         "X_test.csv": "",
-    #     #         "y_test.csv": "",
-    #     #     },
-    #     # },
-    # }
     summary = {}
     extra_params = []
     # Fill structure
@@ -350,21 +328,30 @@ def export_model(
         if not "data" in summary["files"]:
             summary["files"]["data"] = {}
         X_train_path = os.path.join(folder_name, "data", "X_train.csv")
-        summary["files"]["data"]["X_train.csv"] = os.path.abspath(X_train_path)
+        summary["files"]["data"]["X_train"] = {}
+        summary["files"]["data"]["X_train"]["path"] = os.path.abspath(X_train_path)
+        summary["files"]["data"]["X_train"]["shape"] = X_train.shape
         X_train.to_csv(X_train_path, index=False)
         y_train_path = os.path.join(folder_name, "data", "y_train.csv")
-        summary["files"]["data"]["y_train.csv"] = os.path.abspath(y_train_path)
+        summary["files"]["data"]["y_train"] = {}
+        summary["files"]["data"]["y_train"]["path"] = os.path.abspath(y_train_path)
+        summary["files"]["data"]["y_train"]["shape"] = y_train.shape
         y_train.to_csv(y_train_path, index=False)
         X_test_path = os.path.join(folder_name, "data", "X_test.csv")
-        summary["files"]["data"]["X_test.csv"] = os.path.abspath(X_test_path)
+        summary["files"]["data"]["X_test"] = {}
+        summary["files"]["data"]["X_test"]["path"] = os.path.abspath(X_test_path)
+        summary["files"]["data"]["X_test"]["shape"] = X_test.shape
         X_test.to_csv(X_test_path, index=False)
         y_test_path = os.path.join(folder_name, "data", "y_test.csv")
-        summary["files"]["data"]["y_test.csv"] = os.path.abspath(y_test_path)
+        summary["files"]["data"]["y_test"] = {}
+        summary["files"]["data"]["y_test"]["path"] = os.path.abspath(y_test_path)
+        summary["files"]["data"]["y_test"]["shape"] = y_test.shape
         y_test.to_csv(y_test_path, index=False)
         if zip_files:
             # Compress data and save
             zip_path = os.path.join(folder_name, "data.zip")
-            summary["files"]["data"]["zip"] = os.path.abspath(zip_path)
+            summary["files"]["data"]["zip"] = {}
+            summary["files"]["data"]["zip"]["path"] = os.path.abspath(zip_path)
             shutil.make_archive(
                 zip_path.rstrip(".zip"), "zip", os.path.join(folder_name, "data")
             )
