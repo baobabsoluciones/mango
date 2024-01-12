@@ -82,7 +82,7 @@ class TestExperimentTracking(TestCase):
         """
         # Assert zip files are saved
         self.assertTrue(os.path.exists(os.path.join(output_folder, "model.zip")))
-        self.assertTrue(os.path.exists(os.path.join(output_folder, "data.zip")))
+        self.assertTrue(os.path.exists(os.path.join(output_folder, "datasets.zip")))
 
         # Assert files are saved correctly
         self.assertTrue(os.path.exists(os.path.join(output_folder, "summary.json")))
@@ -95,21 +95,21 @@ class TestExperimentTracking(TestCase):
             os.path.exists(os.path.join(output_folder, "model", "hyperparameters.json"))
         )
         self.assertFalse(
-            os.path.exists(os.path.join(output_folder, "data", "X_train.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "X_train.csv"))
         )
         self.assertFalse(
-            os.path.exists(os.path.join(output_folder, "data", "y_train.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "y_train.csv"))
         )
         self.assertFalse(
-            os.path.exists(os.path.join(output_folder, "data", "X_test.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "X_test.csv"))
         )
         self.assertFalse(
-            os.path.exists(os.path.join(output_folder, "data", "y_test.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "y_test.csv"))
         )
 
         # Assert subfolder not saved
         self.assertFalse(os.path.exists(os.path.join(output_folder, "model")))
-        self.assertFalse(os.path.exists(os.path.join(output_folder, "data")))
+        self.assertFalse(os.path.exists(os.path.join(output_folder, "datasets")))
 
     def _check_model_without_zip(self, model, output_folder, problem_type):
         """
@@ -117,7 +117,7 @@ class TestExperimentTracking(TestCase):
         """
         # Assert folders are saved correctly
         self.assertTrue(os.path.exists(os.path.join(output_folder, "model")))
-        self.assertTrue(os.path.exists(os.path.join(output_folder, "data")))
+        self.assertTrue(os.path.exists(os.path.join(output_folder, "datasets")))
         # Assert files are saved correctly
         self.assertTrue(os.path.exists(os.path.join(output_folder, "summary.json")))
         self.assertTrue(
@@ -127,25 +127,25 @@ class TestExperimentTracking(TestCase):
             os.path.exists(os.path.join(output_folder, "model", "model.pkl"))
         )
         self.assertTrue(
-            os.path.exists(os.path.join(output_folder, "data", "X_train.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "X_train.csv"))
         )
         self.assertTrue(
-            os.path.exists(os.path.join(output_folder, "data", "y_train.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "y_train.csv"))
         )
         self.assertTrue(
-            os.path.exists(os.path.join(output_folder, "data", "X_test.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "X_test.csv"))
         )
         self.assertTrue(
-            os.path.exists(os.path.join(output_folder, "data", "y_test.csv"))
+            os.path.exists(os.path.join(output_folder, "datasets", "y_test.csv"))
         )
         # Assert zip files are not saved
         self.assertFalse(os.path.exists(os.path.join(output_folder, "model.zip")))
-        self.assertFalse(os.path.exists(os.path.join(output_folder, "data.zip")))
+        self.assertFalse(os.path.exists(os.path.join(output_folder, "datasets.zip")))
         # Assert files are valid for data folder
-        X_train = pd.read_csv(os.path.join(output_folder, "data", "X_train.csv"))
-        y_train = pd.read_csv(os.path.join(output_folder, "data", "y_train.csv")).values
-        X_test = pd.read_csv(os.path.join(output_folder, "data", "X_test.csv"))
-        y_test = pd.read_csv(os.path.join(output_folder, "data", "y_test.csv")).values
+        X_train = pd.read_csv(os.path.join(output_folder, "datasets", "X_train.csv"))
+        y_train = pd.read_csv(os.path.join(output_folder, "datasets", "y_train.csv")).values
+        X_test = pd.read_csv(os.path.join(output_folder, "datasets", "X_test.csv"))
+        y_test = pd.read_csv(os.path.join(output_folder, "datasets", "y_test.csv")).values
         if problem_type == ProblemType.CLASSIFICATION:
             assert_frame_equal(X_train, self.X_train_clf)
             self.assertListEqual(list([y for y in y_train.reshape(-1)]), list([y for y in self.y_train_clf.values]))
