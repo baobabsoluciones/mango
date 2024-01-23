@@ -70,12 +70,46 @@ As a part of mango we have implemented some metrics that are used to evaluate th
 
 .. automodule:: mango.models.metrics
 
-Model tracking
-~~~~~~~~~~~~~~~
+Enumerations
+~~~~~~~~~~~~
 
-The following fucntion attempts to export the model and the data used to train it. The model is saved as a pickle file and the data is saved as csv files. The function also saves a summary of the model in a json file. This way many models (experiments) can be saved in the same folder and the user can easily compare them.
+The enumerations are used to define the type of problem and the type of model.
 
-.. autofunction:: mango.models.experiment_tracking.export_model
+.. automodule:: mango.models.enums
+
+Experiment tracking
+~~~~~~~~~~~~~~~~~~~~
+
+During the training of the models, the user may develop many models and it is important to keep track of the results.
+For this purpose, we have implemented several classes that can be used to keep track of the experiments. The classes
+are implemented in the following module.
+
+The main class is the MLExperiment class. This class is used to keep track of the results of the experiments. The
+MLExperiment class is used to save the results of the experiments in a folder structure and provides some methods to
+analyze the results.
+
+.. autoclass:: mango.models.experiment_tracking.MLExperiment
+    :members:
+    :undoc-members:
+    :private-members:
+    :show-inheritance:
+
+MLTracker is a class that can be used to keep track of the experiments. It is a simple manager that uses the folder
+where all the experiments are saved. It provides some methods to analyze the results and compare the experiments.
+
+.. autoclass:: mango.models.experiment_tracking.MLTracker
+    :members:
+    :undoc-members:
+    :private-members:
+    :show-inheritance:
+
+
+In case does not want to use the MLExperiment class, the user can use the following function to save the results of the
+trained model into a folder structure. The model is saved as a pickle file and the
+data is saved as csv files. The function also saves a summary of the model in a json file. This way many models
+(experiments) can be saved in the same folder and the user can easily compare them.
+
+.. autofunction:: mango.models.export_model
 
 The subfolder structure after running export_model is the following:
 
@@ -175,3 +209,4 @@ If save_dataset is set to True, the JSON file will also contain the following:
             }
         }
 
+Model experiments

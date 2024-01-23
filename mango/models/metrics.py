@@ -145,6 +145,8 @@ def precision_score(
     0.5
     """
     if average == "binary":
+        if (y_pred == 1).sum() == 0:
+            return 0
         return ((y_true == 1) & (y_pred == 1)).sum() / (y_pred == 1).sum()
     elif average == "macro":
         return (
@@ -210,6 +212,8 @@ def f1_score(y_true: pd.Series, y_pred: pd.Series, average: str = "binary") -> f
     """
     precision = precision_score(y_true, y_pred, average=average)
     recall = recall_score(y_true, y_pred, average=average)
+    if precision + recall == 0:
+        return 0
     return 2 * (precision * recall) / (precision + recall)
 
 
@@ -284,8 +288,12 @@ def generate_metrics_classification(
     {'confusion_matrix': [[1, 1], [1, 1]], 'accuracy': 0.5, 'precision': 0.5, 'recall': 0.5, 'f1_score': 0.5}
     """
     if len(y_true.unique()) == 2:
+        tp = int(((y_true == 1) & (y_pred == 1)).sum())
+        tn = int(((y_true == 0) & (y_pred == 0)).sum())
+        fp = int(((y_true == 0) & (y_pred == 1)).sum())
+        fn = int(((y_true == 1) & (y_pred == 0)).sum())
         return {
-            "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
+            "confusion_matrix": [[tn, fp], [fn, tp]],
             "accuracy": round((y_true == y_pred).sum() / len(y_true), 4),
             "precision": round(precision_score(y_true, y_pred), 4),
             "recall": round(recall_score(y_true, y_pred), 4),
