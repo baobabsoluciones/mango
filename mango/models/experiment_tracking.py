@@ -1334,7 +1334,7 @@ class MLTracker:
                 )
                 if show_plots:
                     fig.show()
-                fig.close()
+                plt.close()
             fig, ax = experiment.plot_feature_importance()
             ax.set_title(experiment_name + "_" + ax.get_title())
             fig.savefig(
@@ -1344,7 +1344,7 @@ class MLTracker:
             )
             if show_plots:
                 fig.show()
-            fig.close()
+            plt.close()
 
         return None
 
