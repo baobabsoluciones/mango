@@ -54,6 +54,8 @@ def export_model(
     y_train: pd.Series,
     X_test: pd.DataFrame,
     y_test: pd.Series,
+    X_validation: pd.DataFrame,
+    y_validation: pd.Series,
     base_path: str,
     custom_metrics: dict = None,
     description: str = None,
@@ -75,6 +77,10 @@ def export_model(
     :type X_test: :class:`pandas.DataFrame`
     :param y_test: Test target as a pandas series.
     :type y_test: :class:`pandas.Series`
+    :param X_validation: Validation data as a pandas dataframe.
+    :type X_validation: :class:`pandas.DataFrame`
+    :param y_validation: Validation target as a pandas series.
+    :type y_validation: :class:`pandas.Series`
     :param description: Description of the experiment.
     :type description: :class:`str`
     :param base_path: Path to the base folder where the model and datasets will be saved in a subfolder structure.
@@ -162,7 +168,7 @@ def export_model(
     summary["model"]["library"] = model_library.value
     if model_library == ModelLibrary.CATBOOST:
         if pipeline is not None:
-            summary["model"]["input"] = list(col_transformer.get_feature_names_out())
+            summary["model"]["input"] = list(col_transformer.feature_names_in_)
             summary["model"]["hyperparameters"] = pipeline.get_params(deep=True)
         else:
             summary["model"]["hyperparameters"] = model.get_all_params()
@@ -170,14 +176,14 @@ def export_model(
 
     elif model_library == ModelLibrary.SCIKIT_LEARN:
         if pipeline is not None:
-            summary["model"]["input"] = list(col_transformer.get_feature_names_out())
+            summary["model"]["input"] = list(col_transformer.feature_names_in_)
             summary["model"]["hyperparameters"] = pipeline.get_params(deep=True)
         else:
             summary["model"]["input"] = list(model.feature_names_in_)
             summary["model"]["hyperparameters"] = model.get_params(deep=True)
     elif model_library == ModelLibrary.LIGHTGBM:
         if pipeline is not None:
-            summary["model"]["input"] = list(col_transformer.get_feature_names_out())
+            summary["model"]["input"] = list(col_transformer.feature_names_in_)
             summary["model"]["hyperparameters"] = pipeline.get_params(deep=True)
         else:
             summary["model"]["input"] = list(model.feature_name_)
@@ -228,9 +234,15 @@ def export_model(
         y_test_pred = pd.Series(model.predict(X_test).reshape(-1)).reset_index(
             drop=True
         )
+        y_validation_pred = pd.Series(
+            model.predict(X_validation).reshape(-1)
+        ).reset_index(drop=True)
     elif model_library in [ModelLibrary.SCIKIT_LEARN, ModelLibrary.LIGHTGBM]:
         y_train_pred = pd.Series(model.predict(X_train)).reset_index(drop=True)
         y_test_pred = pd.Series(model.predict(X_test)).reset_index(drop=True)
+        y_validation_pred = pd.Series(model.predict(X_validation)).reset_index(
+            drop=True
+        )
 
     if problem_type == ProblemType.CLASSIFICATION:
         if not custom_metrics:
@@ -240,6 +252,9 @@ def export_model(
                 ),
                 "test_score": generate_metrics_classification(
                     y_test.reset_index(drop=True), y_test_pred
+                ),
+                "validation_score": generate_metrics_classification(
+                    y_validation.reset_index(drop=True), y_validation_pred
                 ),
             }
         else:
@@ -251,6 +266,9 @@ def export_model(
             ),
             "test_score": generate_metrics_regression(
                 y_test.reset_index(drop=True), y_test_pred
+            ),
+            "validation_score": generate_metrics_regression(
+                y_validation.reset_index(drop=True), y_validation_pred
             ),
         }
 
@@ -318,6 +336,20 @@ def export_model(
         summary["files"]["datasets"]["y_test"]["path"] = os.path.abspath(y_test_path)
         summary["files"]["datasets"]["y_test"]["shape"] = y_test.shape
         y_test.to_csv(y_test_path, index=False)
+        X_validation_path = os.path.join(folder_name, "datasets", "X_validation.csv")
+        summary["files"]["datasets"]["X_validation"] = {}
+        summary["files"]["datasets"]["X_validation"]["path"] = os.path.abspath(
+            X_validation_path
+        )
+        summary["files"]["datasets"]["X_validation"]["shape"] = X_validation.shape
+        X_validation.to_csv(X_validation_path, index=False)
+        y_validation_path = os.path.join(folder_name, "datasets", "y_validation.csv")
+        summary["files"]["datasets"]["y_validation"] = {}
+        summary["files"]["datasets"]["y_validation"]["path"] = os.path.abspath(
+            y_validation_path
+        )
+        summary["files"]["datasets"]["y_validation"]["shape"] = y_validation.shape
+        y_validation.to_csv(y_validation_path, index=False)
         if zip_files:
             # Compress data and save
             zip_path = os.path.join(folder_name, "datasets.zip")
@@ -391,6 +423,8 @@ class MLExperiment:
         y_train: Optional[pd.Series] = None,
         X_test: Optional[pd.DataFrame] = None,
         y_test: Optional[pd.Series] = None,
+        X_validation: Optional[pd.DataFrame] = None,
+        y_validation: Optional[pd.Series] = None,
         model: Any = None,
         problem_type: Union[str, ProblemType] = None,
         name: str = None,
@@ -444,6 +478,8 @@ class MLExperiment:
         self.y_train = y_train
         self.X_test = X_test
         self.y_test = y_test
+        self.X_validation = X_validation
+        self.y_validation = y_validation
 
         if self.problem_type == ProblemType.CLASSIFICATION:
             self.num_classes = len(self.y_test.unique())
@@ -451,7 +487,7 @@ class MLExperiment:
             self.imbalance = (
                 self.y_train.value_counts().values[1]
                 / self.y_train.value_counts().values[0]
-                < 0.2
+                < 0.35
             )
 
         # Private properties
@@ -461,6 +497,7 @@ class MLExperiment:
         self._recall_list = None
         self._config = None
         self._is_pipeline = isinstance(self.model, self.pipeline_class)
+        self._model_input_cols = self._get_model_input_cols()
 
         # Final Setup
         self._set_base_model_and_library()
@@ -588,6 +625,39 @@ class MLExperiment:
         self._y_test = value
 
     @property
+    def X_validation(self) -> pd.DataFrame:
+        """
+        Test data.
+        """
+        return self._X_validation
+
+    @X_validation.setter
+    def X_validation(self, value):
+        if value is None:
+            raise ValueError("X_test cannot be None.")
+        self._X_validation = value
+
+    @property
+    def y_validation(self) -> pd.Series:
+        """
+        Test target.
+        """
+        return self._y_validation
+
+    @y_validation.setter
+    def y_validation(self, value):
+        if value is None:
+            raise ValueError("y_test cannot be None.")
+        if isinstance(value, pd.DataFrame):
+            if value.shape[1] == 1:
+                value = value.iloc[:, 0]
+            else:
+                raise ValueError("y_train must be a pandas Series.")
+        if not isinstance(value, pd.Series):
+            raise ValueError("y_train must be a pandas Series.")
+        self._y_validation = value
+
+    @property
     def metrics(self) -> dict:
         """
         Dictionary with the metrics of the experiment.
@@ -704,15 +774,26 @@ class MLExperiment:
                     str
                 )
                 self.X_test.iloc[:, col_idx] = self.X_test.iloc[:, col_idx].astype(str)
+                self.X_validation.iloc[:, col_idx] = self.X_validation.iloc[
+                    :, col_idx
+                ].astype(str)
 
     def _generate_classification_metrics_with_threshold(self):
         """
         Helper function to generate the classification metrics with different thresholds.
         """
-        self.metrics = {"train_score": {}, "test_score": {}}
+        self.metrics = {"train_score": {}, "test_score": {}, "validation_score": {}}
         if self.num_classes == 2:
-            y_pred_train = self.model.predict_proba(self.X_train)[:, 1]
-            y_pred_test = self.model.predict_proba(self.X_test)[:, 1]
+            y_pred_train = self.model.predict_proba(
+                self.X_train[self._model_input_cols]
+            )[:, 1]
+            y_pred_test = self.model.predict_proba(self.X_test[self._model_input_cols])[
+                :, 1
+            ]
+            y_pred_validation = self.model.predict_proba(
+                self.X_validation[self._model_input_cols]
+            )[:, 1]
+
             for threshold in [i / 100 for i in range(1, 101)]:
                 self.metrics["train_score"][
                     threshold
@@ -722,15 +803,26 @@ class MLExperiment:
                 self.metrics["test_score"][threshold] = generate_metrics_classification(
                     self.y_test, y_pred_test >= threshold
                 )
+                self.metrics["validation_score"][
+                    threshold
+                ] = generate_metrics_classification(
+                    self.y_validation, y_pred_validation >= threshold
+                )
         else:
             self.metrics = {}
-            y_pred_train = self.model.predict(self.X_train)
-            y_pred_test = self.model.predict(self.X_test)
+            y_pred_train = self.model.predict(self.X_train[self._model_input_cols])
+            y_pred_test = self.model.predict(self.X_test[self._model_input_cols])
+            y_pred_validation = self.model.predict(
+                self.X_validation[self._model_input_cols]
+            )
             self.metrics["train_score"] = generate_metrics_classification(
                 self.y_train, y_pred_train
             )
             self.metrics["test_score"] = generate_metrics_classification(
                 self.y_test, y_pred_test
+            )
+            self.metrics["validation_score"] = generate_metrics_classification(
+                self.y_validation, y_pred_validation
             )
 
     @staticmethod
@@ -886,7 +978,7 @@ class MLExperiment:
         recall_list = []
         best_distance = 9999
         best_threshold = None
-        for threshold, metric in self.metrics["test_score"].items():
+        for threshold, metric in self.metrics["validation_score"].items():
             precision = metric["precision"]
             recall = metric["recall"]
             precision_list.append(precision)
@@ -920,7 +1012,7 @@ class MLExperiment:
         fpr_list = []
         best_distance = 9999
         best_threshold = None
-        for threshold, metric in self.metrics["test_score"].items():
+        for threshold, metric in self.metrics["validation_score"].items():
             (tn, fp), (fn, tp) = metric["confusion_matrix"]
             tpr = tp / (tp + fn)
             fpr = fp / (fp + tn)
@@ -945,9 +1037,28 @@ class MLExperiment:
         :return:
         """
         if self.problem_type == ProblemType.REGRESSION:
-            self.metrics = generate_metrics_regression(
-                self.y_test, self.model.predict(self.X_test)
+            # Metrics for the training set (optional, depending on your needs)
+            train_metrics = generate_metrics_regression(
+                self.y_train, self.model.predict(self.X_train[self._model_input_cols])
             )
+            # Metrics for the test set
+            test_metrics = generate_metrics_regression(
+                self.y_test, self.model.predict(self.X_test[self._model_input_cols])
+            )
+
+            # Metrics for the validation set
+            validation_metrics = generate_metrics_regression(
+                self.y_validation,
+                self.model.predict(self.X_validation[self._model_input_cols]),
+            )
+
+            # Store metrics in a dictionary
+            self.metrics = {
+                "train": train_metrics,
+                "validation": validation_metrics,
+                "test": test_metrics,
+            }
+
         elif self.problem_type == ProblemType.CLASSIFICATION:
             self._generate_classification_metrics_with_threshold()
             if self.num_classes == 2:
@@ -989,9 +1100,10 @@ class MLExperiment:
             return pd.Series(feature_importance, index=feature_names).sort_values(
                 ascending=False
             )
-        raise NotImplementedError(
+        logging.warning(
             f"Feature importance is not supported for model {self.base_model.__class__.__name__}"
         )
+        return pd.Series(index=feature_names)
 
     def plot_roc_curve(
         self, show: bool = False
@@ -1013,7 +1125,7 @@ class MLExperiment:
             )
         fig, ax = plt.subplots(figsize=(15, 10))
         # Scatter and show cmap legend
-        thresholds = list(self.metrics["test_score"].keys())
+        thresholds = list(self.metrics["validation_score"].keys())
         ax.scatter(self._fpr_list, self._tpr_list, c=thresholds, cmap="viridis")
         ax.set_title(f"ROC Curve, best threshold {self.best_threshold_roc_curve:.2f}")
         ax.set_xlabel("False Positive Rate")
@@ -1059,7 +1171,7 @@ class MLExperiment:
             )
         fig, ax = plt.subplots(figsize=(15, 10))
         # Scatter and show cmap legend
-        thresholds = list(self.metrics["test_score"].keys())
+        thresholds = list(self.metrics["validation_score"].keys())
         ax.scatter(
             self._recall_list, self._precision_list, c=thresholds, cmap="viridis"
         )
@@ -1110,6 +1222,37 @@ class MLExperiment:
         else:
             return fig, ax
 
+    def plot_probabilities_histogram(
+        self, show=False, bins=20, dataset: str = "test"
+    ) -> Optional[Tuple[plt.Figure, plt.Axes]]:
+        X = getattr(self, f"X_{dataset}")
+        y = getattr(self, f"y_{dataset}")
+        preds = self.get_probabilities(X, y)
+        fig, ax = plt.subplots(figsize=(20, 20))
+        ax.hist(
+            preds[preds["target"] == 0]["prediction_probability"],
+            bins=bins,
+            alpha=0.5,
+            label="0",
+            density=True,
+        )
+        ax.hist(
+            preds[preds["target"] == 1]["prediction_probability"],
+            bins=bins,
+            alpha=0.5,
+            label="1",
+            density=True,
+        )
+        ax.set_title(f"Probabilities Histogram {dataset} set")
+        ax.set_xlabel("Probability")
+        ax.set_ylabel("Density (%)")
+        ax.legend()
+        fig.tight_layout()
+        if show:
+            plt.show()
+        else:
+            return fig, ax
+
     def register_experiment(
         self,
         base_path,
@@ -1136,7 +1279,7 @@ class MLExperiment:
                 "best_threshold": {
                     "value": threshold,
                     "train_score": self.metrics["train_score"][threshold],
-                    "test_score": self.metrics["test_score"][threshold],
+                    "test_score": self.metrics["validation_score"][threshold],
                 },
                 **custom_metrics,
             }
@@ -1146,6 +1289,8 @@ class MLExperiment:
             self.y_train,
             self.X_test,
             self.y_test,
+            self.X_validation,
+            self.y_validation,
             description=self.description,
             custom_metrics=custom_metrics,
             base_path=base_path,
@@ -1188,9 +1333,17 @@ class MLExperiment:
             y_test = pd.read_csv(
                 os.path.join(experiment_path, "datasets", "y_test.csv")
             )
+            X_validation = pd.read_csv(
+                os.path.join(experiment_path, "datasets", "X_validation.csv"),
+                low_memory=False,
+            )
+            y_validation = pd.read_csv(
+                os.path.join(experiment_path, "datasets", "y_validation.csv")
+            )
             # Make sure is a pd.Series
             y_train = y_train.iloc[:, 0]
             y_test = y_test.iloc[:, 0]
+            y_validation = y_validation.iloc[:, 0]
 
             experiment = cls(
                 name=summary.get("name", experiment_path.split("-", 1)[1].rstrip("/")),
@@ -1201,6 +1354,8 @@ class MLExperiment:
                 y_train=y_train,
                 X_test=X_test,
                 y_test=y_test,
+                X_validation=X_validation,
+                y_validation=y_validation,
             )
         except Exception as e:
             raise e
@@ -1210,6 +1365,32 @@ class MLExperiment:
                 # Zip the folder again.
                 cls._zip_experiment_folder(experiment_path)
         return experiment
+
+    def get_probabilities(self, X=None, y=None):
+        if X is not None and y is not None:
+            return pd.DataFrame(
+                {
+                    "prediction_probability": self.model.predict_proba(
+                        X[self._model_input_cols]
+                    )[:, 1],
+                    "target": y,
+                }
+            )
+        return pd.DataFrame(
+            {
+                "prediction_probability": self.model.predict_proba(
+                    self.X_test[self._model_input_cols]
+                )[:, 1],
+                "target": self.y_test,
+            }
+        )
+
+    def _get_model_input_cols(self):
+        if self._is_pipeline:
+            # Assume first step is the column transformer and get feature names in
+            return self.model[0].feature_names_in_
+        else:
+            return self.model.feature_names_in_
 
 
 class MLTracker:
@@ -1303,6 +1484,7 @@ class MLTracker:
         logging.info(
             f"Added experiment {exp_folder_name} to the tracker. Current experiments: {len(self._experiments)}."
         )
+        return exp_folder_name
 
     def create_plots(
         self, show_plots: bool = False
@@ -1317,7 +1499,33 @@ class MLTracker:
         :return: figures and axes of the plots if show_plots is False.
         """
         for experiment_name, experiment in self._experiments.items():
-            if experiment.problem_type == ProblemType.CLASSIFICATION:
+            roc_exists = os.path.exists(
+                os.path.join(self.experiment_folder, experiment_name, "roc_curve.png")
+            )
+            precision_recall_exists = os.path.exists(
+                os.path.join(
+                    self.experiment_folder, experiment_name, "precision_recall.png"
+                )
+            )
+            prob_histogram_exists = os.path.exists(
+                os.path.join(
+                    self.experiment_folder,
+                    experiment_name,
+                    "probabilities_histogram.png",
+                )
+            )
+            clf_plots_exist = (
+                roc_exists and precision_recall_exists and prob_histogram_exists
+            )
+            feature_importance_exists = os.path.exists(
+                os.path.join(
+                    self.experiment_folder, experiment_name, "feature_importance.png"
+                )
+            )
+            if (
+                experiment.problem_type == ProblemType.CLASSIFICATION
+                and not clf_plots_exist
+            ):
                 fig, ax = experiment.plot_roc_curve()
                 ax.set_title(experiment_name + "_" + ax.get_title())
                 fig.savefig(
@@ -1325,6 +1533,8 @@ class MLTracker:
                         self.experiment_folder, experiment_name, "roc_curve.png"
                     )
                 )
+                if show_plots:
+                    fig.show()
                 fig, ax = experiment.plot_precision_recall_curve()
                 ax.set_title(experiment_name + "_" + ax.get_title())
                 fig.savefig(
@@ -1334,19 +1544,31 @@ class MLTracker:
                 )
                 if show_plots:
                     fig.show()
-                plt.close()
-            fig, ax = experiment.plot_feature_importance()
-            ax.set_title(experiment_name + "_" + ax.get_title())
-            fig.savefig(
-                os.path.join(
-                    self.experiment_folder, experiment_name, "feature_importance.png"
+                fig, ax = experiment.plot_probabilities_histogram()
+                ax.set_title(experiment_name + "_" + ax.get_title())
+                fig.savefig(
+                    os.path.join(
+                        self.experiment_folder,
+                        experiment_name,
+                        "probabilities_histogram.png",
+                    )
                 )
-            )
-            if show_plots:
-                fig.show()
-            plt.close()
-
-        return None
+                if show_plots:
+                    fig.show()
+                plt.close()
+            if not feature_importance_exists:
+                fig, ax = experiment.plot_feature_importance()
+                ax.set_title(experiment_name + "_" + ax.get_title())
+                fig.savefig(
+                    os.path.join(
+                        self.experiment_folder,
+                        experiment_name,
+                        "feature_importance.png",
+                    )
+                )
+                if show_plots:
+                    fig.show()
+                plt.close()
 
     def update_experiments_metrics(self):
         """
@@ -1371,6 +1593,9 @@ class MLTracker:
                     "best_threshold": {
                         "value": threshold,
                         "train_score": experiment.metrics["train_score"][threshold],
+                        "validation_score": experiment.metrics["validation_score"][
+                            threshold
+                        ],
                         "test_score": experiment.metrics["test_score"][threshold],
                     },
                     **custom_metrics,
@@ -1401,6 +1626,9 @@ class MLTracker:
                     "train_score": metrics["train_score"][
                         experiment.best_threshold_pr_curve
                     ],
+                    "validation_score": metrics["validation_score"][
+                        experiment.best_threshold_pr_curve
+                    ],
                     "test_score": metrics["test_score"][
                         experiment.best_threshold_pr_curve
                     ],
@@ -1413,6 +1641,7 @@ class MLTracker:
             else:
                 metrics = {
                     "train_score": metrics["train_score"],
+                    "validation_score": metrics["validation_score"],
                     "test_score": metrics["test_score"],
                 }
             row_index.append(
@@ -1420,18 +1649,29 @@ class MLTracker:
             )
             metrics_row.append(metrics)
         # Make a dataframe with multilevel column for the train and test scores which are dictionaries.
-        df = pd.DataFrame(row_index).drop(columns=["train_score", "test_score"])
+        df = pd.DataFrame(row_index).drop(
+            columns=["train_score", "validation_score", "test_score"]
+        )
         metrics_train = pd.DataFrame([row["train_score"] for row in metrics_row])
+        metrics_validation = pd.DataFrame(
+            [row["validation_score"] for row in metrics_row]
+        )
         metrics_test = pd.DataFrame([row["test_score"] for row in metrics_row])
         # Concatenate the dataframes in a way that one from train next from test and so on.
         metrics = pd.DataFrame()
         for col in metrics_train.columns:
             metrics = pd.concat(
-                [metrics, metrics_train[col], metrics_test[col]], axis=1
+                [
+                    metrics,
+                    metrics_train[col],
+                    metrics_validation[col],
+                    metrics_test[col],
+                ],
+                axis=1,
             ).copy()
 
         metrics.columns = pd.MultiIndex.from_product(
-            [metrics_train.columns, ["train", "test"]]
+            [metrics_train.columns, ["train", "validation", "test"]]
         )
         df = pd.concat([df, metrics], axis=1)
         # Set multilevel index
