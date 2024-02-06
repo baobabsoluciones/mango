@@ -630,14 +630,14 @@ def str_key_tl(tl):
 
 def replace(tl, replacement=None, to_replace=None, fast=False):
     """
-    Fill missing values of a tuplist.
+    Fill missing values of a TupList.
 
-    :param tl: a tuplist
+    :param tl: a TupList
     :param replacement: a single value or a dict of columns and values to use as replacement.
     :param to_replace: a single value or a dict of columns and values to replace.
     :param fast: assume that the first row has all the columns.
 
-    :return: a tuplist with missing values filled.
+    :return: a TupList with missing values filled.
     """
     apply_to_col = []
     if isinstance(replacement, dict):
@@ -646,8 +646,9 @@ def replace(tl, replacement=None, to_replace=None, fast=False):
         replacement = {k: replacement for k in get_col_names(tl, fast)}
     if isinstance(to_replace, dict):
         apply_to_col += [i for i in to_replace.keys()]
+        to_replace_dict = to_replace
     else:
-        to_replace = {k: to_replace for k in get_col_names(tl, fast)}
+        to_replace_dict = {k: to_replace for k in get_col_names(tl, fast)}
     if not len(apply_to_col):
         apply_to_col = get_col_names(tl, fast)
 
@@ -658,7 +659,7 @@ def replace(tl, replacement=None, to_replace=None, fast=False):
                 **{
                     k: v
                     for k, v in dic.items()
-                    if k not in apply_to_col or v != to_replace[k]
+                    if k not in apply_to_col or v != to_replace_dict[k]
                 },
             }
             for dic in tl
