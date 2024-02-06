@@ -243,7 +243,6 @@ def get_col_names(table, fast=False):
         for row in table:
             columns +=[k for k in row.keys() if k not in columns]
         return columns
-        # return unique(flatten([[k for k in row.keys()] for row in table]))
 
 
 def left_join(
@@ -676,7 +675,7 @@ def replace_empty(tl, replacement=0, fast=False):
     :param fast: assume that the first row has all the columns.
     :return: a tuplist with empty values filled.
     """
-    return replace(tl, replacement=replacement, to_replace=None, fast=False)
+    return replace(tl, replacement=replacement, to_replace=None, fast=fast)
 
 
 def replace_nan(tl, replacement=None):
