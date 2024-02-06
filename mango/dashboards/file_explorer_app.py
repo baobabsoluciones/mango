@@ -93,7 +93,7 @@ class DisplayablePath(object):
 class FileExplorerApp:
     # Config
     _APP_CONFIG = {
-        "logo_path": os.path.join(os.path.dirname(__file__), "assets", "logo.png"),
+        "logo_path": os.path.join("assets", "logo.png"),
         "title": "Mango Explorer App",
         "header": "Folder path structure",
         "icon": ":mango:",
@@ -145,6 +145,8 @@ class FileExplorerApp:
 
         # Set config
         self.config = config_dict.copy()
+        if self.config.get("dict_layout", None) is None:
+            self.config["dict_layout"] = self._APP_CONFIG["dict_layout"]
         if editable is None:
             if self.config.get("editable", None) is not None:
                 self.editable = self.config["editable"]
@@ -155,9 +157,9 @@ class FileExplorerApp:
 
         # Set Streamlit config
         st.set_page_config(
-            page_title=self.config["title"],
-            page_icon=self.config["icon"],
-            layout=self.config["layout"],
+            page_title=self.config.get("title", self._APP_CONFIG["title"]),
+            page_icon=self.config.get("icon", self._APP_CONFIG["icon"]),
+            layout=self.config.get("layout", self._APP_CONFIG["layout"]),
             initial_sidebar_state="collapsed",
         )
 
@@ -174,19 +176,31 @@ class FileExplorerApp:
         # Create columns display
         col3_1, col3_2, col3_3 = st.columns(3)
         with col3_1:
-            st.image(Image.open(self.config["logo_path"]), width=150)
+            if self.config.get("logo_path") is not None and os.path.exists(
+                self.config["logo_path"]
+            ):
+                path_logo = self.config["logo_path"]
+            else:
+                path_logo = os.path.join(
+                    os.path.dirname(__file__), self._APP_CONFIG["logo_path"]
+                )
+
+            st.image(
+                Image.open(path_logo),
+                width=150,
+            )
             st.markdown(
                 """<style>button[title="View fullscreen"]{visibility: hidden;}</style>""",
                 unsafe_allow_html=True,
             )
         with col3_2:
-            st.title(self.config["title"])
+            st.title(self.config.get("title", self._APP_CONFIG["title"]))
             st.markdown(
                 """<style>.st-emotion-cache-15zrgzn {display: none;}</style>""",
                 unsafe_allow_html=True,
             )
         if self.editable:
-            st.header(self.config["header"])
+            st.header(self.config.get("header", self._APP_CONFIG["header"]))
 
     def _render_configuration(self):
         """
@@ -231,7 +245,7 @@ class FileExplorerApp:
             # Select title
             self.config["title"] = st.text_input(
                 "Title",
-                value=self.config["title"],
+                value=self.config.get("title", self._APP_CONFIG["title"]),
                 max_chars=None,
                 key="title",
             )

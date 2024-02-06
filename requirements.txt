@@ -16,6 +16,7 @@ python-dateutil<=2.8.2
 pytups<=0.86.2
 pytz<=2023.3.post1
 requests<=2.31.0
+shap[plots]==0.43.0
 six<=1.16.0
 streamlit<=1.28.0
 tqdm<=4.66.1
@@ -24,3 +25,4 @@ urllib3<=2.0.7
 XlsxWriter<=3.1.9
 Pyomo<=6.6.2
 Pillow<=10.0.1
+tabulate<=0.9.0
