@@ -485,13 +485,14 @@ class Table(TupList):
 
         return Table(self.vfilter(func))
 
-    def get_col_names(self) -> "Table":
+    def get_col_names(self, fast=False) -> "Table":
         """
         Get the names of the column of the table.
 
+        :param fast: assume that the first row has all the columns.
         :return: a list of keys
         """
-        return get_col_names(self)
+        return get_col_names(self, fast)
 
     def to_columns(self) -> "SuperDict":
         """

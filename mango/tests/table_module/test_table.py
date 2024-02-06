@@ -313,7 +313,7 @@ class TestTable(TestCase):
         msg = "rename a column"
         col_names = Table(self.default_data2).rename(Points="Value").get_col_names()
         expected = ["Name", "Age", "Male", "Value", "Under_25"]
-        self.assertEqual(col_names, expected, msg=msg)
+        self.assertEqual(expected, col_names, msg=msg)
 
     def test_join_jtype_left(self):
         msg = 'join with type="left"'
@@ -666,9 +666,15 @@ class TestTable(TestCase):
         expected = Table()
         self.assertEqual(df, expected, msg=msg)
 
+    def test_get_col_names_fast(self):
+        msg = "get column names with get_col_names"
+        result = Table(self.default_data).get_col_names(fast=True)
+        expected = ["Name", "Age"]
+        self.assertEqual(result, expected, msg=msg)
+
     def test_get_col_names(self):
         msg = "get column names with get_col_names"
-        result = Table(self.default_data).get_col_names()
+        result = Table(self.default_data).get_col_names(fast=True)
         expected = ["Name", "Age"]
         self.assertEqual(result, expected, msg=msg)
 
@@ -730,6 +736,19 @@ class TestTable(TestCase):
             {"Name": "Charlie", "Age": 30},
             {"Name": "Daniel", "Age": 35},
             {"Name": "Elisa", "Age": 0},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_replace_empty_last_row(self):
+        msg = "replace empty detect additional columns in last row"
+        table = Table(self.default_data) + [{"Name": "Elisa", "new_column": 3}]
+        result = table.replace_empty(0)
+        expected = [
+            {"Name": "Albert", "Age": 20, "new_column": 0},
+            {"Name": "Bernard", "Age": 25, "new_column": 0},
+            {"Name": "Charlie", "Age": 30, "new_column": 0},
+            {"Name": "Daniel", "Age": 35, "new_column": 0},
+            {"Name": "Elisa", "Age": 0, "new_column": 3},
         ]
         self.assertEqual(result, expected, msg=msg)
 
@@ -808,6 +827,81 @@ class TestTable(TestCase):
             {"Name": "Daniel", "Age": 35},
         ]
         self.assertEqual(result, expected, msg=msg)
+
+    def test_group_mutate_bad_columns(self):
+        msg = "use group mutate to add columns"
+        first_row = [
+            {
+                "Name": "New_user",
+                "Age": 21,
+                "Male": True,
+                "Points": 1,
+                "Under_25": True,
+                "other_column": True,
+            }
+        ]
+        df = Table(first_row + self.default_data2).group_mutate(
+            group_by="Under_25",
+            group_mean_age=lambda v: mean(v["Age"]),
+            group_points=lambda v: sum(v["Points"]),
+            n_group=lambda v: row_number(v["Under_25"]),
+        )
+        expected = [
+            {
+                "Name": "New_user",
+                "Age": 21,
+                "Male": True,
+                "Points": 1,
+                "other_column": True,
+                "Under_25": True,
+                "group_mean_age": 22.0,
+                "group_points": 14,
+                "n_group": 0,
+            },
+            {
+                "Name": "Albert",
+                "Age": 20,
+                "Male": True,
+                "Points": 5,
+                "Under_25": True,
+                "group_mean_age": 22.0,
+                "group_points": 14,
+                "n_group": 1,
+                "other_column": None,
+            },
+            {
+                "Name": "Bernard",
+                "Age": 25,
+                "Male": True,
+                "Points": 8,
+                "Under_25": True,
+                "group_mean_age": 22.0,
+                "group_points": 14,
+                "n_group": 2,
+                "other_column": None,
+            },
+            {
+                "Name": "Charlie",
+                "Age": 30,
+                "Male": True,
+                "Points": 4,
+                "Under_25": False,
+                "group_mean_age": 32.5,
+                "group_points": 10,
+                "n_group": 0,
+            },
+            {
+                "Name": "Daniel",
+                "Age": 35,
+                "Male": True,
+                "Points": 6,
+                "Under_25": False,
+                "group_mean_age": 32.5,
+                "group_points": 10,
+                "n_group": 1,
+            },
+        ]
+        self.assertEqual(df, expected, msg=msg)
 
     def test_group_mutate(self):
         msg = "use group mutate to add columns"

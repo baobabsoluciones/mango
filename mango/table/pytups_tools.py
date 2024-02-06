@@ -224,18 +224,26 @@ def rename(table, **kwargs):
     )
 
 
-def get_col_names(table):
+def get_col_names(table, fast=False):
     """
     Get the names of the column of a tuplist
 
     :param table: a table (TupList of dict)
+    :param fast: assume that the first row has all the columns.
     :return: a list of keys
     """
     assert isinstance(table, TupList)
 
     if len(table) < 1:
         return []
-    return [k for k in table[0].keys()]
+    if fast:
+        return [k for k in table[0].keys()]
+    else:
+        columns = []
+        for row in table:
+            columns +=[k for k in row.keys() if k not in columns]
+        return columns
+        # return unique(flatten([[k for k in row.keys()] for row in table]))
 
 
 def left_join(
@@ -621,13 +629,14 @@ def str_key_tl(tl):
     return TupList([str_key(dic) for dic in tl])
 
 
-def replace(tl, replacement=None, to_replace=None):
+def replace(tl, replacement=None, to_replace=None, fast=False):
     """
     Fill missing values of a tuplist.
 
     :param tl: a tuplist
     :param replacement: a single value or a dict of columns and values to use as replacement.
     :param to_replace: a single value or a dict of columns and values to replace.
+    :param fast: assume that the first row has all the columns.
 
     :return: a tuplist with missing values filled.
     """
@@ -635,13 +644,13 @@ def replace(tl, replacement=None, to_replace=None):
     if isinstance(replacement, dict):
         apply_to_col += [i for i in replacement.keys()]
     else:
-        replacement = {k: replacement for k in get_col_names(tl)}
+        replacement = {k: replacement for k in get_col_names(tl, fast)}
     if isinstance(to_replace, dict):
         apply_to_col += [i for i in to_replace.keys()]
     else:
-        to_replace = {k: to_replace for k in get_col_names(tl)}
+        to_replace = {k: to_replace for k in get_col_names(tl, fast)}
     if not len(apply_to_col):
-        apply_to_col = get_col_names(tl)
+        apply_to_col = get_col_names(tl, fast)
 
     return TupList(
         [
@@ -658,15 +667,16 @@ def replace(tl, replacement=None, to_replace=None):
     )
 
 
-def replace_empty(tl, replacement=0):
+def replace_empty(tl, replacement=0, fast=False):
     """
     Fill empty values of a tuplist.
 
     :param tl: a tuplist
     :param replacement: a single value or a dict of columns and values to use as replacement.
+    :param fast: assume that the first row has all the columns.
     :return: a tuplist with empty values filled.
     """
-    return replace(tl, replacement=replacement, to_replace=None)
+    return replace(tl, replacement=replacement, to_replace=None, fast=False)
 
 
 def replace_nan(tl, replacement=None):
@@ -682,16 +692,17 @@ def replace_nan(tl, replacement=None):
     )
 
 
-def drop_empty(tl, cols=None):
+def drop_empty(tl, cols=None, fast=False):
     """
     Drop rows of a tuplist with empty values.
 
     :param tl: a tuplist
     :param cols: list of column names or single name.
+    :param fast: assume that the first row has all the columns.
     :return: a tuplist with empty values dropped.
     """
     if cols is None:
-        cols = get_col_names(tl)
+        cols = get_col_names(tl, fast)
     else:
         cols = as_list(cols)
     tl2 = replace(tl, replacement=None, to_replace=None)
