@@ -26,7 +26,7 @@ def r2_score(y_true: pd.Series, y_pred: pd.Series) -> float:
     mean_y_true = y_true.mean()
     ss_tot = ((y_true - mean_y_true) ** 2).sum()
     ss_res = ((y_true - y_pred) ** 2).sum()
-    return 1 - ss_res / ss_tot
+    return round((1 - ss_res / ss_tot), 4)
 
 
 def mean_absolute_error(y_true: pd.Series, y_pred: pd.Series) -> float:
@@ -117,7 +117,7 @@ def confusion_matrix(y_true: pd.Series, y_pred: pd.Series) -> np.ndarray:
     >>> y_pred = pd.Series([0, 0, 1, 1])
     >>> confusion_matrix(y_true, y_pred)
     array([[1, 1],
-           [1, 1]])
+           [1, 1]], dtype=int64)
     """
     return pd.crosstab(y_true, y_pred).to_numpy()
 
@@ -298,6 +298,8 @@ def generate_metrics_classification(
             "precision": round(precision_score(y_true, y_pred), 4),
             "recall": round(recall_score(y_true, y_pred), 4),
             "f1_score": round(f1_score(y_true, y_pred), 4),
+            "tpr": round(tp / (tp + fn), 4),
+            "fpr": round(fp / (fp + tn), 4),
         }
     else:
         return {
