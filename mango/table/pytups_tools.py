@@ -29,8 +29,6 @@ def mutate(table, **kwargs):
     assert isinstance(table, TupList)
 
     if len(table) == 0:
-        # TODO: put that in a debug log
-        # print("Warning: applying mutate on an empty table")
         return table
 
     # Copy deep of table has been removed.
@@ -110,7 +108,7 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
     :return: a table (TupList of dict).
     """
     assert isinstance(table, TupList)
-    # todo: should it create an error?
+
     if len(table) == 0:
         return table
     if group_by is None:
@@ -182,8 +180,6 @@ def select(table, *args):
     assert isinstance(table, TupList)
 
     if not len(table):
-        # TODO: put that in a debug log
-        # print("Warning: applying select on an empty table")
         return TupList()
 
     keep = as_list(args)
@@ -241,7 +237,7 @@ def get_col_names(table, fast=False):
     else:
         columns = []
         for row in table:
-            columns +=[k for k in row.keys() if k not in columns]
+            columns += [k for k in row.keys() if k not in columns]
         return columns
 
 
@@ -439,29 +435,38 @@ def manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype):
     """
     None values should never join with other None.
     Depending on the type of join, return the relevant rows with None values in keys.
-    TODO: there should be a simpler way to do that.
-    :param tab1:
-    :param tab2:
-    :param empty:
-    :param t1_keys:
-    :param t2_keys:
-    :param by:
-    :param jtype:
-    :return:
+    Example:
+    result = left_join([{"a":1, "b":2}, {"a":None, "b":1}], [{"a":1, "c":1}, {"a":None, "c":1}])
+    result should be [{"a":1, "b":2, "c":1}, {"a":None, "b":1, "c":None}]
+
+    manage_join_none returns the part of the table where the join key is None: {"a":None, "b":1, "c":None}
+
+    :param tab1: SuperDict table 1 grouped by join keys {(1,2): [{...}, {...}], (1,3):[{...}, {...}]}
+    :param tab2: SuperDict table 2 grouped by join keys {(1,2): [{...}, {...}], (1,3):[{...}, {...}]}
+    :param empty: value to use for missing values.
+    :param t1_keys: columns of table 1
+    :param t2_keys: columns of table 2
+    :param by: keys to join by
+    :param jtype: join type (left, right, full, inner)
+    :return: Tuplist of rows joined on None values
     """
     result = []
     if jtype == "left":
-        for i in tab1:
+        # if left join, any None value in join keys result in empty values in the second table columns.
+        for i in tab1.keys():
             if any(v is None for v in as_list(i)):
                 tab2[i] = [{k: empty for k in t2_keys if k not in by}]
                 result += [{**d1, **d2} for d1 in tab1[i] for d2 in tab2[i]]
     elif jtype == "right":
+        # a right join is a left join with table in other order.
         result = manage_join_none(tab2, tab1, empty, t2_keys, t1_keys, by, jtype="left")
     elif jtype == "full":
+        # a full join is the combination of left and right join.
         result = manage_join_none(
             tab1, tab2, empty, t1_keys, t2_keys, by, jtype="left"
         ) + manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype="right")
     elif jtype == "inner":
+        #  if inner join, only existing values from both tables are kept.
         return TupList()
     else:
         raise ValueError("jtype must be full, inner, right or left")
