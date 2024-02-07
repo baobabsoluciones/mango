@@ -9,3 +9,4 @@ Code documentation
     benchmark
     clients
     models
+    table
