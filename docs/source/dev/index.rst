@@ -9,4 +9,5 @@ Code documentation
     benchmark
     clients
     models
+    processing
     table
