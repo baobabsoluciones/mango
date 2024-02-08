@@ -1,8 +1,9 @@
+import ast
 import json
 import warnings
 import csv
 from os import listdir
-from typing import Union, Literal
+from typing import Union, Literal, Iterable
 
 import openpyxl as xl
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -328,12 +329,33 @@ def load_excel_light(path, sheets=None):
     dataset = {}
     for name, v in dict_sheets.items():
         data = [row for row in v]
+        print(data)
         if len(data):
-            dataset[name] = TupList(data[1:]).to_dictlist(data[0])
+            dataset[name] = (
+                TupList(data[1:])
+                .to_dictlist(data[0])
+                .vapply(lambda v: {k: load_str_iterable(w) for k, w in v.items()})
+            )
         else:
             dataset[name] = []
     wb.close()
     return dataset
+
+
+def load_str_iterable(v):
+    """
+    Evaluate the value of an Excel cell and return strings representing python iterables as such.
+
+    :param v: content of an Excel cell
+    :return: value of the cell
+    """
+    if isinstance(v, str):
+        try:
+            return ast.literal_eval(v)
+        except SyntaxError:
+            return v
+    else:
+        return v
 
 
 def write_excel_light(path, data):
@@ -360,7 +382,7 @@ def write_excel_light(path, data):
             if len(content):
                 ws.append([k for k in content[0].keys()])
                 for row in content:
-                    ws.append([v for v in row.values()])
+                    ws.append([write_iterables_as_str(v) for v in row.values()])
 
                 tab = get_default_table_style(sheet_name, content)
 
@@ -370,6 +392,19 @@ def write_excel_light(path, data):
     wb.save(path)
     wb.close()
     return None
+
+
+def write_iterables_as_str(v):
+    """
+    An iterable in an Excel cell should be written as a string.
+
+    :param v: cell content
+    :return: cell value
+    """
+    if isinstance(v, Iterable):
+        return str(v)
+    else:
+        return v
 
 
 def get_default_table_style(sheet_name, content):
