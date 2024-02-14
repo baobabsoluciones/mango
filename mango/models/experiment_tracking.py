@@ -1385,6 +1385,30 @@ class MLExperiment:
             }
         )
 
+    def predict(self, X):
+        X = self._prepare_dataset_for_prediction(X.copy())
+        return self.model.predict(X)
+
+    def predict_proba(self, X, threshold=None):
+        if self.problem_type == ProblemType.REGRESSION:
+            raise ValueError("predict_proba is only for classification problems.")
+        if threshold is None:
+            threshold = (
+                self.best_threshold_pr_curve
+                if self.imbalance
+                else self.best_threshold_roc_curve
+            )
+        X = self._prepare_dataset_for_prediction(X.copy())
+        return self.model.predict_proba(X, threshold=threshold)
+
+    def _prepare_dataset_for_prediction(self, X):
+        if self.base_model_library == ModelLibrary.CATBOOST:
+            for col_idx in self.base_model.get_param("cat_features") or []:
+                X.iloc[:, col_idx] = X.iloc[:, col_idx].astype(str)
+
+        # Select only the columns that were used in the training
+        return X[self._model_input_cols]
+
     def _get_model_input_cols(self):
         if self._is_pipeline:
             # Assume first step is the column transformer and get feature names in
