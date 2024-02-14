@@ -496,7 +496,7 @@ class MLExperiment:
         self._precision_list = None
         self._recall_list = None
         self._config = None
-        self._is_pipeline = isinstance(self.model, self.pipeline_class)
+        self._is_pipeline = isinstance(self.model, self._pipeline_class)
         self._model_input_cols = self._get_model_input_cols()
 
         # Final Setup
@@ -741,15 +741,15 @@ class MLExperiment:
             from sklearn.pipeline import Pipeline
             from sklearn.linear_model import LogisticRegression, LinearRegression
 
-            self.pipeline_class = Pipeline
-            self.sklearn_linear_regression_class = LinearRegression
-            self.sklearn_logistic_regression_class = LogisticRegression
+            self._pipeline_class = Pipeline
+            self._sklearn_linear_regression_class = LinearRegression
+            self._sklearn_logistic_regression_class = LogisticRegression
 
             self._SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
         except ImportError:
-            self.pipeline_class = _DummyPipeline
-            self.sklearn_linear_regression_class = _DummyLinearRegression
-            self.sklearn_logistic_regression_class = _DummyLogisticRegression
+            self._pipeline_class = _DummyPipeline
+            self._sklearn_linear_regression_class = _DummyLinearRegression
+            self._sklearn_logistic_regression_class = _DummyLogisticRegression
         try:
             from catboost import CatBoost
 
@@ -1076,8 +1076,8 @@ class MLExperiment:
         is_linear_model = isinstance(
             self.base_model,
             (
-                self.sklearn_linear_regression_class,
-                self.sklearn_logistic_regression_class,
+                self._sklearn_linear_regression_class,
+                self._sklearn_logistic_regression_class,
             ),
         )
 
@@ -1385,21 +1385,24 @@ class MLExperiment:
             }
         )
 
-    def predict(self, X):
+    def predict(self, X, threshold=None):
         X = self._prepare_dataset_for_prediction(X.copy())
+        if self.problem_type == ProblemType.CLASSIFICATION:
+            if threshold is not None:
+                return self.model.predict_proba(X)[:, 1] >= threshold
+            else:
+                return (
+                    self.model.predict(X)[:, 1] >= self.best_threshold_pr_curve
+                    if self.imbalance
+                    else self.best_threshold_roc_curve
+                )
         return self.model.predict(X)
 
-    def predict_proba(self, X, threshold=None):
+    def predict_proba(self, X):
         if self.problem_type == ProblemType.REGRESSION:
             raise ValueError("predict_proba is only for classification problems.")
-        if threshold is None:
-            threshold = (
-                self.best_threshold_pr_curve
-                if self.imbalance
-                else self.best_threshold_roc_curve
-            )
         X = self._prepare_dataset_for_prediction(X.copy())
-        return self.model.predict_proba(X, threshold=threshold)
+        return self.model.predict_proba(X)
 
     def _prepare_dataset_for_prediction(self, X):
         if self.base_model_library == ModelLibrary.CATBOOST:
