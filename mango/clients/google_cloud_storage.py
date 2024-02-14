@@ -3,6 +3,7 @@ import os
 
 from google.api_core.exceptions import NotFound
 from google.cloud import storage
+
 from .cloud_storage import CloudStorage
 
 
@@ -215,3 +216,30 @@ class GoogleCloudStorage(CloudStorage):
         except NotFound as e:
             log.error(f"Blob {blob_name} does not exist")
             raise e
+
+    def upload_from_folder(
+        self,
+        local_path: str,
+        blob_name: str,
+    ):
+        """
+        The upload_from_folder function uploads all files from a local folder to the Google Cloud Storage bucket.
+
+        :param str local_path: Specify the local path to the folder
+        :param str blob_name: Specify the name of the blob
+        """
+        # Check if the path is a directory
+        if not os.path.isdir(local_path):
+            raise ValueError("The path is not a directory")
+
+        # Walk through the directory and upload the files
+        for root, dirs, files in os.walk(local_path):
+            for file in files:
+                local_file_path = os.path.join(root, file)
+                relative_path = os.path.relpath(local_file_path, local_path)
+                destination_blob_name = os.path.join(blob_name, relative_path).replace(
+                    os.path.sep, "/"
+                )
+
+                # Upload the file to the bucket
+                self.upload_from_filename(local_file_path, destination_blob_name)
