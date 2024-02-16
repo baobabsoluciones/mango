@@ -164,7 +164,7 @@ class TestTable(TestCase):
         def try_mutate():
             return Table(self.default_data).mutate(points=points)
 
-        self.assertRaises(TypeError, try_mutate)
+        self.assertRaises(TypeError, try_mutate,msg=msg)
 
     def test_mutate_func(self):
         msg = "mutate with a function for the new column."
@@ -234,7 +234,7 @@ class TestTable(TestCase):
     def test_mutate_safe(self):
         msg = "mutate do not change the original table."
         original_table = Table(self.default_data).copy_deep()
-        df = Table(self.default_data).mutate(Age=lambda v: v["Age"] * 2)
+        Table(self.default_data).mutate(Age=lambda v: v["Age"] * 2)
         expected = Table(
             [
                 {"Name": "Albert", "Age": 40},
@@ -278,7 +278,7 @@ class TestTable(TestCase):
         self.assertEqual(df, expected, msg=msg)
 
     def test_select_error(self):
-        msg = "unknown column raise error"
+        """unknown column raise error"""
 
         def try_select():
             return Table(self.default_data2).select("unknown", "Points")
@@ -288,7 +288,7 @@ class TestTable(TestCase):
     def test_select_empty(self):
         msg = "select on empty table return empty table"
         df = Table().select("Name")
-        self.assertEqual(df, Table())
+        self.assertEqual(df, Table(), msg=msg)
 
     def test_drop(self):
         msg = "drop 3 columns"
@@ -330,7 +330,7 @@ class TestTable(TestCase):
         self.assertEqual(df, expected, msg=msg)
 
     def test_join_wrong_jtype(self):
-        msg = "wrong jtype creates an error"
+        """wrong jtype creates an error"""
         df_id = Table(self.df_id)
 
         def try_join():
@@ -390,7 +390,7 @@ class TestTable(TestCase):
         self.assertEqual(df2, expected2, msg=msg)
 
     def test_left_join_wrong_by(self):
-        msg = "error when left join with wrong by value"
+        """error when left join with wrong by value"""
         df_id = Table(self.df_id)
 
         def try_left_join():
@@ -816,7 +816,7 @@ class TestTable(TestCase):
         msg = "pivot to a wide df"
         df = Table(self.long_df).pivot_wider(names_from="variable", value_from="value")
         expected = Table(self.default_data2)
-        self.assertEqual(df, expected)
+        self.assertEqual(df, expected, msg=msg)
 
     def test_drop_empty(self):
         msg = "drop rows with missing and None values with drop_empty"
@@ -1245,7 +1245,7 @@ class TestTable(TestCase):
         self.assertEqual(table2, expected, msg=msg)
 
     def test_sorted_exception(self):
-        msg = "sorted raise error"
+        """sorted raise error"""
         table = Table(self.default_data)
 
         def sort_table():
@@ -1485,7 +1485,6 @@ class TestTable(TestCase):
             import pandas as pd
         except ImportError:
             return True
-        msg = "to_pandas create a pandas df"
         table = Table(self.default_data2)
         result = table.to_pandas()
         expected = pd.DataFrame.from_records(self.default_data2)
@@ -1533,3 +1532,25 @@ class TestTable(TestCase):
         result = Table(self.default_data2).apply(len)
         expected = len(Table(self.default_data2))
         self.assertEqual(result, expected, msg=msg)
+
+    def test_col_apply(self):
+        msg = "apply a function to a column"
+        result = Table(self.default_data).col_apply("Age",str)
+        expected = [
+        {"Name": "Albert", "Age": "20"},
+        {"Name": "Bernard", "Age": "25"},
+        {"Name": "Charlie", "Age": "30"},
+        {"Name": "Daniel", "Age": "35"},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+def test_col_apply_2(self):
+    msg = "apply a function to a list of column"
+    result = Table(self.default_data).col_apply("Age", str).col_apply(["Age", "Name"], lambda v: v[0])
+    expected = [
+        {"Name": "A", "Age": "2"},
+        {"Name": "B", "Age": "2"},
+        {"Name": "C", "Age": "3"},
+        {"Name": "D", "Age": "3"},
+    ]
+    self.assertEqual(result, expected, msg=msg)

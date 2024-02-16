@@ -723,6 +723,20 @@ class Table(TupList):
         """
         return (self + Table(table)).replace(replacement=None, to_replace=None)
 
+    def col_apply(self, columns, func: Callable) -> "Table":
+        """
+        Apply a function to a column or a list of columns.
+
+        :param columns: column or list of columns.
+        :param func: function to apply.
+        :return: the table
+        """
+        result = self
+        for col in as_list(columns):
+            if func is not None:
+                result = result.mutate(**{col: lambda v: func(v[col])})
+        return result
+
     @staticmethod
     def format_dataset(dataset):
         """
@@ -889,4 +903,3 @@ class Table(TupList):
         :return: nothing.
         """
         write_csv_light(path, self, sep, encoding)
-
