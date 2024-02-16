@@ -10,7 +10,8 @@ import pandas as pd
 import plotly
 import streamlit as st
 from PIL import Image
-
+from mango.processing import write_json, load_json
+from mango.table import Table
 
 class DisplayablePath(object):
     display_filename_prefix_middle = "├──"
@@ -467,8 +468,7 @@ class FileExplorerApp:
                         writer, sheet_name=sheet, index=False
                     )
         elif path_selected.endswith(".json"):
-            with open(path_selected, "w") as f:
-                json.dump(edited_df, f)
+            write_json(edited_df, path_selected)
 
     @classmethod
     def _read_plot_from_html(cls, path_selected):
@@ -621,8 +621,10 @@ class FileExplorerApp:
                                         tab["df"],
                                         use_container_width=True,
                                         key=f"{key_tab}_{path_selected}_{key}",
+                                        num_rows="dynamic",
                                     )
-                                    dict_edited = edited_df.to_dict()
+                                    # dict_edited = edited_df.to_dict()
+                                    dict_edited = Table.from_pandas(edited_df).replace_nan()
                                     data[key_tab] = dict_edited
                                     if self.editable:
                                         st.button(
