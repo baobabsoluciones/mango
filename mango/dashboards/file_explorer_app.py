@@ -623,7 +623,6 @@ class FileExplorerApp:
                                         key=f"{key_tab}_{path_selected}_{key}",
                                         num_rows="dynamic",
                                     )
-                                    # dict_edited = edited_df.to_dict()
                                     dict_edited = Table.from_pandas(edited_df).replace_nan()
                                     data[key_tab] = dict_edited
                                     if self.editable:
