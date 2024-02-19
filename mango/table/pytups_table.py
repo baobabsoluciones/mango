@@ -733,8 +733,7 @@ class Table(TupList):
         """
         result = self
         for col in as_list(columns):
-            if func is not None:
-                result = result.mutate(**{col: lambda v: func(v[col])})
+            result = result.mutate(**{col: lambda v: func(v[col])})
         return result
 
     @staticmethod
