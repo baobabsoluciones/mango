@@ -10,85 +10,92 @@ import pandas as pd
 import plotly
 import streamlit as st
 from PIL import Image
-from mango.processing import write_json, load_json
+
+from mango.dashboards.file_explorer_handlers import (
+    LocalFileExplorerHandler,
+    FileExplorerHandler,
+    GCPFileExplorerHandler,
+)
+from mango.processing import write_json
 from mango.table import Table
 
-class DisplayablePath(object):
-    display_filename_prefix_middle = "├──"
-    display_filename_prefix_last = "└──"
-    display_parent_prefix_middle = "    "
-    display_parent_prefix_last = "│   "
 
-    def __init__(self, path, parent_path, is_last):
-        self.path = Path(str(path))
-        self.parent = parent_path
-        self.is_last = is_last
-        if self.parent:
-            self.depth = self.parent.depth + 1
-        else:
-            self.depth = 0
-
-    @property
-    def displayname(self):
-        if self.path.is_dir():
-            return self.path.name + "/"
-        return self.path.name
-
-    @classmethod
-    def make_tree(cls, root, parent=None, is_last=False, criteria=None):
-        root = Path(str(root))
-        criteria = criteria or cls._default_criteria
-
-        displayable_root = cls(root, parent, is_last)
-        yield displayable_root
-
-        children = sorted(
-            list(path for path in root.iterdir() if criteria(path)),
-            key=lambda s: str(s).lower(),
-        )
-        count = 1
-        for path in children:
-            is_last = count == len(children)
-            if path.is_dir():
-                yield from cls.make_tree(
-                    path, parent=displayable_root, is_last=is_last, criteria=criteria
-                )
-            else:
-                yield cls(path, displayable_root, is_last)
-            count += 1
-
-    @classmethod
-    def _default_criteria(cls, path):
-        return True
-
-    @property
-    def displayname(self):
-        if self.path.is_dir():
-            return self.path.name + "/"
-        return self.path.name
-
-    def displayable(self):
-        if self.parent is None:
-            return self.displayname
-
-        _filename_prefix = (
-            self.display_filename_prefix_last
-            if self.is_last
-            else self.display_filename_prefix_middle
-        )
-
-        parts = ["{!s} {!s}".format(_filename_prefix, self.displayname)]
-
-        parent = self.parent
-        while parent and parent.parent is not None:
-            parts.append(
-                self.display_parent_prefix_middle
-                if parent.is_last
-                else self.display_parent_prefix_last
-            )
-            parent = parent.parent
-
-        return "".join(reversed(parts))
+# class DisplayablePath(object):
+#     display_filename_prefix_middle = "├──"
+#     display_filename_prefix_last = "└──"
+#     display_parent_prefix_middle = "    "
+#     display_parent_prefix_last = "│   "
+#
+#     def __init__(self, path, parent_path, is_last):
+#         self.path = Path(str(path))
+#         self.parent = parent_path
+#         self.is_last = is_last
+#         if self.parent:
+#             self.depth = self.parent.depth + 1
+#         else:
+#             self.depth = 0
+#
+#     @property
+#     def displayname(self):
+#         if self.path.is_dir():
+#             return self.path.name + "/"
+#         return self.path.name
+#
+#     @classmethod
+#     def make_tree(cls, root, parent=None, is_last=False, criteria=None):
+#         root = Path(str(root))
+#         criteria = criteria or cls._default_criteria
+#
+#         displayable_root = cls(root, parent, is_last)
+#         yield displayable_root
+#
+#         children = sorted(
+#             list(path for path in root.iterdir() if criteria(path)),
+#             key=lambda s: str(s).lower(),
+#         )
+#         count = 1
+#         for path in children:
+#             is_last = count == len(children)
+#             if path.is_dir():
+#                 yield from cls.make_tree(
+#                     path, parent=displayable_root, is_last=is_last, criteria=criteria
+#                 )
+#             else:
+#                 yield cls(path, displayable_root, is_last)
+#             count += 1
+#
+#     @classmethod
+#     def _default_criteria(cls, path):
+#         return True
+#
+#     @property
+#     def displayname(self):
+#         if self.path.is_dir():
+#             return self.path.name + "/"
+#         return self.path.name
+#
+#     def displayable(self):
+#         if self.parent is None:
+#             return self.displayname
+#
+#         _filename_prefix = (
+#             self.display_filename_prefix_last
+#             if self.is_last
+#             else self.display_filename_prefix_middle
+#         )
+#
+#         parts = ["{!s} {!s}".format(_filename_prefix, self.displayname)]
+#
+#         parent = self.parent
+#         while parent and parent.parent is not None:
+#             parts.append(
+#                 self.display_parent_prefix_middle
+#                 if parent.is_last
+#                 else self.display_parent_prefix_last
+#             )
+#             parent = parent.parent
+#
+#         return "".join(reversed(parts))
 
 
 class FileExplorerApp:
@@ -104,7 +111,11 @@ class FileExplorerApp:
     }
 
     def __init__(
-        self, path: str = None, editable: bool = True, config_path: str = None
+        self,
+        path: str = None,
+        editable: bool = True,
+        config_path: str = None,
+        file_handler: FileExplorerHandler = None,
     ):
         """
         The __init__ function is called when the class is instantiated.
@@ -140,8 +151,11 @@ class FileExplorerApp:
                 with open(config_path, "r") as f:
                     config_dict = json.load(f)
 
+        # Set file handler
+        self.file_handler = file_handler
+
         if path:
-            if os.path.exists(path):
+            if self.file_handler.path_exists(path):
                 config_dict["dir_path"] = path
 
         # Set config
@@ -165,6 +179,7 @@ class FileExplorerApp:
         )
 
     def _render_header(self):
+        # TODO: DONE
         """
         The _render_header function is a helper function that renders the header of the app.
         It takes in no arguments and returns nothing. It uses Streamlit's st module to render
@@ -204,6 +219,7 @@ class FileExplorerApp:
             st.header(self.config.get("header", self._APP_CONFIG["header"]))
 
     def _render_configuration(self):
+        # TODO: DONE
         """
         The _render_configuration function is used to render the configuration sidebar.
         It allows the user to select a folder, a config path, and set title and number of columns/rows.
@@ -333,22 +349,22 @@ class FileExplorerApp:
                     on_click=self._save_config,
                 )
 
-    def _render_tree_folder(self):
-        """
-        The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
-        It uses DisplayablePath.make_tree to create a list of paths, and then iterates through them to display each one.
-
-        :param self: Bind the method to an object
-        :return: None
-        :doc-author: baobab soluciones
-        """
-        paths = DisplayablePath.make_tree(
-            Path(self.config["dir_path"]), criteria=lambda p: p.is_dir()
-        )
-        displayable_path = ""
-        for path in paths:
-            displayable_path = displayable_path + "  \n" + path.displayable()
-        st.info(displayable_path)
+    # def _render_tree_folder(self):
+    #     """
+    #     The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
+    #     It uses DisplayablePath.make_tree to create a list of paths, and then iterates through them to display each one.
+    #
+    #     :param self: Bind the method to an object
+    #     :return: None
+    #     :doc-author: baobab soluciones
+    #     """
+    #     paths = DisplayablePath.make_tree(
+    #         Path(self.config["dir_path"]), criteria=lambda p: p.is_dir()
+    #     )
+    #     displayable_path = ""
+    #     for path in paths:
+    #         displayable_path = displayable_path + "  \n" + path.displayable()
+    #     st.info(displayable_path)
 
     def _render_dropdown(self, i_row: int, i_col: int):
         """
@@ -414,7 +430,7 @@ class FileExplorerApp:
         :doc-author: baobab soluciones
         """
         paths = []
-        for root, dirs, files in os.walk(folder_path):
+        for root, dirs, files in file_handler.walk(folder_path):
             if element_type == "file":
                 for element in files:
                     path = os.path.join(root, element)
@@ -429,7 +445,6 @@ class FileExplorerApp:
                         element_type
                     )
                 )
-
         # Selectbox
         if element_type == "folder":
             paths = [folder_path] + paths
@@ -451,9 +466,11 @@ class FileExplorerApp:
             paths,
             placeholder="Choose an option",
             index=default_index,
-            format_func=lambda x: x.replace(folder_path, "")
-            if x != self.config["dir_path"]
-            else os.path.basename(x),
+            format_func=lambda x: (
+                x.replace(folder_path, "")
+                if x != self.config["dir_path"]
+                else os.path.basename(x)
+            ),
             key=key,
         )
 
@@ -546,9 +563,11 @@ class FileExplorerApp:
                     )
                     st.plotly_chart(
                         fig,
-                        use_container_width=True
-                        if self.config.get(f"width_{key}", None) is None
-                        else False,
+                        use_container_width=(
+                            True
+                            if self.config.get(f"width_{key}", None) is None
+                            else False
+                        ),
                         theme=None,
                     )
                 except:
@@ -623,7 +642,9 @@ class FileExplorerApp:
                                         key=f"{key_tab}_{path_selected}_{key}",
                                         num_rows="dynamic",
                                     )
-                                    dict_edited = Table.from_pandas(edited_df).replace_nan()
+                                    dict_edited = Table.from_pandas(
+                                        edited_df
+                                    ).replace_nan()
                                     data[key_tab] = dict_edited
                                     if self.editable:
                                         st.button(
@@ -689,9 +710,9 @@ class FileExplorerApp:
             for i_col in range(1, col + 1):
                 try:
                     if st.session_state[f"folder_{row}_{i_col}"] != None:
-                        self.config["dict_layout"][
-                            f"folder_{row}_{i_col}"
-                        ] = st.session_state[f"folder_{row}_{i_col}"]
+                        self.config["dict_layout"][f"folder_{row}_{i_col}"] = (
+                            st.session_state[f"folder_{row}_{i_col}"]
+                        )
                 except:
                     if (
                         self.config["dict_layout"].get(f"folder_{row}_{i_col}", None)
@@ -700,9 +721,9 @@ class FileExplorerApp:
                         self.config["dict_layout"].pop(f"folder_{row}_{i_col}")
                 try:
                     if st.session_state[f"file_{row}_{i_col}"] != None:
-                        self.config["dict_layout"][
-                            f"file_{row}_{i_col}"
-                        ] = st.session_state[f"file_{row}_{i_col}"]
+                        self.config["dict_layout"][f"file_{row}_{i_col}"] = (
+                            st.session_state[f"file_{row}_{i_col}"]
+                        )
                 except:
                     if (
                         self.config["dict_layout"].get(f"file_{row}_{i_col}", None)
@@ -730,10 +751,10 @@ class FileExplorerApp:
             # Render configuration
             self._render_configuration()
 
-        if self.editable:
-            with st.spinner("Wait for it..."):
-                # Render folder tree
-                self._render_tree_folder()
+        # if self.editable:
+        #     with st.spinner("Wait for it..."):
+        #         # Render folder tree
+        #         self._render_tree_folder()
 
         # Render body content
         self._render_body_content()
@@ -755,6 +776,12 @@ if __name__ == "__main__":
     config_path = args.config_path
     editable = None if args.editable == -1 else args.editable
 
+    # Create LocalFileHandler
+    file_handler = LocalFileExplorerHandler(path=path)
+    gcp_handler = GCPFileExplorerHandler(path="cv-apoyos")
+
     # Run app
-    app = FileExplorerApp(path=path, editable=editable, config_path=config_path)
+    app = FileExplorerApp(
+        path=path, editable=editable, config_path=config_path, file_handler=gcp_handler
+    )
     app.run()
