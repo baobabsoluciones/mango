@@ -16,86 +16,85 @@ from mango.dashboards.file_explorer_handlers import (
     FileExplorerHandler,
     GCPFileExplorerHandler,
 )
-from mango.processing import write_json
 from mango.table import Table
 
 
-# class DisplayablePath(object):
-#     display_filename_prefix_middle = "├──"
-#     display_filename_prefix_last = "└──"
-#     display_parent_prefix_middle = "    "
-#     display_parent_prefix_last = "│   "
-#
-#     def __init__(self, path, parent_path, is_last):
-#         self.path = Path(str(path))
-#         self.parent = parent_path
-#         self.is_last = is_last
-#         if self.parent:
-#             self.depth = self.parent.depth + 1
-#         else:
-#             self.depth = 0
-#
-#     @property
-#     def displayname(self):
-#         if self.path.is_dir():
-#             return self.path.name + "/"
-#         return self.path.name
-#
-#     @classmethod
-#     def make_tree(cls, root, parent=None, is_last=False, criteria=None):
-#         root = Path(str(root))
-#         criteria = criteria or cls._default_criteria
-#
-#         displayable_root = cls(root, parent, is_last)
-#         yield displayable_root
-#
-#         children = sorted(
-#             list(path for path in root.iterdir() if criteria(path)),
-#             key=lambda s: str(s).lower(),
-#         )
-#         count = 1
-#         for path in children:
-#             is_last = count == len(children)
-#             if path.is_dir():
-#                 yield from cls.make_tree(
-#                     path, parent=displayable_root, is_last=is_last, criteria=criteria
-#                 )
-#             else:
-#                 yield cls(path, displayable_root, is_last)
-#             count += 1
-#
-#     @classmethod
-#     def _default_criteria(cls, path):
-#         return True
-#
-#     @property
-#     def displayname(self):
-#         if self.path.is_dir():
-#             return self.path.name + "/"
-#         return self.path.name
-#
-#     def displayable(self):
-#         if self.parent is None:
-#             return self.displayname
-#
-#         _filename_prefix = (
-#             self.display_filename_prefix_last
-#             if self.is_last
-#             else self.display_filename_prefix_middle
-#         )
-#
-#         parts = ["{!s} {!s}".format(_filename_prefix, self.displayname)]
-#
-#         parent = self.parent
-#         while parent and parent.parent is not None:
-#             parts.append(
-#                 self.display_parent_prefix_middle
-#                 if parent.is_last
-#                 else self.display_parent_prefix_last
-#             )
-#             parent = parent.parent
-#
-#         return "".join(reversed(parts))
+class DisplayablePath(object):
+    display_filename_prefix_middle = "├──"
+    display_filename_prefix_last = "└──"
+    display_parent_prefix_middle = "    "
+    display_parent_prefix_last = "│   "
+
+    def __init__(self, path, parent_path, is_last):
+        self.path = Path(str(path))
+        self.parent = parent_path
+        self.is_last = is_last
+        if self.parent:
+            self.depth = self.parent.depth + 1
+        else:
+            self.depth = 0
+
+    @property
+    def displayname(self):
+        if self.path.is_dir():
+            return self.path.name + "/"
+        return self.path.name
+
+    @classmethod
+    def make_tree(cls, root, parent=None, is_last=False, criteria=None):
+        root = Path(str(root))
+        criteria = criteria or cls._default_criteria
+
+        displayable_root = cls(root, parent, is_last)
+        yield displayable_root
+
+        children = sorted(
+            list(path for path in root.iterdir() if criteria(path)),
+            key=lambda s: str(s).lower(),
+        )
+        count = 1
+        for path in children:
+            is_last = count == len(children)
+            if path.is_dir():
+                yield from cls.make_tree(
+                    path, parent=displayable_root, is_last=is_last, criteria=criteria
+                )
+            else:
+                yield cls(path, displayable_root, is_last)
+            count += 1
+
+    @classmethod
+    def _default_criteria(cls, path):
+        return True
+
+    @property
+    def displayname(self):
+        if self.path.is_dir():
+            return self.path.name + "/"
+        return self.path.name
+
+    def displayable(self):
+        if self.parent is None:
+            return self.displayname
+
+        _filename_prefix = (
+            self.display_filename_prefix_last
+            if self.is_last
+            else self.display_filename_prefix_middle
+        )
+
+        parts = ["{!s} {!s}".format(_filename_prefix, self.displayname)]
+
+        parent = self.parent
+        while parent and parent.parent is not None:
+            parts.append(
+                self.display_parent_prefix_middle
+                if parent.is_last
+                else self.display_parent_prefix_last
+            )
+            parent = parent.parent
+
+        return "".join(reversed(parts))
 
 
 class FileExplorerApp:
@@ -349,22 +348,22 @@ class FileExplorerApp:
                     on_click=self._save_config,
                 )
 
-    # def _render_tree_folder(self):
-    #     """
-    #     The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
-    #     It uses DisplayablePath.make_tree to create a list of paths, and then iterates through them to display each one.
-    #
-    #     :param self: Bind the method to an object
-    #     :return: None
-    #     :doc-author: baobab soluciones
-    #     """
-    #     paths = DisplayablePath.make_tree(
-    #         Path(self.config["dir_path"]), criteria=lambda p: p.is_dir()
-    #     )
-    #     displayable_path = ""
-    #     for path in paths:
-    #         displayable_path = displayable_path + "  \n" + path.displayable()
-    #     st.info(displayable_path)
+    def _render_tree_folder(self):
+        """
+        The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
+        It uses DisplayablePath.make_tree to create a list of paths, and then iterates through them to display each one.
+
+        :param self: Bind the method to an object
+        :return: None
+        :doc-author: baobab soluciones
+        """
+        paths = DisplayablePath.make_tree(
+            Path(self.config["dir_path"]), criteria=lambda p: p.is_dir()
+        )
+        displayable_path = ""
+        for path in paths:
+            displayable_path = displayable_path + "  \n" + path.displayable()
+        st.info(displayable_path)
 
     def _render_dropdown(self, i_row: int, i_col: int):
         """
@@ -429,22 +428,9 @@ class FileExplorerApp:
         :return: None
         :doc-author: baobab soluciones
         """
-        paths = []
-        for root, dirs, files in file_handler.walk(folder_path):
-            if element_type == "file":
-                for element in files:
-                    path = os.path.join(root, element)
-                    paths.append(path)
-            elif element_type == "folder":
-                for element in dirs:
-                    path = os.path.join(root, element)
-                    paths.append(path)
-            else:
-                raise ValueError(
-                    "element_type must be 'file' or 'folder', but got {}".format(
-                        element_type
-                    )
-                )
+        paths = self.file_handler.get_file_or_folder_paths(
+            path=folder_path, element_type=element_type
+        )
         # Selectbox
         if element_type == "folder":
             paths = [folder_path] + paths
@@ -474,8 +460,7 @@ class FileExplorerApp:
             key=key,
         )
 
-    @classmethod
-    def _save_dataframe(cls, edited_df, path_selected, dict_of_tabs: dict = None):
+    def _save_dataframe(self, edited_df, path_selected, dict_of_tabs: dict = None):
         if path_selected.endswith(".csv"):
             edited_df.to_csv(path_selected, index=False)
         elif path_selected.endswith(".xlsx"):
@@ -485,16 +470,14 @@ class FileExplorerApp:
                         writer, sheet_name=sheet, index=False
                     )
         elif path_selected.endswith(".json"):
-            write_json(edited_df, path_selected)
+            self.file_handler.write_json_fe(path_selected, edited_df)
 
-    @classmethod
-    def _read_plot_from_html(cls, path_selected):
+    def _read_plot_from_html(self, path_selected):
         encodings_to_try = ["utf-8", "latin-1", "cp1252"]
 
         for encoding in encodings_to_try:
             try:
-                with open(path_selected, encoding=encoding) as f:
-                    html = f.read()
+                html = self.file_handler.read_html(path_selected, encoding=encoding)
 
                 # Read
                 call_arg_str = re.findall(
@@ -549,7 +532,7 @@ class FileExplorerApp:
             or path_selected.endswith(".jpg")
             or path_selected.endswith(".jpeg")
         ):
-            image = Image.open(path_selected)
+            image = self.file_handler.read_img(path=path_selected)
             with st.spinner("Wait for it..."):
                 st.image(image, width=self.config.get(f"width_{key}", None))
 
@@ -620,49 +603,46 @@ class FileExplorerApp:
 
         elif path_selected.endswith(".json"):
             with st.spinner("Wait for it..."):
-                with open(path_selected, "r") as f:
-                    data = json.load(f)
-                    st.checkbox("As table", value=False, key=f"json_df_{key}")
-                    if st.session_state[f"json_df_{key}"]:
-                        sheets = list(data.keys())
-                        list_of_tabs = st.tabs(sheets)
-                        try:
-                            dict_of_tabs = {
-                                sheets[i]: {
-                                    "tab": tab,
-                                    "df": pd.DataFrame.from_dict(data[sheets[i]]),
-                                }
-                                for i, tab in enumerate(list_of_tabs)
+                data = self.file_handler.read_json(path_selected)
+                st.checkbox("As table", value=False, key=f"json_df_{key}")
+                if st.session_state[f"json_df_{key}"]:
+                    sheets = list(data.keys())
+                    list_of_tabs = st.tabs(sheets)
+                    try:
+                        dict_of_tabs = {
+                            sheets[i]: {
+                                "tab": tab,
+                                "df": pd.DataFrame.from_dict(data[sheets[i]]),
                             }
-                            for key_tab, tab in dict_of_tabs.items():
-                                with tab["tab"]:
-                                    edited_df = st.data_editor(
-                                        tab["df"],
-                                        use_container_width=True,
-                                        key=f"{key_tab}_{path_selected}_{key}",
-                                        num_rows="dynamic",
+                            for i, tab in enumerate(list_of_tabs)
+                        }
+                        for key_tab, tab in dict_of_tabs.items():
+                            with tab["tab"]:
+                                edited_df = st.data_editor(
+                                    tab["df"],
+                                    use_container_width=True,
+                                    key=f"{key_tab}_{path_selected}_{key}",
+                                    num_rows="dynamic",
+                                )
+                                dict_edited = Table.from_pandas(edited_df).replace_nan()
+                                data[key_tab] = dict_edited
+                                if self.editable:
+                                    st.button(
+                                        "Save",
+                                        on_click=self._save_dataframe,
+                                        args=(data, path_selected),
+                                        key=f"{tab['tab']}_json_{path_selected}_{key}",
                                     )
-                                    dict_edited = Table.from_pandas(
-                                        edited_df
-                                    ).replace_nan()
-                                    data[key_tab] = dict_edited
-                                    if self.editable:
-                                        st.button(
-                                            "Save",
-                                            on_click=self._save_dataframe,
-                                            args=(data, path_selected),
-                                            key=f"{tab['tab']}_json_{path_selected}_{key}",
-                                        )
-                        except Exception as e:
-                            st.warning(
-                                f"The rendering of the JSON as file failed. Error: {e}"
-                            )
-                    else:
-                        st.json(data)
+                    except Exception as e:
+                        st.warning(
+                            f"The rendering of the JSON as file failed. Error: {e}"
+                        )
+                else:
+                    st.json(data)
 
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):
-                text_md = Path(path_selected).read_text()
+                text_md = self.file_handler.read_markdown(path_selected)
                 st.markdown(text_md, unsafe_allow_html=True)
 
         else:
@@ -751,10 +731,18 @@ class FileExplorerApp:
             # Render configuration
             self._render_configuration()
 
-        # if self.editable:
-        #     with st.spinner("Wait for it..."):
-        #         # Render folder tree
-        #         self._render_tree_folder()
+        if self.editable:
+            with st.spinner("Wait for it..."):
+                try:
+                    # Render folder tree
+                    self._render_tree_folder()
+                except:
+                    if "GCPFileExplorerHandler" in self.file_handler.__class__.__name__:
+                        st.warning(
+                            "GCPFileExplorerHandler does not support folder tree."
+                        )
+                    else:
+                        st.warning("The rendering of the folder tree failed.")
 
         # Render body content
         self._render_body_content()
@@ -771,17 +759,30 @@ if __name__ == "__main__":
     parser.add_argument("--path", type=str)
     parser.add_argument("--config_path", type=str)
     parser.add_argument("--editable", type=int, default=None, choices=[0, 1, -1])
+    parser.add_argument("--gcp_credentials_path", type=str, default=None)
     args = parser.parse_args()
     path = args.path
     config_path = args.config_path
     editable = None if args.editable == -1 else args.editable
+    gcp_path = args.gcp_credentials_path
+    if not os.path.exists(gcp_path):
+        raise ValueError("The GCP credentials path does not exist")
+    else:
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_path
 
-    # Create LocalFileHandler
-    file_handler = LocalFileExplorerHandler(path=path)
-    gcp_handler = GCPFileExplorerHandler(path="cv-apoyos")
+    # Select the file handler
+    if os.path.exists(path):
+        file_handler = LocalFileExplorerHandler(path=path)
+    else:
+        if path.startswith("gs://"):
+            file_handler = GCPFileExplorerHandler(
+                path=path, gcp_credentials_path=gcp_path
+            )
+        else:
+            raise ValueError("The path must be a valid local path or a GCP path")
 
     # Run app
     app = FileExplorerApp(
-        path=path, editable=editable, config_path=config_path, file_handler=gcp_handler
+        path=path, editable=editable, config_path=config_path, file_handler=file_handler
     )
     app.run()
