@@ -25,12 +25,18 @@ def cli():
     default=os.path.join(os.getcwd(), "config.json"),
     help="Path to the folder to explore",
 )
-def dashboard(path, editable, config_path):
+@click.option(
+    "--gcp_credentials_path",
+    "-gcp_path",
+    default=None,
+    help="Path to the gcp credentials JSON file",
+)
+def dashboard(path, editable, config_path, gcp_credentials_path):
     # Python Run os command
     relative_path = "../dashboards/file_explorer_app.py"
 
     absolute_path = os.path.join(cli_path, relative_path)
 
     os.system(
-        rf'streamlit run {absolute_path} -- --path "{path}" --editable {editable} --config_path "{config_path}"'
+        rf'streamlit run {absolute_path} -- --path "{path}" --editable {editable} --config_path "{config_path}" --gcp_credentials_path "{gcp_credentials_path}"'
     )
