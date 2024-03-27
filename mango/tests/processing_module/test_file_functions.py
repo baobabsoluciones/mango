@@ -12,7 +12,7 @@ from mango.processing import (
     write_json,
     load_csv,
     write_excel,
-    write_csv,
+    write_csv, pickle_copy,
 )
 from mango.processing.file_functions import (
     load_csv_light,
@@ -200,6 +200,16 @@ class FileTests(TestCase):
         write_excel_light(file, self.data_1)
         os.remove(file)
 
+    def test_write_excel_light_iter(self):
+        file = normalize_path("./data/temp.xlsx")
+        data = pickle_copy(self.data_1)
+        data["Sheet1"] = [{'a': [1,2], "b":["a1", "a2"], "c": {"i":1}}]
+        write_excel_light(file, data)
+
+        data2 = load_excel_light(file)
+        self.check_test_excel_write(data2, data)
+        # os.remove(file)
+
     def test_load_write_excel_light_sheet(self):
         file = normalize_path("./data/temp.xlsx")
         write_excel_light(file, self.data_1)
@@ -296,6 +306,13 @@ class FileTests(TestCase):
         write_csv_light(file, self.records_to_df)
         data2 = load_csv_light(file)
         self.assertEqual(data2, self.records_to_df)
+        os.remove(file)
+
+    def test_write_csv_light_2(self):
+        file = normalize_path("./data/temp.csv")
+        write_csv_light(file, self.records_to_df, sep=";")
+        data2 = load_csv_light(file)
+        self.assertEqual(self.records_to_df, data2)
         os.remove(file)
 
     def test_write_csv_bad_format(self):

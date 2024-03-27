@@ -38,7 +38,7 @@ def safe_value(x):
     This function will return 0 instead.
 
     :param x: a pyomo variable
-    :return:
+    :return: value of the variable
     """
     try:
         if x is not None:
@@ -261,6 +261,13 @@ def model_data_to_excel(model_data, path, file_name="model_data.xlsx"):
 
 
 def solver_result_to_json(result, path):
+    """
+    Save the result object in a json file.
+
+    :param result: result object from pyomo
+    :param path: path of the file
+    :return: nothing
+    """
     def get_val(v):
         try:
             if isinstance(v.value, UndefinedData):
@@ -280,6 +287,13 @@ def solver_result_to_json(result, path):
 
 
 def solver_result_from_json(path, **kwargs):
+    """
+    Load a result object from pyomo
+
+    :param path: path of the file
+    :param kwargs: kwargs for load_json
+    :return: the result object
+    """
     data = load_json(path, **kwargs)
     result = SolverResults()
     for k, v in result.items():

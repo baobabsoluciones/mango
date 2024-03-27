@@ -1,8 +1,9 @@
+import ast
 import json
 import warnings
 import csv
 from os import listdir
-from typing import Union, Literal
+from typing import Union, Literal, Iterable
 
 import openpyxl as xl
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -219,22 +220,53 @@ def load_csv_light(path, sep=None, encoding=None):
     :param encoding: encoding.
     :return: data as a list of dict.
     """
-    if not check_extension(path, ".csv"):
-        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
+    # if not check_extension(path, ".csv"):
+    #     raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
     with open(path, encoding=encoding) as f:
-        dialect = csv.Sniffer().sniff(f.read(1000))
-        f.seek(0)
+        try:
+            dialect = csv.Sniffer().sniff(f.read(1000), delimiters=sep)
+        except Exception as e:
+            if sep is not None:
+                dialect = get_default_dialect(sep, csv.QUOTE_NONNUMERIC)
+            else:
+                raise ValueError(f"Error in load_csv_light; {e}")
         dialect.quoting = csv.QUOTE_NONNUMERIC
+        f.seek(0)
         if sep is None:
             sep = dialect.delimiter
         else:
             dialect.delimiter = sep
         headers = f.readline().split("\n")[0].split(sep)
-        reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
-        data = [row for row in reader]
+        try:
+            reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
+            data = [row for row in reader]
+        except ValueError:
+            print("csv loading failed, trying other quote option")
+            dialect.quoting = csv.QUOTE_MINIMAL
+            reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
+            data = [row for row in reader]
 
     return data
+
+
+def get_default_dialect(sep, quoting):
+    """
+    Get a default dialect for csv reading and writing.
+
+    :param sep: separator
+    :return: dialect
+    """
+    class dialect(csv.Dialect):
+        _name = "default"
+        lineterminator = '\r\n'
+
+    dialect.quoting = quoting
+    dialect.doublequote = True
+    dialect.delimiter = sep
+    dialect.quotechar = '"'
+    dialect.skipinitialspace = False
+    return dialect
 
 
 def write_csv(path, data, **kwargs):
@@ -276,10 +308,10 @@ def write_csv_light(path, data, sep=None, encoding=None):
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
-    dialect = csv.get_dialect("excel")
-    if sep is not None:
-        dialect.delimiter = sep
+    if sep is None:
+        sep = ","
 
+    dialect = get_default_dialect(sep, csv.QUOTE_NONE)
     with open(path, "w", newline="", encoding=encoding) as f:
         headers = data[0].keys()
         writer = csv.DictWriter(f, fieldnames=headers, dialect=dialect)
@@ -328,12 +360,33 @@ def load_excel_light(path, sheets=None):
     dataset = {}
     for name, v in dict_sheets.items():
         data = [row for row in v]
+        print(data)
         if len(data):
-            dataset[name] = TupList(data[1:]).to_dictlist(data[0])
+            dataset[name] = (
+                TupList(data[1:])
+                .to_dictlist(data[0])
+                .vapply(lambda v: {k: load_str_iterable(w) for k, w in v.items()})
+            )
         else:
             dataset[name] = []
     wb.close()
     return dataset
+
+
+def load_str_iterable(v):
+    """
+    Evaluate the value of an Excel cell and return strings representing python iterables as such.
+
+    :param v: content of an Excel cell
+    :return: value of the cell
+    """
+    if isinstance(v, str):
+        try:
+            return ast.literal_eval(v)
+        except SyntaxError:
+            return v
+    else:
+        return v
 
 
 def write_excel_light(path, data):
@@ -360,7 +413,7 @@ def write_excel_light(path, data):
             if len(content):
                 ws.append([k for k in content[0].keys()])
                 for row in content:
-                    ws.append([v for v in row.values()])
+                    ws.append([write_iterables_as_str(v) for v in row.values()])
 
                 tab = get_default_table_style(sheet_name, content)
 
@@ -370,6 +423,19 @@ def write_excel_light(path, data):
     wb.save(path)
     wb.close()
     return None
+
+
+def write_iterables_as_str(v):
+    """
+    An iterable in an Excel cell should be written as a string.
+
+    :param v: cell content
+    :return: cell value
+    """
+    if isinstance(v, Iterable):
+        return str(v)
+    else:
+        return v
 
 
 def get_default_table_style(sheet_name, content):
