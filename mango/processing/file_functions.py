@@ -220,22 +220,53 @@ def load_csv_light(path, sep=None, encoding=None):
     :param encoding: encoding.
     :return: data as a list of dict.
     """
-    if not check_extension(path, ".csv"):
-        raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
+    # if not check_extension(path, ".csv"):
+    #     raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
     with open(path, encoding=encoding) as f:
-        dialect = csv.Sniffer().sniff(f.read(1000))
-        f.seek(0)
+        try:
+            dialect = csv.Sniffer().sniff(f.read(1000), delimiters=sep)
+        except Exception as e:
+            if sep is not None:
+                dialect = get_default_dialect(sep, csv.QUOTE_NONNUMERIC)
+            else:
+                raise ValueError(f"Error in load_csv_light; {e}")
         dialect.quoting = csv.QUOTE_NONNUMERIC
+        f.seek(0)
         if sep is None:
             sep = dialect.delimiter
         else:
             dialect.delimiter = sep
         headers = f.readline().split("\n")[0].split(sep)
-        reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
-        data = [row for row in reader]
+        try:
+            reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
+            data = [row for row in reader]
+        except ValueError:
+            print("csv loading failed, trying other quote option")
+            dialect.quoting = csv.QUOTE_MINIMAL
+            reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
+            data = [row for row in reader]
 
     return data
+
+
+def get_default_dialect(sep, quoting):
+    """
+    Get a default dialect for csv reading and writing.
+
+    :param sep: separator
+    :return: dialect
+    """
+    class dialect(csv.Dialect):
+        _name = "default"
+        lineterminator = '\r\n'
+
+    dialect.quoting = quoting
+    dialect.doublequote = True
+    dialect.delimiter = sep
+    dialect.quotechar = '"'
+    dialect.skipinitialspace = False
+    return dialect
 
 
 def write_csv(path, data, **kwargs):
@@ -277,10 +308,10 @@ def write_csv_light(path, data, sep=None, encoding=None):
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
 
-    dialect = csv.get_dialect("excel")
-    if sep is not None:
-        dialect.delimiter = sep
+    if sep is None:
+        sep = ","
 
+    dialect = get_default_dialect(sep, csv.QUOTE_NONE)
     with open(path, "w", newline="", encoding=encoding) as f:
         headers = data[0].keys()
         writer = csv.DictWriter(f, fieldnames=headers, dialect=dialect)

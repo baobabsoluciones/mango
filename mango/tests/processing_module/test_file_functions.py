@@ -308,6 +308,13 @@ class FileTests(TestCase):
         self.assertEqual(data2, self.records_to_df)
         os.remove(file)
 
+    def test_write_csv_light_2(self):
+        file = normalize_path("./data/temp.csv")
+        write_csv_light(file, self.records_to_df, sep=";")
+        data2 = load_csv_light(file)
+        self.assertEqual(self.records_to_df, data2)
+        os.remove(file)
+
     def test_write_csv_bad_format(self):
         data = {"a": [1, 2, 3], "b": [4, 5, 6]}
         file = normalize_path("./data/temp.xlsz")
