@@ -125,6 +125,7 @@ def load_excel(
     output: Literal[
         "df", "dict", "list", "series", "split", "tight", "records", "index"
     ] = "df",
+    sheet_name=None,
     **kwargs,
 ):
     """
@@ -135,6 +136,7 @@ def load_excel(
      Use object to preserve data as stored in Excel and not interpret dtype.
     :param output: data output type. Default is "df" for a dict of pandas dataframes.
     Other options are the orient argument for transforming the dataframe with to_dict. (list of dict is "records").
+    :param sheet_name: sheet name to read, if None, read all sheets.
     :param kwargs: other parameters to pass pandas read_excel.
     :return: A dictionary of DataFrames
     :doc-author: baobab soluciones
@@ -145,13 +147,14 @@ def load_excel(
         warnings.warn(
             "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts."
         )
-        return load_excel_light(path)
+        return load_excel_light(path, sheets=sheet_name)
 
     if not is_excel_file(path):
         raise FileNotFoundError(
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
         )
-    data = pd.read_excel(path, sheet_name=None, dtype=dtype, **kwargs)
+
+    data = pd.read_excel(path, sheet_name=sheet_name, dtype=dtype, **kwargs)
     if output == "df":
         return data
     else:
@@ -257,9 +260,10 @@ def get_default_dialect(sep, quoting):
     :param sep: separator
     :return: dialect
     """
+
     class dialect(csv.Dialect):
         _name = "default"
-        lineterminator = '\r\n'
+        lineterminator = "\r\n"
 
     dialect.quoting = quoting
     dialect.doublequote = True

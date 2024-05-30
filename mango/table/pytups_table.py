@@ -723,7 +723,7 @@ class Table(TupList):
         """
         return (self + Table(table)).replace(replacement=None, to_replace=None)
 
-    def col_apply(self, columns, func: Callable) -> "Table":
+    def col_apply(self, columns, func: Callable, **kwargs) -> "Table":
         """
         Apply a function to a column or a list of columns.
 
@@ -733,7 +733,7 @@ class Table(TupList):
         """
         result = self
         for col in as_list(columns):
-            result = result.mutate(**{col: lambda v: func(v[col])})
+            result = result.mutate(**{col: lambda v: func(v[col], **kwargs)})
         return result
 
     @staticmethod
@@ -751,14 +751,14 @@ class Table(TupList):
         }
 
     @classmethod
-    def dataset_from_json(cls, path):
+    def dataset_from_json(cls, path, **kwargs):
         """
         Load a json file and format it applying Table() to every table.
 
         :param path: path of the json file
         :return: a dict of Tables
         """
-        data = load_json(path)
+        data = load_json(path, **kwargs)
         return cls.format_dataset(data)
 
     # Save and load functions
@@ -834,14 +834,14 @@ class Table(TupList):
         write_json(str_key_tl(self), path)
 
     @staticmethod
-    def from_json(path):
+    def from_json(path, **kwargs):
         """
         Create a table from a json file.
 
         :param path: path to json file
         :return: a Table containing the data.
         """
-        return Table(load_json(path))
+        return Table(load_json(path, **kwargs))
 
     def apply(self, func: Callable, *args, **kwargs):
         """
