@@ -2,15 +2,11 @@
 <html lang="en" data-accent-color="violet" data-content_root="">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Index - mango 0.2.1 documentation</title>
-    <link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
-
-  <script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Index - mango 0.2.2 documentation</title><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
-    setColorMode(sessionStorage._theme||"auto");
-  </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=aecf457f" />
-    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=5d7d6ab7" />
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=0e780e79" />
     <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,35 +18,28 @@
 }
 </style>
     </head>
-<body><div class="document"><div class="sy-head">
+<body><div class="sy-head">
   <div class="sy-head-blur"></div>
   <div class="sy-head-inner sy-container mx-auto">
-    <a class="sy-head-brand mr-4" href="index.html">
+    <a class="sy-head-brand" href="index.html">
       
       
       <strong>mango</strong>
     </a>
-    <div class="sy-head-links" id="NavLinks">
-      <nav class="sy-head-nav"></nav>
-      <div class="sy-head-extra flex items-center print:hidden">
-<form class="searchbox flex items-center" action="search.html" method="get">
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="search.html" method="get">
   <input type="text" name="q" placeholder="Search" />
   <kbd>/</kbd>
-</form>
-        
-        
-        <div class="sy-head-social flex items-center">
-        </div>
-      </div>
+</form><div class="sy-head-socials flex items-center">
+</div></div>
     </div>
-    <div class="sy-head-actions flex items-center shrink-0 print:hidden">
-      <button class="js-theme theme-switch flex items-center"
-        data-aria-auto="Switch to light color mode"
-        data-aria-light="Switch to dark color mode"
-        data-aria-dark="Switch to auto color mode">
-        <i class="i-icon theme-icon"></i>
-      </button>
-      <button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="NavLinks" aria-expanded="false">
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
         <div class="hamburger">
           <span class="hamburger_1"></span>
           <span class="hamburger_2 -translate-x-2"></span>
@@ -77,8 +66,11 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -165,11 +157,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.ackley.ackley">ackley() (in module mango.benchmark.optimization.ackley)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.add">add() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.add_row">add_row() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient">AEMETClient (class in mango.clients.aemet)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient.all_stations">all_stations (mango.clients.aemet.AEMETClient property)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.append">append() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.apply">apply() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.auto_join">auto_join() (mango.table.Table method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -189,6 +191,14 @@
 </li>
       <li><a href="dev/models.html#mango.models.neural_networks.calculate_network_output">calculate_network_output() (in module mango.models.neural_networks)</a>
 </li>
+      <li><a href="dev/table.html#mango.table.Table.chain">chain() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.check_type">check_type() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.clear">clear() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.col_apply">col_apply() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.config">config (mango.models.genetic.individual.Individual property)</a>
 
       <ul>
@@ -199,11 +209,23 @@
 </li>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient.connect">connect() (mango.clients.aemet.AEMETClient method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.continue_running">continue_running() (mango.models.genetic.population.Population method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.copy">copy() (mango.models.genetic.individual.Individual method)</a>
+
+      <ul>
+        <li><a href="dev/table.html#mango.table.Table.copy">(mango.table.Table method)</a>
+</li>
+      </ul></li>
+      <li><a href="dev/table.html#mango.table.Table.copy_deep">copy_deep() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.copy_shallow">copy_shallow() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.count">count() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/models.html#mango.models.genetic.config.GeneticBaseConfig.create_config_template">create_config_template() (mango.models.genetic.config.GeneticBaseConfig class method)</a>
 </li>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.create_random_genes">create_random_genes() (mango.models.genetic.individual.Individual method)</a>
 </li>
@@ -221,11 +243,23 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.dataset_from_excel">dataset_from_excel() (mango.table.Table class method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.dataset_from_json">dataset_from_json() (mango.table.Table class method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.distinct">distinct() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.dolan.dolan_function_no2">dolan_function_no2() (in module mango.benchmark.optimization.dolan)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.dominates">dominates() (mango.models.genetic.individual.Individual method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.drop">drop() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.drop_empty">drop_empty() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.drop_nested">drop_nested() (mango.table.Table method)</a>
 </li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.drop_wave.drop_wave">drop_wave() (in module mango.benchmark.optimization.drop_wave)</a>
 </li>
@@ -239,11 +273,13 @@
 </li>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.encoding">encoding (mango.models.genetic.individual.Individual property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.evaluator">evaluator (mango.models.genetic.population.Population property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient.expect_status">expect_status() (mango.clients.aemet.AEMETClient static method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.extend">extend() (mango.table.Table method)</a>
 </li>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.extract_fitness">extract_fitness() (mango.models.genetic.population.Population static method)</a>
 </li>
@@ -253,7 +289,23 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.filter">filter() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.fitness">fitness (mango.models.genetic.individual.Individual property)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.format_dataset">format_dataset() (mango.table.Table static method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.from_columns">from_columns() (mango.table.Table static method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.from_csv">from_csv() (mango.table.Table class method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.from_json">from_json() (mango.table.Table static method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.from_pandas">from_pandas() (mango.table.Table static method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.full_join">full_join() (mango.table.Table method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -267,11 +319,15 @@
 </li>
       <li><a href="dev/models.html#mango.models.genetic.shared.exceptions.GeneticDiversity">GeneticDiversity (class in mango.models.genetic.shared.exceptions)</a>
 </li>
+      <li><a href="dev/table.html#mango.table.Table.get_col_names">get_col_names() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient.get_forecast_data">get_forecast_data() (mango.clients.aemet.AEMETClient method)</a>
+</li>
+      <li><a href="dev/models.html#mango.models.pyomo.get_gap">get_gap() (in module mango.models.pyomo)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dev/models.html#mango.models.pyomo.get_gap">get_gap() (in module mango.models.pyomo)</a>
+      <li><a href="dev/table.html#mango.table.Table.get_index">get_index() (mango.table.Table method)</a>
 </li>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient.get_meteo_data">get_meteo_data() (mango.clients.aemet.AEMETClient method)</a>
 </li>
@@ -281,11 +337,19 @@
 </li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.griewank.griewank">griewank() (in module mango.benchmark.optimization.griewank)</a>
 </li>
+      <li><a href="dev/table.html#mango.table.Table.group_by">group_by() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.group_mutate">group_mutate() (mango.table.Table method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.head">head() (mango.table.Table method)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.holder_table.holder_table">holder_table() (in module mango.benchmark.optimization.holder_table)</a>
 </li>
@@ -297,9 +361,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.idx">idx (mango.models.genetic.individual.Individual property)</a>
 </li>
+      <li><a href="dev/table.html#mango.table.Table.index">index() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual">Individual (class in mango.models.genetic.individual)</a>
 </li>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.init_population">init_population() (mango.models.genetic.population.Population method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.inner_join">inner_join() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.insert">insert() (mango.table.Table method)</a>
 </li>
       <li><a href="dev/models.html#mango.models.pyomo.instance_from_dict">instance_from_dict() (in module mango.models.pyomo)</a>
 </li>
@@ -307,16 +377,18 @@
 </li>
       <li><a href="dev/models.html#mango.models.pyomo.instance_from_json">instance_from_json() (in module mango.models.pyomo)</a>
 </li>
+      <li><a href="dev/table.html#mango.table.Table.intersect">intersect() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.ackley.inverted_ackley">inverted_ackley() (in module mango.benchmark.optimization.ackley)</a>
 </li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.bukin.inverted_bukin_function_6">inverted_bukin_function_6() (in module mango.benchmark.optimization.bukin)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.cross_in_tray.inverted_cross_in_tray">inverted_cross_in_tray() (in module mango.benchmark.optimization.cross_in_tray)</a>
 </li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.dolan.inverted_dolan_function_no2">inverted_dolan_function_no2() (in module mango.benchmark.optimization.dolan)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.drop_wave.inverted_drop_wave">inverted_drop_wave() (in module mango.benchmark.optimization.drop_wave)</a>
 </li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.egg_holder.inverted_egg_holder">inverted_egg_holder() (in module mango.benchmark.optimization.egg_holder)</a>
@@ -327,7 +399,45 @@
 </li>
       <li><a href="dev/benchmark.html#mango.benchmark.optimization.holder_table.inverted_holder_table">inverted_holder_table() (in module mango.benchmark.optimization.holder_table)</a>
 </li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.langermann.inverted_langermann">inverted_langermann() (in module mango.benchmark.optimization.langermann)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.levy.inverted_levy">inverted_levy() (in module mango.benchmark.optimization.levy)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.levy.inverted_levy_no13">inverted_levy_no13() (in module mango.benchmark.optimization.levy)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.rastrigin.inverted_rastrigin">inverted_rastrigin() (in module mango.benchmark.optimization.rastrigin)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.rosenbrock.inverted_rosenbrock">inverted_rosenbrock() (in module mango.benchmark.optimization.rosenbrock)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no2">inverted_schaffer_function_no2() (in module mango.benchmark.optimization.schaffer)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no4">inverted_schaffer_function_no4() (in module mango.benchmark.optimization.schaffer)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.schwefel.inverted_schwefel">inverted_schwefel() (in module mango.benchmark.optimization.schwefel)</a>
+</li>
       <li><a href="dev/models.html#mango.models.pyomo.is_feasible">is_feasible() (in module mango.models.pyomo)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.is_unique">is_unique() (mango.table.Table method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.join">join() (mango.table.Table method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.kapply">kapply() (mango.table.Table method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.kvapply">kvapply() (mango.table.Table method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -335,6 +445,20 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.lag_col">lag_col() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.langermann.langermann">langermann() (in module mango.benchmark.optimization.langermann)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.left_join">left_join() (mango.table.Table method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.len">len() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.levy.levy">levy() (in module mango.benchmark.optimization.levy)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.levy.levy_function_no13">levy_function_no13() (in module mango.benchmark.optimization.levy)</a>
+</li>
       <li><a href="dev/models.html#mango.models.pyomo.load_variable">load_variable() (in module mango.models.pyomo)</a>
 </li>
   </ul></td>
@@ -407,12 +531,56 @@
 </li>
       </ul></li>
       <li>
+    mango.benchmark.optimization.langermann
+
+      <ul>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.langermann">module</a>
+</li>
+      </ul></li>
+      <li>
+    mango.benchmark.optimization.levy
+
+      <ul>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.levy">module</a>
+</li>
+      </ul></li>
+      <li>
+    mango.benchmark.optimization.rastrigin
+
+      <ul>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.rastrigin">module</a>
+</li>
+      </ul></li>
+      <li>
+    mango.benchmark.optimization.rosenbrock
+
+      <ul>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.rosenbrock">module</a>
+</li>
+      </ul></li>
+      <li>
+    mango.benchmark.optimization.schaffer
+
+      <ul>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.schaffer">module</a>
+</li>
+      </ul></li>
+      <li>
+    mango.benchmark.optimization.schwefel
+
+      <ul>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.schwefel">module</a>
+</li>
+      </ul></li>
+      <li>
     mango.models.activations
 
       <ul>
         <li><a href="dev/models.html#module-mango.models.activations">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     mango.models.neural_networks
 
@@ -420,13 +588,18 @@
         <li><a href="dev/models.html#module-mango.models.neural_networks">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     mango.models.pyomo
 
       <ul>
         <li><a href="dev/models.html#module-mango.models.pyomo">module</a>
+</li>
+      </ul></li>
+      <li>
+    mango.processing
+
+      <ul>
+        <li><a href="dev/processing.html#module-mango.processing">module</a>
 </li>
       </ul></li>
       <li><a href="dev/models.html#mango.models.pyomo.model_data_to_excel">model_data_to_excel() (in module mango.models.pyomo)</a>
@@ -455,11 +628,25 @@
 </li>
         <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.holder_table">mango.benchmark.optimization.holder_table</a>
 </li>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.langermann">mango.benchmark.optimization.langermann</a>
+</li>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.levy">mango.benchmark.optimization.levy</a>
+</li>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.rastrigin">mango.benchmark.optimization.rastrigin</a>
+</li>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.rosenbrock">mango.benchmark.optimization.rosenbrock</a>
+</li>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.schaffer">mango.benchmark.optimization.schaffer</a>
+</li>
+        <li><a href="dev/benchmark.html#module-mango.benchmark.optimization.schwefel">mango.benchmark.optimization.schwefel</a>
+</li>
         <li><a href="dev/models.html#module-mango.models.activations">mango.models.activations</a>
 </li>
         <li><a href="dev/models.html#module-mango.models.neural_networks">mango.models.neural_networks</a>
 </li>
         <li><a href="dev/models.html#module-mango.models.pyomo">mango.models.pyomo</a>
+</li>
+        <li><a href="dev/processing.html#module-mango.processing">mango.processing</a>
 </li>
       </ul></li>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient.municipios">municipios (mango.clients.aemet.AEMETClient property)</a>
@@ -469,7 +656,17 @@
       <ul>
         <li><a href="dev/models.html#mango.models.genetic.population.Population.mutate">(mango.models.genetic.population.Population method)</a>
 </li>
+        <li><a href="dev/table.html#mango.table.Table.mutate">(mango.table.Table method)</a>
+</li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.order_by">order_by() (mango.table.Table method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -478,8 +675,20 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.genetic.individual.Individual.parents">parents (mango.models.genetic.individual.Individual property)</a>
 </li>
+      <li><a href="dev/table.html#mango.table.Table.peek">peek() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.pivot_longer">pivot_longer() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.pivot_wider">pivot_wider() (mango.table.Table method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.pk_load">pk_load() (mango.table.Table static method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.pk_save">pk_save() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.pop">pop() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.genetic.population.Population">Population (class in mango.models.genetic.population)</a>
 </li>
       <li><a href="dev/models.html#mango.models.genetic.problem.Problem">Problem (class in mango.models.genetic.problem)</a>
@@ -490,11 +699,33 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dev/models.html#mango.models.genetic.population.Population.replace">replace() (mango.models.genetic.population.Population method)</a>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.rastrigin.rastrigin">rastrigin() (in module mango.benchmark.optimization.rastrigin)</a>
 </li>
+      <li><a href="dev/table.html#mango.table.Table.rbind">rbind() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.remove">remove() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.rename">rename() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/models.html#mango.models.genetic.population.Population.replace">replace() (mango.models.genetic.population.Population method)</a>
+
+      <ul>
+        <li><a href="dev/table.html#mango.table.Table.replace">(mango.table.Table method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.replace_empty">replace_empty() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.replace_nan">replace_nan() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/clients.html#mango.clients.aemet.AEMETClient.request_handler">request_handler() (mango.clients.aemet.AEMETClient static method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.reverse">reverse() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.right_join">right_join() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.rosenbrock.rosenbrock">rosenbrock() (in module mango.benchmark.optimization.rosenbrock)</a>
 </li>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.run">run() (mango.models.genetic.population.Population method)</a>
 </li>
@@ -506,13 +737,37 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.pyomo.safe_value">safe_value() (in module mango.models.pyomo)</a>
 </li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.schaffer.schaffer_function_no2">schaffer_function_no2() (in module mango.benchmark.optimization.schaffer)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.schaffer.schaffer_function_no4">schaffer_function_no4() (in module mango.benchmark.optimization.schaffer)</a>
+</li>
+      <li><a href="dev/benchmark.html#mango.benchmark.optimization.schwefel.schwefel">schwefel() (in module mango.benchmark.optimization.schwefel)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.select">select() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.selection">selection() (mango.models.genetic.population.Population method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.set_diff">set_diff() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.show_rows">show_rows() (mango.table.Table method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dev/models.html#mango.models.activations.sigmoid">sigmoid() (in module mango.models.activations)</a>
 </li>
+      <li><a href="dev/models.html#mango.models.pyomo.solver_result_from_json">solver_result_from_json() (in module mango.models.pyomo)</a>
+</li>
+      <li><a href="dev/models.html#mango.models.pyomo.solver_result_to_json">solver_result_to_json() (in module mango.models.pyomo)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.sort">sort() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.sorted">sorted() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.stop">stop() (mango.models.genetic.population.Population method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.sum_all">sum_all() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.summarise">summarise() (mango.table.Table method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -520,7 +775,39 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table">Table (class in mango.table)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.take">take() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.take_np">take_np() (mango.table.Table method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.activations.tanh">tanh() (in module mango.models.activations)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_columns">to_columns() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_csv">to_csv() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_dict">to_dict() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_dictlist">to_dictlist() (mango.table.Table method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/table.html#mango.table.Table.to_excel">to_excel() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_json">to_json() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_list">to_list() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_pandas">to_pandas() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_param">to_param() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_set">to_set() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_set2">to_set2() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.to_start_finish">to_start_finish() (mango.table.Table method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -528,10 +815,14 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dev/models.html#mango.models.genetic.population.Population.update_best">update_best() (mango.models.genetic.population.Population method)</a>
+      <li><a href="dev/table.html#mango.table.Table.unique">unique() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.unique2">unique2() (mango.table.Table method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/models.html#mango.models.genetic.population.Population.update_best">update_best() (mango.models.genetic.population.Population method)</a>
+</li>
       <li><a href="dev/models.html#mango.models.genetic.population.Population.update_population">update_population() (mango.models.genetic.population.Population method)</a>
 </li>
   </ul></td>
@@ -540,15 +831,21 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dev/models.html#mango.models.pyomo.var_to_sdict">var_to_sdict() (in module mango.models.pyomo)</a>
+      <li><a href="dev/table.html#mango.table.Table.vapply">vapply() (mango.table.Table method)</a>
 </li>
-      <li><a href="dev/models.html#mango.models.pyomo.var_to_table">var_to_table() (in module mango.models.pyomo)</a>
+      <li><a href="dev/table.html#mango.table.Table.vapply_col">vapply_col() (mango.table.Table method)</a>
+</li>
+      <li><a href="dev/models.html#mango.models.pyomo.var_to_sdict">var_to_sdict() (in module mango.models.pyomo)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dev/models.html#mango.models.pyomo.var_to_table">var_to_table() (in module mango.models.pyomo)</a>
+</li>
       <li><a href="dev/models.html#mango.models.pyomo.variables_to_excel">variables_to_excel() (in module mango.models.pyomo)</a>
 </li>
       <li><a href="dev/models.html#mango.models.pyomo.variables_to_json">variables_to_json() (in module mango.models.pyomo)</a>
+</li>
+      <li><a href="dev/table.html#mango.table.Table.vfilter">vfilter() (mango.table.Table method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -576,27 +873,23 @@
     </main>
   </div><footer class="sy-foot">
   <div class="sy-foot-inner sy-container mx-auto">
-    
     <div class="sy-foot-reserved md:flex justify-between items-center">
       <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
-        
-        <p>
-          Made with
-          
-          <a href="https://www.sphinx-doc.org/">Sphinx</a> and
-          
-          <a href="https://shibuya.lepture.com">Shibuya theme</a>.
-        </p>
-      </div>
-      <div class="sy-foot-socials">
-      </div>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
     </div>
   </div>
-</footer></div>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=158ece9d"></script>
+</footer>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=227644f7"></script>
       <script src="_static/doctools.js?v=888ff710"></script>
       <script src="_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="_static/shibuya.js?v=ccb09f80"></script>
-    
-</body>
+      <script src="_static/shibuya.js?v=3cc430e2"></script></body>
 </html>

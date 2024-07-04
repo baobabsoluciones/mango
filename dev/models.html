@@ -1,17 +1,12 @@
-
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-accent-color="violet" data-content_root="">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Models - mango 0.2.1 documentation</title>
-    <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Bibliography" href="../bib.html" /><link rel="prev" title="Clients" href="clients.html" />
-
-  <script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Models - mango 0.2.2 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Processing" href="processing.html" /><link rel="prev" title="Clients" href="clients.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
-    setColorMode(sessionStorage._theme||"auto");
-  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=aecf457f" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=5d7d6ab7" />
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=0e780e79" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,36 +18,30 @@
 }
 </style>
     <meta property="og:type" content="website"/><meta property="og:title" content="Models"/>
-<meta name="twitter:card" content="summary"/></head>
-<body><div class="document"><div class="sy-head">
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
   <div class="sy-head-blur"></div>
   <div class="sy-head-inner sy-container mx-auto">
-    <a class="sy-head-brand mr-4" href="../index.html">
+    <a class="sy-head-brand" href="../index.html">
       
       
       <strong>mango</strong>
     </a>
-    <div class="sy-head-links" id="NavLinks">
-      <nav class="sy-head-nav"></nav>
-      <div class="sy-head-extra flex items-center print:hidden">
-<form class="searchbox flex items-center" action="../search.html" method="get">
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
   <input type="text" name="q" placeholder="Search" />
   <kbd>/</kbd>
-</form>
-        
-        
-        <div class="sy-head-social flex items-center">
-        </div>
-      </div>
+</form><div class="sy-head-socials flex items-center">
+</div></div>
     </div>
-    <div class="sy-head-actions flex items-center shrink-0 print:hidden">
-      <button class="js-theme theme-switch flex items-center"
-        data-aria-auto="Switch to light color mode"
-        data-aria-light="Switch to dark color mode"
-        data-aria-dark="Switch to auto color mode">
-        <i class="i-icon theme-icon"></i>
-      </button>
-      <button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="NavLinks" aria-expanded="false">
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
         <div class="hamburger">
           <span class="hamburger_1"></span>
           <span class="hamburger_2 -translate-x-2"></span>
@@ -66,7 +55,7 @@
   <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
     <div class="sy-lside-inner md:sticky">
       <div class="sy-scrollbar p-6">
-        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
@@ -87,102 +76,100 @@
 <li class="toctree-l2"><a class="reference internal" href="benchmark.html">Benchmarks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table.html">Table</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
 </ul>
 
         </div>
-      </div>
-      
-    </div>
+      </div></div>
   </aside>
   <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
   <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
     <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
-      <i class="i-icon close"></i>
+      <i class="i-lucide close"></i>
     </button>
-    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4">
-  <div class="localtoc">
-    <h3>On this page</h3>
-    <ul>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#genetic">Genetic</a><ul>
 <li><a class="reference internal" href="#mango.models.genetic.individual.Individual"><code class="docutils literal notranslate"><span class="pre">Individual</span></code></a><ul>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.genes"><code class="docutils literal notranslate"><span class="pre">Individual.genes</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.idx"><code class="docutils literal notranslate"><span class="pre">Individual.idx</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.config"><code class="docutils literal notranslate"><span class="pre">Individual.config</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.parents"><code class="docutils literal notranslate"><span class="pre">Individual.parents</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.encoding"><code class="docutils literal notranslate"><span class="pre">Individual.encoding</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.fitness"><code class="docutils literal notranslate"><span class="pre">Individual.fitness</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.create_random_individual"><code class="docutils literal notranslate"><span class="pre">Individual.create_random_individual()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.create_random_genes"><code class="docutils literal notranslate"><span class="pre">Individual.create_random_genes()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.mutate"><code class="docutils literal notranslate"><span class="pre">Individual.mutate()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual._mutate_binary"><code class="docutils literal notranslate"><span class="pre">Individual._mutate_binary()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual._mutate_integer"><code class="docutils literal notranslate"><span class="pre">Individual._mutate_integer()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual._mutate_real"><code class="docutils literal notranslate"><span class="pre">Individual._mutate_real()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.dominates"><code class="docutils literal notranslate"><span class="pre">Individual.dominates()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.copy"><code class="docutils literal notranslate"><span class="pre">Individual.copy()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.__hash__"><code class="docutils literal notranslate"><span class="pre">Individual.__hash__()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.__eq__"><code class="docutils literal notranslate"><span class="pre">Individual.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.genes"><code class="docutils literal notranslate">genes</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.idx"><code class="docutils literal notranslate">idx</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.config"><code class="docutils literal notranslate">config</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.parents"><code class="docutils literal notranslate">parents</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.encoding"><code class="docutils literal notranslate">encoding</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.fitness"><code class="docutils literal notranslate">fitness</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.create_random_individual"><code class="docutils literal notranslate">create_random_individual()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.create_random_genes"><code class="docutils literal notranslate">create_random_genes()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.mutate"><code class="docutils literal notranslate">mutate()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual._mutate_binary"><code class="docutils literal notranslate">_mutate_binary()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual._mutate_integer"><code class="docutils literal notranslate">_mutate_integer()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual._mutate_real"><code class="docutils literal notranslate">_mutate_real()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.dominates"><code class="docutils literal notranslate">dominates()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.copy"><code class="docutils literal notranslate">copy()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.__hash__"><code class="docutils literal notranslate">__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.individual.Individual.__eq__"><code class="docutils literal notranslate">__eq__()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#mango.models.genetic.population.Population"><code class="docutils literal notranslate"><span class="pre">Population</span></code></a><ul>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.config"><code class="docutils literal notranslate"><span class="pre">Population.config</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.evaluator"><code class="docutils literal notranslate"><span class="pre">Population.evaluator</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.run"><code class="docutils literal notranslate"><span class="pre">Population.run()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.continue_running"><code class="docutils literal notranslate"><span class="pre">Population.continue_running()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.init_population"><code class="docutils literal notranslate"><span class="pre">Population.init_population()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.selection"><code class="docutils literal notranslate"><span class="pre">Population.selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.crossover"><code class="docutils literal notranslate"><span class="pre">Population.crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.mutate"><code class="docutils literal notranslate"><span class="pre">Population.mutate()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.update_population"><code class="docutils literal notranslate"><span class="pre">Population.update_population()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.replace"><code class="docutils literal notranslate"><span class="pre">Population.replace()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.update_best"><code class="docutils literal notranslate"><span class="pre">Population.update_best()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.stop"><code class="docutils literal notranslate"><span class="pre">Population.stop()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._random_selection"><code class="docutils literal notranslate"><span class="pre">Population._random_selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._elitism_selection"><code class="docutils literal notranslate"><span class="pre">Population._elitism_selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._rank_selection"><code class="docutils literal notranslate"><span class="pre">Population._rank_selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._order_selection"><code class="docutils literal notranslate"><span class="pre">Population._order_selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._roulette_selection"><code class="docutils literal notranslate"><span class="pre">Population._roulette_selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._tournament_selection"><code class="docutils literal notranslate"><span class="pre">Population._tournament_selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._boltzmann_selection"><code class="docutils literal notranslate"><span class="pre">Population._boltzmann_selection()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._select_parents"><code class="docutils literal notranslate"><span class="pre">Population._select_parents()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._one_split_crossover"><code class="docutils literal notranslate"><span class="pre">Population._one_split_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._two_split_crossover"><code class="docutils literal notranslate"><span class="pre">Population._two_split_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._mask_crossover"><code class="docutils literal notranslate"><span class="pre">Population._mask_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._linear_crossover"><code class="docutils literal notranslate"><span class="pre">Population._linear_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._flat_crossover"><code class="docutils literal notranslate"><span class="pre">Population._flat_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._blend_crossover"><code class="docutils literal notranslate"><span class="pre">Population._blend_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._gaussian_crossover"><code class="docutils literal notranslate"><span class="pre">Population._gaussian_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._morphology_crossover"><code class="docutils literal notranslate"><span class="pre">Population._morphology_crossover()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._add_offspring"><code class="docutils literal notranslate"><span class="pre">Population._add_offspring()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._base_mutation"><code class="docutils literal notranslate"><span class="pre">Population._base_mutation()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._adaptative_mutation"><code class="docutils literal notranslate"><span class="pre">Population._adaptative_mutation()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._calculate_coefficient_variation"><code class="docutils literal notranslate"><span class="pre">Population._calculate_coefficient_variation()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._update_fitness"><code class="docutils literal notranslate"><span class="pre">Population._update_fitness()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._random_replacement"><code class="docutils literal notranslate"><span class="pre">Population._random_replacement()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._offspring_replacement"><code class="docutils literal notranslate"><span class="pre">Population._offspring_replacement()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._elitist_replacement"><code class="docutils literal notranslate"><span class="pre">Population._elitist_replacement()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population._elitist_stochastic_replacement"><code class="docutils literal notranslate"><span class="pre">Population._elitist_stochastic_replacement()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.population.Population.extract_fitness"><code class="docutils literal notranslate"><span class="pre">Population.extract_fitness()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.config"><code class="docutils literal notranslate">config</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.evaluator"><code class="docutils literal notranslate">evaluator</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.run"><code class="docutils literal notranslate">run()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.continue_running"><code class="docutils literal notranslate">continue_running()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.init_population"><code class="docutils literal notranslate">init_population()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.selection"><code class="docutils literal notranslate">selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.crossover"><code class="docutils literal notranslate">crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.mutate"><code class="docutils literal notranslate">mutate()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.update_population"><code class="docutils literal notranslate">update_population()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.replace"><code class="docutils literal notranslate">replace()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.update_best"><code class="docutils literal notranslate">update_best()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.stop"><code class="docutils literal notranslate">stop()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._random_selection"><code class="docutils literal notranslate">_random_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._elitism_selection"><code class="docutils literal notranslate">_elitism_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._rank_selection"><code class="docutils literal notranslate">_rank_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._order_selection"><code class="docutils literal notranslate">_order_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._roulette_selection"><code class="docutils literal notranslate">_roulette_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._tournament_selection"><code class="docutils literal notranslate">_tournament_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._boltzmann_selection"><code class="docutils literal notranslate">_boltzmann_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._select_parents"><code class="docutils literal notranslate">_select_parents()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._one_split_crossover"><code class="docutils literal notranslate">_one_split_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._two_split_crossover"><code class="docutils literal notranslate">_two_split_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._mask_crossover"><code class="docutils literal notranslate">_mask_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._linear_crossover"><code class="docutils literal notranslate">_linear_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._flat_crossover"><code class="docutils literal notranslate">_flat_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._blend_crossover"><code class="docutils literal notranslate">_blend_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._gaussian_crossover"><code class="docutils literal notranslate">_gaussian_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._morphology_crossover"><code class="docutils literal notranslate">_morphology_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._add_offspring"><code class="docutils literal notranslate">_add_offspring()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._base_mutation"><code class="docutils literal notranslate">_base_mutation()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._adaptative_mutation"><code class="docutils literal notranslate">_adaptative_mutation()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._calculate_coefficient_variation"><code class="docutils literal notranslate">_calculate_coefficient_variation()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._update_fitness"><code class="docutils literal notranslate">_update_fitness()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._random_replacement"><code class="docutils literal notranslate">_random_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._offspring_replacement"><code class="docutils literal notranslate">_offspring_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._elitist_replacement"><code class="docutils literal notranslate">_elitist_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population._elitist_stochastic_replacement"><code class="docutils literal notranslate">_elitist_stochastic_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.population.Population.extract_fitness"><code class="docutils literal notranslate">extract_fitness()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#mango.models.genetic.config.GeneticBaseConfig"><code class="docutils literal notranslate"><span class="pre">GeneticBaseConfig</span></code></a><ul>
-<li><a class="reference internal" href="#mango.models.genetic.config.GeneticBaseConfig.__params"><code class="docutils literal notranslate"><span class="pre">GeneticBaseConfig.__params</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.config.GeneticBaseConfig.modify_value"><code class="docutils literal notranslate"><span class="pre">GeneticBaseConfig.modify_value()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.config.GeneticBaseConfig.__params"><code class="docutils literal notranslate">__params</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.config.GeneticBaseConfig.create_config_template"><code class="docutils literal notranslate">create_config_template()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.config.GeneticBaseConfig.modify_value"><code class="docutils literal notranslate">modify_value()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#mango.models.genetic.problem.Problem"><code class="docutils literal notranslate"><span class="pre">Problem</span></code></a><ul>
-<li><a class="reference internal" href="#mango.models.genetic.problem.Problem.calculate_fitness"><code class="docutils literal notranslate"><span class="pre">Problem.calculate_fitness()</span></code></a></li>
-<li><a class="reference internal" href="#mango.models.genetic.problem.Problem._abc_impl"><code class="docutils literal notranslate"><span class="pre">Problem._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.problem.Problem.calculate_fitness"><code class="docutils literal notranslate">calculate_fitness()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.problem.Problem._abc_impl"><code class="docutils literal notranslate">_abc_impl</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#mango.models.genetic.shared.exceptions.GeneticDiversity"><code class="docutils literal notranslate"><span class="pre">GeneticDiversity</span></code></a><ul>
-<li><a class="reference internal" href="#mango.models.genetic.shared.exceptions.GeneticDiversity.with_traceback"><code class="docutils literal notranslate"><span class="pre">GeneticDiversity.with_traceback()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.shared.exceptions.GeneticDiversity.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#mango.models.genetic.shared.exceptions.ConfigurationError"><code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a><ul>
-<li><a class="reference internal" href="#mango.models.genetic.shared.exceptions.ConfigurationError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ConfigurationError.with_traceback()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.genetic.shared.exceptions.ConfigurationError.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -200,7 +187,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#optimization">Optimization</a><ul>
-<li><a class="reference internal" href="#module-mango.models.pyomo">Pyomo</a><ul>
+<li><a class="reference internal" href="#pyomo">Pyomo</a><ul>
 <li><a class="reference internal" href="#mango.models.pyomo.is_feasible"><code class="docutils literal notranslate"><span class="pre">is_feasible()</span></code></a></li>
 <li><a class="reference internal" href="#mango.models.pyomo.safe_value"><code class="docutils literal notranslate"><span class="pre">safe_value()</span></code></a></li>
 <li><a class="reference internal" href="#mango.models.pyomo.var_to_sdict"><code class="docutils literal notranslate"><span class="pre">var_to_sdict()</span></code></a></li>
@@ -215,44 +202,43 @@
 <li><a class="reference internal" href="#mango.models.pyomo.instance_from_dict"><code class="docutils literal notranslate"><span class="pre">instance_from_dict()</span></code></a></li>
 <li><a class="reference internal" href="#mango.models.pyomo.load_variable"><code class="docutils literal notranslate"><span class="pre">load_variable()</span></code></a></li>
 <li><a class="reference internal" href="#mango.models.pyomo.model_data_to_excel"><code class="docutils literal notranslate"><span class="pre">model_data_to_excel()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.pyomo.solver_result_to_json"><code class="docutils literal notranslate"><span class="pre">solver_result_to_json()</span></code></a></li>
+<li><a class="reference internal" href="#mango.models.pyomo.solver_result_from_json"><code class="docutils literal notranslate"><span class="pre">solver_result_from_json()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
-
-  </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div>
-    </div>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
   <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
-  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
-    <div class="sy-breadcrumbs" role="navigation">
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
   <div class="sy-breadcrumbs-inner flex items-center">
     <div class="md:hidden mr-3">
       <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
-        <i class="i-icon menu"></i>
+        <i class="i-lucide menu"></i>
       </button>
     </div>
-    <ul class="flex-1">
-      
-      
-      <li><a href="../index.html">mango</a><span>/</span></li>
-      
-      <li><a href="index.html">Code documentation</a><span>/</span></li>
-      
-      <li><strong>Models</strong></li>
-      
-      
-    </ul>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Code documentation</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Models</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
     <div class="xl:hidden ml-1">
       <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
         aria-expanded="false">
-        <i class="i-icon outdent"></i>
+        <i class="i-lucide outdent"></i>
       </button>
     </div>
   </div>
-</div>
-    <div class="flex flex-col break-words justify-between">
+</div><div class="flex flex-col break-words justify-between">
       <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
         <article class="yue" role="main">
           <section id="models">
@@ -842,6 +828,21 @@ the individuals that will pass to the next generation.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="mango.models.genetic.config.GeneticBaseConfig.create_config_template">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_config_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.models.genetic.config.GeneticBaseConfig.create_config_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>The create_config_template function creates a configuration file with default values for each parameter.
+If the parameter has a default value, it will be used, otherwise an empty string will be used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_file</strong> – specify the output path for the template of the config file</p>
+</dd>
+<dt class="field-even">Doc-author<span class="colon">:</span></dt>
+<dd class="field-even"><p>baobab soluciones</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="mango.models.genetic.config.GeneticBaseConfig.modify_value">
 <span class="sig-name descname"><span class="pre">modify_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.models.genetic.config.GeneticBaseConfig.modify_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The modify value allows to modify the value of a parameter after it has been loaded</p>
@@ -994,9 +995,11 @@ and adding it to a bias term for that layer. The function then passes this value
 </section>
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">¶</a></h2>
-<section id="module-mango.models.pyomo">
-<span id="pyomo"></span><h3>Pyomo<a class="headerlink" href="#module-mango.models.pyomo" title="Permalink to this heading">¶</a></h3>
-<dl class="py function">
+<section id="pyomo">
+<h3>Pyomo<a class="headerlink" href="#pyomo" title="Permalink to this heading">¶</a></h3>
+<p>The following functions are tools made to work with optimization models created with
+the <a class="reference external" href="http://www.pyomo.org/">pyomo library.</a></p>
+<span class="target" id="module-mango.models.pyomo"></span><dl class="py function">
 <dt class="sig sig-object py" id="mango.models.pyomo.is_feasible">
 <span class="sig-prename descclassname"><span class="pre">mango.models.pyomo.</span></span><span class="sig-name descname"><span class="pre">is_feasible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.models.pyomo.is_feasible" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return True if the status is optimal or maxTimeLimit</p>
@@ -1021,7 +1024,7 @@ This function will return 0 instead.</p>
 <dd class="field-odd"><p><strong>x</strong> – a pyomo variable</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>value of the variable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1223,62 +1226,86 @@ with absolute path.
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.models.pyomo.solver_result_to_json">
+<span class="sig-prename descclassname"><span class="pre">mango.models.pyomo.</span></span><span class="sig-name descname"><span class="pre">solver_result_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.models.pyomo.solver_result_to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the result object in a json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> – result object from pyomo</p></li>
+<li><p><strong>path</strong> – path of the file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>nothing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.models.pyomo.solver_result_from_json">
+<span class="sig-prename descclassname"><span class="pre">mango.models.pyomo.</span></span><span class="sig-name descname"><span class="pre">solver_result_from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.models.pyomo.solver_result_from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a result object from pyomo</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – path of the file</p></li>
+<li><p><strong>kwargs</strong> – kwargs for load_json</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the result object</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 </section>
 
-        </article>
-        
-        <div class="navigation flex print:hidden">
-  <div class="navigation-prev">
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
     <a href="clients.html">
-      <i class="i-icon chevron"></i>
+      <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span>
-        
-        <div class="title">Clients</div>
-        
-      </div>
+        <span>Previous</span><div class="title">Clients</div></div>
     </a>
-  </div>
-  <div class="navigation-next">
-    <a href="../bib.html">
+  </div><div class="navigation-next">
+    <a href="processing.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Bibliography</div>
+        <div class="title">Processing</div>
       </div>
-      <i class="i-icon chevron"></i>
+      <i class="i-lucide chevron-right"></i>
     </a>
-  </div>
-</div>
-        
-      </div>
+  </div></div></div>
     </div>
   </main>
 </div>
 <footer class="sy-foot">
   <div class="sy-foot-inner sy-container mx-auto">
-    
     <div class="sy-foot-reserved md:flex justify-between items-center">
       <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
-        
-        <p>
-          Made with
-          
-          <a href="https://www.sphinx-doc.org/">Sphinx</a> and
-          
-          <a href="https://shibuya.lepture.com">Shibuya theme</a>.
-        </p>
-      </div>
-      <div class="sy-foot-socials">
-      </div>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
     </div>
   </div>
-</footer></div>
-      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=158ece9d"></script>
+</footer>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=227644f7"></script>
       <script src="../_static/doctools.js?v=888ff710"></script>
       <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="../_static/shibuya.js?v=ccb09f80"></script>
-    
-</body>
+      <script src="../_static/shibuya.js?v=3cc430e2"></script></body>
 </html>

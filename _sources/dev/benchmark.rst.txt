@@ -19,6 +19,13 @@ Optimization benchmarks
 .. automodule:: mango.benchmark.optimization.gramacy_lee
 .. automodule:: mango.benchmark.optimization.griewank
 .. automodule:: mango.benchmark.optimization.holder_table
+.. automodule:: mango.benchmark.optimization.langermann
+.. automodule:: mango.benchmark.optimization.levy
+.. automodule:: mango.benchmark.optimization.rastrigin
+.. automodule:: mango.benchmark.optimization.rosenbrock
+.. automodule:: mango.benchmark.optimization.schaffer
+.. automodule:: mango.benchmark.optimization.schwefel
+
 
 
 

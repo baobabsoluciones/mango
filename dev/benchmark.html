@@ -1,17 +1,12 @@
-
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-accent-color="violet" data-content_root="">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Benchmarks - mango 0.2.1 documentation</title>
-    <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Clients" href="clients.html" /><link rel="prev" title="Code documentation" href="index.html" />
-
-  <script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Benchmarks - mango 0.2.2 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Clients" href="clients.html" /><link rel="prev" title="Code documentation" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
-    setColorMode(sessionStorage._theme||"auto");
-  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=aecf457f" />
-    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=5d7d6ab7" />
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=0e780e79" />
     <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,36 +18,30 @@
 }
 </style>
     <meta property="og:type" content="website"/><meta property="og:title" content="Benchmarks"/>
-<meta name="twitter:card" content="summary"/></head>
-<body><div class="document"><div class="sy-head">
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
   <div class="sy-head-blur"></div>
   <div class="sy-head-inner sy-container mx-auto">
-    <a class="sy-head-brand mr-4" href="../index.html">
+    <a class="sy-head-brand" href="../index.html">
       
       
       <strong>mango</strong>
     </a>
-    <div class="sy-head-links" id="NavLinks">
-      <nav class="sy-head-nav"></nav>
-      <div class="sy-head-extra flex items-center print:hidden">
-<form class="searchbox flex items-center" action="../search.html" method="get">
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
   <input type="text" name="q" placeholder="Search" />
   <kbd>/</kbd>
-</form>
-        
-        
-        <div class="sy-head-social flex items-center">
-        </div>
-      </div>
+</form><div class="sy-head-socials flex items-center">
+</div></div>
     </div>
-    <div class="sy-head-actions flex items-center shrink-0 print:hidden">
-      <button class="js-theme theme-switch flex items-center"
-        data-aria-auto="Switch to light color mode"
-        data-aria-light="Switch to dark color mode"
-        data-aria-dark="Switch to auto color mode">
-        <i class="i-icon theme-icon"></i>
-      </button>
-      <button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="NavLinks" aria-expanded="false">
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
         <div class="hamburger">
           <span class="hamburger_1"></span>
           <span class="hamburger_2 -translate-x-2"></span>
@@ -66,7 +55,7 @@
   <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
     <div class="sy-lside-inner md:sticky">
       <div class="sy-scrollbar p-6">
-        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
@@ -87,25 +76,22 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Benchmarks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table.html">Table</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
 </ul>
 
         </div>
-      </div>
-      
-    </div>
+      </div></div>
   </aside>
   <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
   <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
     <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
-      <i class="i-icon close"></i>
+      <i class="i-lucide close"></i>
     </button>
-    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4">
-  <div class="localtoc">
-    <h3>On this page</h3>
-    <ul>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#machine-learning-benchmarks">Machine learning benchmarks</a></li>
 <li><a class="reference internal" href="#module-mango.benchmark.optimization.ackley">Optimization benchmarks</a><ul>
 <li><a class="reference internal" href="#mango.benchmark.optimization.ackley.ackley"><code class="docutils literal notranslate"><span class="pre">ackley()</span></code></a></li>
@@ -126,42 +112,55 @@
 <li><a class="reference internal" href="#mango.benchmark.optimization.griewank.inverted_griewank"><code class="docutils literal notranslate"><span class="pre">inverted_griewank()</span></code></a></li>
 <li><a class="reference internal" href="#mango.benchmark.optimization.holder_table.holder_table"><code class="docutils literal notranslate"><span class="pre">holder_table()</span></code></a></li>
 <li><a class="reference internal" href="#mango.benchmark.optimization.holder_table.inverted_holder_table"><code class="docutils literal notranslate"><span class="pre">inverted_holder_table()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.langermann.langermann"><code class="docutils literal notranslate"><span class="pre">langermann()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.langermann.inverted_langermann"><code class="docutils literal notranslate"><span class="pre">inverted_langermann()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.levy"><code class="docutils literal notranslate"><span class="pre">levy()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.inverted_levy"><code class="docutils literal notranslate"><span class="pre">inverted_levy()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.levy_function_no13"><code class="docutils literal notranslate"><span class="pre">levy_function_no13()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.inverted_levy_no13"><code class="docutils literal notranslate"><span class="pre">inverted_levy_no13()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rastrigin.rastrigin"><code class="docutils literal notranslate"><span class="pre">rastrigin()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rastrigin.inverted_rastrigin"><code class="docutils literal notranslate"><span class="pre">inverted_rastrigin()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rosenbrock.rosenbrock"><code class="docutils literal notranslate"><span class="pre">rosenbrock()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rosenbrock.inverted_rosenbrock"><code class="docutils literal notranslate"><span class="pre">inverted_rosenbrock()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.schaffer_function_no2"><code class="docutils literal notranslate"><span class="pre">schaffer_function_no2()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no2"><code class="docutils literal notranslate"><span class="pre">inverted_schaffer_function_no2()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.schaffer_function_no4"><code class="docutils literal notranslate"><span class="pre">schaffer_function_no4()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no4"><code class="docutils literal notranslate"><span class="pre">inverted_schaffer_function_no4()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schwefel.schwefel"><code class="docutils literal notranslate"><span class="pre">schwefel()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schwefel.inverted_schwefel"><code class="docutils literal notranslate"><span class="pre">inverted_schwefel()</span></code></a></li>
 </ul>
 </li>
 </ul>
-
-  </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div>
-    </div>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
   <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
-  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
-    <div class="sy-breadcrumbs" role="navigation">
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
   <div class="sy-breadcrumbs-inner flex items-center">
     <div class="md:hidden mr-3">
       <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
-        <i class="i-icon menu"></i>
+        <i class="i-lucide menu"></i>
       </button>
     </div>
-    <ul class="flex-1">
-      
-      
-      <li><a href="../index.html">mango</a><span>/</span></li>
-      
-      <li><a href="index.html">Code documentation</a><span>/</span></li>
-      
-      <li><strong>Benchmarks</strong></li>
-      
-      
-    </ul>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Code documentation</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Benchmarks</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
     <div class="xl:hidden ml-1">
       <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
         aria-expanded="false">
-        <i class="i-icon outdent"></i>
+        <i class="i-lucide outdent"></i>
       </button>
     </div>
   </div>
-</div>
-    <div class="flex flex-col break-words justify-between">
+</div><div class="flex flex-col break-words justify-between">
       <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
         <article class="yue" role="main">
           <section id="benchmarks">
@@ -407,12 +406,12 @@ This implementation inverts the function to test out the maximization</p>
 
 <span class="target" id="module-mango.benchmark.optimization.gramacy_lee"></span><dl class="py function">
 <dt class="sig sig-object py" id="mango.benchmark.optimization.gramacy_lee.gramacy_lee">
-<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.gramacy_lee.</span></span><span class="sig-name descname"><span class="pre">gramacy_lee</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.gramacy_lee.gramacy_lee" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.gramacy_lee.</span></span><span class="sig-name descname"><span class="pre">gramacy_lee</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.gramacy_lee.gramacy_lee" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gramacy &amp; Lee function.</p>
 <p>This function is multimodal, with a number of local minima. The global minimum is at x = 0.54.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>list</em>) – list of floats. Each value is usually between -0.5 and 2.5.</p>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>, list or float) – array or list with the value or the value itself. Each value is usually between -0.5 and 2.5.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the value of the function</p>
@@ -425,12 +424,12 @@ This implementation inverts the function to test out the maximization</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="mango.benchmark.optimization.gramacy_lee.inverted_gramacy_lee">
-<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.gramacy_lee.</span></span><span class="sig-name descname"><span class="pre">inverted_gramacy_lee</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.gramacy_lee.inverted_gramacy_lee" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.gramacy_lee.</span></span><span class="sig-name descname"><span class="pre">inverted_gramacy_lee</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.gramacy_lee.inverted_gramacy_lee" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inverted Gramacy &amp; Lee function.</p>
 <p>This function is multimodal, with a number of local minima. The global minimum is at x = 0.54.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>list</em>) – list of floats. Each value is usually between -0.5 and 2.5.</p>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>, list or float) – array or list with the value or the value itself. Each value is usually between -0.5 and 2.5.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the value of the function</p>
@@ -446,6 +445,7 @@ This implementation inverts the function to test out the maximization</p>
 <span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.griewank.</span></span><span class="sig-name descname"><span class="pre">griewank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.griewank.griewank" title="Permalink to this definition">¶</a></dt>
 <dd><p>Griewank function.</p>
 <p>The Griewank function has many widespread local minima, which are regularly distributed</p>
+<p>The global minima is located at [0, 0, …, 0] with a value of 0</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>) – array of floats</p>
@@ -480,14 +480,14 @@ This implementation inverts the function to test out the maximization</p>
 
 <span class="target" id="module-mango.benchmark.optimization.holder_table"></span><dl class="py function">
 <dt class="sig sig-object py" id="mango.benchmark.optimization.holder_table.holder_table">
-<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.holder_table.</span></span><span class="sig-name descname"><span class="pre">holder_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.holder_table.holder_table" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.holder_table.</span></span><span class="sig-name descname"><span class="pre">holder_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.holder_table.holder_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Holder function.</p>
 <p>This function is multimodal, with a number of local minima.
 The global minima is at (8.05502, 9.66459), (-8.05502, 9.66459), (8.05502, -9.66459) and (-8.05502, -9.66459)
 with a value of -19.2085.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>list</em>) – list of floats. Each value is usually between -10 and 10.</p>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – array or list of floats. Each value is usually between -10 and 10.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the value of the function</p>
@@ -500,7 +500,7 @@ with a value of -19.2085.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="mango.benchmark.optimization.holder_table.inverted_holder_table">
-<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.holder_table.</span></span><span class="sig-name descname"><span class="pre">inverted_holder_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.holder_table.inverted_holder_table" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.holder_table.</span></span><span class="sig-name descname"><span class="pre">inverted_holder_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.holder_table.inverted_holder_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inverted Holder function.</p>
 <p>This function is multimodal, with a number of local minima.
 This inverted version is used for testin maximization</p>
@@ -508,7 +508,335 @@ This inverted version is used for testin maximization</p>
 with a value of 19.2085.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>list</em>) – list of floats. Each value is usually between -10 and 10.</p>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – list of floats. Each value is usually between -10 and 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-mango.benchmark.optimization.langermann"></span><dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.langermann.langermann">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.langermann.</span></span><span class="sig-name descname"><span class="pre">langermann</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.langermann.langermann" title="Permalink to this definition">¶</a></dt>
+<dd><p>Langermann function.</p>
+<p>The Langermann function is a multimodal problem. It has a fairly large number of local minima,
+widely separated and regularly distributed.</p>
+<p>This implementation is only for the two dimension version of the function using the values for a, c and m
+proposed by Molga &amp; Smutnicki (2005) <span id="id1">[<a class="reference internal" href="../bib.html#id7" title="Marcin Molga and Czesław Smutnicki. Test functions for optimization needs. Test functions for optimization needs, 101:48, 2005.">2</a>]</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – array or list of floats. Each value is usually between 0 and 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.langermann.inverted_langermann">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.langermann.</span></span><span class="sig-name descname"><span class="pre">inverted_langermann</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.langermann.inverted_langermann" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Langermann function.</p>
+<p>The Langermann function is a multimodal problem. It has a fairly large number of local minima,
+widely separated and regularly distributed. This implementation inverts the function to test out the maximization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – array or list of floats. Each value is usually between 0 and 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-mango.benchmark.optimization.levy"></span><dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.levy">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">levy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.levy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Levy function.</p>
+<p>The global minima is at x = [1, 1, 1, …, 1] and the function value is 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>) – array of floats. Each value is usually between -10 and 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.inverted_levy">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">inverted_levy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.inverted_levy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Levy function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>) – array of floats. Each value is usually between -10 and 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.levy_function_no13">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">levy_function_no13</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.levy_function_no13" title="Permalink to this definition">¶</a></dt>
+<dd><p>Levy function N. 13.</p>
+<p>The global minima is at x = [1, 1] and the function value is 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – array or list of floats. Each value is usually between -10 and 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Doc-author<span class="colon">:</span></dt>
+<dd class="field-even"><p>baobab soluciones</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.inverted_levy_no13">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">inverted_levy_no13</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.inverted_levy_no13" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Levy function N. 13.</p>
+<p>The global minima is at x = [1, 1] and the function value is 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – list of floats. Each value is usually between -10 and 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Doc-author<span class="colon">:</span></dt>
+<dd class="field-even"><p>baobab soluciones</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-mango.benchmark.optimization.rastrigin"></span><dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rastrigin.rastrigin">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rastrigin.</span></span><span class="sig-name descname"><span class="pre">rastrigin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rastrigin.rastrigin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rastrigin function.</p>
+<p>The Rastrigin function has several local minima. It is highly multimodal, but locations of the minima
+are regularly distributed.</p>
+<p>The global minima is at [0, 0, …, 0] with a value of 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">npumpy.array</span></code>) – array of floats. Values usually are between -5.12 and 5.12.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rastrigin.inverted_rastrigin">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rastrigin.</span></span><span class="sig-name descname"><span class="pre">inverted_rastrigin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rastrigin.inverted_rastrigin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Rastrigin function.</p>
+<p>The Rastrigin function has several local minima. It is highly multimodal, but locations of the minima
+are regularly distributed. This implementation inverts the function to test out the maximization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">npumpy.array</span></code>) – array of floats. Values usually are between -5.12 and 5.12.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-mango.benchmark.optimization.rosenbrock"></span><dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rosenbrock.rosenbrock">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rosenbrock.</span></span><span class="sig-name descname"><span class="pre">rosenbrock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rosenbrock.rosenbrock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rosenbrock function.</p>
+<p>The Rosenbrock function, also referred to as the Valley or Banana function,
+is a popular test problem for gradient-based optimization algorithms.</p>
+<p>The function is unimodal, and the global minimum lies in a narrow, parabolic valley.
+However, even though this valley is easy to find, convergence to the minimum is difficult (Picheny et al., 2012).</p>
+<p>The global minima is at [1, 1, …, 1] with a value of 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>) – array of floats. Values usually are between -5 and 10</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rosenbrock.inverted_rosenbrock">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rosenbrock.</span></span><span class="sig-name descname"><span class="pre">inverted_rosenbrock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rosenbrock.inverted_rosenbrock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Rosenbrock function.</p>
+<p>The Rosenbrock function, also referred to as the Valley or Banana function,
+is a popular test problem for gradient-based optimization algorithms.</p>
+<p>The function is unimodal, and the global minimum lies in a narrow, parabolic valley.
+However, even though this valley is easy to find, convergence to the minimum is difficult (Picheny et al., 2012).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>) – array of floats. Values ussually are between -5 and 10</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-mango.benchmark.optimization.schaffer"></span><dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.schaffer_function_no2">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">schaffer_function_no2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.schaffer_function_no2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schaffer function N. 2.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(x) = 0.5 + \frac{\sin^2(x_1^2 - x_2^2) - 0.5}{[1 + 0.001(x_1^2 + x_2^2)]^2}\]</div>
+</div>
+<p>The global minima is at x [0, 0] with value 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – A list of values. Values are evaluated between [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the Schaffer function N. 2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.inverted_schaffer_function_no2">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">inverted_schaffer_function_no2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Schaffer function N. 2.</p>
+<p>This inverted version is used for maximization.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(x) = -0.5 - \frac{\sin^2(x_1^2 - x_2^2) - 0.5}{[1 + 0.001(x_1^2 + x_2^2)]^2}\]</div>
+</div>
+<p>The global maxima is at x [0, 0] with value 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – A list of values. Values are evaluated between [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the Inverted Schaffer function N. 2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.schaffer_function_no4">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">schaffer_function_no4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.schaffer_function_no4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schaffer function N. 4.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(x) = 0.5 + \frac{\cos^2(\sin(|x_1^2 - x_2^2|)) - 0.5}{[1 + 0.001(x_1^2 + x_2^2)]^2}\]</div>
+</div>
+<p>The global minima is at x [0, 1.253115] with value 0.292579</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – array or list of values. Values are evaluated between [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the Schaffer function N. 4.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.inverted_schaffer_function_no4">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">inverted_schaffer_function_no4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Schaffer function N. 4.</p>
+<p>This inverted version is used for maximization.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(x) = -0.5 - \frac{\cos^2(\sin(|x_1^2 - x_2^2|)) - 0.5}{[1 + 0.001(x_1^2 + x_2^2)]^2}\]</div>
+</div>
+<p>The global maxima is at x [0, 1.253115] with value -0.292579</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code> or list) – array or list of values. Values are evaluated between [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the Inverted Schaffer function N. 4.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-mango.benchmark.optimization.schwefel"></span><dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schwefel.schwefel">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schwefel.</span></span><span class="sig-name descname"><span class="pre">schwefel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schwefel.schwefel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schwefel function</p>
+<p>The Schwefel function is complex, with many local minima.</p>
+<p>The global minima is located at [420,9687, …, 420,9687] with a value of 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>) – input vector. The function is usually evaluated between [500, 500]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value of the function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schwefel.inverted_schwefel">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schwefel.</span></span><span class="sig-name descname"><span class="pre">inverted_schwefel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schwefel.inverted_schwefel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverted Schwefel function</p>
+<p>The Schwefel function is complex, with many local maxima.
+This version is used to test maximization.</p>
+<p>The global minima is located at [420,9687, …, 420,9687] with a value of 0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.array</span></code>) – input vector. The function is usually evaluated between [500, 500]</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the value of the function</p>
@@ -522,58 +850,49 @@ with a value of 19.2085.</p>
 </section>
 </section>
 
-        </article>
-        
-        <div class="navigation flex print:hidden">
-  <div class="navigation-prev">
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
     <a href="index.html">
-      <i class="i-icon chevron"></i>
+      <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span>
-        
-        <div class="title">Code documentation</div>
-        
-      </div>
+        <span>Previous</span><div class="title">Code documentation</div></div>
     </a>
-  </div>
-  <div class="navigation-next">
+  </div><div class="navigation-next">
     <a href="clients.html">
       <div class="page-info">
         <span>Next</span>
         <div class="title">Clients</div>
       </div>
-      <i class="i-icon chevron"></i>
+      <i class="i-lucide chevron-right"></i>
     </a>
-  </div>
-</div>
-        
-      </div>
+  </div></div></div>
     </div>
   </main>
 </div>
 <footer class="sy-foot">
   <div class="sy-foot-inner sy-container mx-auto">
-    
     <div class="sy-foot-reserved md:flex justify-between items-center">
       <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
-        
-        <p>
-          Made with
-          
-          <a href="https://www.sphinx-doc.org/">Sphinx</a> and
-          
-          <a href="https://shibuya.lepture.com">Shibuya theme</a>.
-        </p>
-      </div>
-      <div class="sy-foot-socials">
-      </div>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
     </div>
   </div>
-</footer></div>
-      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=158ece9d"></script>
+</footer>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=227644f7"></script>
       <script src="../_static/doctools.js?v=888ff710"></script>
       <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="../_static/shibuya.js?v=ccb09f80"></script>
-    
-</body>
+      <script src="../_static/shibuya.js?v=3cc430e2"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></body>
 </html>
