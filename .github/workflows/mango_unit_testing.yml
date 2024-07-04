@@ -42,6 +42,7 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         flags: unit-tests
+        token: ${{ secrets.CODECOV_TOKEN }}
 
   setup-testing:
     name: Build the library to test that it gets correctly built
