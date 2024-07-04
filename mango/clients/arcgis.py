@@ -288,6 +288,9 @@ class ArcGisClient:
         data = response.json()["odCostMatrix"]
         results = []
 
+        kilometers = data["costAttributeNames"].index("Kilometers")
+        time = data["costAttributeNames"].index("TravelTime")
+
         for origin in origins["features"]:
             for destination in destinations["features"]:
                 try:
@@ -297,8 +300,9 @@ class ArcGisClient:
                         {
                             "origin": origin["attributes"]["Name"],
                             "destination": destination["attributes"]["Name"],
-                            "distance": data[origin_id][destination_id][2] * 1000,
-                            "time": data[origin_id][destination_id][0] * 60,
+                            "distance": data[origin_id][destination_id][kilometers]
+                            * 1000,
+                            "time": data[origin_id][destination_id][time] * 60,
                         }
                     )
                 except KeyError:
