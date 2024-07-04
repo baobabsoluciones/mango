@@ -1,14 +1,21 @@
 from math import exp, pi, cos
+from typing import Union
+
+import numpy as np
 
 
-def langermann(x: list) -> float:
+def langermann(x: Union[np.array, list]) -> float:
     """
     Langermann function.
 
     The Langermann function is a multimodal problem. It has a fairly large number of local minima,
     widely separated and regularly distributed.
 
-    :param list x: list of floats. Each value is usually between 0 and 10.
+    This implementation is only for the two dimension version of the function using the values for a, c and m
+    proposed by Molga & Smutnicki (2005) :cite:p:`molga2005test`.
+
+    :param x: array or list of floats. Each value is usually between 0 and 10.
+    :type x: :class:`numpy.array` or list
     :return: the value of the function
     :rtype: float
     """
@@ -29,14 +36,15 @@ def langermann(x: list) -> float:
     )
 
 
-def inverted_langermann(x: list) -> float:
+def inverted_langermann(x: Union[np.array, list]) -> float:
     """
     Inverted Langermann function.
 
     The Langermann function is a multimodal problem. It has a fairly large number of local minima,
     widely separated and regularly distributed. This implementation inverts the function to test out the maximization
 
-    :param list x: list of floats. Each value is usually between 0 and 10.
+    :param x: array or list of floats. Each value is usually between 0 and 10.
+    :type x: :class:`numpy.array` or list
     :return: the value of the function
     :rtype: float
     """

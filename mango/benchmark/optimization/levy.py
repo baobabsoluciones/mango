@@ -1,4 +1,5 @@
 from math import sin, pi
+from typing import Union
 
 import numpy as np
 
@@ -9,7 +10,8 @@ def levy(x: np.array) -> float:
 
     The global minima is at x = [1, 1, 1, ..., 1] and the function value is 0.
 
-    :param :class:`np.array` x: array of floats. Each value is usually between -10 and 10.
+    :param x: array of floats. Each value is usually between -10 and 10.
+    :type x: :class:`numpy.array`
     :return: the value of the function
     :rtype: float
     """
@@ -26,20 +28,22 @@ def inverted_levy(x: np.array) -> float:
     """
     Inverted Levy function.
 
-    :param :class:`np.array` x: array of floats. Each value is usually between -10 and 10.
+    :param x: array of floats. Each value is usually between -10 and 10.
+    :type x: :class:`numpy.array`
     :return: the value of the function
     :rtype: float
     """
     return -levy(x)
 
 
-def levy_function_no13(x: list) -> float:
+def levy_function_no13(x: Union[np.array, list]) -> float:
     """
     Levy function N. 13.
 
     The global minima is at x = [1, 1] and the function value is 0.
 
-    :param list x: list of floats. Each value is usually between -10 and 10.
+    :param x: array or list of floats. Each value is usually between -10 and 10.
+    :type x: :class:`numpy.array` or list
     :return: the value of the function
     :rtype: float
     :doc-author: baobab soluciones
@@ -51,13 +55,14 @@ def levy_function_no13(x: list) -> float:
     )
 
 
-def inverted_levy_no13(x: list) -> float:
+def inverted_levy_no13(x: Union[np.array, list]) -> float:
     """
     Inverted Levy function N. 13.
 
     The global minima is at x = [1, 1] and the function value is 0.
 
-    :param list x: list of floats. Each value is usually between -10 and 10.
+    :param x: list of floats. Each value is usually between -10 and 10.
+    :type x: :class:`numpy.array` or list
     :return: the value of the function
     :rtype: float
     :doc-author: baobab soluciones

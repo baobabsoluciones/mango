@@ -9,10 +9,10 @@ def schwefel(x: np.array) -> float:
 
     The global minima is located at [420,9687, ..., 420,9687] with a value of 0
 
-    :param :class:`np.array` x: input vector. The function is usually evaluated between [500, 500]
+    :param x: input vector. The function is usually evaluated between [500, 500]
+    :type x: :class:`numpy.array`
     :return: the value of the function
     :rtype: float
-    :doc-author: baobab soluciones
     """
     return 418.9829 * len(x) - np.sum(x * np.sin(np.sqrt(np.abs(x))))
 
@@ -26,9 +26,9 @@ def inverted_schwefel(x: np.array) -> float:
 
     The global minima is located at [420,9687, ..., 420,9687] with a value of 0
 
-    :param :class:`np.array` x: input vector. The function is usually evaluated between [500, 500]
+    :param x: input vector. The function is usually evaluated between [500, 500]
+    :type x: :class:`numpy.array`
     :return: the value of the function
     :rtype: float
-    :doc-author: baobab soluciones
     """
     return -schwefel(x)

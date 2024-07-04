@@ -55,16 +55,17 @@ class ArcGisClient:
                 f"There was an error on login into ArcGis: {response.json()}. Exception: {e}"
             )
 
-    def get_geolocation(self, address: str) -> tuple:
+    def get_geolocation(self, address: str, country: str="ESP") -> tuple:
         """
         Get the geolocation of an address.
 
         :param str address: the address to get the geolocation
+        :param str country: the country of the address to get the geolocation (default Spain)
         :return: a tuple with the longitude and the latitude for the geolocation
         :rtype: tuple
         :doc-author: baobab soluciones
         """
-        url = f"{ARCGIS_GEOCODE_URL}?f=json&token={self.token}&singleLine={address}&sourceCountry=ESP&forStorage=false"
+        url = f"{ARCGIS_GEOCODE_URL}?f=json&token={self.token}&singleLine={address}&sourceCountry={country}&forStorage=false"
         response = requests.get(url=url)
 
         if response.status_code != 200:
@@ -287,6 +288,9 @@ class ArcGisClient:
         data = response.json()["odCostMatrix"]
         results = []
 
+        kilometers = data["costAttributeNames"].index("Kilometers")
+        time = data["costAttributeNames"].index("TravelTime")
+
         for origin in origins["features"]:
             for destination in destinations["features"]:
                 try:
@@ -296,8 +300,9 @@ class ArcGisClient:
                         {
                             "origin": origin["attributes"]["Name"],
                             "destination": destination["attributes"]["Name"],
-                            "distance": data[origin_id][destination_id][2] * 1000,
-                            "time": data[origin_id][destination_id][0] * 60,
+                            "distance": data[origin_id][destination_id][kilometers]
+                            * 1000,
+                            "time": data[origin_id][destination_id][time] * 60,
                         }
                     )
                 except KeyError:
