@@ -143,3 +143,29 @@ def as_list(x):
         return list(x)
     else:
         return [x]
+
+
+def first(lst):
+    """
+    Return the first value of a list.
+    Return None if the list is empty instead of getting an error.
+
+    :param lst: a list
+    :return: a value
+    """
+    if not len(lst):
+        return None
+    return lst[0]
+
+
+def last(lst):
+    """
+    Return the last value of a list.
+    Return None if the list is empty instead of getting an error.
+
+    :param lst: a list
+    :return: a value
+    """
+    if not len(lst):
+        return None
+    return lst[-1]

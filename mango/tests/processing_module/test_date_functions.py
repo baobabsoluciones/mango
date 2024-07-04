@@ -274,6 +274,11 @@ class DateTests(TestCase):
         dt = as_date(datetime(2022, 9, 27, 8, 0, 0))
         self.assertEqual(dt, date(2022, 9, 27), msg=msg)
 
+    def test_as_date_4(self):
+        msg = "as_date works with strings of date only"
+        dt = as_date("2022-09-27")
+        self.assertEqual(dt, date(2022, 9, 27), msg=msg)
+
     def test_as_date_fmt(self):
         msg = "as_datetime works with strings and format"
         dt = as_date("2022-09-27 08h00", "%Y-%m-%d %Hh%M")

@@ -29,8 +29,6 @@ def mutate(table, **kwargs):
     assert isinstance(table, TupList)
 
     if len(table) == 0:
-        # TODO: put that in a debug log
-        # print("Warning: applying mutate on an empty table")
         return table
 
     # Copy deep of table has been removed.
@@ -110,7 +108,7 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
     :return: a table (TupList of dict).
     """
     assert isinstance(table, TupList)
-    # todo: should it create an error?
+
     if len(table) == 0:
         return table
     if group_by is None:
@@ -182,8 +180,6 @@ def select(table, *args):
     assert isinstance(table, TupList)
 
     if not len(table):
-        # TODO: put that in a debug log
-        # print("Warning: applying select on an empty table")
         return TupList()
 
     keep = as_list(args)
@@ -224,18 +220,25 @@ def rename(table, **kwargs):
     )
 
 
-def get_col_names(table):
+def get_col_names(table, fast=False):
     """
     Get the names of the column of a tuplist
 
     :param table: a table (TupList of dict)
+    :param fast: assume that the first row has all the columns.
     :return: a list of keys
     """
     assert isinstance(table, TupList)
 
     if len(table) < 1:
         return []
-    return [k for k in table[0].keys()]
+    if fast:
+        return [k for k in table[0].keys()]
+    else:
+        columns = []
+        for row in table:
+            columns += [k for k in row.keys() if k not in columns]
+        return columns
 
 
 def left_join(
@@ -432,29 +435,38 @@ def manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype):
     """
     None values should never join with other None.
     Depending on the type of join, return the relevant rows with None values in keys.
-    TODO: there should be a simpler way to do that.
-    :param tab1:
-    :param tab2:
-    :param empty:
-    :param t1_keys:
-    :param t2_keys:
-    :param by:
-    :param jtype:
-    :return:
+    Example:
+    result = left_join([{"a":1, "b":2}, {"a":None, "b":1}], [{"a":1, "c":1}, {"a":None, "c":1}])
+    result should be [{"a":1, "b":2, "c":1}, {"a":None, "b":1, "c":None}]
+
+    manage_join_none returns the part of the table where the join key is None: {"a":None, "b":1, "c":None}
+
+    :param tab1: SuperDict table 1 grouped by join keys {(1,2): [{...}, {...}], (1,3):[{...}, {...}]}
+    :param tab2: SuperDict table 2 grouped by join keys {(1,2): [{...}, {...}], (1,3):[{...}, {...}]}
+    :param empty: value to use for missing values.
+    :param t1_keys: columns of table 1
+    :param t2_keys: columns of table 2
+    :param by: keys to join by
+    :param jtype: join type (left, right, full, inner)
+    :return: Tuplist of rows joined on None values
     """
     result = []
     if jtype == "left":
-        for i in tab1:
+        # if left join, any None value in join keys result in empty values in the second table columns.
+        for i in tab1.keys():
             if any(v is None for v in as_list(i)):
                 tab2[i] = [{k: empty for k in t2_keys if k not in by}]
                 result += [{**d1, **d2} for d1 in tab1[i] for d2 in tab2[i]]
     elif jtype == "right":
+        # a right join is a left join with table in other order.
         result = manage_join_none(tab2, tab1, empty, t2_keys, t1_keys, by, jtype="left")
     elif jtype == "full":
+        # a full join is the combination of left and right join.
         result = manage_join_none(
             tab1, tab2, empty, t1_keys, t2_keys, by, jtype="left"
         ) + manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype="right")
     elif jtype == "inner":
+        #  if inner join, only existing values from both tables are kept.
         return TupList()
     else:
         raise ValueError("jtype must be full, inner, right or left")
@@ -621,27 +633,29 @@ def str_key_tl(tl):
     return TupList([str_key(dic) for dic in tl])
 
 
-def replace(tl, replacement=None, to_replace=None):
+def replace(tl, replacement=None, to_replace=None, fast=False):
     """
-    Fill missing values of a tuplist.
+    Fill missing values of a TupList.
 
-    :param tl: a tuplist
+    :param tl: a TupList
     :param replacement: a single value or a dict of columns and values to use as replacement.
     :param to_replace: a single value or a dict of columns and values to replace.
+    :param fast: assume that the first row has all the columns.
 
-    :return: a tuplist with missing values filled.
+    :return: a TupList with missing values filled.
     """
     apply_to_col = []
     if isinstance(replacement, dict):
         apply_to_col += [i for i in replacement.keys()]
     else:
-        replacement = {k: replacement for k in get_col_names(tl)}
+        replacement = {k: replacement for k in get_col_names(tl, fast)}
     if isinstance(to_replace, dict):
         apply_to_col += [i for i in to_replace.keys()]
+        to_replace_dict = to_replace
     else:
-        to_replace = {k: to_replace for k in get_col_names(tl)}
+        to_replace_dict = {k: to_replace for k in get_col_names(tl, fast)}
     if not len(apply_to_col):
-        apply_to_col = get_col_names(tl)
+        apply_to_col = get_col_names(tl, fast)
 
     return TupList(
         [
@@ -650,7 +664,7 @@ def replace(tl, replacement=None, to_replace=None):
                 **{
                     k: v
                     for k, v in dic.items()
-                    if k not in apply_to_col or v != to_replace[k]
+                    if k not in apply_to_col or v != to_replace_dict[k]
                 },
             }
             for dic in tl
@@ -658,15 +672,16 @@ def replace(tl, replacement=None, to_replace=None):
     )
 
 
-def replace_empty(tl, replacement=0):
+def replace_empty(tl, replacement=0, fast=False):
     """
     Fill empty values of a tuplist.
 
     :param tl: a tuplist
     :param replacement: a single value or a dict of columns and values to use as replacement.
+    :param fast: assume that the first row has all the columns.
     :return: a tuplist with empty values filled.
     """
-    return replace(tl, replacement=replacement, to_replace=None)
+    return replace(tl, replacement=replacement, to_replace=None, fast=fast)
 
 
 def replace_nan(tl, replacement=None):
@@ -682,16 +697,17 @@ def replace_nan(tl, replacement=None):
     )
 
 
-def drop_empty(tl, cols=None):
+def drop_empty(tl, cols=None, fast=False):
     """
     Drop rows of a tuplist with empty values.
 
     :param tl: a tuplist
     :param cols: list of column names or single name.
+    :param fast: assume that the first row has all the columns.
     :return: a tuplist with empty values dropped.
     """
     if cols is None:
-        cols = get_col_names(tl)
+        cols = get_col_names(tl, fast)
     else:
         cols = as_list(cols)
     tl2 = replace(tl, replacement=None, to_replace=None)
