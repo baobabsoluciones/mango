@@ -38,11 +38,29 @@ jobs:
         coverage run --source=./mango/ --omit=./mango/tests/ -m unittest discover -s mango/tests
         coverage report -m
         coverage xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+    - name: Upload coverage to artifact
+      if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v3
       with:
-        flags: unit-tests
-        token: ${{ secrets.CODECOV_TOKEN }}
+        name: coverage-report
+        path: coverage.xml
+
+  upload-coverage:
+    name: Upload coverage to Codecov
+    needs: unit-testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get artifact with the coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-report
+          path: ./
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: unit-tests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
 
   setup-testing:
     name: Build the library to test that it gets correctly built
