@@ -10,7 +10,7 @@ jobs:
     name: Build and publish to PyPI.
     defaults:
       run:
-        working-directory: .
+        working-directory: ./mango_base
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

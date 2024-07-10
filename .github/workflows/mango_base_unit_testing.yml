@@ -1,10 +1,10 @@
-name: mango full unit testing
+name: mango base full unit testing
 
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
     paths:
-      - 'mango/**'
+      - 'mango/mango_base/**'
       - '.github/workflows/**'
   push:
     branches:
@@ -35,7 +35,7 @@ jobs:
         pip install -r requirements-dev.txt
     - name: Run unit testing
       run: |
-        coverage run --source=./mango/ --omit=./mango/tests/ -m unittest discover -s mango/tests
+        coverage run --source=. --rcfile=./mango_base/.coveragerc -m unittest discover -t mango_base -s mango_base/mango/tests
         coverage report -m
         coverage xml
     - name: Upload coverage to artifact
