@@ -3,14 +3,14 @@ name: Publish to Pypi
 on:
   push:
     tags:
-      - "mango_base*"
+      - "mango_time_series*"
 
 jobs:
   build:
     name: Build and publish to PyPI.
     defaults:
       run:
-        working-directory: ./mango_base
+        working-directory: ./mango_time_series
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
