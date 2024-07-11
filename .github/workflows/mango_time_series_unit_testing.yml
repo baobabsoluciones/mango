@@ -5,7 +5,7 @@ on:
     types: [opened, edited, synchronize, reopened]
     paths:
       - 'mango/mango_time_series/**'
-      - '.github/workflows/**'
+      - '.github/workflows/**time_series**'
   push:
     branches:
       - master
@@ -32,7 +32,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
+        pip install -r ./mango_time_series/requirements-dev.txt
     - name: Run unit testing
       run: |
         coverage run --source=. --rcfile=./mango_time_series/.coveragerc -m unittest discover -t mango_time_series -s mango_time_series/mango/tests
