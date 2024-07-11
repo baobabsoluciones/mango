@@ -13,8 +13,8 @@ jobs:
     strategy:
       max-parallel: 21
       matrix:
-        python-version: [3.8, 3.9, '3.10', '3.11']
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
+        os: [ubuntu-latest, windows-latest]
         
     steps:
     - uses: actions/checkout@v1
@@ -30,6 +30,7 @@ jobs:
       run: |
         coverage run --source=. --rcfile=./mango_base/.coveragerc -m unittest discover -t mango_base -s mango_base/mango/tests
         coverage report -m
+
     - name: Run time series unit testing
       run: |
         coverage run -a --source=. --rcfile=./mango_time_series/.coveragerc -m unittest discover -t mango_time_series -s mango_time_series/mango/tests
