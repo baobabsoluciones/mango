@@ -9,7 +9,7 @@ on:
   push:
     branches:
       - master
-      - development
+      - develop
 
 jobs:
   unit-testing:
