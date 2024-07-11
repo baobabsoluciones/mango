@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mango-time-series"
-version = "0.0.1a1"
+version = "0.0.1a2"
 authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
 ]

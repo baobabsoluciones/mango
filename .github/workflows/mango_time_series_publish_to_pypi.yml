@@ -28,5 +28,5 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.general_token }}
+          password: ${{ secrets.pypi_mango_time_series_token }}
           packages_dir: ./mango_time_series/dist
