@@ -28,7 +28,7 @@ jobs:
         pip install -r ./all-requirements.txt
     - name: Run base unit testing
       run: |
-        coverage run --source=. --rcfile=./mango_base/.coveragerc -m unittest discover -t mango_base -s mango_base/mango/tests/logging_module
+        coverage run --source=. --rcfile=./mango_base/.coveragerc -m unittest discover -t mango_base -s mango_base/mango/tests
         coverage report -m
 
     - name: Run time series unit testing
