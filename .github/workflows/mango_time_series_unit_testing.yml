@@ -1,4 +1,4 @@
-name: mango base full unit testing
+name: mango time series full unit testing
 
 on:
   pull_request:

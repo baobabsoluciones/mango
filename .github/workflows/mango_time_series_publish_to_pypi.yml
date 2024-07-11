@@ -1,4 +1,4 @@
-name: Publish to Pypi
+name: Publish mango time series to Pypi
 
 on:
   push:
