@@ -2,7 +2,7 @@ name: mango base full unit testing
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, synchronize, reopened]
     paths:
       - 'mango/mango_base/**'
       - '.github/workflows/**base**'

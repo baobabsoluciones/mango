@@ -2,7 +2,7 @@ name: mango time series full unit testing
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, synchronize, reopened]
     paths:
       - 'mango/mango_time_series/**'
       - '.github/workflows/**time_series**'
