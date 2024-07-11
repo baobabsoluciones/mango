@@ -1,0 +1,7 @@
+include LICENSE
+include MANIFEST.in
+include README.rst
+include mango/data/*
+include mango/tests/data/*
+include mango/schemas/*
+include mango/dashboards/assets/*
