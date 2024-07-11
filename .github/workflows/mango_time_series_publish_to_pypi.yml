@@ -3,7 +3,7 @@ name: Publish mango time series to Pypi
 on:
   push:
     tags:
-      - "mango_time_series*"
+      - "mango_time_series_*"
 
 jobs:
   build:
