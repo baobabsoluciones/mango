@@ -5,6 +5,9 @@ on:
     types: [opened, edited, synchronize, reopened]
     paths:
       - 'mango/**'
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'requirements-dev.txt'
       - '.github/workflows/**'
   push:
     branches:
