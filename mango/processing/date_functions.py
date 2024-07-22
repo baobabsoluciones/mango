@@ -179,9 +179,9 @@ def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
     :return: datetime
     """
     if fmt is not None:
-        formats = as_list(fmt) + DATETIME_FORMATS
+        formats = as_list(fmt) + DATETIME_FORMATS + DATE_FORMATS
     else:
-        formats = DATETIME_FORMATS
+        formats = DATETIME_FORMATS + DATE_FORMATS
 
     for fmt in formats:
         try:
@@ -266,9 +266,9 @@ def as_date(x: Union[date, datetime, str], fmt: Union[str, Iterable] = None) -> 
         raise ValueError(f"x is not a date: {x}")
 
 
-def as_str(x, fmt: str = None) -> str:
+def as_str(x: Union[date, datetime, str], fmt: str = None) -> str:
     """
-    Coerce an object to a string.
+    Coerce a date like object to a string.
     If a format is given try to return a string in this format (even if it was already a string).
 
     :param x: object (date, str or datetime)
@@ -284,23 +284,27 @@ def as_str(x, fmt: str = None) -> str:
     elif isinstance(x, date):
         return dt_to_str(x, fmt)
     else:
-        raise ValueError(f"dt is not a date: {x}")
+        raise ValueError(f"x is not a date: {x}")
 
 
 def add_to_str_dt(
-    x,
+    x: str,
     fmt_in: Union[str, Iterable] = None,
     fmt_out: Union[str, Iterable] = None,
     **kwargs,
 ):
     """
-    Add time to a datetime as a string and return the new date as a string.
+    Add time to a date or datetime as a string and return the new datetime as a string.
+    Example::
 
-    :param date: a date as a string.
+        result = add_to_str_dt("2024-01-01 05:00:00", hours=2)
+        # result = "2024-01-01 07:00:00"
+
+    :param x: a date as a string.
     :param fmt_in: datetime format of the input string (default: "%Y-%m-%d %H:%M:%S").
     :param fmt_out: datetime format of the output string (default: "%Y-%m-%d %H:%M:%S").
     :param kwargs: kwargs for timedelta (minutes, days, months...)
-    :return: the new date as a string (in the same format)
+    :return: the new datetime as a string (in the same format)
     """
     if fmt_in:
         fmt_in = as_list(fmt_in) + DATE_FORMATS
