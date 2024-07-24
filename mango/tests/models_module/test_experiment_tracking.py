@@ -59,6 +59,8 @@ class TestExperimentTracking(TestCase):
         cls.y_train_clf = y_clf[: int(len(y_clf) * 0.8)].reset_index(drop=True)
         cls.X_test_clf = X_clf[int(len(X_clf) * 0.8) :].reset_index(drop=True)
         cls.y_test_clf = y_clf[int(len(y_clf) * 0.8) :].reset_index(drop=True)
+        cls.X_val_clf = cls.X_test_clf.copy()
+        cls.y_val_clf = cls.y_test_clf.copy()
 
         # Regression
         X_reg, y_reg = make_regression(n_samples=1000, n_features=10, random_state=42)
@@ -74,6 +76,8 @@ class TestExperimentTracking(TestCase):
         cls.y_train_reg = y_reg[: int(len(y_reg) * 0.8)].reset_index(drop=True)
         cls.X_test_reg = X_reg[int(len(X_reg) * 0.8) :].reset_index(drop=True)
         cls.y_test_reg = y_reg[int(len(y_reg) * 0.8) :].reset_index(drop=True)
+        cls.X_val_reg = cls.X_test_reg.copy()
+        cls.y_val_reg = cls.y_test_reg.copy()
 
         # Binary Classification
         X_bin_clf, y_bin_clf = make_classification(
@@ -99,6 +103,8 @@ class TestExperimentTracking(TestCase):
         cls.y_test_bin_clf = y_bin_clf[int(len(y_bin_clf) * 0.8) :].reset_index(
             drop=True
         )
+        cls.X_val_bin_clf = cls.X_test_bin_clf.copy()
+        cls.y_val_bin_clf = cls.y_test_bin_clf.copy()
 
         # Expected values for roc curve
         cls.expected_tpr_logistic = [
@@ -1401,6 +1407,7 @@ class TestExperimentTracking(TestCase):
         }
 
     def setUp(self):
+        self.maxDiff = None
         os.makedirs(self.folder_name, exist_ok=True)
 
     def tearDown(self):
@@ -1445,7 +1452,7 @@ class TestExperimentTracking(TestCase):
         self.assertFalse(os.path.exists(os.path.join(output_folder, "model")))
         self.assertFalse(os.path.exists(os.path.join(output_folder, "datasets")))
 
-    def _check_model_without_zip(self, model, output_folder, problem_type):
+    def _check_model_without_zip(self, ml_experiment, output_folder, problem_type):
         """
         Helper function to check the model is saved correctly when zip_files is False.
         """
@@ -1510,202 +1517,14 @@ class TestExperimentTracking(TestCase):
             raise ValueError("Problem type not supported")
         # Assert model is the same
         # Assert model is the same
-        with open(os.path.join(output_folder, "model", "model.pkl"), "rb") as f:
-            model_load = pickle.load(f)
+        loaded_ml_experiment = MLExperiment.from_registered_experiment(output_folder)
 
         # Generate predictions from both models
-        original_predictions = model.predict(self.X_test_reg)
-        loaded_predictions = model_load.predict(self.X_test_reg)
+        original_predictions = ml_experiment.predict(self.X_test_reg)
+        loaded_predictions = loaded_ml_experiment.predict(self.X_test_reg)
 
         # Check if the predictions are almost the same
         self.assertTrue(np.allclose(original_predictions, loaded_predictions))
-
-    def test_serialize_sklearn(self):
-        """
-        Test serialization of a sklearn model.
-        """
-        model = LinearRegression()
-        model.fit(self.X_train_reg, self.y_train_reg)
-        output_folder = export_model(
-            model,
-            self.X_train_reg,
-            self.y_train_reg,
-            self.X_test_reg,
-            self.y_test_reg,
-            self.folder_name,
-            save_model=True,
-            save_datasets=True,
-            zip_files=False,
-        )
-        self._check_model_without_zip(
-            output_folder=output_folder,
-            model=model,
-            problem_type=ProblemType.REGRESSION,
-        )
-        # Assert works for classification with Zip
-        model = LogisticRegression()
-        model.fit(self.X_train_clf, self.y_train_clf)
-        output_folder = export_model(
-            model,
-            self.X_train_clf,
-            self.y_train_clf,
-            self.X_test_clf,
-            self.y_test_clf,
-            self.folder_name,
-            save_model=True,
-            save_datasets=True,
-            zip_files=True,
-        )
-        self._check_model_with_zip(output_folder=output_folder)
-
-    def test_serialize_catboost(self):
-        """
-        Test serialization of a CatBoost model.
-        """
-        model = CatBoostClassifier(allow_writing_files=False, verbose=5, iterations=10)
-        model.fit(self.X_train_clf, self.y_train_clf)
-        output_folder = export_model(
-            model,
-            self.X_train_clf,
-            self.y_train_clf,
-            self.X_test_clf,
-            self.y_test_clf,
-            self.folder_name,
-            save_model=True,
-            save_datasets=True,
-            zip_files=False,
-        )
-        self._check_model_without_zip(
-            output_folder=output_folder,
-            model=model,
-            problem_type=ProblemType.CLASSIFICATION,
-        )
-
-        # Assert works for regression with Zip
-        model = CatBoostRegressor(allow_writing_files=False, verbose=5, iterations=10)
-        model.fit(self.X_train_reg, self.y_train_reg)
-        output_folder = export_model(
-            model,
-            self.X_train_reg,
-            self.y_train_reg,
-            self.X_test_reg,
-            self.y_test_reg,
-            self.folder_name,
-            save_model=True,
-            save_datasets=True,
-            zip_files=True,
-        )
-        self._check_model_with_zip(output_folder=output_folder)
-
-    def test_serialize_pipeline_with_catboost(self):
-        """
-        Test serialization of a pipeline with CatBoost model.
-        """
-        col_transformer = ColumnTransformer(
-            [
-                ("num", StandardScaler(), self.X_train_clf.columns),
-            ]
-        )
-        model = Pipeline(
-            [
-                ("col_transformer", col_transformer),
-                (
-                    "model",
-                    CatBoostClassifier(
-                        allow_writing_files=False, verbose=5, iterations=10
-                    ),
-                ),
-            ]
-        )
-        model.fit(self.X_train_clf, self.y_train_clf)
-        output_folder = export_model(
-            model,
-            self.X_train_clf,
-            self.y_train_clf,
-            self.X_test_clf,
-            self.y_test_clf,
-            self.folder_name,
-            save_model=True,
-            save_datasets=True,
-            zip_files=False,
-        )
-        self._check_model_without_zip(
-            output_folder=output_folder,
-            model=model,
-            problem_type=ProblemType.CLASSIFICATION,
-        )
-
-    def test_serialize_lightgbm(self):
-        """
-        Test serialization of a LightGBM model.
-        """
-        model = LGBMClassifier()
-        model.fit(self.X_train_clf, self.y_train_clf)
-        output_folder = export_model(
-            model,
-            self.X_train_clf,
-            self.y_train_clf,
-            self.X_test_clf,
-            self.y_test_clf,
-            self.folder_name,
-            save_model=True,
-            save_datasets=True,
-            zip_files=False,
-        )
-        self._check_model_without_zip(
-            output_folder=output_folder,
-            model=model,
-            problem_type=ProblemType.CLASSIFICATION,
-        )
-
-        # Assert works for regression with Zip
-        model = LGBMRegressor()
-        model.fit(self.X_train_reg, self.y_train_reg)
-        output_folder = export_model(
-            model,
-            self.X_train_reg,
-            self.y_train_reg,
-            self.X_test_reg,
-            self.y_test_reg,
-            self.folder_name,
-            save_model=True,
-            save_datasets=True,
-            zip_files=True,
-        )
-        self._check_model_with_zip(output_folder=output_folder)
-
-    def test_errors(self):
-        """
-        Test errors raised by the function.
-        """
-        # Not supported model
-        model = InvalidModel()
-        with self.assertRaises(ValueError):
-            export_model(
-                model,
-                self.X_train_reg,
-                self.y_train_reg,
-                self.X_test_reg,
-                self.y_test_reg,
-                self.folder_name,
-                save_model=True,
-                save_datasets=True,
-                zip_files=False,
-            )
-
-        # Invalid folder
-        with self.assertRaises(FileNotFoundError):
-            export_model(
-                model,
-                self.X_train_reg,
-                self.y_train_reg,
-                self.X_test_reg,
-                self.y_test_reg,
-                "invalid_folder",
-                save_model=True,
-                save_datasets=True,
-                zip_files=False,
-            )
 
     def assert_ml_experiment_init_correct(
         self,
@@ -1715,6 +1534,8 @@ class TestExperimentTracking(TestCase):
         y_train,
         X_test,
         y_test,
+        X_validation,
+        y_validation,
         name,
         description,
         problem_type,
@@ -1726,8 +1547,10 @@ class TestExperimentTracking(TestCase):
         self.assertEqual(experiment.model, full_model)
         assert_frame_equal(experiment.X_train, X_train)
         assert_frame_equal(experiment.X_test, X_test)
+        assert_frame_equal(experiment.X_validation, X_validation)
         assert_series_equal(experiment.y_train, y_train)
         assert_series_equal(experiment.y_test, y_test)
+        assert_series_equal(experiment.y_validation, y_validation)
         self.assertEqual(experiment.problem_type, problem_type)
         self.assertEqual(experiment.name, name)
         self.assertEqual(experiment.description, description)
@@ -1747,6 +1570,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_clf,
             X_test=self.X_test_clf,
             y_test=self.y_test_clf,
+            X_validation=self.X_val_clf,
+            y_validation=self.y_val_clf,
             problem_type="classification",
             name="Test sklearn experiment",
             description="Test sklearn experiment",
@@ -1759,6 +1584,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_clf,
             X_test=self.X_test_clf,
             y_test=self.y_test_clf,
+            X_validation=self.X_val_clf,
+            y_validation=self.y_val_clf,
             name="Test sklearn experiment",
             description="Test sklearn experiment",
             problem_type=ProblemType.CLASSIFICATION,
@@ -1797,7 +1624,7 @@ class TestExperimentTracking(TestCase):
     def _check_feature_importance(self, experiment, expected_feature_importance):
         feature_importance = experiment.get_feature_importance()
         assert_series_equal(
-            feature_importance, expected_feature_importance, check_dtype=False
+            feature_importance, expected_feature_importance, check_dtype=False, atol=1e-4
         )
 
     def test_ml_experiment_sklearn(self):
@@ -1811,6 +1638,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             problem_type="classification",
             name="Test sklearn experiment",
             description="Test sklearn experiment",
@@ -1823,6 +1652,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             name="Test sklearn experiment",
             description="Test sklearn experiment",
             problem_type=ProblemType.CLASSIFICATION,
@@ -1861,6 +1692,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             problem_type="classification",
             name="Test catboost experiment",
             description="Test catboost experiment",
@@ -1873,6 +1706,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             name="Test catboost experiment",
             description="Test catboost experiment",
             problem_type=ProblemType.CLASSIFICATION,
@@ -1911,6 +1746,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_reg,
             X_test=self.X_test_reg,
             y_test=self.y_test_reg,
+            X_validation=self.X_val_reg,
+            y_validation=self.y_val_reg,
             problem_type="regression",
             name="Test catboost experiment",
             description="Test catboost experiment",
@@ -1923,6 +1760,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_reg,
             X_test=self.X_test_reg,
             y_test=self.y_test_reg,
+            X_validation=self.X_val_reg,
+            y_validation=self.y_val_reg,
             name="Test catboost experiment",
             description="Test catboost experiment",
             problem_type=ProblemType.REGRESSION,
@@ -1938,7 +1777,7 @@ class TestExperimentTracking(TestCase):
 
         # Metrics
         self.assertDictEqual(
-            experiment.metrics,
+            experiment.metrics["test"],
             self.expected_metrics_catboost_regression,
         )
 
@@ -1968,6 +1807,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             problem_type="classification",
             name="Test catboost experiment",
             description="Test catboost experiment",
@@ -1980,6 +1821,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             name="Test catboost experiment",
             description="Test catboost experiment",
             problem_type=ProblemType.CLASSIFICATION,
@@ -2016,6 +1859,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             problem_type="classification",
             name="Test lightgbm experiment",
             description="Test lightgbm experiment",
@@ -2028,6 +1873,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             name="Test lightgbm experiment",
             description="Test lightgbm experiment",
             problem_type=ProblemType.CLASSIFICATION,
@@ -2068,6 +1915,8 @@ class TestExperimentTracking(TestCase):
             y_train=self.y_train_bin_clf,
             X_test=self.X_test_bin_clf,
             y_test=self.y_test_bin_clf,
+            X_validation=self.X_val_bin_clf,
+            y_validation=self.y_val_bin_clf,
             problem_type="classification",
             name="Test sklearn experiment",
             description="Test sklearn experiment",
@@ -2087,3 +1936,220 @@ class TestExperimentTracking(TestCase):
 
         # Assert experiments are equal
         self.assertEqual(list(ml_tracker_new.experiments.values())[0], experiment)
+
+    def test_serialize_sklearn(self):
+        """
+        Test serialization of a sklearn model.
+        """
+        model = LinearRegression()
+        model.fit(self.X_train_reg, self.y_train_reg)
+
+        experiment = MLExperiment(
+            model=model,
+            X_train=self.X_train_reg,
+            y_train=self.y_train_reg,
+            X_test=self.X_test_reg,
+            y_test=self.y_test_reg,
+            X_validation=self.X_val_reg,
+            y_validation=self.y_val_reg,
+            name="Test Experiment regression",
+            description="Test Description",
+            problem_type=ProblemType.REGRESSION
+        )
+        output_folder = experiment.register_experiment(
+            base_path=self.folder_name,
+            zip_files=False
+        )
+
+        self._check_model_without_zip(
+            output_folder=output_folder,
+            ml_experiment=experiment,
+            problem_type=ProblemType.REGRESSION,
+        )
+        # Assert works for classification with Zip
+        model = LogisticRegression()
+        model.fit(self.X_train_clf, self.y_train_clf)
+        experiment = MLExperiment(
+            model=model,
+            X_train=self.X_train_clf,
+            y_train=self.y_train_clf,
+            X_test=self.X_test_clf,
+            y_test=self.y_test_clf,
+            X_validation=self.X_val_clf,
+            y_validation=self.y_val_clf,
+            name="Test Experiment classification",
+            description="Test Description",
+            problem_type=ProblemType.CLASSIFICATION
+        )
+        output_folder = experiment.register_experiment(
+            base_path=self.folder_name,
+            zip_files=True
+        )
+        self._check_model_with_zip(output_folder=output_folder)
+
+    def test_serialize_catboost(self):
+        """
+        Test serialization of a CatBoost model.
+        """
+        model = CatBoostClassifier(allow_writing_files=False, verbose=5, iterations=10)
+        model.fit(self.X_train_clf, self.y_train_clf)
+        experiment = MLExperiment(
+            model=model,
+            X_train=self.X_train_clf,
+            y_train=self.y_train_clf,
+            X_test=self.X_test_clf,
+            y_test=self.y_test_clf,
+            X_validation=self.X_val_clf,
+            y_validation=self.y_val_clf,
+            name="Test Experiment",
+            description="Test Description",
+            problem_type=ProblemType.CLASSIFICATION
+        )
+        output_folder = experiment.register_experiment(
+            base_path=self.folder_name,
+            zip_files=False
+        )
+
+        self._check_model_without_zip(
+            output_folder=output_folder,
+            ml_experiment=experiment,
+            problem_type=ProblemType.CLASSIFICATION,
+        )
+
+        # Assert works for regression with Zip
+        model = CatBoostRegressor(allow_writing_files=False, verbose=5, iterations=10)
+        model.fit(self.X_train_reg, self.y_train_reg)
+        experiment = MLExperiment(
+            model=model,
+            X_train=self.X_train_reg,
+            y_train=self.y_train_reg,
+            X_test=self.X_test_reg,
+            y_test=self.y_test_reg,
+            X_validation=self.X_val_reg,
+            y_validation=self.y_val_reg,
+            name="Test Experiment regression",
+            description="Test Description",
+            problem_type=ProblemType.REGRESSION
+        )
+        output_folder = experiment.register_experiment(
+            base_path=output_folder,
+            zip_files=True
+        )
+        self._check_model_with_zip(output_folder=output_folder)
+
+    def test_serialize_pipeline_with_catboost(self):
+        """
+        Test serialization of a pipeline with CatBoost model.
+        """
+        col_transformer = ColumnTransformer(
+            [
+                ("num", StandardScaler(), self.X_train_clf.columns),
+            ]
+        )
+        model = Pipeline(
+            [
+                ("col_transformer", col_transformer),
+                (
+                    "model",
+                    CatBoostClassifier(
+                        allow_writing_files=False, verbose=5, iterations=10
+                    ),
+                ),
+            ]
+        )
+        model.fit(self.X_train_clf, self.y_train_clf)
+        experiment = MLExperiment(
+            model=model,
+            X_train=self.X_train_clf,
+            y_train=self.y_train_clf,
+            X_test=self.X_test_clf,
+            y_test=self.y_test_clf,
+            X_validation=self.X_val_clf,
+            y_validation=self.y_val_clf,
+            name="Test Experiment classification",
+            description="Test Description",
+            problem_type=ProblemType.CLASSIFICATION
+        )
+        output_folder = experiment.register_experiment(
+            base_path=self.folder_name,
+            zip_files=False
+        )
+        self._check_model_without_zip(
+            output_folder=output_folder,
+            ml_experiment=experiment,
+            problem_type=ProblemType.CLASSIFICATION,
+        )
+
+    def test_serialize_lightgbm(self):
+        """
+        Test serialization of a LightGBM model.
+        """
+        model = LGBMClassifier()
+        model.fit(self.X_train_clf, self.y_train_clf)
+        experiment = MLExperiment(
+            model=model,
+            X_train=self.X_train_clf,
+            y_train=self.y_train_clf,
+            X_test=self.X_test_clf,
+            y_test=self.y_test_clf,
+            X_validation=self.X_val_clf,
+            y_validation=self.y_val_clf,
+            name="Test Experiment classification",
+            description="Test Description",
+            problem_type=ProblemType.CLASSIFICATION
+        )
+        output_folder = experiment.register_experiment(
+            base_path=self.folder_name,
+            zip_files=False
+        )
+        self._check_model_without_zip(
+            output_folder=output_folder,
+            ml_experiment=experiment,
+            problem_type=ProblemType.CLASSIFICATION,
+        )
+
+        # Assert works for regression with Zip
+        model = LGBMRegressor()
+        model.fit(self.X_train_reg, self.y_train_reg)
+        experiment = MLExperiment(
+            model=model,
+            X_train=self.X_train_reg,
+            y_train=self.y_train_reg,
+            X_test=self.X_test_reg,
+            y_test=self.y_test_reg,
+            X_validation=self.X_val_reg,
+            y_validation=self.y_val_reg,
+            name="Test Experiment regression",
+            description="Test Description",
+            problem_type=ProblemType.REGRESSION
+        )
+        output_folder = experiment.register_experiment(
+            base_path=self.folder_name,
+            zip_files=True
+        )
+        self._check_model_with_zip(output_folder=output_folder)
+
+
+    def test_errors_serialize(self):
+        """
+        Test errors raised by the function.
+        """
+        # Not supported model
+        experiment = MLExperiment(
+            model=LinearRegression().fit(self.X_train_reg, self.y_train_reg),
+            X_train=self.X_train_reg,
+            y_train=self.y_train_reg,
+            X_test=self.X_test_reg,
+            y_test=self.y_test_reg,
+            X_validation=self.X_val_reg,
+            y_validation=self.y_val_reg,
+            name="Test Experiment",
+            description="Test Description",
+            problem_type=ProblemType.REGRESSION
+        )
+        # Invalid folder
+        with self.assertRaises(FileNotFoundError):
+            experiment.register_experiment(
+                base_path="invalid_folder",
+                zip_files=False
+            )

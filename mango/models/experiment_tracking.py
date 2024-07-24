@@ -8,15 +8,13 @@ from typing import Any, Optional, Union, Tuple
 
 import pandas as pd
 from matplotlib import pyplot as plt
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from .enums import ProblemType, ModelLibrary
 from .metrics import (
     generate_metrics_regression,
     generate_metrics_classification,
 )
-from mango.config import BaseConfig
-
-from pandas.testing import assert_frame_equal, assert_series_equal
 
 
 class _DummyPipeline:
@@ -31,6 +29,35 @@ class _DummyLogisticRegression:
     pass
 
 
+_SUPPORTED_LIBRARIES_CLASSES = {}
+try:
+    from sklearn.base import BaseEstimator
+    from sklearn.pipeline import Pipeline
+    from sklearn.linear_model import LogisticRegression, LinearRegression
+
+    _PIPELINE_CLASS = Pipeline
+    _SKLEARN_LINEAR_REGRESSION_CLASS = LinearRegression
+    _SKLEARN_LOGISTIC_REGRESSION_CLASS = LogisticRegression
+
+    _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
+except ImportError:
+    _PIPELINE_CLASS = _DummyPipeline
+    _SKLEARN_LINEAR_REGRESSION_CLASS = _DummyLinearRegression
+    _SKLEARN_LOGISTIC_REGRESSION_CLASS = _DummyLogisticRegression
+try:
+    from catboost import CatBoost
+
+    _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.CATBOOST] = CatBoost
+except ImportError:
+    pass
+try:
+    from lightgbm import LGBMModel
+
+    _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.LIGHTGBM] = LGBMModel
+except ImportError:
+    pass
+
+
 def _json_serializable(value: Any) -> bool:
     try:
         json.dumps(value)
@@ -39,333 +66,16 @@ def _json_serializable(value: Any) -> bool:
         return False
 
 
-def _clean_hyperparameters(hyperparameters: dict) -> dict:
+def _clean_json(hyperparameters: Union[dict, Any]) -> dict:
+    final_hyperparameters = {}
     for key, value in hyperparameters.items():
         if isinstance(value, dict):
-            _clean_hyperparameters(value)
+            final_hyperparameters[key] = _clean_json(value)
         elif not _json_serializable(value):
-            hyperparameters[key] = str(value)
-    return hyperparameters
-
-
-def export_model(
-    model: Any,
-    X_train: pd.DataFrame,
-    y_train: pd.Series,
-    X_test: pd.DataFrame,
-    y_test: pd.Series,
-    X_validation: pd.DataFrame,
-    y_validation: pd.Series,
-    base_path: str,
-    custom_metrics: dict = None,
-    description: str = None,
-    base_folder_name: str = None,
-    save_model: bool = True,
-    save_datasets: bool = False,
-    zip_files: bool = True,
-) -> str:
-    """
-    Register model and metrics in a json file and save the model and datasets in a folder.
-
-    :param model: A model from one of the supported libraries.
-    :type model: :class:`Any`
-    :param X_train: Training data as a pandas dataframe.
-    :type X_train: :class:`pandas.DataFrame`
-    :param y_train: Training target as a pandas series.
-    :type y_train: :class:`pandas.Series`
-    :param X_test: Test data as a pandas dataframe.
-    :type X_test: :class:`pandas.DataFrame`
-    :param y_test: Test target as a pandas series.
-    :type y_test: :class:`pandas.Series`
-    :param X_validation: Validation data as a pandas dataframe.
-    :type X_validation: :class:`pandas.DataFrame`
-    :param y_validation: Validation target as a pandas series.
-    :type y_validation: :class:`pandas.Series`
-    :param description: Description of the experiment.
-    :type description: :class:`str`
-    :param base_path: Path to the base folder where the model and datasets will be saved in a subfolder structure.
-    :type base_path: :class:`str`
-    :param base_folder_name: Custom name for the folder where the model and datasets will be saved.
-    :type base_folder_name: :class:`str`
-    :param zip_files: Whether to zip the files or not.
-    :type zip_files: :class:`bool`
-    :param save_datasets: Whether to save the datasets or not.
-    :type save_datasets: :class:`bool`
-    :param save_model: Whether to save the model or not.
-    :type save_model: :class:`bool`
-    :return: The path to the subfolder inside base_path where the model and datasets have been saved.
-    :rtype: :class:`str`
-
-    Usage
-    -----
-    >>> from sklearn.datasets import fetch_california_housing
-    >>> from sklearn.linear_model import LogisticRegression
-    >>> from sklearn.model_selection import train_test_split
-    >>> X, y = fetch_california_housing(return_X_y=True, as_frame=True)
-    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
-    >>> model = LogisticRegression()
-    >>> model.fit(X_train, y_train)
-    >>> output_folder = export_model(model, X_train, y_train, X_test, y_test, "/my_experiments_folder")
-    >>> print(output_folder) # /my_experiments_folder/experiment_LogisticRegression_YYYYMMDD-HHMMSS
-    """
-    _SUPPORTED_LIBRARIES_CLASSES = {}
-    try:
-        from sklearn.base import BaseEstimator
-        from sklearn.pipeline import Pipeline
-
-        pipeline_class = Pipeline
-
-        _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
-    except ImportError:
-        pipeline_class = _DummyPipeline
-    try:
-        from catboost import CatBoost
-
-        _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.CATBOOST] = CatBoost
-    except ImportError:
-        pass
-    try:
-        from lightgbm import LGBMModel
-
-        _SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.LIGHTGBM] = LGBMModel
-    except ImportError:
-        pass
-
-    if not os.path.exists(base_path):
-        raise FileNotFoundError(f"Folder {base_path} does not exist.")
-
-    model_name = model.__class__.__name__
-
-    if isinstance(model, pipeline_class):
-        pipeline = model
-        col_transformer = model[0]
-        model = model[-1]
-    else:
-        pipeline = None
-        col_transformer = None
-    model_library = None
-    for library, class_name in _SUPPORTED_LIBRARIES_CLASSES.items():
-        if isinstance(model, class_name):
-            model_library = library
-    if model_library is None:
-        raise ValueError(f"Model {model_name} is not supported.")
-
-    # Detect if it is a classification or regression model
-    if hasattr(model, "predict_proba"):
-        problem_type = ProblemType.CLASSIFICATION
-    else:
-        problem_type = ProblemType.REGRESSION
-    summary = {}
-    extra_params = []
-    # Fill structure
-    summary["description"] = description
-    summary["name"] = base_folder_name or model_name
-    summary["training_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    summary["model"] = {}
-    summary["model"]["name"] = model_name
-    summary["model"]["problem_type"] = problem_type.value
-    summary["model"]["target"] = y_train.name
-    summary["model"]["library"] = model_library.value
-    if model_library == ModelLibrary.CATBOOST:
-        if pipeline is not None:
-            summary["model"]["input"] = list(col_transformer.feature_names_in_)
-            summary["model"]["hyperparameters"] = pipeline.get_params(deep=True)
+            final_hyperparameters[key] = str(value)
         else:
-            summary["model"]["hyperparameters"] = model.get_all_params()
-            summary["model"]["input"] = list(model.feature_names_)
-
-    elif model_library == ModelLibrary.SCIKIT_LEARN:
-        if pipeline is not None:
-            summary["model"]["input"] = list(col_transformer.feature_names_in_)
-            summary["model"]["hyperparameters"] = pipeline.get_params(deep=True)
-        else:
-            summary["model"]["input"] = list(model.feature_names_in_)
-            summary["model"]["hyperparameters"] = model.get_params(deep=True)
-    elif model_library == ModelLibrary.LIGHTGBM:
-        if pipeline is not None:
-            summary["model"]["input"] = list(col_transformer.feature_names_in_)
-            summary["model"]["hyperparameters"] = pipeline.get_params(deep=True)
-        else:
-            summary["model"]["input"] = list(model.feature_name_)
-            summary["model"]["hyperparameters"] = model.get_params(deep=True)
-
-    # Clean hyperparameters for the sklearn pipeline or other non-serializable objects
-    _clean_hyperparameters(summary["model"]["hyperparameters"])
-
-    # Sort keys in summary["model"]
-    if problem_type == ProblemType.CLASSIFICATION:
-        summary["model"]["num_classes"] = len(y_train.unique())
-        # Sort keys in summary["model"] to be: name, problem_type, num_classes, input, target, hyperparameters, library
-        summary["model"] = {
-            k: summary["model"][k]
-            for k in [
-                "name",
-                "problem_type",
-                "num_classes",
-                "input",
-                "target",
-                "hyperparameters",
-                "library",
-            ]
-        }
-    else:
-        # Sort keys in summary["model"] to be: name, problem_type, input, target, hyperparameters, library
-        summary["model"] = {
-            k: summary["model"][k]
-            for k in [
-                "name",
-                "problem_type",
-                "input",
-                "target",
-                "hyperparameters",
-                "library",
-            ]
-        }
-
-    # Restore pipeline to model variable
-    if pipeline:
-        model = pipeline
-
-    # Generate metrics
-    if model_library == ModelLibrary.CATBOOST:
-        y_train_pred = pd.Series(model.predict(X_train).reshape(-1)).reset_index(
-            drop=True
-        )
-        y_test_pred = pd.Series(model.predict(X_test).reshape(-1)).reset_index(
-            drop=True
-        )
-        y_validation_pred = pd.Series(
-            model.predict(X_validation).reshape(-1)
-        ).reset_index(drop=True)
-    elif model_library in [ModelLibrary.SCIKIT_LEARN, ModelLibrary.LIGHTGBM]:
-        y_train_pred = pd.Series(model.predict(X_train)).reset_index(drop=True)
-        y_test_pred = pd.Series(model.predict(X_test)).reset_index(drop=True)
-        y_validation_pred = pd.Series(model.predict(X_validation)).reset_index(
-            drop=True
-        )
-
-    if problem_type == ProblemType.CLASSIFICATION:
-        if not custom_metrics:
-            summary["results"] = {
-                "train_score": generate_metrics_classification(
-                    y_train.reset_index(drop=True), y_train_pred
-                ),
-                "test_score": generate_metrics_classification(
-                    y_test.reset_index(drop=True), y_test_pred
-                ),
-                "validation_score": generate_metrics_classification(
-                    y_validation.reset_index(drop=True), y_validation_pred
-                ),
-            }
-        else:
-            summary["results"] = custom_metrics
-    elif problem_type == ProblemType.REGRESSION:
-        summary["results"] = {
-            "train_score": generate_metrics_regression(
-                y_train.reset_index(drop=True), y_train_pred
-            ),
-            "test_score": generate_metrics_regression(
-                y_test.reset_index(drop=True), y_test_pred
-            ),
-            "validation_score": generate_metrics_regression(
-                y_validation.reset_index(drop=True), y_validation_pred
-            ),
-        }
-
-    # Prepare environment to save files
-    folder_name_default = (
-        f"{datetime.now().strftime('%Y%m%d-%H%M%S')}_experiment_{model_name}"
-    )
-    folder_name = base_folder_name or folder_name_default
-    folder_name = os.path.join(
-        base_path, f"{datetime.now().strftime('%Y%m%d-%H%M%S')}_{folder_name}"
-    )
-
-    # Compress model and save
-    if save_model:
-        os.makedirs(os.path.join(folder_name, "model"))
-        if not "files" in summary:
-            summary["files"] = {}
-        if not "model" in summary["files"]:
-            summary["files"]["model"] = {}
-        # Save hyperparameters
-        hyperparameters_path = os.path.join(
-            folder_name, "model", "hyperparameters.json"
-        )
-        summary["files"]["model"]["hyperparameters.json"] = os.path.abspath(
-            hyperparameters_path
-        )
-        with open(hyperparameters_path, "w") as f:
-            json.dump(summary["model"]["hyperparameters"], f, indent=4)
-        # Save the model
-        model_path = os.path.join(folder_name, "model", "model.pkl")
-        summary["files"]["model"]["model.pkl"] = os.path.abspath(model_path)
-        with open(model_path, "wb") as f:
-            pickle.dump(model, f)
-        if zip_files:
-            zip_path = os.path.join(folder_name, "model.zip")
-            summary["files"]["model"]["zip"] = os.path.abspath(zip_path)
-            shutil.make_archive(
-                zip_path.rstrip(".zip"), "zip", os.path.join(folder_name, "model")
-            )
-            shutil.rmtree(os.path.join(folder_name, "model"))
-
-    if save_datasets:
-        os.makedirs(os.path.join(folder_name, "datasets"))
-        if not "files" in summary:
-            summary["files"] = {}
-        if not "datasets" in summary["files"]:
-            summary["files"]["datasets"] = {}
-        X_train_path = os.path.join(folder_name, "datasets", "X_train.csv")
-        summary["files"]["datasets"]["X_train"] = {}
-        summary["files"]["datasets"]["X_train"]["path"] = os.path.abspath(X_train_path)
-        summary["files"]["datasets"]["X_train"]["shape"] = X_train.shape
-        X_train.to_csv(X_train_path, index=False)
-        y_train_path = os.path.join(folder_name, "datasets", "y_train.csv")
-        summary["files"]["datasets"]["y_train"] = {}
-        summary["files"]["datasets"]["y_train"]["path"] = os.path.abspath(y_train_path)
-        summary["files"]["datasets"]["y_train"]["shape"] = y_train.shape
-        y_train.to_csv(y_train_path, index=False)
-        X_test_path = os.path.join(folder_name, "datasets", "X_test.csv")
-        summary["files"]["datasets"]["X_test"] = {}
-        summary["files"]["datasets"]["X_test"]["path"] = os.path.abspath(X_test_path)
-        summary["files"]["datasets"]["X_test"]["shape"] = X_test.shape
-        X_test.to_csv(X_test_path, index=False)
-        y_test_path = os.path.join(folder_name, "datasets", "y_test.csv")
-        summary["files"]["datasets"]["y_test"] = {}
-        summary["files"]["datasets"]["y_test"]["path"] = os.path.abspath(y_test_path)
-        summary["files"]["datasets"]["y_test"]["shape"] = y_test.shape
-        y_test.to_csv(y_test_path, index=False)
-        X_validation_path = os.path.join(folder_name, "datasets", "X_validation.csv")
-        summary["files"]["datasets"]["X_validation"] = {}
-        summary["files"]["datasets"]["X_validation"]["path"] = os.path.abspath(
-            X_validation_path
-        )
-        summary["files"]["datasets"]["X_validation"]["shape"] = X_validation.shape
-        X_validation.to_csv(X_validation_path, index=False)
-        y_validation_path = os.path.join(folder_name, "datasets", "y_validation.csv")
-        summary["files"]["datasets"]["y_validation"] = {}
-        summary["files"]["datasets"]["y_validation"]["path"] = os.path.abspath(
-            y_validation_path
-        )
-        summary["files"]["datasets"]["y_validation"]["shape"] = y_validation.shape
-        y_validation.to_csv(y_validation_path, index=False)
-        if zip_files:
-            # Compress data and save
-            zip_path = os.path.join(folder_name, "datasets.zip")
-            summary["files"]["datasets"]["zip"] = {}
-            summary["files"]["datasets"]["zip"]["path"] = os.path.abspath(zip_path)
-            shutil.make_archive(
-                zip_path.rstrip(".zip"), "zip", os.path.join(folder_name, "datasets")
-            )
-            shutil.rmtree(os.path.join(folder_name, "datasets"))
-
-    # Save json
-    json_path = os.path.join(folder_name, "summary.json")
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(summary, f, indent=4, ensure_ascii=False)
-
-    return folder_name
+            final_hyperparameters[key] = value
+    return final_hyperparameters
 
 
 class MLExperiment:
@@ -417,14 +127,12 @@ class MLExperiment:
 
     def __init__(
         self,
-        *,
-        config: BaseConfig = None,
-        X_train: Optional[pd.DataFrame] = None,
-        y_train: Optional[pd.Series] = None,
-        X_test: Optional[pd.DataFrame] = None,
-        y_test: Optional[pd.Series] = None,
-        X_validation: Optional[pd.DataFrame] = None,
-        y_validation: Optional[pd.Series] = None,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
+        X_test: pd.DataFrame,
+        y_test: pd.Series,
+        X_validation: pd.DataFrame,
+        y_validation: pd.Series,
         model: Any = None,
         problem_type: Union[str, ProblemType] = None,
         name: str = None,
@@ -433,16 +141,16 @@ class MLExperiment:
         """
         Initializes an instance of the MLExperiment class.
 
-        :param config: Configuration for the experiment. Not implemented yet.
-        :type config: :class:`BaseConfig`, optional
         :param X_train: Training data.
-        :type X_train: :class:`pd.DataFrame`, optional
+        :type X_train: :class:`pd.DataFrame`
         :param y_train: Training target.
-        :type y_train: :class:`pd.Series`, optional
+        :type y_train: :class:`pd.Series`
         :param X_test: Test data.
-        :type X_test: :class:`pd.DataFrame`, optional
+        :type X_test: :class:`pd.DataFrame`
         :param y_test: Test target.
-        :type y_test: :class:`pd.Series`, optional
+        :type y_test: :class:`pd.Series`
+        :param X_validation: Validation data.
+        :type X_validation: :class:`pd.DataFrame`
         :param model: A model from one of the supported libraries.
         :type model: Any, optional
         :param problem_type: Type of the problem (classification or regression).
@@ -451,20 +159,13 @@ class MLExperiment:
         :type name: str, optional
         :param description: Description of the experiment.
         :type description: str, optional
-
-        :raises NotImplementedError: If the config parameter is provided, as it's not implemented yet.
         """
-        # For this version not implement config setup of the experiment
-        if config:
-            raise NotImplementedError("Config usage is not implemented yet.")
-
-        # Search for supported libraries
-        self._search_for_supported_libraries()
 
         # Public properties (Not defined in the if config block)
         self.name = name
         self.description = description
         self.problem_type = problem_type
+        self.base_model_name = model.__class__.__name__
         self.model = model
         self.base_model = None
         self.num_classes = None
@@ -496,11 +197,11 @@ class MLExperiment:
         self._precision_list = None
         self._recall_list = None
         self._config = None
-        self._is_pipeline = isinstance(self.model, self._pipeline_class)
-        self._model_input_cols = self._get_model_input_cols()
+        self._is_pipeline = isinstance(self.model, _PIPELINE_CLASS)
+        self._set_base_model_and_library()
 
         # Final Setup
-        self._set_base_model_and_library()
+        self._model_input_cols = self.get_model_input_cols()
         self._set_datasets_dtypes()
         self._init_metrics()
 
@@ -510,6 +211,8 @@ class MLExperiment:
         assert_series_equal(self.y_train, other.y_train, check_dtype=False)
         assert_frame_equal(self.X_test, other.X_test, check_dtype=False)
         assert_series_equal(self.y_test, other.y_test, check_dtype=False)
+        assert_frame_equal(self.X_validation, other.X_validation, check_dtype=False)
+        assert_series_equal(self.y_validation, other.y_validation, check_dtype=False)
         return (
             self.name == other.name
             and self.description == other.description
@@ -619,9 +322,9 @@ class MLExperiment:
             if value.shape[1] == 1:
                 value = value.iloc[:, 0]
             else:
-                raise ValueError("y_train must be a pandas Series.")
+                raise ValueError("y_test must be a pandas Series.")
         if not isinstance(value, pd.Series):
-            raise ValueError("y_train must be a pandas Series.")
+            raise ValueError("y_test must be a pandas Series.")
         self._y_test = value
 
     @property
@@ -634,7 +337,7 @@ class MLExperiment:
     @X_validation.setter
     def X_validation(self, value):
         if value is None:
-            raise ValueError("X_test cannot be None.")
+            raise ValueError("X_validation cannot be None.")
         self._X_validation = value
 
     @property
@@ -647,14 +350,14 @@ class MLExperiment:
     @y_validation.setter
     def y_validation(self, value):
         if value is None:
-            raise ValueError("y_test cannot be None.")
+            raise ValueError("y_validation cannot be None.")
         if isinstance(value, pd.DataFrame):
             if value.shape[1] == 1:
                 value = value.iloc[:, 0]
             else:
-                raise ValueError("y_train must be a pandas Series.")
+                raise ValueError("y_validation must be a pandas Series.")
         if not isinstance(value, pd.Series):
-            raise ValueError("y_train must be a pandas Series.")
+            raise ValueError("y_validation must be a pandas Series.")
         self._y_validation = value
 
     @property
@@ -731,37 +434,6 @@ class MLExperiment:
         self._imbalance = value
 
     # Utility methods
-    def _search_for_supported_libraries(self):
-        """
-        Search if libraries are installed and lazy import them.
-        """
-        self._SUPPORTED_LIBRARIES_CLASSES = {}
-        try:
-            from sklearn.base import BaseEstimator
-            from sklearn.pipeline import Pipeline
-            from sklearn.linear_model import LogisticRegression, LinearRegression
-
-            self._pipeline_class = Pipeline
-            self._sklearn_linear_regression_class = LinearRegression
-            self._sklearn_logistic_regression_class = LogisticRegression
-
-            self._SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.SCIKIT_LEARN] = BaseEstimator
-        except ImportError:
-            self._pipeline_class = _DummyPipeline
-            self._sklearn_linear_regression_class = _DummyLinearRegression
-            self._sklearn_logistic_regression_class = _DummyLogisticRegression
-        try:
-            from catboost import CatBoost
-
-            self._SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.CATBOOST] = CatBoost
-        except ImportError:
-            pass
-        try:
-            from lightgbm import LGBMModel
-
-            self._SUPPORTED_LIBRARIES_CLASSES[ModelLibrary.LIGHTGBM] = LGBMModel
-        except ImportError:
-            pass
 
     def _set_datasets_dtypes(self):
         """
@@ -810,11 +482,9 @@ class MLExperiment:
                 )
         else:
             self.metrics = {}
-            y_pred_train = self.model.predict(self.X_train[self._model_input_cols])
-            y_pred_test = self.model.predict(self.X_test[self._model_input_cols])
-            y_pred_validation = self.model.predict(
-                self.X_validation[self._model_input_cols]
-            )
+            y_pred_train = self.predict(self.X_train[self._model_input_cols])
+            y_pred_test = self.predict(self.X_test[self._model_input_cols])
+            y_pred_validation = self.predict(self.X_validation[self._model_input_cols])
             self.metrics["train_score"] = generate_metrics_classification(
                 self.y_train, y_pred_train
             )
@@ -938,7 +608,7 @@ class MLExperiment:
 
         # Get the library
         matching_libraries = []
-        for library, class_name in self._SUPPORTED_LIBRARIES_CLASSES.items():
+        for library, class_name in _SUPPORTED_LIBRARIES_CLASSES.items():
             if isinstance(model, class_name):
                 matching_libraries.append(library)
             # Some models inherit from sklearn hence if len(matching_libraries) > 1 and sklearn is one of them pop it
@@ -1039,17 +709,17 @@ class MLExperiment:
         if self.problem_type == ProblemType.REGRESSION:
             # Metrics for the training set (optional, depending on your needs)
             train_metrics = generate_metrics_regression(
-                self.y_train, self.model.predict(self.X_train[self._model_input_cols])
+                self.y_train, self.predict(self.X_train[self._model_input_cols])
             )
             # Metrics for the test set
             test_metrics = generate_metrics_regression(
-                self.y_test, self.model.predict(self.X_test[self._model_input_cols])
+                self.y_test, self.predict(self.X_test[self._model_input_cols])
             )
 
             # Metrics for the validation set
             validation_metrics = generate_metrics_regression(
                 self.y_validation,
-                self.model.predict(self.X_validation[self._model_input_cols]),
+                self.predict(self.X_validation[self._model_input_cols]),
             )
 
             # Store metrics in a dictionary
@@ -1076,8 +746,8 @@ class MLExperiment:
         is_linear_model = isinstance(
             self.base_model,
             (
-                self._sklearn_linear_regression_class,
-                self._sklearn_logistic_regression_class,
+                _SKLEARN_LINEAR_REGRESSION_CLASS,
+                _SKLEARN_LOGISTIC_REGRESSION_CLASS,
             ),
         )
 
@@ -1284,16 +954,9 @@ class MLExperiment:
                 **custom_metrics,
             }
         return export_model(
-            self.model,
-            self.X_train,
-            self.y_train,
-            self.X_test,
-            self.y_test,
-            self.X_validation,
-            self.y_validation,
-            description=self.description,
-            custom_metrics=custom_metrics,
+            self,
             base_path=base_path,
+            custom_metrics=custom_metrics,
             base_folder_name=self.name,
             save_model=True,
             save_datasets=True,
@@ -1390,13 +1053,9 @@ class MLExperiment:
         if self.problem_type == ProblemType.CLASSIFICATION:
             if threshold is not None:
                 return self.model.predict_proba(X)[:, 1] >= threshold
-            else:
-                return (
-                    self.model.predict(X)[:, 1] >= self.best_threshold_pr_curve
-                    if self.imbalance
-                    else self.best_threshold_roc_curve
-                )
-        return self.model.predict(X)
+        preds = self.model.predict(X)
+        # Flatten the array
+        return preds.flatten()
 
     def predict_proba(self, X):
         if self.problem_type == ProblemType.REGRESSION:
@@ -1412,12 +1071,30 @@ class MLExperiment:
         # Select only the columns that were used in the training
         return X[self._model_input_cols]
 
-    def _get_model_input_cols(self):
+    def get_model_input_cols(self):
         if self._is_pipeline:
             # Assume first step is the column transformer and get feature names in
             return self.model[0].feature_names_in_
-        else:
+
+        # For each library, get the feature names
+        if self.base_model_library == ModelLibrary.SCIKIT_LEARN:
             return self.model.feature_names_in_
+        elif self.base_model_library == ModelLibrary.CATBOOST:
+            return self.model.feature_names_
+        elif self.base_model_library == ModelLibrary.LIGHTGBM:
+            return self.model.feature_name_
+
+    def get_model_hyperparameters(self):
+        if self._is_pipeline:
+            return self.model.get_params()
+
+        if self.base_model_library == ModelLibrary.CATBOOST:
+            return self.model.get_all_params()
+        elif self.base_model_library in [
+            ModelLibrary.SCIKIT_LEARN,
+            ModelLibrary.LIGHTGBM,
+        ]:
+            return self.model.get_params(deep=True)
 
 
 class MLTracker:
@@ -1486,7 +1163,7 @@ class MLTracker:
                     exp = MLExperiment.from_registered_experiment(
                         os.path.join(self.experiment_folder, experiments_folders)
                     )
-                    if not experiments_folders in self._experiments:
+                    if experiments_folders not in self._experiments:
                         self._experiments[experiments_folders] = exp
                     else:
                         logging.warning(
@@ -1744,3 +1421,240 @@ class MLTracker:
             ) as f:
                 json.dump(hyperparameters, f, indent=4, ensure_ascii=False)
         return hyperparameters
+
+
+def export_model(
+    ml_experiment: MLExperiment,
+    base_path: str,
+    custom_metrics: dict = None,
+    base_folder_name: str = None,
+    save_model: bool = True,
+    save_datasets: bool = False,
+    zip_files: bool = True,
+) -> str:
+    """
+    Register model and metrics in a json file and save the model and datasets in a folder.
+
+    :param ml_experiment: An MLExperiment instance.
+    :type ml_experiment: :class:`MLExperiment`
+    :param description: Description of the experiment.
+    :type description: :class:`str`
+    :param base_path: Path to the base folder where the model and datasets will be saved in a subfolder structure.
+    :type base_path: :class:`str`
+    :param base_folder_name: Custom name for the folder where the model and datasets will be saved.
+    :type base_folder_name: :class:`str`
+    :param zip_files: Whether to zip the files or not.
+    :type zip_files: :class:`bool`
+    :param save_datasets: Whether to save the datasets or not.
+    :type save_datasets: :class:`bool`
+    :param save_model: Whether to save the model or not.
+    :type save_model: :class:`bool`
+    :return: The path to the subfolder inside base_path where the model and datasets have been saved.
+    :rtype: :class:`str`
+
+    Usage
+    -----
+    >>> from sklearn.datasets import fetch_california_housing
+    >>> from sklearn.linear_model import LogisticRegression
+    >>> from sklearn.model_selection import train_test_split
+    >>> X, y = fetch_california_housing(return_X_y=True, as_frame=True)
+    >>> X_train, X_test, y_train, y_test = train_test_split(X, y)
+    >>> model = LogisticRegression()
+    >>> ml_experiment.fit(X_train, y_train)
+    >>> output_folder = export_model(model,X_train,y_train,X_test,y_test,"/my_experiments_folder")
+    >>> print(output_folder) # /my_experiments_folder/experiment_LogisticRegression_YYYYMMDD-HHMMSS
+    """
+
+    if not os.path.exists(base_path):
+        raise FileNotFoundError(f"Folder {base_path} does not exist.")
+
+    if base_folder_name is None:
+        base_folder_name = ml_experiment.name
+
+    # Detect if it is a classification or regression model
+    if hasattr(ml_experiment, "predict_proba"):
+        problem_type = ProblemType.CLASSIFICATION
+    else:
+        problem_type = ProblemType.REGRESSION
+    summary = {}
+    # Fill structure
+    summary["description"] = ml_experiment.description
+    summary["name"] = base_folder_name
+    summary["training_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    summary["model"] = {}
+    summary["model"]["name"] = ml_experiment.base_model_name
+    summary["model"]["problem_type"] = problem_type.value
+    summary["model"]["target"] = ml_experiment.y_train.name
+    summary["model"]["library"] = ml_experiment.base_model_library.value
+    summary["model"]["input"] = ml_experiment.get_model_input_cols()
+    summary["model"]["hyperparameters"] = ml_experiment.get_model_hyperparameters()
+
+    # Clean hyperparameters for the sklearn pipeline or other non-serializable objects
+    summary["model"]["hyperparameters"] = _clean_json(summary["model"]["hyperparameters"])
+
+    # Sort keys in summary["model"]
+    if problem_type == ProblemType.CLASSIFICATION:
+        summary["model"]["num_classes"] = ml_experiment.num_classes
+        # Sort keys in summary["model"] to be: name, problem_type, num_classes, input, target, hyperparameters, library
+        summary["model"] = {
+            k: summary["model"][k]
+            for k in [
+                "name",
+                "problem_type",
+                "num_classes",
+                "input",
+                "target",
+                "hyperparameters",
+                "library",
+            ]
+        }
+    else:
+        # Sort keys in summary["model"] to be: name, problem_type, input, target, hyperparameters, library
+        summary["model"] = {
+            k: summary["model"][k]
+            for k in [
+                "name",
+                "problem_type",
+                "input",
+                "target",
+                "hyperparameters",
+                "library",
+            ]
+        }
+
+    # Generate metrics
+    y_train_pred = pd.Series(ml_experiment.predict(ml_experiment.X_train)).reset_index(
+        drop=True
+    )
+    y_test_pred = pd.Series(ml_experiment.predict(ml_experiment.X_test)).reset_index(
+        drop=True
+    )
+    y_validation_pred = pd.Series(
+        ml_experiment.predict(ml_experiment.X_validation)
+    ).reset_index(drop=True)
+
+    if problem_type == ProblemType.CLASSIFICATION:
+        if not custom_metrics:
+            summary["results"] = {
+                "train_score": generate_metrics_classification(
+                    ml_experiment.y_train.reset_index(drop=True), y_train_pred
+                ),
+                "test_score": generate_metrics_classification(
+                    ml_experiment.y_test.reset_index(drop=True), y_test_pred
+                ),
+                "validation_score": generate_metrics_classification(
+                    ml_experiment.y_validation.reset_index(drop=True), y_validation_pred
+                ),
+            }
+        else:
+            summary["results"] = custom_metrics
+    elif problem_type == ProblemType.REGRESSION:
+        summary["results"] = {
+            "train_score": generate_metrics_regression(
+                ml_experiment.y_train.reset_index(drop=True), y_train_pred
+            ),
+            "test_score": generate_metrics_regression(
+                ml_experiment.y_test.reset_index(drop=True), y_test_pred
+            ),
+            "validation_score": generate_metrics_regression(
+                ml_experiment.y_validation.reset_index(drop=True), y_validation_pred
+            ),
+        }
+
+    # Prepare environment to save files
+    folder_name_default = f"{datetime.now().strftime('%Y%m%d-%H%M%S')}_experiment_{ml_experiment.base_model_name}"
+    folder_name = base_folder_name or folder_name_default
+    folder_name = os.path.join(
+        base_path, f"{datetime.now().strftime('%Y%m%d-%H%M%S')}_{folder_name}"
+    )
+
+    # Compress model and save
+    if save_model:
+        os.makedirs(os.path.join(folder_name, "model"))
+        if "files" not in summary:
+            summary["files"] = {}
+        if "model" not in summary["files"]:
+            summary["files"]["model"] = {}
+        # Save hyperparameters
+        hyperparameters_path = os.path.join(
+            folder_name, "model", "hyperparameters.json"
+        )
+        summary["files"]["model"]["hyperparameters.json"] = os.path.abspath(
+            hyperparameters_path
+        )
+        with open(hyperparameters_path, "w") as f:
+            json.dump(summary["model"]["hyperparameters"], f, indent=4)
+        # Save the model
+        model_path = os.path.join(folder_name, "model", "model.pkl")
+        summary["files"]["model"]["model.pkl"] = os.path.abspath(model_path)
+        with open(model_path, "wb") as f:
+            pickle.dump(ml_experiment.model, f)
+        if zip_files:
+            zip_path = os.path.join(folder_name, "model.zip")
+            summary["files"]["model"]["zip"] = os.path.abspath(zip_path)
+            shutil.make_archive(
+                zip_path.rstrip(".zip"), "zip", os.path.join(folder_name, "model")
+            )
+            shutil.rmtree(os.path.join(folder_name, "model"))
+
+    if save_datasets:
+        os.makedirs(os.path.join(folder_name, "datasets"))
+        if "files" not in summary:
+            summary["files"] = {}
+        if "datasets" not in summary["files"]:
+            summary["files"]["datasets"] = {}
+        X_train_path = os.path.join(folder_name, "datasets", "X_train.csv")
+        summary["files"]["datasets"]["X_train"] = {}
+        summary["files"]["datasets"]["X_train"]["path"] = os.path.abspath(X_train_path)
+        summary["files"]["datasets"]["X_train"]["shape"] = ml_experiment.X_train.shape
+        ml_experiment.X_train.to_csv(X_train_path, index=False)
+        y_train_path = os.path.join(folder_name, "datasets", "y_train.csv")
+        summary["files"]["datasets"]["y_train"] = {}
+        summary["files"]["datasets"]["y_train"]["path"] = os.path.abspath(y_train_path)
+        summary["files"]["datasets"]["y_train"]["shape"] = ml_experiment.y_train.shape
+        ml_experiment.y_train.to_csv(y_train_path, index=False)
+        X_test_path = os.path.join(folder_name, "datasets", "X_test.csv")
+        summary["files"]["datasets"]["X_test"] = {}
+        summary["files"]["datasets"]["X_test"]["path"] = os.path.abspath(X_test_path)
+        summary["files"]["datasets"]["X_test"]["shape"] = ml_experiment.X_test.shape
+        ml_experiment.X_test.to_csv(X_test_path, index=False)
+        y_test_path = os.path.join(folder_name, "datasets", "y_test.csv")
+        summary["files"]["datasets"]["y_test"] = {}
+        summary["files"]["datasets"]["y_test"]["path"] = os.path.abspath(y_test_path)
+        summary["files"]["datasets"]["y_test"]["shape"] = ml_experiment.y_test.shape
+        ml_experiment.y_test.to_csv(y_test_path, index=False)
+        X_validation_path = os.path.join(folder_name, "datasets", "X_validation.csv")
+        summary["files"]["datasets"]["X_validation"] = {}
+        summary["files"]["datasets"]["X_validation"]["path"] = os.path.abspath(
+            X_validation_path
+        )
+        summary["files"]["datasets"]["X_validation"][
+            "shape"
+        ] = ml_experiment.X_validation.shape
+        ml_experiment.X_validation.to_csv(X_validation_path, index=False)
+        y_validation_path = os.path.join(folder_name, "datasets", "y_validation.csv")
+        summary["files"]["datasets"]["y_validation"] = {}
+        summary["files"]["datasets"]["y_validation"]["path"] = os.path.abspath(
+            y_validation_path
+        )
+        summary["files"]["datasets"]["y_validation"][
+            "shape"
+        ] = ml_experiment.y_validation.shape
+        ml_experiment.y_validation.to_csv(y_validation_path, index=False)
+        if zip_files:
+            # Compress data and save
+            zip_path = os.path.join(folder_name, "datasets.zip")
+            summary["files"]["datasets"]["zip"] = {}
+            summary["files"]["datasets"]["zip"]["path"] = os.path.abspath(zip_path)
+            shutil.make_archive(
+                zip_path.rstrip(".zip"), "zip", os.path.join(folder_name, "datasets")
+            )
+            shutil.rmtree(os.path.join(folder_name, "datasets"))
+
+    # Save json
+    summary = _clean_json(summary)
+    json_path = os.path.join(folder_name, "summary.json")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=4, ensure_ascii=False)
+
+    return folder_name
