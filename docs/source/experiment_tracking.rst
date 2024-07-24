@@ -9,7 +9,8 @@ We will use the california housing dataset from sklearn as an example.
 
     from sklearn.datasets import fetch_california_housing
     X, y = fetch_california_housing(return_X_y=True, as_frame=True)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, test_size=0.3)
+    X_validation, X_test, y_validation, y_test = train_test_split(X_test, y_test, random_state=0, test_size=0.5)
 
 Now we will create a simple pipeline to train a linear regression model and wrap it in an instance of :class:`MLExperiment<mango.models.experiment_tracking.MLExperiment>`
 
@@ -33,14 +34,16 @@ Now we will create a simple pipeline to train a linear regression model and wrap
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
-        y_test=y_test
+        y_test=y_test,
+        X_validation=X_validation,
+        y_validation=y_validation
     )
 
 Once the model is wrapped several metrics are pre-computed and stored in the experiment object.
 
 .. code-block:: python
 
-    print(experiment.metrics)
+    print(experiment.metrics["test"])
 
     {
         "train_score":{
