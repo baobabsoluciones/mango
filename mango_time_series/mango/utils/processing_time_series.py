@@ -1,15 +1,21 @@
 import logging
 import warnings
+from datetime import datetime
 
 import numpy as np
 from typing import List, Dict
 
+from mango_base.mango.logging import log_time
+
 try:
     import pandas as pd
+    import polars as pl
 except ImportError:
     pd = None
+    pl = None
 
 
+@log_time()
 def create_dense_data(
     df: pd.DataFrame,
     id_cols,
@@ -90,6 +96,188 @@ def create_dense_data(
 
     # merge df_grid with df_w
     df_w = df_grid.merge(df_w, on=id_cols + [time_col], how="left")
+
+    return df_w
+
+
+@log_time()
+def create_dense_data_pl(
+    df: pl.LazyFrame,
+    id_cols,
+    freq: str,
+    min_max_by_id: bool = None,
+    date_init=None,
+    date_end=None,
+    time_col: str = "timeslot",
+) -> pl.LazyFrame:
+    """
+    Create a dense dataframe with a frequency of freq, given range of dates or inherited from the dataframe,
+     using the id_cols as keys.
+    :param df: dataframe to be expanded
+    :param id_cols: list of columns to be used as keys
+    :param freq: frequency of the new dataframe
+    :param min_max_by_id: boolean to indicate if the range of dates is the min and max of the dataframe by id
+    :param date_init: if it has a value, all initial dates will be set to this value
+    :param date_end: if it has a value, all final dates will be set to this value
+    :param time_col: string with name of the column with the time information
+    :return: dataframe with all the dates using the frequency freq
+    """
+
+    df_w = df.collect()
+
+    # Get cols id_cols from df and drop duplicates
+    df_id = df_w.select(id_cols).unique()
+
+    # If min_max_by_id is True, get the min and max of the time_col by id_cols
+    if min_max_by_id:
+        df_min_max = df_w.group_by(id_cols).agg(
+            [
+                pl.col(time_col).min().alias("min_date"),
+                pl.col(time_col).max().alias("max_date"),
+            ]
+        )
+
+        if date_init is not None:
+            df_min_max = df_min_max.with_columns(
+                pl.lit(date_init).str.to_datetime(format="%Y-%m-%d").alias("min_date")
+            )
+
+        if date_end is not None:
+            df_min_max = df_min_max.with_columns(
+                pl.lit(date_end).str.to_datetime(format="%Y-%m-%d").alias("max_date")
+            )
+
+        grid_min_date = df_min_max["min_date"].min()
+        grid_max_date = df_min_max["max_date"].max()
+
+    else:
+        grid_min_date = date_init if date_init is not None else df_w[time_col].min()
+        grid_max_date = date_end if date_end is not None else df_w[time_col].max()
+
+    # if grid_min_date is not a datetime then convert it using datetime.strptime(grid_min_date, '%Y-%M-%D').date()
+    if isinstance(grid_min_date, str):
+        grid_min_date = datetime.strptime(grid_min_date, "%Y-%m-%d")
+    if isinstance(grid_max_date, str):
+        grid_max_date = datetime.strptime(grid_max_date, "%Y-%m-%d")
+
+    # Create dataframe with column timeslot from grid_min_date to grid_max_date
+    df_timeslots = pl.DataFrame(
+        pl.date_range(
+            grid_min_date,
+            grid_max_date,
+            ("1" + freq.lower()),
+            eager=True,
+        ).alias(time_col)
+    )
+
+    # Create dataframe with all possible combinations of id_cols
+    df_id = df_id
+    df_grid = df_timeslots.join(df_id, how="cross")
+
+    # Filter registers in df_grid using the min_date and max_date by id_cols
+    if min_max_by_id:
+        df_grid = df_grid.join(df_min_max, on=id_cols, how="left")
+        df_grid = df_grid.filter(
+            (pl.col(time_col) >= pl.col("min_date"))
+            & (pl.col(time_col) <= pl.col("max_date"))
+        )
+        df_grid = df_grid.drop(["min_date", "max_date"])
+
+    # time_col is a Date, turn into datetime
+    df_grid = df_grid.with_columns(pl.col(time_col).cast(pl.Datetime))
+    df_w = df_w.with_columns(pl.col(time_col).cast(pl.Datetime))
+    # Merge df_grid with df_w
+    df_w = df_grid.join(df_w, on=id_cols + [time_col], how="left")
+
+    return df_w.lazy()
+
+
+@log_time()
+def create_dense_data_pllazy(
+    df: pl.LazyFrame,
+    id_cols,
+    freq: str,
+    min_max_by_id: bool = None,
+    date_init=None,
+    date_end=None,
+    time_col: str = "timeslot",
+) -> pl.LazyFrame:
+    """
+    Create a dense dataframe with a frequency of freq, given range of dates or inherited from the dataframe,
+     using the id_cols as keys.
+    :param df: dataframe to be expanded
+    :param id_cols: list of columns to be used as keys
+    :param freq: frequency of the new dataframe
+    :param min_max_by_id: boolean to indicate if the range of dates is the min and max of the dataframe by id
+    :param date_init: if it has a value, all initial dates will be set to this value
+    :param date_end: if it has a value, all final dates will be set to this value
+    :param time_col: string with name of the column with the time information
+    :return: dataframe with all the dates using the frequency freq
+    """
+    # If min_max_by_id is True, get the min and max of the time_col by id_cols
+    if min_max_by_id:
+        df_min_max = df.group_by(id_cols).agg(
+            [
+                pl.col(time_col).min().alias("min_date"),
+                pl.col(time_col).max().alias("max_date"),
+            ]
+        )
+
+        if date_init is not None:
+            df_min_max = df_min_max.with_columns(
+                pl.lit(date_init).str.to_datetime(format="%Y-%m-%d").alias("min_date")
+            )
+
+        if date_end is not None:
+            df_min_max = df_min_max.with_columns(
+                pl.lit(date_end).str.to_datetime(format="%Y-%m-%d").alias("max_date")
+            )
+
+        grid_min_date_expr = df_min_max.select(pl.col("min_date").min())
+        grid_max_date_expr = df_min_max.select(pl.col("max_date").max())
+
+    else:
+        grid_min_date_expr = df.select(pl.col(time_col).min())
+        grid_max_date_expr = df.select(pl.col(time_col).max())
+
+    # Extract min and max dates from lazy expressions
+    grid_min_date = grid_min_date_expr.collect().to_series().item()
+    grid_max_date = grid_max_date_expr.collect().to_series().item()
+
+    # Convert grid_min_date and grid_max_date to datetime if they are strings
+    if isinstance(grid_min_date, str):
+        grid_min_date = pl.datetime.strptime(grid_min_date, "%Y-%m-%d")
+    if isinstance(grid_max_date, str):
+        grid_max_date = pl.datetime.strptime(grid_max_date, "%Y-%m-%d")
+
+    # Create dataframe with column timeslot from grid_min_date to grid_max_date
+    df_timeslots = pl.LazyFrame(
+        pl.date_range(
+            grid_min_date,
+            grid_max_date,
+            ("1" + freq.lower()),
+            eager=True,
+        ).alias(time_col)
+    )
+
+    # Create dataframe with all possible combinations of id_cols
+    df_id = df.select(id_cols).unique()
+    df_grid = df_timeslots.join(df_id, how="cross")
+
+    # Filter registers in df_grid using the min_date and max_date by id_cols
+    if min_max_by_id:
+        df_grid = df_grid.join(df_min_max, on=id_cols, how="left")
+        df_grid = df_grid.filter(
+            (pl.col(time_col) >= pl.col("min_date"))
+            & (pl.col(time_col) <= pl.col("max_date"))
+        )
+        df_grid = df_grid.drop(["min_date", "max_date"])
+
+    # time_col is a Date, turn into datetime
+    df_grid = df_grid.with_columns(pl.col(time_col).cast(pl.Datetime))
+    df = df.with_columns(pl.col(time_col).cast(pl.Datetime))
+    # Merge df_grid with df_w
+    df_w = df_grid.join(df, on=id_cols + [time_col], how="left")
 
     return df_w
 
@@ -427,3 +615,23 @@ def get_corr_matrix_aux(
         )
 
     return top_correlations
+
+
+def prepare_timeseries(df, key_cols, time_col, value_col, freq):
+    """
+    The prepare_timeseries function prepares a dataframe to be used as a time series.
+    The function takes a dataframe, a list of key columns, a time column, a value column,
+    and a frequency as arguments. The function returns a dataframe with the time column as the index
+    and the value column as the values.
+
+    :param df: pd.DataFrame: Pass the dataframe to be used as a time series
+    :param key_cols: list: Specify the columns to be used as keys
+    :param time_col: str: Specify the name of the column that contains the time information
+    :param value_col: str: Specify the name of the column that contains the values
+    :param freq: str: Specify the frequency of the time series
+    :return: A dataframe with the time column as the index and the value column as the values
+    :doc-author: baobab soluciones
+    """
+    df_w = df.copy()
+
+    return df_w
