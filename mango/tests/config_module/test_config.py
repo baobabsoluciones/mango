@@ -32,7 +32,7 @@ class TestConfig(BaseConfig):
 class AnotherTestConfig(BaseConfig):
     __params = {
         "main": [
-            ConfigParameter("some_parameter", dict),
+            ConfigParameter("some_parameter", set),
             ConfigParameter("other_parameter", str, validate=["hello", "world"]),
         ],
         "other_section": [
