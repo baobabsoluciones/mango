@@ -12,6 +12,8 @@ SERIES_CONFIGURATION = {
     "VALUE_COL": "FIN",
     "AGG_OPERATIONS": {"y": "sum"},
     "TIME_PERIOD_DESCR": "day",
+    "RECENT_FOLDS": 3,
+    "SEASONAL_FOLDS": 1,
 }
 
 timedelta_equivalences = {
@@ -34,6 +36,7 @@ PARAMETERS_BASE = {
         "seasonal_lags": [4],
         "non_seasonal_lags": [1, 2],
         "rolling_window": [4],
+        "seasonal_fold_offset": 4,
         "order": 6,
     },
     "month": {
@@ -44,6 +47,8 @@ PARAMETERS_BASE = {
         "seasonal_lags": [12],
         "non_seasonal_lags": [1, 2],
         "rolling_window": [6, 12],
+        "seasonal_fold_offset": 12,
+        "test_fold_size": 12,
         "order": 5,
     },
     "week": {
@@ -54,15 +59,19 @@ PARAMETERS_BASE = {
         "seasonal_lags": [4],
         "non_seasonal_lags": [4, 12],
         "rolling_window": [4, 12],
+        "seasonal_fold_offset": 52,
+        "test_fold_size": 4,
         "order": 4,
     },
     "day": {
-        "season_period": [7, 365],
+        "season_period": [7, 364],
         "trend_window": [7, 7],
         "window_size": "30d",
         "agg": "d",
         "seasonal_lags": [7, 14, 21],
         "non_seasonal_lags": [7, 14, 21],
+        "seasonal_fold_offset": 364,
+        "test_fold_size": 28,
         "order": 3,
     },
     "hour": {

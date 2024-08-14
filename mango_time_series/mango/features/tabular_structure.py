@@ -89,7 +89,10 @@ def create_tabular_structure_pl(
 from mango_time_series.mango.tests.example_timeseries_creation_polars import (
     test_timeseries_creation,
 )
-from mango_time_series.mango.utils.CONST import SERIES_CONFIGURATION as SERIES_CONF
+from mango_time_series.mango.utils.CONST import (
+    SERIES_CONFIGURATION as SERIES_CONF,
+    PARAMETERS,
+)
 from mango_time_series.mango.utils.processing import process_time_series
 
 
@@ -132,6 +135,33 @@ df_big = rolling_seasonal_averages(
 )
 
 df_all_pl = df_big.collect().sort("datetime")
+
+df_pd = df_all_pl.to_pandas()
+
+from mango_time_series.mango.validation.custom_folds import (
+    create_recent_folds,
+    create_recent_seasonal_folds,
+)
+
+ids = create_recent_folds(df_pd, 56, SERIES_CONF, SERIES_CONF["RECENT_FOLDS"])
+
+sea_ids = create_recent_seasonal_folds(
+    df_pd, 56, SERIES_CONF, PARAMETERS, SERIES_CONF["SEASONAL_FOLDS"]
+)
+
+df_ids1_tr = df_pd.loc[sea_ids[0][0]]
+df_ids1_te = df_pd.loc[sea_ids[0][1]]
+df_ids2_tr = df_pd.loc[sea_ids[1][0]]
+df_ids2_te = df_pd.loc[sea_ids[1][1]]
+
+min_date_tr1 = df_ids1_tr["datetime"].min()
+max_date_tr1 = df_ids1_tr["datetime"].max()
+min_date_te1 = df_ids1_te["datetime"].min()
+max_date_te1 = df_ids1_te["datetime"].max()
+min_date_tr2 = df_ids2_tr["datetime"].min()
+max_date_tr2 = df_ids2_tr["datetime"].max()
+min_date_te2 = df_ids2_te["datetime"].min()
+max_date_te2 = df_ids2_te["datetime"].max()
 logger.info("Tabular structure created")
 # with colmns duration= end-start
 
