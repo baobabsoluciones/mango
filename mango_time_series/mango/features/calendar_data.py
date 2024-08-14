@@ -209,10 +209,14 @@ def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
     df["name"] = df["name"].str.replace(" +", " ", regex=True)
 
     # Remove string "observed" and "trasladado" in column name
-    df["name"] = df["name"].str.replace("observed", "")
-    df["name"] = df["name"].str.replace("Observed", "")
-    df["name"] = df["name"].str.replace("Trasladado", "")
-    df["name"] = df["name"].str.replace("trasladado", "")
+    list_replaces = [
+        "observed",
+        "trasladado",
+        "estimated",
+        "estimado",
+    ]
+    for x in list_replaces:
+        df["name"] = df["name"].str.replace(x, "", case=False)
 
     # Drop extra whitespace in column name
     df["name"] = df["name"].str.strip()
