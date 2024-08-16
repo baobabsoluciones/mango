@@ -9,9 +9,12 @@ from mango_base.mango.logging import log_time
 
 try:
     import pandas as pd
-    import polars as pl
 except ImportError:
     pd = None
+
+try:
+    import polars as pl
+except ImportError:
     pl = None
 
 

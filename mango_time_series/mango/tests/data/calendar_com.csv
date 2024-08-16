@@ -1,0 +1,1036 @@
+date,name,country_code,community_code,community_name,weight
+2010-01-01,Ano nuevo,ES,,,1.0
+2010-01-06,Epifania del Senor,ES,,,1.0
+2010-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2010-03-01,Lunes siguiente a Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2010-03-19,San Jose,ES,CM,Castilla-La Mancha,0.5789473684210527
+2010-03-19,San Jose,ES,NC,Nafarroako Foru Komunitatea*,0.5789473684210527
+2010-03-19,San Jose,ES,MC,"Murcia, Región de",0.5789473684210527
+2010-03-19,San Jose,ES,EX,Extremadura,0.5789473684210527
+2010-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.5789473684210527
+2010-03-19,San Jose,ES,PV,Euskal Herria,0.5789473684210527
+2010-03-19,San Jose,ES,RI,La Rioja,0.5789473684210527
+2010-03-19,San Jose,ES,GA,Galicia [Galicia],0.5789473684210527
+2010-03-19,San Jose,ES,ML,Melilla,0.5789473684210527
+2010-03-19,San Jose,ES,CL,Castilla y León,0.5789473684210527
+2010-03-19,San Jose,ES,MD,"Madrid, Comunidad de",0.5789473684210527
+2010-04-01,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2010-04-01,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2010-04-01,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2010-04-01,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2010-04-01,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2010-04-01,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2010-04-01,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2010-04-01,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2010-04-01,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2010-04-01,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2010-04-01,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2010-04-01,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2010-04-01,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2010-04-01,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2010-04-01,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2010-04-01,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2010-04-01,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2010-04-02,Viernes Santo,ES,,,1.0
+2010-04-05,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.2631578947368421
+2010-04-05,Lunes de Pascua,ES,PV,Euskal Herria,0.2631578947368421
+2010-04-05,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.2631578947368421
+2010-04-05,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.2631578947368421
+2010-04-05,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.2631578947368421
+2010-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2010-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2010-05-01,Fiesta del Trabajo,ES,,,1.0
+2010-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2010-05-31,Lunes siguiente a Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2010-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2010-06-03,Corpus Christi,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2010-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2010-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2010-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2010-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2010-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2010-08-16,Lunes siguiente a Asuncion de la Virgen,ES,AR,Aragón,0.15789473684210525
+2010-08-16,Lunes siguiente a Asuncion de la Virgen,ES,AS,"Asturias, Principado de",0.15789473684210525
+2010-08-16,Lunes siguiente a Asuncion de la Virgen,ES,AN,Andalucía,0.15789473684210525
+2010-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2010-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2010-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2010-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2010-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2010-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2010-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2010-11-01,Todos los Santos,ES,,,1.0
+2010-11-17,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2010-11-17,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2010-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2010-12-08,Inmaculada Concepcion,ES,,,1.0
+2010-12-25,Natividad del Senor,ES,,,1.0
+2011-01-01,Ano nuevo,ES,,,1.0
+2011-01-06,Epifania del Senor,ES,,,1.0
+2011-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2011-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2011-03-19,San Jose,ES,CM,Castilla-La Mancha,0.2631578947368421
+2011-03-19,San Jose,ES,MC,"Murcia, Región de",0.2631578947368421
+2011-03-19,San Jose,ES,ML,Melilla,0.2631578947368421
+2011-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.2631578947368421
+2011-03-19,San Jose,ES,GA,Galicia [Galicia],0.2631578947368421
+2011-04-21,Jueves Santo,ES,CN,Canarias,0.9473684210526315
+2011-04-21,Jueves Santo,ES,CL,Castilla y León,0.9473684210526315
+2011-04-21,Jueves Santo,ES,RI,La Rioja,0.9473684210526315
+2011-04-21,Jueves Santo,ES,AR,Aragón,0.9473684210526315
+2011-04-21,Jueves Santo,ES,ML,Melilla,0.9473684210526315
+2011-04-21,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.9473684210526315
+2011-04-21,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.9473684210526315
+2011-04-21,Jueves Santo,ES,VC,"Valenciana, Comunidad",0.9473684210526315
+2011-04-21,Jueves Santo,ES,MC,"Murcia, Región de",0.9473684210526315
+2011-04-21,Jueves Santo,ES,CB,Cantabria,0.9473684210526315
+2011-04-21,Jueves Santo,ES,CM,Castilla-La Mancha,0.9473684210526315
+2011-04-21,Jueves Santo,ES,AN,Andalucía,0.9473684210526315
+2011-04-21,Jueves Santo,ES,GA,Galicia [Galicia],0.9473684210526315
+2011-04-21,Jueves Santo,ES,AS,"Asturias, Principado de",0.9473684210526315
+2011-04-21,Jueves Santo,ES,EX,Extremadura,0.9473684210526315
+2011-04-21,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.9473684210526315
+2011-04-21,Jueves Santo,ES,CE,Ceuta,0.9473684210526315
+2011-04-21,Jueves Santo,ES,PV,Euskal Herria,0.9473684210526315
+2011-04-22,Viernes Santo,ES,,,1.0
+2011-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2011-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2011-04-25,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3157894736842105
+2011-04-25,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2011-04-25,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2011-04-25,Lunes de Pascua,ES,PV,Euskal Herria,0.3157894736842105
+2011-04-25,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.3157894736842105
+2011-04-25,Lunes de Pascua,ES,RI,La Rioja,0.3157894736842105
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,VC,"Valenciana, Comunidad",0.42105263157894735
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,CB,Cantabria,0.42105263157894735
+2011-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,MC,"Murcia, Región de",0.42105263157894735
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AR,Aragón,0.42105263157894735
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AS,"Asturias, Principado de",0.42105263157894735
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AN,Andalucía,0.42105263157894735
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,EX,Extremadura,0.42105263157894735
+2011-05-02,Lunes siguiente a Fiesta del Trabajo,ES,CE,Ceuta,0.42105263157894735
+2011-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2011-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2011-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2011-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2011-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2011-06-13,Dia de la Pascua Granada,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2011-06-23,Corpus Christi,ES,CM,Castilla-La Mancha,0.10526315789473684
+2011-06-23,Corpus Christi,ES,MD,"Madrid, Comunidad de",0.10526315789473684
+2011-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2011-07-25,Santiago Apostol,ES,NC,Nafarroako Foru Komunitatea*,0.2631578947368421
+2011-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.2631578947368421
+2011-07-25,Santiago Apostol,ES,CL,Castilla y León,0.2631578947368421
+2011-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2011-07-25,Santiago Apostol,ES,RI,La Rioja,0.2631578947368421
+2011-07-25,Santiago Apostol,ES,MD,"Madrid, Comunidad de",0.2631578947368421
+2011-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2011-08-15,Asuncion de la Virgen,ES,,,1.0
+2011-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2011-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2011-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2011-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2011-10-25,Dia del Pais Vasco,ES,PV,Euskal Herria,0.05263157894736842
+2011-11-01,Todos los Santos,ES,,,1.0
+2011-11-07,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2011-11-07,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2011-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2011-12-08,Inmaculada Concepcion,ES,,,1.0
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,AN,Andalucía,0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,AR,Aragón,0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,ML,Melilla,0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,AS,"Asturias, Principado de",0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,IB,Illes Balears [Islas Baleares],0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,NC,Nafarroako Foru Komunitatea*,0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,CN,Canarias,0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,EX,Extremadura,0.5263157894736842
+2011-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,CE,Ceuta,0.5263157894736842
+2011-12-26,Lunes siguiente a Natividad del Senor,ES,CL,Castilla y León,0.5263157894736842
+2012-01-02,Lunes siguiente a Ano nuevo,ES,EX,Extremadura,0.2631578947368421
+2012-01-02,Lunes siguiente a Ano nuevo,ES,AS,"Asturias, Principado de",0.2631578947368421
+2012-01-02,Lunes siguiente a Ano nuevo,ES,CE,Ceuta,0.2631578947368421
+2012-01-02,Lunes siguiente a Ano nuevo,ES,AN,Andalucía,0.2631578947368421
+2012-01-02,Lunes siguiente a Ano nuevo,ES,AR,Aragón,0.2631578947368421
+2012-01-06,Epifania del Senor,ES,,,1.0
+2012-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2012-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2012-03-19,San Jose,ES,MD,"Madrid, Comunidad de",0.3684210526315789
+2012-03-19,San Jose,ES,ML,Melilla,0.3684210526315789
+2012-03-19,San Jose,ES,CL,Castilla y León,0.3684210526315789
+2012-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.3684210526315789
+2012-03-19,San Jose,ES,MC,"Murcia, Región de",0.3684210526315789
+2012-03-19,San Jose,ES,NC,Nafarroako Foru Komunitatea*,0.3684210526315789
+2012-03-19,San Jose,ES,RI,La Rioja,0.3684210526315789
+2012-04-05,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2012-04-05,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2012-04-05,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2012-04-05,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2012-04-05,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2012-04-05,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2012-04-05,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2012-04-05,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2012-04-05,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2012-04-05,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2012-04-05,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2012-04-05,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2012-04-05,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2012-04-05,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2012-04-05,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2012-04-05,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2012-04-05,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2012-04-06,Viernes Santo,ES,,,1.0
+2012-04-09,Lunes de Pascua,ES,PV,Euskal Herria,0.2631578947368421
+2012-04-09,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.2631578947368421
+2012-04-09,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.2631578947368421
+2012-04-09,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.2631578947368421
+2012-04-09,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.2631578947368421
+2012-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2012-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2012-05-01,Fiesta del Trabajo,ES,,,1.0
+2012-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2012-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2012-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2012-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2012-06-07,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2012-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2012-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2012-07-25,Santiago Apostol,ES,CB,Cantabria,0.05263157894736842
+2012-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2012-08-15,Asuncion de la Virgen,ES,,,1.0
+2012-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2012-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2012-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2012-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2012-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2012-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2012-10-25,Dia del Pais Vasco,ES,PV,Euskal Herria,0.05263157894736842
+2012-10-26,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2012-10-27,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2012-11-01,Todos los Santos,ES,,,1.0
+2012-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2012-12-08,Inmaculada Concepcion,ES,,,1.0
+2012-12-25,Natividad del Senor,ES,,,1.0
+2012-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2013-01-01,Ano nuevo,ES,,,1.0
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,CE,Ceuta,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,AR,Aragón,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,NC,Nafarroako Foru Komunitatea*,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,MD,"Madrid, Comunidad de",0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,AS,"Asturias, Principado de",0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,CL,Castilla y León,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,ML,Melilla,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,AN,Andalucía,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,MC,"Murcia, Región de",0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,CB,Cantabria,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,CM,Castilla-La Mancha,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,EX,Extremadura,0.6842105263157895
+2013-01-07,Lunes siguiente a Epifania del Senor,ES,CN,Canarias,0.6842105263157895
+2013-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2013-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2013-03-18,Traslado de San Jose,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2013-03-18,Lunes de Fallas,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2013-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.15789473684210525
+2013-03-19,San Jose,ES,MC,"Murcia, Región de",0.15789473684210525
+2013-03-19,San Jose,ES,ML,Melilla,0.15789473684210525
+2013-03-28,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2013-03-28,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2013-03-28,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2013-03-28,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2013-03-28,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2013-03-28,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2013-03-28,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2013-03-28,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2013-03-28,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2013-03-28,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2013-03-28,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2013-03-28,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2013-03-28,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2013-03-28,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2013-03-28,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2013-03-28,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2013-03-28,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2013-03-29,Viernes Santo,ES,,,1.0
+2013-04-01,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3684210526315789
+2013-04-01,Lunes de Pascua,ES,RI,La Rioja,0.3684210526315789
+2013-04-01,Lunes de Pascua,ES,PV,Euskal Herria,0.3684210526315789
+2013-04-01,Lunes de Pascua,ES,CB,Cantabria,0.3684210526315789
+2013-04-01,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.3684210526315789
+2013-04-01,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3684210526315789
+2013-04-01,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3684210526315789
+2013-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2013-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2013-05-01,Fiesta del Trabajo,ES,,,1.0
+2013-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2013-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2013-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2013-05-30,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2013-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2013-06-10,Lunes siguiente a Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2013-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2013-06-24,San Juan,ES,GA,Galicia [Galicia],0.10526315789473684
+2013-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2013-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.15789473684210525
+2013-07-25,Santiago Apostol,ES,NC,Nafarroako Foru Komunitatea*,0.15789473684210525
+2013-07-25,Santiago Apostol,ES,CB,Cantabria,0.15789473684210525
+2013-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2013-08-15,Asuncion de la Virgen,ES,,,1.0
+2013-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2013-09-09,Lunes siguiente a Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2013-09-09,Lunes siguiente a Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2013-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2013-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2013-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2013-10-15,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2013-10-15,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2013-10-25,Dia del Pais Vasco,ES,PV,Euskal Herria,0.05263157894736842
+2013-11-01,Todos los Santos,ES,,,1.0
+2013-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,CE,Ceuta,0.42105263157894735
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,CL,Castilla y León,0.42105263157894735
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,EX,Extremadura,0.42105263157894735
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,MC,"Murcia, Región de",0.42105263157894735
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,AS,"Asturias, Principado de",0.42105263157894735
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,AN,Andalucía,0.42105263157894735
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,RI,La Rioja,0.42105263157894735
+2013-12-09,Lunes siguiente a Inmaculada Concepcion,ES,AR,Aragón,0.42105263157894735
+2013-12-25,Natividad del Senor,ES,,,1.0
+2013-12-26,San Esteban,ES,IB,Illes Balears [Islas Baleares],0.10526315789473684
+2013-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2014-01-01,Ano nuevo,ES,,,1.0
+2014-01-06,Epifania del Senor,ES,,,1.0
+2014-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2014-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2014-03-19,San Jose,ES,ML,Melilla,0.21052631578947367
+2014-03-19,San Jose,ES,MC,"Murcia, Región de",0.21052631578947367
+2014-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.21052631578947367
+2014-03-19,San Jose,ES,NC,Nafarroako Foru Komunitatea*,0.21052631578947367
+2014-04-17,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2014-04-17,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2014-04-17,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2014-04-17,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2014-04-17,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2014-04-17,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2014-04-17,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2014-04-17,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2014-04-17,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2014-04-17,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2014-04-17,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2014-04-17,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2014-04-17,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2014-04-17,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2014-04-17,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2014-04-17,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2014-04-17,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2014-04-18,Viernes Santo,ES,,,1.0
+2014-04-21,Lunes de Pascua,ES,PV,Euskal Herria,0.3157894736842105
+2014-04-21,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2014-04-21,Lunes de Pascua,ES,CM,Castilla-La Mancha,0.3157894736842105
+2014-04-21,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3157894736842105
+2014-04-21,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2014-04-21,Lunes de Pascua,ES,RI,La Rioja,0.3157894736842105
+2014-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2014-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2014-05-01,Fiesta del Trabajo,ES,,,1.0
+2014-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2014-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2014-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2014-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2014-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2014-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2014-06-19,Corpus Christi,ES,MD,"Madrid, Comunidad de",0.10526315789473684
+2014-06-19,Corpus Christi,ES,CM,Castilla-La Mancha,0.10526315789473684
+2014-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2014-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2014-07-25,Santiago Apostol,ES,CB,Cantabria,0.05263157894736842
+2014-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2014-08-15,Asuncion de la Virgen,ES,,,1.0
+2014-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2014-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2014-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2014-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2014-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2014-10-04,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2014-10-06,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2014-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2014-10-13,Lunes siguiente a Fiesta Nacional de Espana,ES,AS,"Asturias, Principado de",0.3157894736842105
+2014-10-13,Lunes siguiente a Fiesta Nacional de Espana,ES,CE,Ceuta,0.3157894736842105
+2014-10-13,Lunes siguiente a Fiesta Nacional de Espana,ES,CL,Castilla y León,0.3157894736842105
+2014-10-13,Lunes siguiente a Fiesta Nacional de Espana,ES,EX,Extremadura,0.3157894736842105
+2014-10-13,Lunes siguiente a Fiesta Nacional de Espana,ES,AR,Aragón,0.3157894736842105
+2014-10-13,Lunes siguiente a Fiesta Nacional de Espana,ES,AN,Andalucía,0.3157894736842105
+2014-10-25,Dia del Pais Vasco,ES,PV,Euskal Herria,0.05263157894736842
+2014-11-01,Todos los Santos,ES,,,1.0
+2014-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2014-12-08,Inmaculada Concepcion,ES,,,1.0
+2014-12-25,Natividad del Senor,ES,,,1.0
+2014-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2014-12-26,San Esteban,ES,IB,Illes Balears [Islas Baleares],0.10526315789473684
+2015-01-01,Ano nuevo,ES,,,1.0
+2015-01-06,Epifania del Senor,ES,,,1.0
+2015-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2015-03-19,San Jose,ES,ML,Melilla,0.3157894736842105
+2015-03-19,San Jose,ES,PV,Euskal Herria,0.3157894736842105
+2015-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2015-03-19,San Jose,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2015-03-19,San Jose,ES,MD,"Madrid, Comunidad de",0.3157894736842105
+2015-03-19,San Jose,ES,MC,"Murcia, Región de",0.3157894736842105
+2015-03-20,Dia siguiente a San Jose,ES,GA,Galicia [Galicia],0.05263157894736842
+2015-04-02,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2015-04-02,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2015-04-02,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2015-04-02,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2015-04-02,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2015-04-02,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2015-04-02,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2015-04-02,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2015-04-02,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2015-04-02,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2015-04-02,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2015-04-02,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2015-04-02,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2015-04-02,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2015-04-02,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2015-04-02,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2015-04-02,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2015-04-03,Viernes Santo,ES,,,1.0
+2015-04-06,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.42105263157894735
+2015-04-06,Lunes de Pascua,ES,RI,La Rioja,0.42105263157894735
+2015-04-06,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.42105263157894735
+2015-04-06,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.42105263157894735
+2015-04-06,Lunes de Pascua,ES,PV,Euskal Herria,0.42105263157894735
+2015-04-06,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.42105263157894735
+2015-04-06,Lunes de Pascua,ES,CB,Cantabria,0.42105263157894735
+2015-04-06,Lunes de Pascua,ES,CM,Castilla-La Mancha,0.42105263157894735
+2015-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2015-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2015-05-01,Fiesta del Trabajo,ES,,,1.0
+2015-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2015-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2015-06-04,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2015-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2015-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2015-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2015-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.10526315789473684
+2015-07-25,Santiago Apostol,ES,NC,Nafarroako Foru Komunitatea*,0.10526315789473684
+2015-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2015-08-15,Asuncion de la Virgen,ES,,,1.0
+2015-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2015-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2015-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2015-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2015-09-25,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2015-09-25,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2015-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2015-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2015-11-02,Lunes siguiente a Todos los Santos,ES,CB,Cantabria,0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,IB,Illes Balears [Islas Baleares],0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,AR,Aragón,0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,CN,Canarias,0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,AN,Andalucía,0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,CE,Ceuta,0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,EX,Extremadura,0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,AS,"Asturias, Principado de",0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,GA,Galicia [Galicia],0.5263157894736842
+2015-11-02,Lunes siguiente a Todos los Santos,ES,CL,Castilla y León,0.5263157894736842
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,IB,Illes Balears [Islas Baleares],0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,AS,"Asturias, Principado de",0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,RI,La Rioja,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,CL,Castilla y León,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,AN,Andalucía,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,MC,"Murcia, Región de",0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,AR,Aragón,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,CE,Ceuta,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,CM,Castilla-La Mancha,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,ML,Melilla,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,EX,Extremadura,0.631578947368421
+2015-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,VC,"Valenciana, Comunidad",0.631578947368421
+2015-12-08,Inmaculada Concepcion,ES,,,1.0
+2015-12-25,Natividad del Senor,ES,,,1.0
+2015-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2016-01-01,Ano nuevo,ES,,,1.0
+2016-01-06,Epifania del Senor,ES,,,1.0
+2016-02-29,Lunes siguiente a Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2016-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2016-03-19,San Jose,ES,MC,"Murcia, Región de",0.15789473684210525
+2016-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.15789473684210525
+2016-03-19,San Jose,ES,ML,Melilla,0.15789473684210525
+2016-03-24,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.9473684210526315
+2016-03-24,Jueves Santo,ES,CM,Castilla-La Mancha,0.9473684210526315
+2016-03-24,Jueves Santo,ES,CB,Cantabria,0.9473684210526315
+2016-03-24,Jueves Santo,ES,AS,"Asturias, Principado de",0.9473684210526315
+2016-03-24,Jueves Santo,ES,PV,Euskal Herria,0.9473684210526315
+2016-03-24,Jueves Santo,ES,CL,Castilla y León,0.9473684210526315
+2016-03-24,Jueves Santo,ES,AN,Andalucía,0.9473684210526315
+2016-03-24,Jueves Santo,ES,VC,"Valenciana, Comunidad",0.9473684210526315
+2016-03-24,Jueves Santo,ES,ML,Melilla,0.9473684210526315
+2016-03-24,Jueves Santo,ES,MC,"Murcia, Región de",0.9473684210526315
+2016-03-24,Jueves Santo,ES,GA,Galicia [Galicia],0.9473684210526315
+2016-03-24,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.9473684210526315
+2016-03-24,Jueves Santo,ES,RI,La Rioja,0.9473684210526315
+2016-03-24,Jueves Santo,ES,CE,Ceuta,0.9473684210526315
+2016-03-24,Jueves Santo,ES,CN,Canarias,0.9473684210526315
+2016-03-24,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.9473684210526315
+2016-03-24,Jueves Santo,ES,EX,Extremadura,0.9473684210526315
+2016-03-24,Jueves Santo,ES,AR,Aragón,0.9473684210526315
+2016-03-25,Viernes Santo,ES,,,1.0
+2016-03-28,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.3157894736842105
+2016-03-28,Lunes de Pascua,ES,RI,La Rioja,0.3157894736842105
+2016-03-28,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3157894736842105
+2016-03-28,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2016-03-28,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2016-03-28,Lunes de Pascua,ES,PV,Euskal Herria,0.3157894736842105
+2016-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2016-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2016-05-02,Lunes siguiente a Fiesta del Trabajo,ES,EX,Extremadura,0.3157894736842105
+2016-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AN,Andalucía,0.3157894736842105
+2016-05-02,Lunes siguiente a Fiesta del Trabajo,ES,CN,Canarias,0.3157894736842105
+2016-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2016-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AS,"Asturias, Principado de",0.3157894736842105
+2016-05-02,Lunes siguiente a Fiesta del Trabajo,ES,CL,Castilla y León,0.3157894736842105
+2016-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AR,Aragón,0.3157894736842105
+2016-05-16,Dia de la Pascua Granada,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2016-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2016-05-26,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2016-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2016-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2016-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2016-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2016-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2016-06-24,San Juan,ES,GA,Galicia [Galicia],0.10526315789473684
+2016-07-25,Santiago Apostol,ES,MD,"Madrid, Comunidad de",0.21052631578947367
+2016-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2016-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.21052631578947367
+2016-07-25,Santiago Apostol,ES,NC,Nafarroako Foru Komunitatea*,0.21052631578947367
+2016-07-25,Santiago Apostol,ES,RI,La Rioja,0.21052631578947367
+2016-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2016-08-15,Asuncion de la Virgen,ES,,,1.0
+2016-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2016-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2016-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2016-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2016-09-12,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2016-09-12,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2016-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2016-10-07,80 Aniversario del primer Gobierno Vasco,ES,PV,Euskal Herria,0.05263157894736842
+2016-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2016-11-01,Todos los Santos,ES,,,1.0
+2016-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2016-12-08,Inmaculada Concepcion,ES,,,1.0
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,VC,"Valenciana, Comunidad",0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,EX,Extremadura,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,CL,Castilla y León,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,IB,Illes Balears [Islas Baleares],0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,CB,Cantabria,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,MC,"Murcia, Región de",0.7368421052631579
+2016-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,CM,Castilla-La Mancha,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,AS,"Asturias, Principado de",0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,MD,"Madrid, Comunidad de",0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,AN,Andalucía,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,ML,Melilla,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,AR,Aragón,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,NC,Nafarroako Foru Komunitatea*,0.7368421052631579
+2016-12-26,Lunes siguiente a Natividad del Senor,ES,CE,Ceuta,0.7368421052631579
+2017-01-02,Lunes siguiente a Ano nuevo,ES,MC,"Murcia, Región de",0.3157894736842105
+2017-01-02,Lunes siguiente a Ano nuevo,ES,AN,Andalucía,0.3157894736842105
+2017-01-02,Lunes siguiente a Ano nuevo,ES,ML,Melilla,0.3157894736842105
+2017-01-02,Lunes siguiente a Ano nuevo,ES,AR,Aragón,0.3157894736842105
+2017-01-02,Lunes siguiente a Ano nuevo,ES,CL,Castilla y León,0.3157894736842105
+2017-01-02,Lunes siguiente a Ano nuevo,ES,AS,"Asturias, Principado de",0.3157894736842105
+2017-01-06,Epifania del Senor,ES,,,1.0
+2017-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2017-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2017-03-20,Lunes siguiente a San Jose,ES,MD,"Madrid, Comunidad de",0.10526315789473684
+2017-03-20,Lunes siguiente a San Jose,ES,EX,Extremadura,0.10526315789473684
+2017-04-13,Jueves Santo,ES,PV,Euskal Herria,0.9473684210526315
+2017-04-13,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.9473684210526315
+2017-04-13,Jueves Santo,ES,CN,Canarias,0.9473684210526315
+2017-04-13,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.9473684210526315
+2017-04-13,Jueves Santo,ES,CE,Ceuta,0.9473684210526315
+2017-04-13,Jueves Santo,ES,ML,Melilla,0.9473684210526315
+2017-04-13,Jueves Santo,ES,AR,Aragón,0.9473684210526315
+2017-04-13,Jueves Santo,ES,VC,"Valenciana, Comunidad",0.9473684210526315
+2017-04-13,Jueves Santo,ES,EX,Extremadura,0.9473684210526315
+2017-04-13,Jueves Santo,ES,MC,"Murcia, Región de",0.9473684210526315
+2017-04-13,Jueves Santo,ES,AN,Andalucía,0.9473684210526315
+2017-04-13,Jueves Santo,ES,RI,La Rioja,0.9473684210526315
+2017-04-13,Jueves Santo,ES,GA,Galicia [Galicia],0.9473684210526315
+2017-04-13,Jueves Santo,ES,CM,Castilla-La Mancha,0.9473684210526315
+2017-04-13,Jueves Santo,ES,AS,"Asturias, Principado de",0.9473684210526315
+2017-04-13,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.9473684210526315
+2017-04-13,Jueves Santo,ES,CB,Cantabria,0.9473684210526315
+2017-04-13,Jueves Santo,ES,CL,Castilla y León,0.9473684210526315
+2017-04-14,Viernes Santo,ES,,,1.0
+2017-04-17,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2017-04-17,Lunes de Pascua,ES,RI,La Rioja,0.3157894736842105
+2017-04-17,Lunes de Pascua,ES,PV,Euskal Herria,0.3157894736842105
+2017-04-17,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.3157894736842105
+2017-04-17,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2017-04-17,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3157894736842105
+2017-04-24,Lunes siguiente a Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2017-04-24,Lunes siguiente a Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2017-05-01,Fiesta del Trabajo,ES,,,1.0
+2017-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2017-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2017-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2017-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2017-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2017-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2017-06-15,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2017-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2017-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.10526315789473684
+2017-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2017-07-25,Santiago Apostol,ES,NC,Nafarroako Foru Komunitatea*,0.10526315789473684
+2017-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2017-08-15,Asuncion de la Virgen,ES,,,1.0
+2017-09-01,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2017-09-01,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2017-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2017-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2017-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2017-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2017-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2017-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2017-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2017-11-01,Todos los Santos,ES,,,1.0
+2017-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2017-12-08,Inmaculada Concepcion,ES,,,1.0
+2017-12-25,Natividad del Senor,ES,,,1.0
+2017-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2018-01-01,Ano nuevo,ES,,,1.0
+2018-01-06,Epifania del Senor,ES,,,1.0
+2018-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2018-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2018-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.10526315789473684
+2018-03-19,San Jose,ES,MC,"Murcia, Región de",0.10526315789473684
+2018-03-29,Jueves Santo,ES,CM,Castilla-La Mancha,0.8421052631578947
+2018-03-29,Jueves Santo,ES,CE,Ceuta,0.8421052631578947
+2018-03-29,Jueves Santo,ES,PV,Euskal Herria,0.8421052631578947
+2018-03-29,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8421052631578947
+2018-03-29,Jueves Santo,ES,MC,"Murcia, Región de",0.8421052631578947
+2018-03-29,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8421052631578947
+2018-03-29,Jueves Santo,ES,RI,La Rioja,0.8421052631578947
+2018-03-29,Jueves Santo,ES,AS,"Asturias, Principado de",0.8421052631578947
+2018-03-29,Jueves Santo,ES,AN,Andalucía,0.8421052631578947
+2018-03-29,Jueves Santo,ES,ML,Melilla,0.8421052631578947
+2018-03-29,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8421052631578947
+2018-03-29,Jueves Santo,ES,CN,Canarias,0.8421052631578947
+2018-03-29,Jueves Santo,ES,EX,Extremadura,0.8421052631578947
+2018-03-29,Jueves Santo,ES,AR,Aragón,0.8421052631578947
+2018-03-29,Jueves Santo,ES,CL,Castilla y León,0.8421052631578947
+2018-03-29,Jueves Santo,ES,GA,Galicia [Galicia],0.8421052631578947
+2018-03-30,Viernes Santo,ES,,,1.0
+2018-04-02,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.2631578947368421
+2018-04-02,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.2631578947368421
+2018-04-02,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.2631578947368421
+2018-04-02,Lunes de Pascua,ES,PV,Euskal Herria,0.2631578947368421
+2018-04-02,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.2631578947368421
+2018-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2018-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2018-05-01,Fiesta del Trabajo,ES,,,1.0
+2018-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2018-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2018-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2018-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2018-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2018-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2018-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2018-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2018-08-15,Asuncion de la Virgen,ES,,,1.0
+2018-08-22,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2018-08-22,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2018-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2018-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2018-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2018-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2018-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2018-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2018-11-01,Todos los Santos,ES,,,1.0
+2018-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2018-12-08,Inmaculada Concepcion,ES,,,1.0
+2018-12-25,Natividad del Senor,ES,,,1.0
+2018-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2019-01-01,Ano nuevo,ES,,,1.0
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,MC,"Murcia, Región de",0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,ML,Melilla,0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,EX,Extremadura,0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,MD,"Madrid, Comunidad de",0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,CE,Ceuta,0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,AS,"Asturias, Principado de",0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,NC,Nafarroako Foru Komunitatea*,0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,CL,Castilla y León,0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,AN,Andalucía,0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,CN,Canarias,0.5789473684210527
+2019-01-07,Lunes siguiente a Epifania del Senor,ES,AR,Aragón,0.5789473684210527
+2019-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2019-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2019-03-19,San Jose,ES,NC,Nafarroako Foru Komunitatea*,0.2631578947368421
+2019-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.2631578947368421
+2019-03-19,San Jose,ES,MC,"Murcia, Región de",0.2631578947368421
+2019-03-19,San Jose,ES,PV,Euskal Herria,0.2631578947368421
+2019-03-19,San Jose,ES,GA,Galicia [Galicia],0.2631578947368421
+2019-04-18,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2019-04-18,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2019-04-18,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2019-04-18,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2019-04-18,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2019-04-18,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2019-04-18,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2019-04-18,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2019-04-18,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2019-04-18,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2019-04-18,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2019-04-18,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2019-04-18,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2019-04-18,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2019-04-18,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2019-04-18,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2019-04-18,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2019-04-19,Viernes Santo,ES,,,1.0
+2019-04-22,Lunes de Pascua,ES,CB,Cantabria,0.42105263157894735
+2019-04-22,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.42105263157894735
+2019-04-22,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.42105263157894735
+2019-04-22,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.42105263157894735
+2019-04-22,Lunes de Pascua,ES,RI,La Rioja,0.42105263157894735
+2019-04-22,Lunes de Pascua,ES,PV,Euskal Herria,0.42105263157894735
+2019-04-22,Lunes de Pascua,ES,CM,Castilla-La Mancha,0.42105263157894735
+2019-04-22,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.42105263157894735
+2019-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2019-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2019-05-01,Fiesta del Trabajo,ES,,,1.0
+2019-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2019-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2019-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2019-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2019-06-10,Lunes siguiente a Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2019-06-10,Lunes siguiente a Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2019-06-20,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2019-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2019-06-24,San Juan,ES,VC,"Valenciana, Comunidad",0.10526315789473684
+2019-07-25,Santiago Apostol,ES,CB,Cantabria,0.10526315789473684
+2019-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2019-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.10526315789473684
+2019-08-12,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2019-08-12,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2019-08-15,Asuncion de la Virgen,ES,,,1.0
+2019-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2019-09-09,Lunes siguiente a Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2019-09-09,Lunes siguiente a Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2019-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2019-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2019-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2019-11-01,Todos los Santos,ES,,,1.0
+2019-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,RI,La Rioja,0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,MD,"Madrid, Comunidad de",0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,AS,"Asturias, Principado de",0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,ML,Melilla,0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,CB,Cantabria,0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,AR,Aragón,0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,CL,Castilla y León,0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,EX,Extremadura,0.47368421052631576
+2019-12-09,Lunes siguiente a Inmaculada Concepcion,ES,AN,Andalucía,0.47368421052631576
+2019-12-25,Natividad del Senor,ES,,,1.0
+2019-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2019-12-26,San Esteban,ES,IB,Illes Balears [Islas Baleares],0.10526315789473684
+2020-01-01,Ano nuevo,ES,,,1.0
+2020-01-06,Epifania del Senor,ES,,,1.0
+2020-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2020-03-13,Estatuto de Autonomia de la Ciudad de Melilla,ES,ML,Melilla,0.05263157894736842
+2020-03-19,San Jose,ES,GA,Galicia [Galicia],0.3157894736842105
+2020-03-19,San Jose,ES,PV,Euskal Herria,0.3157894736842105
+2020-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2020-03-19,San Jose,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2020-03-19,San Jose,ES,MC,"Murcia, Región de",0.3157894736842105
+2020-03-19,San Jose,ES,CM,Castilla-La Mancha,0.3157894736842105
+2020-04-09,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2020-04-09,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2020-04-09,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2020-04-09,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2020-04-09,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2020-04-09,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2020-04-09,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2020-04-09,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2020-04-09,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2020-04-09,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2020-04-09,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2020-04-09,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2020-04-09,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2020-04-09,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2020-04-09,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2020-04-09,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2020-04-09,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2020-04-10,Viernes Santo,ES,,,1.0
+2020-04-13,Lunes de Pascua,ES,RI,La Rioja,0.42105263157894735
+2020-04-13,Lunes de Pascua,ES,CB,Cantabria,0.42105263157894735
+2020-04-13,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.42105263157894735
+2020-04-13,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.42105263157894735
+2020-04-13,Lunes de Pascua,ES,PV,Euskal Herria,0.42105263157894735
+2020-04-13,Lunes de Pascua,ES,CM,Castilla-La Mancha,0.42105263157894735
+2020-04-13,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.42105263157894735
+2020-04-13,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.42105263157894735
+2020-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2020-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2020-05-01,Fiesta del Trabajo,ES,,,1.0
+2020-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2020-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2020-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2020-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2020-06-11,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2020-06-24,San Juan,ES,VC,"Valenciana, Comunidad",0.15789473684210525
+2020-06-24,San Juan,ES,GA,Galicia [Galicia],0.15789473684210525
+2020-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.15789473684210525
+2020-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2020-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.05263157894736842
+2020-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2020-07-31,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2020-07-31,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2020-08-15,Asuncion de la Virgen,ES,,,1.0
+2020-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2020-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2020-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2020-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2020-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2020-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2020-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2020-11-02,Lunes siguiente a Todos los Santos,ES,AN,Andalucía,0.3157894736842105
+2020-11-02,Lunes siguiente a Todos los Santos,ES,AR,Aragón,0.3157894736842105
+2020-11-02,Lunes siguiente a Todos los Santos,ES,EX,Extremadura,0.3157894736842105
+2020-11-02,Lunes siguiente a Todos los Santos,ES,MD,"Madrid, Comunidad de",0.3157894736842105
+2020-11-02,Lunes siguiente a Todos los Santos,ES,AS,"Asturias, Principado de",0.3157894736842105
+2020-11-02,Lunes siguiente a Todos los Santos,ES,CL,Castilla y León,0.3157894736842105
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,CL,Castilla y León,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,AR,Aragón,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,CE,Ceuta,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,RI,La Rioja,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,EX,Extremadura,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,CN,Canarias,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,ML,Melilla,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,MC,"Murcia, Región de",0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,AN,Andalucía,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,MD,"Madrid, Comunidad de",0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,NC,Nafarroako Foru Komunitatea*,0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,AS,"Asturias, Principado de",0.6842105263157895
+2020-12-07,Lunes siguiente a Dia de la Constitucion Espanola,ES,IB,Illes Balears [Islas Baleares],0.6842105263157895
+2020-12-08,Inmaculada Concepcion,ES,,,1.0
+2020-12-25,Natividad del Senor,ES,,,1.0
+2020-12-26,San Esteban,ES,IB,Illes Balears [Islas Baleares],0.10526315789473684
+2020-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2021-01-01,Ano nuevo,ES,,,1.0
+2021-01-06,Epifania del Senor,ES,,,1.0
+2021-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2021-03-01,Lunes siguiente a Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2021-03-13,Estatuto de Autonomia de la Ciudad de Melilla,ES,ML,Melilla,0.05263157894736842
+2021-03-19,San Jose,ES,EX,Extremadura,0.3684210526315789
+2021-03-19,San Jose,ES,MD,"Madrid, Comunidad de",0.3684210526315789
+2021-03-19,San Jose,ES,MC,"Murcia, Región de",0.3684210526315789
+2021-03-19,San Jose,ES,NC,Nafarroako Foru Komunitatea*,0.3684210526315789
+2021-03-19,San Jose,ES,GA,Galicia [Galicia],0.3684210526315789
+2021-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.3684210526315789
+2021-03-19,San Jose,ES,PV,Euskal Herria,0.3684210526315789
+2021-04-01,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2021-04-01,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2021-04-01,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2021-04-01,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2021-04-01,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2021-04-01,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2021-04-01,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2021-04-01,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2021-04-01,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2021-04-01,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2021-04-01,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2021-04-01,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2021-04-01,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2021-04-01,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2021-04-01,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2021-04-01,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2021-04-01,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2021-04-02,Viernes Santo,ES,,,1.0
+2021-04-05,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2021-04-05,Lunes de Pascua,ES,PV,Euskal Herria,0.3157894736842105
+2021-04-05,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2021-04-05,Lunes de Pascua,ES,RI,La Rioja,0.3157894736842105
+2021-04-05,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3157894736842105
+2021-04-05,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.3157894736842105
+2021-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2021-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2021-05-01,Fiesta del Trabajo,ES,,,1.0
+2021-05-03,Lunes siguiente a Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2021-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2021-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2021-06-03,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2021-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2021-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2021-06-24,San Juan,ES,VC,"Valenciana, Comunidad",0.10526315789473684
+2021-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2021-07-20,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2021-07-21,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2021-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2021-08-16,Lunes siguiente a Asuncion de la Virgen,ES,CL,Castilla y León,0.2631578947368421
+2021-08-16,Lunes siguiente a Asuncion de la Virgen,ES,AN,Andalucía,0.2631578947368421
+2021-08-16,Lunes siguiente a Asuncion de la Virgen,ES,AS,"Asturias, Principado de",0.2631578947368421
+2021-08-16,Lunes siguiente a Asuncion de la Virgen,ES,AR,Aragón,0.2631578947368421
+2021-08-16,Lunes siguiente a Asuncion de la Virgen,ES,CN,Canarias,0.2631578947368421
+2021-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2021-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2021-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2021-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2021-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2021-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2021-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2021-11-01,Todos los Santos,ES,,,1.0
+2021-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2021-12-08,Inmaculada Concepcion,ES,,,1.0
+2021-12-25,Natividad del Senor,ES,,,1.0
+2022-01-01,Ano nuevo,ES,,,1.0
+2022-01-06,Epifania del Senor,ES,,,1.0
+2022-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2022-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2022-03-19,San Jose,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2022-04-14,Jueves Santo,ES,CE,Ceuta,0.9473684210526315
+2022-04-14,Jueves Santo,ES,PV,Euskal Herria,0.9473684210526315
+2022-04-14,Jueves Santo,ES,CB,Cantabria,0.9473684210526315
+2022-04-14,Jueves Santo,ES,RI,La Rioja,0.9473684210526315
+2022-04-14,Jueves Santo,ES,AS,"Asturias, Principado de",0.9473684210526315
+2022-04-14,Jueves Santo,ES,MC,"Murcia, Región de",0.9473684210526315
+2022-04-14,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.9473684210526315
+2022-04-14,Jueves Santo,ES,GA,Galicia [Galicia],0.9473684210526315
+2022-04-14,Jueves Santo,ES,EX,Extremadura,0.9473684210526315
+2022-04-14,Jueves Santo,ES,CN,Canarias,0.9473684210526315
+2022-04-14,Jueves Santo,ES,AN,Andalucía,0.9473684210526315
+2022-04-14,Jueves Santo,ES,CL,Castilla y León,0.9473684210526315
+2022-04-14,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.9473684210526315
+2022-04-14,Jueves Santo,ES,AR,Aragón,0.9473684210526315
+2022-04-14,Jueves Santo,ES,CM,Castilla-La Mancha,0.9473684210526315
+2022-04-14,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.9473684210526315
+2022-04-14,Jueves Santo,ES,ML,Melilla,0.9473684210526315
+2022-04-14,Jueves Santo,ES,VC,"Valenciana, Comunidad",0.9473684210526315
+2022-04-15,Viernes Santo,ES,,,1.0
+2022-04-18,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2022-04-18,Lunes de Pascua,ES,PV,Euskal Herria,0.3157894736842105
+2022-04-18,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.3157894736842105
+2022-04-18,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3157894736842105
+2022-04-18,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2022-04-18,Lunes de Pascua,ES,RI,La Rioja,0.3157894736842105
+2022-04-23,Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2022-04-23,Fiesta de Castilla y Leon,ES,CL,Castilla y León,0.05263157894736842
+2022-05-02,Lunes siguiente a Fiesta del Trabajo,ES,MC,"Murcia, Región de",0.3157894736842105
+2022-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AN,Andalucía,0.3157894736842105
+2022-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2022-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AR,Aragón,0.3157894736842105
+2022-05-02,Lunes siguiente a Fiesta del Trabajo,ES,CL,Castilla y León,0.3157894736842105
+2022-05-02,Lunes siguiente a Fiesta del Trabajo,ES,EX,Extremadura,0.3157894736842105
+2022-05-02,Lunes siguiente a Fiesta del Trabajo,ES,AS,"Asturias, Principado de",0.3157894736842105
+2022-05-03,Fiesta del Eid Fitr,ES,ML,Melilla,0.05263157894736842
+2022-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2022-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2022-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2022-06-06,Dia de la Pascua Granada,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2022-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2022-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2022-06-16,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2022-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.15789473684210525
+2022-06-24,San Juan,ES,GA,Galicia [Galicia],0.15789473684210525
+2022-06-24,San Juan,ES,VC,"Valenciana, Comunidad",0.15789473684210525
+2022-07-09,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2022-07-11,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2022-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.15789473684210525
+2022-07-25,Santiago Apostol,ES,MD,"Madrid, Comunidad de",0.15789473684210525
+2022-07-25,Santiago Apostol,ES,NC,Nafarroako Foru Komunitatea*,0.15789473684210525
+2022-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2022-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2022-08-05,Nuestra Senora de Africa,ES,CE,Ceuta,0.05263157894736842
+2022-08-15,Asuncion de la Virgen,ES,,,1.0
+2022-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2022-09-06,V Centenario Vuelta al Mundo,ES,PV,Euskal Herria,0.05263157894736842
+2022-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2022-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2022-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2022-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2022-11-01,Todos los Santos,ES,,,1.0
+2022-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2022-12-08,Inmaculada Concepcion,ES,,,1.0
+2022-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,CN,Canarias,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,CM,Castilla-La Mancha,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,EX,Extremadura,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,RI,La Rioja,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,CL,Castilla y León,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,IB,Illes Balears [Islas Baleares],0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,CB,Cantabria,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,AS,"Asturias, Principado de",0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,NC,Nafarroako Foru Komunitatea*,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,ML,Melilla,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,MC,"Murcia, Región de",0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,AR,Aragón,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,AN,Andalucía,0.7368421052631579
+2022-12-26,Lunes siguiente a Natividad del Senor,ES,MD,"Madrid, Comunidad de",0.7368421052631579
+2023-01-02,Lunes siguiente a Ano nuevo,ES,AN,Andalucía,0.2631578947368421
+2023-01-02,Lunes siguiente a Ano nuevo,ES,MC,"Murcia, Región de",0.2631578947368421
+2023-01-02,Lunes siguiente a Ano nuevo,ES,CL,Castilla y León,0.2631578947368421
+2023-01-02,Lunes siguiente a Ano nuevo,ES,AR,Aragón,0.2631578947368421
+2023-01-02,Lunes siguiente a Ano nuevo,ES,AS,"Asturias, Principado de",0.2631578947368421
+2023-01-06,Epifania del Senor,ES,,,1.0
+2023-02-21,Martes de Carnaval,ES,EX,Extremadura,0.05263157894736842
+2023-02-28,Dia de Andalucia,ES,AN,Andalucía,0.05263157894736842
+2023-03-01,Dia de las Islas Baleares,ES,IB,Illes Balears [Islas Baleares],0.05263157894736842
+2023-03-20,Lunes siguiente a San Jose,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2023-04-06,Jueves Santo,ES,EX,Extremadura,0.8947368421052632
+2023-04-06,Jueves Santo,ES,PV,Euskal Herria,0.8947368421052632
+2023-04-06,Jueves Santo,ES,MC,"Murcia, Región de",0.8947368421052632
+2023-04-06,Jueves Santo,ES,ML,Melilla,0.8947368421052632
+2023-04-06,Jueves Santo,ES,CN,Canarias,0.8947368421052632
+2023-04-06,Jueves Santo,ES,MD,"Madrid, Comunidad de",0.8947368421052632
+2023-04-06,Jueves Santo,ES,AR,Aragón,0.8947368421052632
+2023-04-06,Jueves Santo,ES,CE,Ceuta,0.8947368421052632
+2023-04-06,Jueves Santo,ES,NC,Nafarroako Foru Komunitatea*,0.8947368421052632
+2023-04-06,Jueves Santo,ES,AS,"Asturias, Principado de",0.8947368421052632
+2023-04-06,Jueves Santo,ES,CL,Castilla y León,0.8947368421052632
+2023-04-06,Jueves Santo,ES,IB,Illes Balears [Islas Baleares],0.8947368421052632
+2023-04-06,Jueves Santo,ES,GA,Galicia [Galicia],0.8947368421052632
+2023-04-06,Jueves Santo,ES,AN,Andalucía,0.8947368421052632
+2023-04-06,Jueves Santo,ES,CM,Castilla-La Mancha,0.8947368421052632
+2023-04-06,Jueves Santo,ES,RI,La Rioja,0.8947368421052632
+2023-04-06,Jueves Santo,ES,CB,Cantabria,0.8947368421052632
+2023-04-07,Viernes Santo,ES,,,1.0
+2023-04-10,Lunes de Pascua,ES,NC,Nafarroako Foru Komunitatea*,0.3157894736842105
+2023-04-10,Lunes de Pascua,ES,PV,Euskal Herria,0.3157894736842105
+2023-04-10,Lunes de Pascua,ES,IB,Illes Balears [Islas Baleares],0.3157894736842105
+2023-04-10,Lunes de Pascua,ES,RI,La Rioja,0.3157894736842105
+2023-04-10,Lunes de Pascua,ES,VC,"Valenciana, Comunidad",0.3157894736842105
+2023-04-10,Lunes de Pascua,ES,CT,Catalunya [Cataluña],0.3157894736842105
+2023-04-21,Fiesta del Eid Fitr,ES,ML,Melilla,0.05263157894736842
+2023-04-24,Lunes siguiente a Dia de San Jorge,ES,AR,Aragón,0.05263157894736842
+2023-05-01,Fiesta del Trabajo,ES,,,1.0
+2023-05-02,Fiesta de la Comunidad de Madrid,ES,MD,"Madrid, Comunidad de",0.05263157894736842
+2023-05-17,Dia de las Letras Gallegas,ES,GA,Galicia [Galicia],0.05263157894736842
+2023-05-30,Dia de Canarias,ES,CN,Canarias,0.05263157894736842
+2023-05-31,Dia de CastillaLa Mancha,ES,CM,Castilla-La Mancha,0.05263157894736842
+2023-06-08,Corpus Christi,ES,CM,Castilla-La Mancha,0.05263157894736842
+2023-06-09,Dia de La Rioja,ES,RI,La Rioja,0.05263157894736842
+2023-06-09,Dia de la Region de Murcia,ES,MC,"Murcia, Región de",0.05263157894736842
+2023-06-24,San Juan,ES,VC,"Valenciana, Comunidad",0.10526315789473684
+2023-06-24,San Juan,ES,CT,Catalunya [Cataluña],0.10526315789473684
+2023-06-29,Fiesta del SacrificioAid Al Adha,ES,ML,Melilla,0.05263157894736842
+2023-06-29,Fiesta del SacrificioEidul Adha,ES,CE,Ceuta,0.05263157894736842
+2023-07-25,Dia Nacional de Galicia,ES,GA,Galicia [Galicia],0.05263157894736842
+2023-07-25,Santiago Apostol,ES,PV,Euskal Herria,0.15789473684210525
+2023-07-25,Santiago Apostol,ES,NC,Nafarroako Foru Komunitatea*,0.15789473684210525
+2023-07-25,Santiago Apostol,ES,CL,Castilla y León,0.15789473684210525
+2023-07-28,Dia de las Instituciones de Cantabria,ES,CB,Cantabria,0.05263157894736842
+2023-08-05,Nuestra Senora de Africa,ES,CE,Ceuta,0.05263157894736842
+2023-08-15,Asuncion de la Virgen,ES,,,1.0
+2023-09-02,Dia de Ceuta,ES,CE,Ceuta,0.05263157894736842
+2023-09-08,Dia de Asturias,ES,AS,"Asturias, Principado de",0.05263157894736842
+2023-09-08,Dia de Extremadura,ES,EX,Extremadura,0.05263157894736842
+2023-09-11,Fiesta Nacional de Cataluna,ES,CT,Catalunya [Cataluña],0.05263157894736842
+2023-09-15,La Bien Aparecida,ES,CB,Cantabria,0.05263157894736842
+2023-10-09,Dia de la Comunidad Valenciana,ES,VC,"Valenciana, Comunidad",0.05263157894736842
+2023-10-12,Fiesta Nacional de Espana,ES,,,1.0
+2023-11-01,Todos los Santos,ES,,,1.0
+2023-12-06,Dia de la Constitucion Espanola,ES,,,1.0
+2023-12-08,Inmaculada Concepcion,ES,,,1.0
+2023-12-25,Natividad del Senor,ES,,,1.0
+2023-12-26,San Esteban,ES,CT,Catalunya [Cataluña],0.05263157894736842

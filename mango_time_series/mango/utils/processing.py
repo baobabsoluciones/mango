@@ -1,6 +1,14 @@
 import numpy as np
-import pandas as pd
-import polars as pl
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
+    import polars as pl
+except ImportError:
+    pl = None
 
 from mango_base.mango.logging import log_time
 from mango_base.mango.logging.logger import get_basic_logger
@@ -236,7 +244,7 @@ def add_covid_mark(df: pl.LazyFrame) -> pl.LazyFrame:
     return df
 
 
-from typing import List
+from typing import List, Union
 
 
 def create_lags_col(
@@ -406,7 +414,7 @@ def read_process():
 
 
 def process_time_series(
-    df,
+    df: Union[pd.DataFrame, pl.DataFrame, pl.LazyFrame],
     SERIES_CONF,
     # add_kwargs
 ):
@@ -415,8 +423,9 @@ def process_time_series(
         df = pl.from_pandas(df).lazy()
     if isinstance(df, pl.DataFrame):
         df = df.lazy()
+    if not isinstance(df, pl.LazyFrame):
+        raise ValueError("df must be a pl.LazyFrame or pd.DataFrame or pl.DataFrame")
 
-    # df = adapt_columns_cl(df)
     df = rename_to_common_ts_names_pl(
         df,
         time_col=SERIES_CONF["TIME_COL"],

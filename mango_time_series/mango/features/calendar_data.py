@@ -1,6 +1,8 @@
+import warnings
 from datetime import datetime
 
 import holidays
+import numpy as np
 import pandas as pd
 import pycountry
 import unidecode
@@ -29,15 +31,33 @@ _WEIGHT_DICT = {
 }
 
 
+def _calculate_distances(df, distances_config):
+    tmp = df.copy()
+    back_days = distances_config["steps_back"]
+    forward_days = distances_config["steps_forward"]
+    days = [i for i in range(-back_days, forward_days + 1)]
+    days_df = pd.DataFrame(days, columns=["distance"])
+    tmp = tmp.merge(days_df, how="cross")
+    tmp["date"] = tmp["date"] + pd.to_timedelta(tmp["distance"], unit="D")
+    # If weight in columns keep only the day where distance=0 else 0
+    if "weight" in tmp.columns:
+        tmp["weight"] = np.where(tmp["distance"] == 0, tmp["weight"], 0)
+    return tmp
+
+
 def get_calendar(
     country: str = "ES",
     start_year: int = 2010,
     end_year: int = datetime.now().year + 2,
     communities: bool = False,
-    weight_communities: dict = _WEIGHT_DICT,
+    weight_communities: dict = None,
     calendar_events: bool = False,
+    return_weights: bool = None,
+    return_distances: bool = False,
+    distances_config: dict = None,
     name_transformations: bool = True,
     pivot: bool = False,
+    pivot_keep_communities: bool = False,
 ):
     """
     The get_calendar function returns a pandas DataFrame with the following columns:
@@ -52,12 +72,36 @@ def get_calendar(
     :param bool communities: Include the holidays of each autonomous community in spain
     :param bool calendar_events: Add black friday to the calendar.
     :param bool name_transformations: Apply transformations to the names of the holidays
+    :param dict weight_communities: Dictionary with the weight of each community
+    :param bool return_weights: Return the weight of each date
+    :param bool return_distances: Return the distance of each date to the next holiday
+    :param dict distances_config: Configuration for the distance calculation. Dictionary with the following keys:
+        - steps_back: Number of steps back to calculate the distance
+        - steps_forward: Number of steps forward to calculate the distance
+    :param bool pivot: Pivot the calendar to get a column for each date
+    :param bool pivot_keep_communities: Keep the communities column when pivoting
     :return: A pandas DataFrame with the calendar
     :doc-author: baobab soluciones
     """
+    if weight_communities is None:
+        weight_communities = _WEIGHT_DICT
     # Checks
     if start_year > end_year:
         raise ValueError("start_year must be lower than end_year")
+
+    if return_weights is None:
+        return_weights = communities
+
+    if return_weights and not communities:
+        return_weights = False
+        warnings.warn(
+            "return_weights is True but communities is False. Setting return_weights to False"
+        )
+
+    if (return_weights + return_distances == 0) and communities:
+        raise ValueError(
+            "At least one of return_weights or return_distances must be True when communities is True"
+        )
 
     # List of years
     years = list(range(start_year, end_year))
@@ -151,9 +195,23 @@ def get_calendar(
     if name_transformations:
         df = _name_transformations(df)
 
+    if return_distances:
+        if distances_config is None:
+            raise ValueError(
+                "distances_config must be provided when return_distances is True"
+            )
+        df = _calculate_distances(df, distances_config)
+
+    # Filter to keep only the columns that are needed
+    if not return_weights and "weight" in df.columns:
+        df = df.drop(columns=["weight"])
+
     # Pivot
     if pivot:
-        df = _pivot_calendar(df_calendar=df, communities=communities)
+        df = _pivot_calendar(
+            df_calendar=df,
+            pivot_keep_communities=pivot_keep_communities,
+        )
 
     # Return dataframe
     return df
@@ -225,7 +283,7 @@ def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _pivot_calendar(
-    df_calendar: pd.DataFrame, communities: bool = False
+    df_calendar: pd.DataFrame, pivot_keep_communities: bool = False
 ) -> pd.DataFrame:
     """
     The pivot_calendar function takes a dataframe of calendar events and pivots it to get a column for each date.
@@ -236,19 +294,53 @@ def _pivot_calendar(
     :doc-author: baobab soluciones
     """
 
+    # Check weight and distance columns in df_calendar
+    available_columns = list(
+        set(df_calendar.columns).intersection(["weight", "distance"])
+    )
+
     # Pivot df_calendar to get a column for each date
-    df_calendar = pd.concat([df_calendar, pd.get_dummies(df_calendar["name"])], axis=1)
+    for col in available_columns:
+        df_calendar = pd.concat(
+            [
+                df_calendar,
+                pd.get_dummies(df_calendar["name"], prefix=col, prefix_sep="_"),
+            ],
+            axis=1,
+        )
     df_calendar.drop(["name"], axis=1, inplace=True)
 
     # Group by fecha max()
-    df_calendar = df_calendar.groupby("date").max(numeric_only=True).reset_index()
+    if pivot_keep_communities:
+        groupby_cols = ["date", "country_code", "community_name"]
+        df_calendar["community_name"] = df_calendar["community_name"].fillna("Nacional")
+    else:
+        groupby_cols = ["date"]
 
     # Multiply by weight
-    if communities:
+    for prefix in available_columns:
         for col in df_calendar.columns:
-            if col not in ["date", "weight"]:
-                df_calendar[col] = df_calendar[col] * df_calendar["weight"]
+            if col.startswith(f"{prefix}_"):
+                df_calendar[col] = np.where(
+                    df_calendar[col],
+                    df_calendar[col] * df_calendar[prefix],
+                    0 if prefix == "weight" else np.nan,
+                )
 
-        df_calendar.drop(["weight"], axis=1, inplace=True)
+        df_calendar.drop([prefix], axis=1, inplace=True)
+
+    df_calendar = df_calendar.groupby(groupby_cols).max(numeric_only=True).reset_index()
+
+    # Replace back to null values in Nacional
+    if pivot_keep_communities:
+        df_calendar["community_name"] = df_calendar["community_name"].replace(
+            "Nacional", np.nan
+        )
+
+    if len(available_columns) == 1:
+        # Remove prefix if only one column
+        df_calendar.columns = df_calendar.columns.str.replace(
+            f"{available_columns[0]}_", ""
+        )
 
     return df_calendar
