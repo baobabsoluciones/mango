@@ -64,7 +64,7 @@ PARAMETERS_BASE = {
         "order": 4,
     },
     "day": {
-        "season_period": [7, 364],
+        "season_period": 7,
         "trend_window": [7, 7],
         "window_size": "30d",
         "agg": "d",
@@ -108,4 +108,7 @@ SERIES_CONFIGURATION["TIME_PERIOD"] = timedelta_equivalences[
     SERIES_CONFIGURATION["TIME_PERIOD_DESCR"]
 ]
 
-PARAMETERS = PARAMETERS_BASE[SERIES_CONFIGURATION["TIME_PERIOD_DESCR"]]
+SERIES_CONFIGURATION["TS_PARAMETERS"] = PARAMETERS_BASE[
+    SERIES_CONFIGURATION["TIME_PERIOD_DESCR"]
+]
+# PARAMETERS = PARAMETERS_BASE[SERIES_CONFIGURATION["TIME_PERIOD_DESCR"]]

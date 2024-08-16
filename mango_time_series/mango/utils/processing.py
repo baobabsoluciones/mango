@@ -1,24 +1,11 @@
-import numpy as np
 import pandas as pd
 import polars as pl
 
 from mango_base.mango.logging import log_time
 from mango_base.mango.logging.logger import get_basic_logger
-from mango_time_series.mango.utils.CONST import PARAMETERS
 from mango_time_series.mango.utils.processing_time_series import (
-    create_dense_data,
     create_dense_data_pl,
-    create_dense_data_pllazy,
 )
-
-# from config_files.CONST import PARAMETERS, SERIES_CONFIGURATION
-# from processing.local_functions import read_data
-# from processing.problem_processing_functions import (
-#     adapt_columns,
-#     adapt_columns_cl,
-#     get_basic_stats_from_data,
-# )
-
 
 logger = get_basic_logger()
 
@@ -308,18 +295,6 @@ def create_lags_col(
     return df_c
 
 
-# def create_time_features(df: pd.DataFrame) -> pd.DataFrame:
-#     """
-#
-#     :param df:
-#     :return:
-#     """
-#
-#     df = create_seasonal_lags(df, "y", 12, SERIES_CONFIGURATION["KEY_COLS"])
-#     df = create_non_seasonal_lags()
-#     df = create_rolling_features
-
-
 def series_as_columns(df, SERIES_CONF):
     """
     Pivot the dataframe to have the series as columns
@@ -374,37 +349,6 @@ def series_as_rows(df, SERIES_CONF):
     return long_df
 
 
-def read_process():
-    """
-    Read and process data
-    :return: pd.DataFrame
-    """
-    df = read_data(from_parquet=True)
-    df = adapt_columns(df)
-    df = rename_to_common_ts_names(
-        df,
-        time_col=SERIES_CONFIGURATION["TIME_COL"],
-        value_col=SERIES_CONFIGURATION["VALUE_COL"],
-    )
-    get_basic_stats_from_data(df)
-    df = drop_negative_output(df)
-    df = aggregate_to_input(df, "D")
-
-    df = create_dense_data(
-        df=df,
-        id_cols=SERIES_CONFIGURATION["KEY_COLS"],
-        freq="d",
-        min_max_by_id=True,
-        date_end="2024-02-29",
-        time_col="datetime",
-    )
-
-    df = aggregate_to_input(df, PARAMETERS["agg"])
-    df = add_covid_mark(df)
-
-    return df
-
-
 def process_time_series(
     df,
     SERIES_CONF,
@@ -435,8 +379,10 @@ def process_time_series(
         time_col="datetime",
     )
 
-    if PARAMETERS["agg"] != "d":
-        df = aggregate_to_input_pllazy(df, PARAMETERS["agg"], SERIES_CONF)
+    if SERIES_CONF["TS_PARAMETERS"]["agg"] != "d":
+        df = aggregate_to_input_pllazy(
+            df, SERIES_CONF["TS_PARAMETERS"]["agg"], SERIES_CONF
+        )
 
     df = add_covid_mark(df)
 

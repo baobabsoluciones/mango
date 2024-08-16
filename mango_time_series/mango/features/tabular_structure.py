@@ -6,8 +6,8 @@ import polars as pl
 from mango_base.mango.logging import log_time
 from mango_base.mango.logging.logger import get_basic_logger
 from mango_time_series.mango.features.moving_averages import (
-    rolling_recent_averages,
-    rolling_seasonal_averages,
+    create_recent_variables,
+    create_seasonal_variables,
 )
 
 logger = get_basic_logger()
@@ -86,12 +86,8 @@ def create_tabular_structure_pl(
     return df
 
 
-from mango_time_series.mango.tests.example_timeseries_creation_polars import (
-    test_timeseries_creation,
-)
 from mango_time_series.mango.utils.CONST import (
     SERIES_CONFIGURATION as SERIES_CONF,
-    PARAMETERS,
 )
 from mango_time_series.mango.utils.processing import process_time_series
 
@@ -129,9 +125,16 @@ horizon = 56
 
 df_big = create_tabular_structure_pl(df, horizon, SERIES_CONF)
 
-df_big = rolling_recent_averages(df_big, SERIES_CONF["KEY_COLS"], [7, 14, 28], gap=1)
-df_big = rolling_seasonal_averages(
-    df_big, SERIES_CONF["KEY_COLS"], [4], SERIES_CONF["TIME_PERIOD_DESCR"], gap=1
+df_big = create_recent_variables(
+    df_big, SERIES_CONF["KEY_COLS"], [7, 14, 28], lags=[1, 2], gap=1
+)
+df_big = create_seasonal_variables(
+    df=df_big,
+    group_cols=SERIES_CONF["KEY_COLS"],
+    window=[4],
+    lags=[1, 2, 4],
+    season_unit=SERIES_CONF["TIME_PERIOD_DESCR"],
+    freq=SERIES_CONF["TS_PARAMETERS"]["season_period"],
 )
 
 df_all_pl = df_big.collect().sort("datetime")
@@ -146,22 +149,9 @@ from mango_time_series.mango.validation.custom_folds import (
 ids = create_recent_folds(df_pd, 56, SERIES_CONF, SERIES_CONF["RECENT_FOLDS"])
 
 sea_ids = create_recent_seasonal_folds(
-    df_pd, 56, SERIES_CONF, PARAMETERS, SERIES_CONF["SEASONAL_FOLDS"]
+    df_pd, 56, SERIES_CONF, SERIES_CONF["SEASONAL_FOLDS"]
 )
 
-df_ids1_tr = df_pd.loc[sea_ids[0][0]]
-df_ids1_te = df_pd.loc[sea_ids[0][1]]
-df_ids2_tr = df_pd.loc[sea_ids[1][0]]
-df_ids2_te = df_pd.loc[sea_ids[1][1]]
-
-min_date_tr1 = df_ids1_tr["datetime"].min()
-max_date_tr1 = df_ids1_tr["datetime"].max()
-min_date_te1 = df_ids1_te["datetime"].min()
-max_date_te1 = df_ids1_te["datetime"].max()
-min_date_tr2 = df_ids2_tr["datetime"].min()
-max_date_tr2 = df_ids2_tr["datetime"].max()
-min_date_te2 = df_ids2_te["datetime"].min()
-max_date_te2 = df_ids2_te["datetime"].max()
 logger.info("Tabular structure created")
 # with colmns duration= end-start
 

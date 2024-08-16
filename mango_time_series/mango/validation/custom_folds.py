@@ -52,7 +52,7 @@ def create_recent_folds(df: pd.DataFrame, horizon, SERIES_CONF, recent_folds: in
 
 
 def create_recent_seasonal_folds(
-    df: pd.DataFrame, horizon, SERIES_CONF, PARAMETERS, season_folds: int = 1
+    df: pd.DataFrame, horizon, SERIES_CONF, season_folds: int = 1
 ):
 
     logger.info(
@@ -76,7 +76,7 @@ def create_recent_seasonal_folds(
         df_temp = df.copy()
         # lower is last_date - seasonal_offset
         lower_window = last_date - pd.to_timedelta(
-            (PARAMETERS["seasonal_fold_offset"] * season_folds),
+            (SERIES_CONF["TS_PARAMETERS"]["seasonal_fold_offset"] * season_folds),
             unit=SERIES_CONF["TIME_PERIOD_DESCR"],
         )
         upper_window = lower_window + pd.to_timedelta(
