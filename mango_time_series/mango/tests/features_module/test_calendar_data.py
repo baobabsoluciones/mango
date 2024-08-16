@@ -12,7 +12,7 @@ class CalendarTests(TestCase):
         self.start_year = 2010
         self.end_year = 2024
         self.steps_back = 5
-        self.steps_forward=6
+        self.steps_forward = 6
         self.df_calendar = get_calendar(
             calendar_events=True,
             name_transformations=False,
@@ -74,14 +74,17 @@ class CalendarTests(TestCase):
             communities=True,
             pivot=True,
             return_distances=True,
-            distances_config={"steps_back": self.steps_back, "steps_forward": self.steps_forward},
+            distances_config={
+                "steps_back": self.steps_back,
+                "steps_forward": self.steps_forward,
+            },
             return_weights=False,
             pivot_keep_communities=True,
         )
         self.expected_df_calendar_pivot_keep_com_distances = pd.read_csv(
             normalize_path("data/calendar_pivot_keep_com_distances.csv"),
             encoding="latin1",
-            parse_dates=["date"]
+            parse_dates=["date"],
         )
 
         self.df_calendar_pivot_keep_com_distances_weights = get_calendar(
@@ -92,7 +95,10 @@ class CalendarTests(TestCase):
             communities=True,
             pivot=True,
             return_distances=True,
-            distances_config={"steps_back": self.steps_back, "steps_forward": self.steps_forward},
+            distances_config={
+                "steps_back": self.steps_back,
+                "steps_forward": self.steps_forward,
+            },
             return_weights=True,
             pivot_keep_communities=True,
         )
@@ -211,8 +217,12 @@ class CalendarTests(TestCase):
         )
 
         # Check there is no distance_ column and no weight_
-        cols = [col for col in self.df_calendar_pivot_keep_com if col.startswith(("weight_","distance_"))]
-        self.assertListEqual(cols,[])
+        cols = [
+            col
+            for col in self.df_calendar_pivot_keep_com
+            if col.startswith(("weight_", "distance_"))
+        ]
+        self.assertListEqual(cols, [])
         # When agg by date should give same dataframe as pivot com
         t = (
             self.df_calendar_pivot_keep_com.groupby("date")
@@ -223,34 +233,62 @@ class CalendarTests(TestCase):
 
     def test_get_calendar_pivot_keep_com_distances(self):
         assert_frame_equal(
-            self.df_calendar_pivot_keep_com_distances, self.expected_df_calendar_pivot_keep_com_distances
+            self.df_calendar_pivot_keep_com_distances,
+            self.expected_df_calendar_pivot_keep_com_distances,
         )
         # Check there is no distance_ column and no weight_
-        cols = [col for col in self.df_calendar_pivot_keep_com if col.startswith(("weight_","distance_"))]
-        self.assertListEqual(cols,[])
+        cols = [
+            col
+            for col in self.df_calendar_pivot_keep_com
+            if col.startswith(("weight_", "distance_"))
+        ]
+        self.assertListEqual(cols, [])
 
         # Check min distance is - self.steps_back and max distance +self.steps_forward
-        self.assertEqual(-self.df_calendar_pivot_keep_com_distances.min(numeric_only=True).min(),self.steps_back)
-        self.assertEqual(self.df_calendar_pivot_keep_com_distances.max(numeric_only=True).max(), self.steps_forward)
+        self.assertEqual(
+            -self.df_calendar_pivot_keep_com_distances.min(numeric_only=True).min(),
+            self.steps_back,
+        )
+        self.assertEqual(
+            self.df_calendar_pivot_keep_com_distances.max(numeric_only=True).max(),
+            self.steps_forward,
+        )
 
     def test_calendar_pivot_keep_com_distances_weights(self):
         # Should be a mix between self.df_calendar_pivot_keep_com and self.df_calendar_pivot_keep_com_distances
         # Add prefix to columns
         t1 = self.expected_df_calendar_pivot_keep_com_distances.copy()
         t2 = self.expected_df_calendar_pivot_keep_com.copy()
-        t1.columns = [f"distance_{col}" if col not in ["date","country_code","community_name"] else col for col in t1.columns]
-        t2.columns = [f"weight_{col}" if col not in ["date","country_code","community_name"] else col for col in t2.columns]
+        t1.columns = [
+            (
+                f"distance_{col}"
+                if col not in ["date", "country_code", "community_name"]
+                else col
+            )
+            for col in t1.columns
+        ]
+        t2.columns = [
+            (
+                f"weight_{col}"
+                if col not in ["date", "country_code", "community_name"]
+                else col
+            )
+            for col in t2.columns
+        ]
 
         expected = pd.merge(
-            t1,
-            t2,
-            how="left",
-            on=["date","country_code","community_name"]
+            t1, t2, how="left", on=["date", "country_code", "community_name"]
         )
         for col in [col for col in expected.columns if col.startswith("weight_")]:
             expected[col] = expected[col].fillna(0)
 
         # Columns same order
-        expected = expected[self.df_calendar_pivot_keep_com_distances_weights.columns].copy().sort_values("date")
+        expected = (
+            expected[self.df_calendar_pivot_keep_com_distances_weights.columns]
+            .copy()
+            .sort_values("date")
+        )
 
-        assert_frame_equal(expected, self.df_calendar_pivot_keep_com_distances_weights, check_like=True)
+        assert_frame_equal(
+            expected, self.df_calendar_pivot_keep_com_distances_weights, check_like=True
+        )
