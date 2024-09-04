@@ -1,3 +1,5 @@
+import re
+
 import polars as pl
 
 from mango_base.mango.logging import log_time
@@ -7,14 +9,45 @@ logger = get_basic_logger()
 
 
 @log_time()
+def create_season_unit_previous_date(df, time_unit):
+    aux = (
+        df.select(["forecast_origin", "season_unit"])
+        .unique()
+        .sort(["forecast_origin", "season_unit"])
+        .with_columns(
+            pl.col("forecast_origin").dt.weekday().alias("season_unit_origin")
+        )
+        .with_columns(
+            (pl.col("season_unit") - pl.col("season_unit_origin")).alias("diff")
+        )
+        .with_columns(
+            pl.when(pl.col("diff") > 0)
+            .then(7 - pl.col("diff"))
+            .otherwise(-pl.col("diff"))
+            .alias("diff")
+        )
+        .with_columns(
+            (
+                pl.col("forecast_origin").dt.offset_by(
+                    ("-" + pl.col("diff").cast(str) + time_unit)
+                )
+            ).alias("previous_dow_date")
+        )
+    )
+
+    return aux
+
+
+@log_time()
 def create_recent_variables(
     df: pl.LazyFrame,
-    group_cols: list,
+    SERIES_CONF: dict,
     window: list,
     lags: list,
-    gap: int = 1,
+    gap: int = 0,
     freq: int = 1,
     colname: str = "",
+    season_unit=False,
 ) -> pl.LazyFrame:
     """
     Create rolling averages for the last window days, excluding the current row,
@@ -30,16 +63,20 @@ def create_recent_variables(
     :return: pd.DataFrame with new columns for each rolling average.
     """
 
-    # Filter the DataFrame to include only rows where horizon == 1
-    df_filtered = df.filter(pl.col("horizon") == 1)
-    df_others = df.filter(pl.col("horizon") != 1)
-    list_rolling_columns = []
+    group_cols = SERIES_CONF["KEY_COLS"]
 
+    if season_unit:
+        group_cols = group_cols + ["season_unit"]
+
+    variables_df = (
+        df.select(group_cols + ["datetime", "y"])
+        .unique()
+        .sort(group_cols + ["datetime"])
+    )
     # ROLLING AVERAGES
     for w in window:
         rolling_col_name = f"y_{colname}roll_{w}"
-        list_rolling_columns.append(rolling_col_name)
-        df_filtered = df_filtered.with_columns(
+        variables_df = variables_df.with_columns(
             pl.col("y")
             .shift(gap)  # Shift values by the gap to exclude the current row
             .rolling_mean(window_size=w)
@@ -47,43 +84,38 @@ def create_recent_variables(
             .alias(rolling_col_name)
         )
 
-        # initialize the rolling column for the other rows
-        df_others = df_others.with_columns(pl.lit(None).alias(rolling_col_name))
-
     # LAGS
-    list_lag_columns = []
     for l in lags:
         lag_col_name = f"y_{colname}lag_{l*freq}"
-        list_lag_columns.append(lag_col_name)
-        df_filtered = df_filtered.with_columns(
+        variables_df = variables_df.with_columns(
             pl.col("y")
             .shift(gap - 1 + l)  # Shift values by the gap to exclude the current row
             .over(group_cols)
             .alias(lag_col_name)
         )
 
-        # initialize the lag column for the other rows
-        df_others = df_others.with_columns(pl.lit(None).alias(lag_col_name))
+    variables_df = variables_df.drop("y")
 
-    # Collect the result to convert back to a DataFrame
-    df_filtered_result = df_filtered
-    df_others_result = df_others
+    if season_unit:
+        aux = create_season_unit_previous_date(
+            df, time_unit=re.sub(r"\d", "", SERIES_CONF["TIME_PERIOD"])
+        ).select(["forecast_origin", "season_unit", "previous_dow_date"])
 
-    # concat the two dataframes
-    df_final = pl.concat([df_filtered_result, df_others_result])
-    df_final = df_final.sort(group_cols + ["forecast_origin", "datetime"])
+        df = df.join(aux, on=["forecast_origin", "season_unit"], how="left")
 
-    # grouped by key columns+forecast_origin rolling columns NA should be forward filled
-    total_cols = list_rolling_columns + list_lag_columns
-    df_final = df_final.with_columns(
-        [
-            pl.col(col)
-            .fill_null(strategy="forward")
-            .over(group_cols + ["forecast_origin"])
-            .alias(col)
-            for col in total_cols
-        ]
-    )
+        # remove season_unit from group_cols
+        df_final = df.join(
+            variables_df,
+            left_on=group_cols + ["previous_dow_date"],
+            right_on=group_cols + ["datetime"],
+            how="left",
+        ).drop(["previous_dow_date"])
+
+    else:
+        variables_df = variables_df.rename({"datetime": "forecast_origin"})
+        df_final = df.join(
+            variables_df, on=group_cols + ["forecast_origin"], how="left"
+        )
 
     return df_final
 
@@ -91,12 +123,13 @@ def create_recent_variables(
 @log_time()
 def create_seasonal_variables(
     df: pl.LazyFrame,
-    group_cols: list,
+    SERIES_CONF: dict,
+    # group_cols: list,
     window: list,
     lags: list,
     season_unit: str,
     freq: int,
-    gap: int = 1,
+    gap: int = 0,
 ) -> pl.LazyFrame:
     """
     Create rolling averages for the last window days, excluding the current row,
@@ -121,12 +154,13 @@ def create_seasonal_variables(
 
     df = create_recent_variables(
         df,
-        group_cols + ["season_unit"],
+        SERIES_CONF,
         window,
         lags,
         gap,
         colname="sea_",
         freq=freq,
+        season_unit=True,
     )
 
     # drop season_unit
