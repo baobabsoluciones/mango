@@ -8,11 +8,11 @@
 
 SERIES_CONFIGURATION = {
     "KEY_COLS": ["airport"],
-    "TIME_COL": "Fecha_Vuelo",
+    "TIME_COL": "datetime",
     "VALUE_COL": "FIN",
     "AGG_OPERATIONS": {"y": "sum"},
     "TIME_PERIOD_DESCR": "day",
-    "RECENT_FOLDS": 3,
+    "RECENT_FOLDS": 2,
     "SEASONAL_FOLDS": 1,
 }
 

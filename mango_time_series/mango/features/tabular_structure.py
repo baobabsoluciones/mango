@@ -1,6 +1,5 @@
 import re
 
-import numpy as np
 import pandas as pd
 import polars as pl
 
@@ -112,32 +111,16 @@ from mango_time_series.mango.utils.processing import process_time_series
 
 # df = test_timeseries_creation(1000)
 df = pd.read_excel(
-    r"G:\Unidades compartidas\clece_pmr_202207\proyecto\desarrollo\datos\time_series.xlsx"
+    r"G:\Unidades compartidas\clece_pmr_202207\proyecto\desarrollo\datos\time_series_synthetic_interpolate.xlsx"
+    #     r"G:\Unidades compartidas\clece_pmr_202207\proyecto\desarrollo\datos\time_series.xlsx"
 )
+
 df["airport"] = "BCN"
 
 df = process_time_series(df, SERIES_CONF)
 
 df = df.with_columns(pl.col("y").fill_null(0))
 horizon = 56
-
-## Alternativa con FOR
-# all_keys = df.select(SERIES_CONF["KEY_COLS"]).collect().unique()
-# df_all = pl.DataFrame()
-# for i in all_keys.rows():
-#     print("Store: ", i[0], "Product: ", i[1])
-#     df_key = df.filter(pl.col("store") == i[0]).filter(pl.col("product") == i[1])
-#
-#     df_tab = create_tabular_structure_pl(df_key, horizon, SERIES_CONF)
-#
-#     df_tab = rolling_recent_averages(
-#         df_tab, SERIES_CONF["KEY_COLS"], [7, 14, 28], gap=1
-#     )
-#     df_tab = rolling_seasonal_averages(
-#         df_tab, SERIES_CONF["KEY_COLS"], [4], SERIES_CONF["TIME_PERIOD_DESCR"], gap=1
-#     )
-#
-#     df_all = pl.concat([df_all, df_tab.collect()])
 
 ## Alternativa entera polars
 
@@ -146,7 +129,14 @@ df = differentiate_target(df, SERIES_CONF["KEY_COLS"], 7)
 df_big = create_tabular_structure_pl(df, horizon, SERIES_CONF)
 
 df_big = create_recent_variables(
-    df_big, SERIES_CONF, [7, 14, 28, 56], lags=[1, 2], gap=0
+    df_big,
+    SERIES_CONF,
+    [
+        7,
+        14,
+    ],
+    lags=[1, 2],
+    gap=0,
 )
 
 df_big = create_seasonal_variables(
@@ -203,10 +193,10 @@ parameters = {
     "max_depth": [10],
     "criterion": ["friedman_mse"],
     "subsample": [0.5],
-    "n_estimators": [200],
+    "n_estimators": [100],
 }
 df_pd = df_pd.reset_index()
-date_end_train = "2024-02-01"
+date_end_train = "2024-09-01"
 df_pd_tr = df_pd[df_pd["datetime"] < date_end_train]
 df_pd_te = df_pd[df_pd["datetime"] >= date_end_train]
 # df_spl = df_spl.dropna()
@@ -241,11 +231,6 @@ df_pd_te["cumsum_err"] = df_pd_te.groupby(["weekday", "forecast_origin"])[
     "prev_err"
 ].cumsum()
 
-# calculate mae, mape
-
-# create a ploty graph with forecast vs actual
-import plotly.graph_objects as go
-
 df_pd_te["f_orig"] = df_pd_te["f"] + df_pd_te["y_orig_lagged"]
 y_plot = "y_orig"
 f_plot = "f_orig2"
@@ -254,17 +239,23 @@ df_pd_te = df_pd_te.sort_values(["datetime", "forecast_origin"])
 df_pd_te["f_orig2"] = df_pd_te["f_orig"] + df_pd_te["cumsum_err"].fillna(0)
 
 
-# cumsum error by weekday
+# calculate mae, mape
 
-df_pl = df_pd_te[df_pd_te.forecast_origin == "2024-02-01 00:00:00.000"]
+# create a ploty graph with forecast vs actual
+import plotly.graph_objects as go
+
+# cumsum error by weekday
+df_pl = df_pd[["datetime", "y_orig"]].drop_duplicates()
+df_pl = df_pd_te[df_pd_te.forecast_origin == "2024-09-01 00:00:00.000"]
+# df_pl = df_pl[df_pl.datetime <= "2024-09-04 00:00:00.000"]
 fig = go.Figure()
 
 # Add trace for actual data (y)
-fig.add_trace(
-    go.Scatter(x=df_pl["datetime"], y=df_pl[y_plot], mode="lines", name="Actual")
-)
+# fig.add_trace(
+#     go.Scatter(x=df_pl["datetime"], y=df_pl[y_plot], mode="lines", name="Actual")
+# )
 
-# Add trace for forecast data (f)
+# # Add trace for forecast data (f)
 fig.add_trace(
     go.Scatter(x=df_pl["datetime"], y=df_pl[f_plot], mode="lines", name="Forecast")
 )
@@ -287,7 +278,8 @@ fig.show()
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 
 # df_score = df_pd_te[df_pd_te.horizon <= 7]
-df_score = df_pd_te
+# df_score = df_pd_te
+df_score = df_pl
 mae = mean_absolute_error(df_score[y_plot], df_score[f_plot])
 mape = mean_absolute_percentage_error(df_score[y_plot], df_score[f_plot])
 mae_snaive = mean_absolute_error(df_score[y_plot], df_score["y_orig_lagged"])

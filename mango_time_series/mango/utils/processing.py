@@ -375,7 +375,7 @@ def process_time_series(
         id_cols=SERIES_CONF["KEY_COLS"],
         freq="d",
         min_max_by_id=True,
-        date_end="2024-06-01",
+        date_end="2024-09-30",
         time_col="datetime",
     )
 
