@@ -20,7 +20,6 @@ def aggregate_to_input_cache(data, freq, SERIES_CONF):
 def select_series(data, columns):
     st.sidebar.title("Selecciona serie a analizar")
     filtered_data = data.copy()
-
     for column in columns:
         filter_values = filtered_data[column].unique()
 
@@ -65,7 +64,7 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
         for col in data.columns
         if col
         not in [
-            "origin_date",
+            "forecast_origin",
             "datetime",
             "h",
             "y",
@@ -77,9 +76,13 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
         ]
     ]
 
-    # Convert origin_date to datetime
+    if columns_id == []:
+        data["id"] = "1"
+        columns_id = ["id"]
+
+    # Convert forecast_origin to datetime
     data["datetime"] = pd.to_datetime(data["datetime"])
-    data["origin_date"] = pd.to_datetime(data["origin_date"])
+    data["forecast_origin"] = pd.to_datetime(data["forecast_origin"])
 
     time_series = data[columns_id + ["datetime", "y"]].drop_duplicates()
     forecast = data.copy()
@@ -128,7 +131,7 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
         forecast,
         freq=select_agr_tmp_dict[select_agr_tmp],
         SERIES_CONF={
-            "KEY_COLS": columns_id + ["origin_date","h"],
+            "KEY_COLS": columns_id + ["forecast_origin", "h"],
             "AGG_OPERATIONS": {
                 "y": "sum",
                 "f": "sum",
@@ -189,6 +192,7 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
             # Remove the last & from the filter condition
             filter_cond = filter_cond[:-3]
             selected_data = selected_data.query(filter_cond)
+            st.write(selected_data)
             st.plotly_chart(px.line(selected_data, x="datetime", y="y", title=serie))
 
     elif visualization == "Forecast":
@@ -204,7 +208,6 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
             for idx, col in enumerate(columns_id):
                 filter_cond_serie += f"{col} == '{cols_to_filter[idx]}' & "
 
-
             # Remove the last & from the filter condition
             filter_cond_series = filter_cond_serie[:-3] + ")"
             filter_cond += filter_cond_series + " | "
@@ -212,8 +215,13 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
 
         forecast_restricted = forecast.query(filter_cond)
 
-
-        selected_date = st.date_input("Choose a date", min_value=forecast_restricted["origin_date"].min(), max_value=forecast_restricted["origin_date"].max(), value=forecast_restricted["origin_date"].min(), label_visibility="collapsed")
+        selected_date = st.date_input(
+            "Choose a date",
+            min_value=forecast_restricted["forecast_origin"].min(),
+            max_value=forecast_restricted["forecast_origin"].max(),
+            value=forecast_restricted["forecast_origin"].min(),
+            label_visibility="collapsed",
+        )
         for serie in st.session_state["selected_series"]:
             cols_to_filter = serie.split(" - ")
             filter_cond = ""
@@ -223,15 +231,24 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
             # Remove the last & from the filter condition
             filter_cond = filter_cond[:-3]
             selected_data = forecast_restricted.query(filter_cond)
-            selected_data = selected_data[selected_data["origin_date"] == pd.to_datetime(selected_date)]
+            selected_data = selected_data[
+                selected_data["forecast_origin"] == pd.to_datetime(selected_date)
+            ]
             # Plot both real and predicted values x datetime shared y axis y and f column
-            fig = px.line(selected_data, x="datetime", y=["y", "f"], title=serie, labels={"datetime": "Fecha", "value": "Valor"}, hover_data=["err", "abs_err", "perc_err", "perc_abs_err"])
+            fig = px.line(
+                selected_data,
+                x="datetime",
+                y=["y", "f"],
+                title=serie,
+                labels={"datetime": "Fecha", "value": "Valor"},
+                hover_data=["err", "abs_err", "perc_err", "perc_abs_err"],
+            )
             st.plotly_chart(fig)
 
 
 if __name__ == "__main__":
-    file = (
-        r"C:\Users\AntonioGonzález\Desktop\proyectos_baobab\mango\test_multi_index.csv"
-    )
+    file = r"C:\Users\AntonioGonzález\Desktop\proyectos_baobab\mango\daily_forecast_error.csv"
     logo_path = r"https://www.multiserviciosaeroportuarios.com/wp-content/uploads/2024/03/cropped-Logo-transparente-blanco-Multiservicios-Aeroportuarios-Maero-1-192x192.png"
-    interface_visualization(file=file, logo_path=logo_path, project_name="Testing limits of Montse")
+    interface_visualization(
+        file=file, logo_path=logo_path, project_name="Testing limits of Montse"
+    )
