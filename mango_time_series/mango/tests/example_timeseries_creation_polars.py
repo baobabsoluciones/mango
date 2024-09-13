@@ -10,7 +10,6 @@ np.random.seed(42)
 
 @log_time()
 def test_timeseries_creation(num_prods=10, return_pandas=True):
-
     stores = ["Store_A", "Store_B"]
     products = [f"Product_{i}" for i in range(1, num_prods)]
 
@@ -79,3 +78,48 @@ def test_timeseries_creation(num_prods=10, return_pandas=True):
     df = df.sample(fraction=0.9, with_replacement=False)
 
     return df
+
+
+def test_timeseries_prediction_creation(num_prods=10, horizon=14, return_pandas=True):
+    df_sales = test_timeseries_creation(num_prods=num_prods, return_pandas=False)
+    # Emulate different horizons forecasts. For each horizon create a row
+    df_horizons = pl.DataFrame(
+        {
+            "horizon": [i for i in range(1, horizon + 1)],
+        }
+    )
+    df_sales = df_sales.join(df_horizons, how="cross")
+    df_sales = df_sales.with_columns(
+        (pl.col("date") - pl.duration(days=pl.col("horizon"))).alias("origin_date")
+    )
+    df_sales = df_sales.with_columns(
+        (pl.col("sales") + np.random.randint(-10, 10, size=len(df_sales))).alias(
+            "f"
+        )
+    )
+    # Rename columns sales->y, date->datetime
+    df_sales = df_sales.with_columns(
+        pl.col("sales").alias("y"),
+        pl.col("date").alias("datetime"),
+        pl.col("horizon").alias("h")
+    )
+    df_sales = df_sales.select([
+        "store",
+        "product",
+        "origin_date",
+        "datetime",
+        "h",
+        "y",
+        "f",
+    ])
+
+    # Add column err,abs_err,perc_err,perc_abs_err
+    df_sales = df_sales.with_columns(
+        (pl.col("f") - pl.col("y")).alias("err"),
+        (pl.col("f") - pl.col("y")).abs().alias("abs_err"),
+        (pl.col("f") - pl.col("y") / pl.col("y")).alias("perc_err"),
+        (pl.col("f") - pl.col("y") / pl.col("y")).abs().alias("perc_abs_err"),
+    )
+    if return_pandas:
+        return df_sales.to_pandas()
+    return df_sales
