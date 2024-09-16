@@ -32,7 +32,7 @@ class TestConfig(BaseConfig):
 class AnotherTestConfig(BaseConfig):
     __params = {
         "main": [
-            ConfigParameter("some_parameter", dict),
+            ConfigParameter("some_parameter", set),
             ConfigParameter("other_parameter", str, validate=["hello", "world"]),
         ],
         "other_section": [
@@ -42,6 +42,17 @@ class AnotherTestConfig(BaseConfig):
             ConfigParameter("another_list", list, secondary_type=str),
             ConfigParameter("has_default", str, default="default"),
             ConfigParameter("bad_value", float, default=1.0),
+        ],
+    }
+
+    def __init__(self, file_name):
+        super().__init__(file_name, self.__params)
+
+
+class TestConfigWithDict(BaseConfig):
+    __params = {
+        "test": [
+            ConfigParameter("value", dict, dict_types={"a": str, "b": int, "c": bool}),
         ],
     }
 
@@ -93,6 +104,10 @@ class ConfigTest(TestCase):
             "ConfigParameter('some_parameter', <class 'int'>, 1)",
         )
 
+    def test_dict_parameter(self):
+        config = TestConfigWithDict(normalize_path("data/test_dict_in_config.cfg"))
+        self.assertEqual(config("value"), {"a": "1", "b": 2, "c": True})
+
     def test_empty_template(self):
         TestConfig.create_config_template(output_path="empty_template.cfg")
         # Test if file exists
@@ -100,7 +115,9 @@ class ConfigTest(TestCase):
         # Read file and parse it with ConfigParser
         parser = ConfigParser()
         parser.read("empty_template.cfg")
-        self.assertEqual(parser.sections(), ["main", "other_section", "missing_section"])
+        self.assertEqual(
+            parser.sections(), ["main", "other_section", "missing_section"]
+        )
         self.assertEqual(parser["main"]["some_parameter"], "")
         self.assertEqual(parser["main"]["other_parameter"], "")
         self.assertEqual(parser["other_section"]["float_parameter"], "1.0")
