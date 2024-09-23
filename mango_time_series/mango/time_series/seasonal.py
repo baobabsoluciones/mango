@@ -17,48 +17,55 @@ class SeasonalityDetector:
         self.threshold_acf = threshold_acf
         self.percentile_periodogram = percentile_periodogram
 
-    def detect_seasonality_acf(self, ts: np.ndarray, max_lag: int = 366) -> list:
+    @staticmethod
+    def detect_significant_seasonality_acf(
+        ts: np.ndarray,
+        max_lag: int = 366,
+        acf_threshold: float = 0.2,
+        min_repetitions: int = 2,
+    ) -> int:
         """
-        Detect seasonality or multiple seasonalities in time series data using ACF analysis.
-        The function ensures that only the smallest significant period is detected and removes any multiples
-        (e.g., if 7 days is detected, it will remove 14, 21, etc.). Other independent seasonalities are also detected.
+        Detect the most significant seasonality in time series data using ACF (Autocorrelation Function) analysis.
+        The function ensures that the most common period found through ACF has significant ACF values at multiples,
+        and ignores isolated lags that do not show a repetitive pattern.
 
         :param ts: The time series data as a NumPy array.
         :param max_lag: The maximum lag to consider for ACF analysis. Default is set to 366 to cover yearly seasonality.
-        :return: A list of detected seasonal periods. If no seasonality is detected, an empty list is returned.
+        :param acf_threshold: The ACF value threshold to consider peaks significant (default 0.2).
+        :param min_repetitions: Minimum number of significant multiples to consider a period as a valid seasonality (default 3).
+        :return: The most common detected seasonal period if significant; 0 otherwise.
         """
-
-        # Ensure max_lag does not exceed the length of the time series
-        max_lag = min(max_lag, len(ts) - 1)
-
-        # Calculate ACF values up to max_lag
         acf_values = acf(ts, nlags=max_lag)
 
         # Find local maxima in the ACF values (indicative of seasonality)
         local_maxima = (np.diff(np.sign(np.diff(acf_values))) < 0).nonzero()[0] + 1
 
-        # Filter local maxima that have ACF values greater than the threshold
-        significant_maxima = [lag for lag in local_maxima if acf_values[lag] > self.threshold_acf]
+        significant_maxima = [lag for lag in local_maxima if acf_values[lag] > acf_threshold]
 
-        # List to hold detected seasonal periods
-        detected_periods = []
+        if len(significant_maxima) > 1:
+            # Calculate differences between local maxima to find potential periods
+            potential_periods = np.diff(significant_maxima)
+            most_common_period = int(np.bincount(potential_periods).argmax())
 
-        if len(significant_maxima) > 0:
-            # Start by detecting the smallest period (like 7 for weekly seasonality)
-            smallest_period = significant_maxima[0]
-            detected_periods.append(smallest_period)
+            # Check if the most common period has a sufficient number of significant ACF values at its multiples
+            period_lags = np.arange(most_common_period, max_lag, most_common_period)
 
-            # Separate the remaining lags that are not multiples of the smallest period
-            non_multiples = [lag for lag in significant_maxima if lag % smallest_period != 0]
+            valid_period_lags = period_lags[period_lags < len(acf_values)]
+            # Count how many multiples of the period are above the ACF threshold
+            significant_multiples = np.sum(acf_values[valid_period_lags] > acf_threshold)
 
-            # Add non-multiple periods to detected periods
-            detected_periods.extend(non_multiples)
+            if (
+                significant_multiples >= min_repetitions
+            ):  # Only consider the period if enough multiples are significant
+                return most_common_period
+            else:
+                return 0
+        else:
+            return 0
 
-        final_detected_periods = sorted(list(set(detected_periods)))
-
-        return final_detected_periods
-
-    def detect_seasonality_periodogram(self, ts: np.ndarray, min_period: int = 2, max_period: int = 365) -> list:
+    def detect_seasonality_periodogram(
+        self, ts: np.ndarray, min_period: int = 2, max_period: int = 365
+    ) -> list:
         """
         Detect seasonality in a time series using the periodogram.
 
@@ -81,7 +88,8 @@ class SeasonalityDetector:
 
         # Detect peaks in the power spectrum that are above the threshold
         significant_periods = filtered_periods[
-            filtered_power_spectrum > np.percentile(filtered_power_spectrum, self.percentile_periodogram)
+            filtered_power_spectrum
+            > np.percentile(filtered_power_spectrum, self.percentile_periodogram)
         ]
 
         final_detected_periods = sorted(np.unique(np.round(significant_periods)))
@@ -97,8 +105,12 @@ class SeasonalityDetector:
         :param max_lag: The maximum lag to consider for ACF analysis. Default is set to 366 to cover yearly seasonality.
         :return: A list of detected seasonal periods. If no seasonality is detected, an empty list is returned.
         """
+        # Adjust max_lag based on the length of the time series
+        if max_lag is None:
+            max_lag = min(366, len(ts))
+
         # Step 1: Check for the presence of seasonality using ACF
-        if self.detect_seasonality_acf(ts, max_lag):
+        if self.detect_significant_seasonality_acf(ts, max_lag):
             # Step 2: If seasonality is detected by ACF, use the periodogram to find the specific seasonal periods
             detected_seasonalities = self.detect_seasonality_periodogram(ts)
             if len(detected_seasonalities) > 0:
