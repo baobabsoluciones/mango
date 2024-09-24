@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.subplots as sp
+from dateutil.rrule import weekday
 from statsmodels.tsa.seasonal import STL
 from streamlit_date_picker import date_range_picker, PickerType
 from .constants import SELECT_AGR_TMP_DICT, DAY_NAME_DICT, MONTH_NAME_DICT, ALL_DICT
@@ -230,13 +231,18 @@ def plot_forecast(forecast, selected_series):
             selected_data["forecast_origin"] == pd.to_datetime(selected_date)
         ]
         # Plot both real and predicted values x datetime shared y axis y and f column
+        # weekday from datetime
+        selected_data["weekday"] = selected_data["datetime"].dt.dayofweek
+        # map to DAY_NAME_DICT
+        selected_data["weekday"] = selected_data["weekday"].map(DAY_NAME_DICT)
         fig = px.line(
             selected_data,
             x="datetime",
             y=["y", "f"],
             title=serie,
             labels={"datetime": "Fecha", "value": "Valor"},
-            hover_data=["err", "abs_err", "perc_err", "perc_abs_err"],
+            hover_data=["err", "abs_err", "perc_err", "perc_abs_err", "weekday"],
+            range_y=[200, selected_data[["y", "f"]].max().max() * 1.2],
         )
         newnames = {"y": "Real", "f": "Pronóstico"}
         fig.for_each_trace(
@@ -245,7 +251,12 @@ def plot_forecast(forecast, selected_series):
                 legendgroup=newnames[t.name],
                 hovertemplate=t.hovertemplate.replace(
                     f"variable={t.name}", f"variable={newnames[t.name]}"
-                ),
+                )
+                .replace("perc_abs_err", "Error porcentual absoluto")
+                .replace("perc_err", "Error porcentual")
+                .replace("abs_err", "Error absoluto")
+                .replace("err", "Error")
+                .replace("weekday", "Día de la semana"),
             )
         )
         st.plotly_chart(fig)

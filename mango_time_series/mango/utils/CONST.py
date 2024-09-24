@@ -1,21 +1,3 @@
-# SERIES_CONFIGURATION = {
-#     "KEY_COLS": ["store", "product"],
-#     "TIME_COL": "date",
-#     "VALUE_COL": "sales",
-#     "AGG_OPERATIONS": {"y": "sum"},
-#     "TIME_PERIOD_DESCR": "day",
-# }
-
-SERIES_CONFIGURATION = {
-    "KEY_COLS": ["airport"],
-    "TIME_COL": "datetime",
-    "VALUE_COL": "FIN",
-    "AGG_OPERATIONS": {"y": "sum"},
-    "TIME_PERIOD_DESCR": "day",
-    "RECENT_FOLDS": 2,
-    "SEASONAL_FOLDS": 1,
-}
-
 timedelta_equivalences = {
     "minute": "1m",
     "hour": "1h",
@@ -102,13 +84,3 @@ PARAMETERS_BASE = {
         "order": 0,
     },
 }
-
-
-SERIES_CONFIGURATION["TIME_PERIOD"] = timedelta_equivalences[
-    SERIES_CONFIGURATION["TIME_PERIOD_DESCR"]
-]
-
-SERIES_CONFIGURATION["TS_PARAMETERS"] = PARAMETERS_BASE[
-    SERIES_CONFIGURATION["TIME_PERIOD_DESCR"]
-]
-# PARAMETERS = PARAMETERS_BASE[SERIES_CONFIGURATION["TIME_PERIOD_DESCR"]]
