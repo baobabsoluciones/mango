@@ -34,7 +34,7 @@ def interface_visualization(file, logo_path: str = None, project_name: str = Non
         st.session_state["files_loaded"] = files_loaded
     else:
         # Sidebar was loaded so we can place a manage button
-        st.session_state["files_loaded"] = manage_files(st.session_state["files_loaded"])
+        manage_files(st.session_state["files_loaded"])
 
     if st.session_state.get("files_loaded"):
         # Manage selected series using session_state
