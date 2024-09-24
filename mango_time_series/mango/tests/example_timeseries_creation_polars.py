@@ -90,7 +90,7 @@ def test_timeseries_prediction_creation(num_prods=10, horizon=14, return_pandas=
     )
     df_sales = df_sales.join(df_horizons, how="cross")
     df_sales = df_sales.with_columns(
-        (pl.col("date") - pl.duration(days=pl.col("horizon"))).alias("origin_date")
+        (pl.col("date") - pl.duration(days=pl.col("horizon"))).alias("forecast_origin")
     )
     df_sales = df_sales.with_columns(
         (pl.col("sales") + np.random.randint(-10, 10, size=len(df_sales))).alias(
@@ -106,7 +106,7 @@ def test_timeseries_prediction_creation(num_prods=10, horizon=14, return_pandas=
     df_sales = df_sales.select([
         "store",
         "product",
-        "origin_date",
+        "forecast_origin",
         "datetime",
         "h",
         "y",
