@@ -71,38 +71,37 @@ sk_log1p = FunctionTransformer(func=np.log1p, inverse_func=np.expm1)
 #     num_threads=-1
 # )
 
-
-cv = LightGBMCV(
-# fcst = MLForecast(
-#     models=lgb.LGBMRegressor(),
+# cv = LightGBMCV(
+fcst = MLForecast(
+    models=lgb.LGBMRegressor(),
     freq="D",
     target_transforms=[
         # GlobalSklearnTransformer(sk_log1p),
-        Differences([7])
+        # Differences([7])
     ],
-    lags=[1, 2, 7, 364],
+    # lags=range(1, 31),
     lag_transforms={
         # 1: [ExponentiallyWeightedMean(alpha=0.5), RollingMean(window_size=7)],
         1: [RollingMean(window_size=7), RollingMean(window_size=28), ExponentiallyWeightedMean(alpha=0.5)],
-        7: [RollingMean(window_size=4), RollingMean(window_size=12), ExponentiallyWeightedMean(alpha=0.5)],
-        # 7: [RollingMean(window_size=4)],
+        7: [RollingMean(window_size=4)],
     },
     date_features=["month", "year", "dayofweek", "day", "dayofyear", "week"],
-
     num_threads=4
 )
 
-df_pd_na = df_pd_tr.dropna()
 
-cv_hist = cv.fit(
-    df_pd_na,
-    n_windows=4,
-    h=56,
-    # params=lgb_params,
-    eval_every=5,
-    early_stopping_evals=10,
-    compute_cv_preds=True,
-)
+
+# df_pd_na = df_pd_tr.dropna()
+# aaa = fcst.preprocess(df_pd_na)
+# cv_hist = cv.fit(
+#     df_pd_na,
+#     n_windows=4,
+#     h=56,
+#     params=lgb_params,
+#     eval_every=5,
+#     early_stopping_evals=10,
+#     compute_cv_preds=True,
+# )
 
 # sf = sf.fit(df=df_pd_tr)
 logger.info("Cross validation started")
@@ -131,7 +130,7 @@ crossvalidation_df["h"] = (
 if len(crossvalidation_df["unique_id"].unique()) == 1:
     crossvalidation_df.drop(columns=["unique_id"], inplace=True)
 
-crossvalidation_df.to_excel("lgbm_crossvalidation_example3.xlsx", index=False)
+crossvalidation_df.to_excel("lgbm_crossvalidation_example_datefeatures_nodiff.xlsx", index=False)
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 
 # df_score = df_pd_te[df_pd_te.horizon <= 7]
