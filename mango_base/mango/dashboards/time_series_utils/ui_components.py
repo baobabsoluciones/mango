@@ -291,6 +291,14 @@ def plot_error_visualization(forecast, selected_series):
         selected_data = selected_data.query(filter_cond)
         data_dict[idx] = selected_data.copy()
     median_or_mean_trans = {"Mediana": "median", "Media": "mean"}
+
+    # get maximum percentage error in selected data as a table in the streamplit. top10 rows
+    st.write("### Top 10 errores porcentuales absolutos")
+    for idx, serie in data_dict.items():
+        st.write(
+            serie.nlargest(10, "perc_abs_err")[["datetime", "perc_abs_err"]]
+        )
+
     mean_or_median_error = st.radio(
         "Mostrar mediana o media",
         ["Mediana", "Media"],
@@ -298,11 +306,12 @@ def plot_error_visualization(forecast, selected_series):
         key="median_or_mean_pmrs_diarios",
         horizontal=True,
     )
+    string_dict = {"Mediana": "mediano", "Media": "medio"}
 
     # Show mean or median overall perc_abs_err
     for idx, serie in data_dict.items():
         st.write(
-            f"El error porcentual absoluto medio de la serie es de "
+            f"El error porcentual absoluto {string_dict[mean_or_median_error]} de la serie es de "
             f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**"
         )
 
