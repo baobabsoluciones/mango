@@ -35,7 +35,9 @@ class TestHeteroscedasticityTester(TestCase):
         """
         Test get_optimal_lambda with a series that contains negative values.
         """
-        series_with_negative = self.series_with_heteroscedasticity - 50  # Introduce negative values
+        series_with_negative = (
+            self.series_with_heteroscedasticity - 50
+        )  # Introduce negative values
         optimal_lambda = get_optimal_lambda(series_with_negative)
 
         # Validate that the lambda is computed and that min_value adjustment was applied
@@ -45,9 +47,13 @@ class TestHeteroscedasticityTester(TestCase):
         """
         Test apply_boxcox_with_lambda with a series that contains negative values.
         """
-        series_with_negative = self.series_with_heteroscedasticity - 50  # Introduce negative values
+        series_with_negative = (
+            self.series_with_heteroscedasticity - 50
+        )  # Introduce negative values
         lambda_value = 0.5
-        transformed_series = apply_boxcox_with_lambda(series_with_negative, lambda_value)
+        transformed_series = apply_boxcox_with_lambda(
+            series_with_negative, lambda_value
+        )
 
         # Check that the series length remains consistent and transformation is applied
         self.assertEqual(len(transformed_series), len(series_with_negative))

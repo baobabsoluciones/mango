@@ -29,8 +29,9 @@ def get_optimal_lambda(series: np.ndarray) -> float:
     if min_value < 0:
         series = series - min_value + 1
 
-    optimal_lambda = boxcox_normmax(series)
+    optimal_lambda = boxcox_normmax(x=series)
     return optimal_lambda
+
 
 def apply_boxcox_with_lambda(series: np.ndarray, lambda_value: float) -> np.ndarray:
     """
@@ -44,7 +45,7 @@ def apply_boxcox_with_lambda(series: np.ndarray, lambda_value: float) -> np.ndar
     if min_value < 0:
         series = series - min_value + 1
 
-    transformed_series = boxcox(series, lmbda=lambda_value)
+    transformed_series = boxcox(x=series, lmbda=lambda_value)
     return transformed_series
 
 
@@ -70,14 +71,14 @@ def detect_and_transform_heteroscedasticity(
             "The time series must contain more than one data point for the test"
         )
 
-    # Prepare for Breusch-Pagan test
+    # Breusch-Pagan test
     trend = np.arange(len(series))
     X = sm.add_constant(trend)
     model = sm.OLS(series, X).fit()
     residuals = model.resid
-    bp_test = het_breuschpagan(residuals, X)
+    bp_test = het_breuschpagan(resid=residuals, exog_het=X)
     if isinstance(bp_test, tuple):
-        p_val = bp_test[1]  # p-value from Breusch-Pagan test
+        p_val = bp_test[1]
     else:
         p_val = bp_test
 
@@ -85,9 +86,10 @@ def detect_and_transform_heteroscedasticity(
         logger.info(
             f"Heteroscedasticity detected via Breusch-Pagan test (p-value = {p_val:.4f})."
         )
-        # Apply Box-Cox transformation if heteroscedasticity is detected
-        optimal_lambda = boxcox_normmax(series)
-        transformed_series = apply_boxcox_with_lambda(series, optimal_lambda)
+        optimal_lambda = get_optimal_lambda(series=series)
+        transformed_series = apply_boxcox_with_lambda(
+            series=series, lambda_value=optimal_lambda
+        )
         return transformed_series, optimal_lambda
     else:
         logger.info(

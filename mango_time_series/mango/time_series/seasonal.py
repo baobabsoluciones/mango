@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.signal import periodogram
 from statsmodels.tsa.stattools import acf
+
 from mango_base.mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
@@ -26,21 +27,27 @@ class SeasonalityDetector:
     ) -> int:
         """
         Detect the most significant seasonality in time series data using ACF (Autocorrelation Function) analysis.
-        The function ensures that the most common period found through ACF has significant ACF values at multiples,
-        and ignores isolated lags that do not show a repetitive pattern.
+
+        This function calculates the ACF values for the time series up to the specified maximum lag. It identifies
+        local maxima in the ACF values, which are indicative of potential seasonal periods. The local maxima are then
+        filtered to retain only those that exceed the specified ACF threshold. The function determines the most common
+        period among the significant local maxima and verifies that this period has a sufficient number of significant
+        ACF values at its multiples. If the most common period meets these criteria, it is returned; otherwise, 0 is returned.
 
         :param ts: The time series data as a NumPy array.
         :param max_lag: The maximum lag to consider for ACF analysis. Default is set to 366 to cover yearly seasonality.
         :param acf_threshold: The ACF value threshold to consider peaks significant (default 0.2).
-        :param min_repetitions: Minimum number of significant multiples to consider a period as a valid seasonality (default 3).
+        :param min_repetitions: Minimum number of significant multiples to consider a period as a valid seasonality (default 2).
         :return: The most common detected seasonal period if significant; 0 otherwise.
         """
-        acf_values = acf(ts, nlags=max_lag)
+        acf_values = acf(x=ts, nlags=max_lag)
 
         # Find local maxima in the ACF values (indicative of seasonality)
         local_maxima = (np.diff(np.sign(np.diff(acf_values))) < 0).nonzero()[0] + 1
 
-        significant_maxima = [lag for lag in local_maxima if acf_values[lag] > acf_threshold]
+        significant_maxima = [
+            lag for lag in local_maxima if acf_values[lag] > acf_threshold
+        ]
 
         if len(significant_maxima) > 1:
             # Calculate differences between local maxima to find potential periods
@@ -52,7 +59,9 @@ class SeasonalityDetector:
 
             valid_period_lags = period_lags[period_lags < len(acf_values)]
             # Count how many multiples of the period are above the ACF threshold
-            significant_multiples = np.sum(acf_values[valid_period_lags] > acf_threshold)
+            significant_multiples = np.sum(
+                acf_values[valid_period_lags] > acf_threshold
+            )
 
             if (
                 significant_multiples >= min_repetitions
@@ -74,8 +83,8 @@ class SeasonalityDetector:
         :param max_period: The maximum period to consider as a seasonality (default 365 days).
         :return: A list of detected seasonal periods.
         """
-        # Calculate the periodogram (frequencies and power spectrum)
-        frequencies, power_spectrum = periodogram(ts)
+
+        frequencies, power_spectrum = periodogram(x=ts)
 
         # Convert frequencies to periods (skip the zero frequency to avoid division by zero)
         periods = 1 / frequencies[1:]
@@ -86,7 +95,7 @@ class SeasonalityDetector:
         filtered_periods = periods[valid_periods]
         filtered_power_spectrum = power_spectrum[valid_periods]
 
-        # Detect peaks in the power spectrum that are above the threshold
+        # Detect peaks in the power spectrum that are above threshold
         significant_periods = filtered_periods[
             filtered_power_spectrum
             > np.percentile(filtered_power_spectrum, self.percentile_periodogram)
@@ -101,6 +110,10 @@ class SeasonalityDetector:
         Detect seasonality in a time series using ACF to check if there is seasonality,
         and then use the periodogram to identify the exact seasonal periods.
 
+        ACF (Autocorrelation Function) is used to detect if there is seasonality in the time series.
+        This is because the periodogram could find some periodic components even if there is no true seasonality.
+        If ACF indicates the presence of seasonality, then the periodogram is used to accurately identify the specific seasonal periods.
+
         :param ts: The time series data as a numpy array.
         :param max_lag: The maximum lag to consider for ACF analysis. Default is set to 366 to cover yearly seasonality.
         :return: A list of detected seasonal periods. If no seasonality is detected, an empty list is returned.
@@ -110,9 +123,9 @@ class SeasonalityDetector:
             max_lag = min(366, len(ts))
 
         # Step 1: Check for the presence of seasonality using ACF
-        if self.detect_significant_seasonality_acf(ts, max_lag):
+        if self.detect_significant_seasonality_acf(ts=ts, max_lag=max_lag):
             # Step 2: If seasonality is detected by ACF, use the periodogram to find the specific seasonal periods
-            detected_seasonalities = self.detect_seasonality_periodogram(ts)
+            detected_seasonalities = self.detect_seasonality_periodogram(ts=ts)
             if len(detected_seasonalities) > 0:
                 logger.info(f"Seasonalities detected: {detected_seasonalities}")
             else:

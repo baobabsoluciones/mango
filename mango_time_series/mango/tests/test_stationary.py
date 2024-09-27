@@ -17,7 +17,7 @@ class TestStationaryTester(TestCase):
             start=datetime(2022, 1, 1),
             end=datetime(2022, 4, 10),
             interval="1d",
-            eager=True
+            eager=True,
         )
 
         # Dates for monthly series in Polars
@@ -25,11 +25,13 @@ class TestStationaryTester(TestCase):
             start=datetime(2022, 1, 1),
             end=datetime(2026, 12, 1),
             interval="1mo",
-            eager=True
+            eager=True,
         )
 
         # Generate non-stationary series (with trend) for daily data
-        self.series_with_trend = np.cumsum(np.random.normal(0, 1, 100)) + np.linspace(0, 10, 100)
+        self.series_with_trend = np.cumsum(np.random.normal(0, 1, 100)) + np.linspace(
+            0, 10, 100
+        )
         self.df_with_trend = pl.DataFrame(
             {"date": dates_daily_polars, "target": self.series_with_trend}
         )
@@ -41,25 +43,32 @@ class TestStationaryTester(TestCase):
         )
 
         # Generate seasonal series for daily data
-        self.seasonal_series = 10 * np.sin(2 * np.pi * np.arange(100) / 7) + np.random.normal(0, 1, 100)
+        self.seasonal_series = 10 * np.sin(
+            2 * np.pi * np.arange(100) / 7
+        ) + np.random.normal(0, 1, 100)
         self.df_seasonal = pl.DataFrame(
             {"date": dates_daily_polars, "target": self.seasonal_series}
         )
 
         # Generate seasonal series for monthly data (12-month period for annual seasonality)
-        self.monthly_seasonal_series = 10 * np.sin(2 * np.pi * np.arange(60) / 12) + np.random.normal(0, 1, 60)
+        self.monthly_seasonal_series = 10 * np.sin(
+            2 * np.pi * np.arange(60) / 12
+        ) + np.random.normal(0, 1, 60)
         self.df_monthly_seasonal = pl.DataFrame(
             {"date": dates_monthly_polars, "target": self.monthly_seasonal_series}
         )
 
         # Generate a series with both annual seasonality and trend for monthly data
         self.series_with_trend_and_seasonality = (
-                np.linspace(0, 20, 60)  # Linear trend
-                + 10 * np.sin(2 * np.pi * np.arange(60) / 12)  # Annual seasonality
-                + np.random.normal(0, 1, 60)  # Noise
+            np.linspace(0, 20, 60)  # Linear trend
+            + 10 * np.sin(2 * np.pi * np.arange(60) / 12)  # Annual seasonality
+            + np.random.normal(0, 1, 60)  # Noise
         )
         self.df_trend_seasonality = pl.DataFrame(
-            {"date": dates_monthly_polars, "target": self.series_with_trend_and_seasonality}
+            {
+                "date": dates_monthly_polars,
+                "target": self.series_with_trend_and_seasonality,
+            }
         )
 
         self.serie_soft_trend = 0.01 * np.arange(60) + np.random.normal(0, 0.2, 60)

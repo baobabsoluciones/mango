@@ -1,6 +1,7 @@
+from typing import Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Tuple
 from statsmodels.tsa.seasonal import STL, MSTL
 
 
@@ -26,9 +27,25 @@ class SeasonalityDecompose:
         return result.trend, result.seasonal, result.resid
 
     @staticmethod
+    def decompose_mstl(
+        series: pd.Series, periods: list
+    ) -> Tuple[pd.Series, pd.Series, pd.Series]:
+        """
+        Decompose the time series using MSTL (Multiple Seasonal-Trend decomposition using LOESS).
+        :param series:
+        :param periods: A tuple of seasonal periods to decompose the series.
+        :return: Three Polars Series: trend, seasonal components, and residual.
+        """
+        mstl = MSTL(series, periods=periods)
+        result = mstl.fit()
+
+        return result.trend, result.seasonal, result.resid
+
+    @staticmethod
     def calculate_seasonal_strength(seasonal: np.ndarray, resid: np.ndarray) -> float:
         """
         Calculate the seasonal strength (Fs) based on the decomposition components.
+        Formula: Fs = max(0, 1 - Var(Rt) / Var(St + Rt))
         :param seasonal: The seasonal component of the time series.
         :param resid: The residual component of the time series.
         :return: The seasonal strength (Fs).
@@ -36,7 +53,6 @@ class SeasonalityDecompose:
         var_resid = np.var(resid)
         var_seasonal_resid = np.var(seasonal + resid)
 
-        # Seasonal strength Fs = max(0, 1 - Var(Rt) / Var(St + Rt))
         fs = max(0, 1 - (var_resid / var_seasonal_resid))
         return fs
 
@@ -47,23 +63,6 @@ class SeasonalityDecompose:
         :param period: The seasonal period (e.g., 12 for monthly data with yearly seasonality).
         :return: True if the series has significant seasonality, False otherwise.
         """
-        trend, seasonal, resid = self.decompose_stl(series, period)
-        fs = self.calculate_seasonal_strength(seasonal, resid)
-
-        # If Fs > threshold, significant seasonality is present
+        trend, seasonal, resid = self.decompose_stl(series=series, period=period)
+        fs = self.calculate_seasonal_strength(seasonal=seasonal, resid=resid)
         return fs > self.fs_threshold
-
-    def decompose_mstl(self, series: pd.Series, periods: list) -> Tuple[pd.Series, pd.Series, pd.Series]:
-        """
-        Decompose the time series using MSTL (Multiple Seasonal-Trend decomposition using LOESS).
-        :param series: The time series data as a Polars Series.
-        :param periods: A tuple of seasonal periods to decompose the series.
-        :return: Three Polars Series: trend, seasonal components, and residual.
-        """
-        # Apply MSTL decomposition
-        mstl = MSTL(series, periods=periods)
-        result = mstl.fit()
-
-
-        return result.trend, result.seasonal, result.resid
-

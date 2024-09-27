@@ -23,10 +23,6 @@ class TestSeasonalityDetector(TestCase):
             + np.random.normal(0, 1, 365 * 2)
         )
 
-        self.seasonal_acf_but_no_periodogram = 10 * np.sin(
-            2 * np.pi * np.arange(0, 100) / 7
-        ) + np.random.normal(0, 5, 100)
-
         # Generate a random series with no seasonality (pure noise)
         self.series_noise = np.random.normal(0, 1, 365)
 
@@ -35,6 +31,12 @@ class TestSeasonalityDetector(TestCase):
         self.annual_seasonal_series = 20 * np.sin(
             2 * np.pi * months / 12
         ) + np.random.normal(0, 1, len(months))
+
+        # Generate an hourly time series with daily seasonality (24-hour period)
+        hours = np.arange(0, 24 * 7)  # 7 days of hourly data
+        self.hourly_seasonal_series = 5 * np.sin(
+            2 * np.pi * hours / 24
+        ) + np.random.normal(0, 0.5, len(hours))
 
     def test_weekly_seasonality(self):
         """
@@ -86,6 +88,18 @@ class TestSeasonalityDetector(TestCase):
         detected_periods = detector.detect_seasonality(self.annual_seasonal_series)
         self.assertIn(
             12.0, detected_periods, "Should detect annual seasonality (12-month period)"
+        )
+
+    def test_hourly_seasonality(self):
+        """
+        Test detection of hourly seasonality (24-hour period).
+        """
+        detector = SeasonalityDetector()
+        detected_periods = detector.detect_seasonality(self.hourly_seasonal_series)
+        self.assertIn(
+            24.0,
+            detected_periods,
+            "Should detect daily seasonality (24-hour period in hourly data)",
         )
 
     def tearDown(self):
