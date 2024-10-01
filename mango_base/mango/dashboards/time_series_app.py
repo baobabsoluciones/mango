@@ -20,32 +20,56 @@ from mango_base.mango.dashboards.time_series_utils.file_uploader import (
     upload_files,
     manage_files,
 )
+from mango_base.mango.dashboards.time_series_utils.ui_text_es import (
+    UI_TEXT as UI_TEXT_ES,
+)
+from mango_base.mango.dashboards.time_series_utils.ui_text_en import (
+    UI_TEXT as UI_TEXT_EN,
+)
+from mango_base.mango.dashboards.time_series_utils.ui_text_catala import (
+    UI_TEXT as UI_TEXT_CATALA,
+)
 
 
 def interface_visualization(project_name: str = None):
     # SETUP web page
     st.set_page_config(
-        page_title="Visualizacion",
+        page_title="Visualization",
         layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
     )
 
-    st.title(project_name)
+    # Language selector
+    language = st.sidebar.selectbox(
+        "Language / Idioma / Llengua", ["English", "Español", "Català"]
+    )
+
+    # Load appropriate UI text
+    if language == "English":
+        UI_TEXT = UI_TEXT_EN
+    elif language == "Español":
+        UI_TEXT = UI_TEXT_ES
+    elif language == "Català":
+        UI_TEXT = UI_TEXT_CATALA
+    else:
+        UI_TEXT = UI_TEXT_EN
+
+    st.title(project_name or UI_TEXT["page_title"])
 
     if not st.session_state.get("files_loaded"):
-        files_loaded = upload_files()
+        files_loaded = upload_files(UI_TEXT)
         st.session_state["files_loaded"] = files_loaded
     else:
         # Sidebar was loaded so we can place a manage button
-        manage_files(st.session_state["files_loaded"])
+        manage_files(st.session_state["files_loaded"], UI_TEXT)
 
     if st.session_state.get("files_loaded"):
         # Manage selected series using session_state
         if "selected_series" not in st.session_state:
             st.session_state["selected_series"] = []
 
-        data, visualization = load_data(st.session_state.get("files_loaded"))
+        data, visualization = load_data(st.session_state.get("files_loaded"), UI_TEXT)
         if data is not None:
             columns_id = [
                 col
@@ -65,27 +89,37 @@ def interface_visualization(project_name: str = None):
             ]
 
             # Setup side bar and get aggregation settings
-            select_agr_tmp, visualization = setup_sidebar(data, columns_id)
-
+            # Update the keys in SELECT_AGR_TMP_DICT with the translation in UI_TEXT
+            final_select_agr_tmp_dict = {}
+            for key, value in SELECT_AGR_TMP_DICT.items():
+                if key in UI_TEXT:
+                    final_select_agr_tmp_dict[UI_TEXT[key]] = value
+            select_agr_tmp, visualization = setup_sidebar(data, columns_id, UI_TEXT)
             time_series, forecast = process_data(
-                data, columns_id, SELECT_AGR_TMP_DICT, select_agr_tmp
+                data, columns_id, final_select_agr_tmp_dict, select_agr_tmp, UI_TEXT
             )
 
-            if visualization == "Exploración":
+            if visualization == UI_TEXT["visualization_options"][0]:  # "Exploration"
                 plot_time_series(
                     time_series,
                     st.session_state["selected_series"],
-                    SELECT_AGR_TMP_DICT,
+                    final_select_agr_tmp_dict,
                     select_agr_tmp,
+                    UI_TEXT,
                 )
-            elif visualization == "Forecast":
-                plot_forecast(forecast, st.session_state["selected_series"])
-                plot_error_visualization(forecast, st.session_state["selected_series"])
+            elif visualization == UI_TEXT["visualization_options"][1]:  # "Forecast"
+                plot_forecast(forecast, st.session_state["selected_series"], UI_TEXT)
+                plot_error_visualization(
+                    forecast, st.session_state["selected_series"], UI_TEXT
+                )
+            else:
+                st.write(
+                    UI_TEXT["visualization_not_implemented"].format(
+                        UI_TEXT["visualization_options"][0],
+                        UI_TEXT["visualization_options"][1],
+                    )
+                )
 
 
 if __name__ == "__main__":
-    file = "daily_forecast_error.csv"
-    logo_path = r"https://www.multiserviciosaeroportuarios.com/wp-content/uploads/2024/03/cropped-Logo-transparente-blanco-Multiservicios-Aeroportuarios-Maero-1-192x192.png"
-    interface_visualization(
-        project_name="Testing Dashboard Time Series"
-    )
+    interface_visualization()

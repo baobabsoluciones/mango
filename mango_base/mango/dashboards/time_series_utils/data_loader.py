@@ -3,22 +3,20 @@ import streamlit as st
 
 
 @st.cache_data
-def load_data(files_loaded):
+def load_data(files_loaded, UI_TEXT):
     # Assuming the first file is the main data file
     if files_loaded:
         main_file_name = list(files_loaded.keys())[0]
         data = files_loaded[main_file_name]["data"]
 
         if "forecast_origin" in data.columns and "f" in data.columns:
-            visualization = "Forecast"
+            visualization = UI_TEXT["visualization_options"][1]  # "Forecast"
 
             if "datetime" in data.columns and "forecast_origin" in data.columns:
                 if "h" not in data.columns:
                     data["h"] = (data["datetime"] - data["forecast_origin"]).dt.days
             else:
-                st.warning(
-                    "Las columnas 'datetime' o 'forecast_origin' no están presentes para calcular 'h'."
-                )
+                st.warning(UI_TEXT["datetime_warning"])
 
             if "f" in data.columns:
                 if "err" not in data.columns:
@@ -35,16 +33,12 @@ def load_data(files_loaded):
                 no_perc_cols = ["err", "abs_err"]
                 data[no_perc_cols] = data[no_perc_cols].round(0)
             else:
-                st.info(
-                    "La columna 'f' no está presente, por lo que no se calcularán los errores."
-                )
+                st.info(UI_TEXT["f_column_missing"])
         else:
-            visualization = "Exploración"
-            st.info(
-                "El modo actual es 'Exploración', no se calcularán columnas de forecast ni errores."
-            )
+            visualization = UI_TEXT["visualization_options"][0]  # "Exploration"
+            st.info(UI_TEXT["exploration_mode"])
 
         return data, visualization
     else:
-        st.error("No files uploaded.")
+        st.error(UI_TEXT["no_files_uploaded"])
         return None, None

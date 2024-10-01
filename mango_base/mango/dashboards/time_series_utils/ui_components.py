@@ -9,18 +9,21 @@ import plotly.graph_objs as go
 from dateutil.rrule import weekday
 from statsmodels.tsa.seasonal import STL
 from streamlit_date_picker import date_range_picker, PickerType
-from .constants import SELECT_AGR_TMP_DICT, DAY_NAME_DICT, MONTH_NAME_DICT, ALL_DICT
+from .constants import SELECT_AGR_TMP_DICT
+import copy
 
 
-def select_series(data, columns):
-    st.sidebar.title("Selecciona serie a analizar")
+def select_series(data, columns, UI_TEXT):
+    st.sidebar.title(UI_TEXT["select_series"])
     filtered_data = data.copy()
     for column in columns:
         filter_values = filtered_data[column].unique()
 
         # Create a selectbox for each filter
         selected_value = st.sidebar.selectbox(
-            f"Elige {column}:", filter_values, key=f"selectbox_{column}"
+            UI_TEXT["choose_column"].format(column),
+            filter_values,
+            key=f"selectbox_{column}",
         )
 
         # Filter the DataFrame by the selected value
@@ -31,19 +34,15 @@ def select_series(data, columns):
     return selected_item
 
 
-def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_agr_tmp):
+def plot_time_series(
+    time_series, selected_series, select_agr_tmp_dict, select_agr_tmp, UI_TEXT
+):
     select_plot = st.selectbox(
-        "Selecciona el gráfico",
-        [
-            "Serie original",
-            "Serie por año",
-            "STL",
-            "Análisis de lags",
-            "Boxplot de estacionalidad",
-        ],
+        UI_TEXT["choose_plot"],
+        UI_TEXT["plot_options"],
         label_visibility="collapsed",
     )
-    if select_plot == "Serie original":
+    if select_plot == UI_TEXT["plot_options"][0]:  # "Original series"
         date_range = date_range_picker(
             picker_type=PickerType.date,
             start=time_series["datetime"].min(),
@@ -75,9 +74,9 @@ def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_a
                 ),
                 use_container_width=True,
             )
-    elif select_plot == "Serie por año":
+    elif select_plot == UI_TEXT["plot_options"][1]:  # "Series by year"
         options = st.multiselect(
-            "Elige los años a visualizar",
+            UI_TEXT["choose_years"],
             sorted(time_series["datetime"].dt.year.unique(), reverse=True),
         )
         for serie in selected_series:
@@ -101,7 +100,7 @@ def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_a
                     ),
                     use_container_width=True,
                 )
-    elif select_plot == "STL":
+    elif select_plot == UI_TEXT["plot_options"][2]:  # "STL"
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -157,7 +156,7 @@ def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_a
 
             st.plotly_chart(fig, use_container_width=True)
 
-    elif select_plot == "Análisis de lags":
+    elif select_plot == UI_TEXT["plot_options"][3]:  # "Lag analysis"
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -304,21 +303,19 @@ def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_a
 
             st.plotly_chart(fig, use_container_width=True)
 
-    elif select_plot == "Boxplot de estacionalidad":
+    elif select_plot == UI_TEXT["plot_options"][4]:  # "Seasonality boxplot"
         selected_granularity = select_agr_tmp
 
         if selected_granularity == "daily":
-            freq_options = ["Diaria", "Semanal", "Mensual"]
+            freq_options = UI_TEXT["frequency_options"]
         elif selected_granularity == "weekly":
-            freq_options = ["Semanal", "Mensual"]
+            freq_options = UI_TEXT["frequency_options"][1:]
         elif selected_granularity == "monthly":
-            freq_options = ["Mensual"]
+            freq_options = [UI_TEXT["frequency_options"][2]]
         else:
-            st.write(
-                "No se puede visualizar un boxplot adecuado para la granularidad seleccionada."
-            )
+            st.write(UI_TEXT["boxplot_error"])
             return
-        selected_freq = st.selectbox("Selecciona la frecuencia", freq_options)
+        selected_freq = st.selectbox(UI_TEXT["select_frequency"], freq_options)
 
         for serie in selected_series:
             selected_data = time_series.copy()
@@ -334,106 +331,106 @@ def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_a
             selected_data = selected_data.set_index("datetime")
             selected_data.index = pd.to_datetime(selected_data.index)
 
-            if selected_freq == "Diaria":
+            if selected_freq == UI_TEXT["frequency_options"][0]:
                 selected_data["day_of_year"] = selected_data.index.dayofyear
                 fig = px.box(
-                    selected_data, x="day_of_year", y="y", title="Boxplot diario"
+                    selected_data,
+                    x="day_of_year",
+                    y="y",
+                    title=UI_TEXT["boxplot_titles"][0],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-            elif selected_freq == "Semanal":
+            elif selected_freq == UI_TEXT["frequency_options"][1]:
                 selected_data["day_of_week"] = selected_data.index.weekday
                 fig = px.box(
-                    selected_data, x="day_of_week", y="y", title="Boxplot semanal"
+                    selected_data,
+                    x="day_of_week",
+                    y="y",
+                    title=UI_TEXT["boxplot_titles"][1],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-            elif selected_freq == "Mensual":
+            elif selected_freq == UI_TEXT["frequency_options"][2]:
                 selected_data["month"] = selected_data.index.month
-                fig = px.box(selected_data, x="month", y="y", title="Boxplot mensual")
+                fig = px.box(
+                    selected_data, x="month", y="y", title=UI_TEXT["boxplot_titles"][2]
+                )
                 st.plotly_chart(fig, use_container_width=True)
 
 
-def setup_sidebar(time_series, columns_id):
-    st.sidebar.title("Visualizaciones")
+def setup_sidebar(time_series, columns_id, UI_TEXT):
+    st.sidebar.title(UI_TEXT["sidebar_title"])
     if "forecast_origin" in time_series.columns and "f" in time_series.columns:
-        visualization_options = ["Exploración", "Forecast"]
+        visualization_options = UI_TEXT["visualization_options"]
     else:
-        visualization_options = ["Exploración"]
+        visualization_options = [UI_TEXT["visualization_options"][0]]
 
     visualization = st.sidebar.radio(
-        "Selecciona la visualización",
+        UI_TEXT["select_visualization"],
         visualization_options,
     )
-    st.sidebar.title("Selecciona la agrupación temporal de los datos")
-    all_tmp_agr = ["hourly", "daily", "weekly", "monthly", "quarterly", "yearly"]
+    st.sidebar.title(UI_TEXT["select_temporal_grouping"])
+    all_tmp_agr = copy.deepcopy(UI_TEXT["temporal_grouping_options"])
 
     # Reduce the list given the detail in the data datetime column
     if time_series["datetime"].dt.hour.nunique() == 1:
-        all_tmp_agr.remove("hourly")
+        all_tmp_agr.remove(UI_TEXT["hourly"])
     if time_series["datetime"].dt.day.nunique() == 1:
-        all_tmp_agr.remove("daily")
+        all_tmp_agr.remove(UI_TEXT["daily"])
     if time_series["datetime"].dt.isocalendar().week.nunique() == 1:
-        all_tmp_agr.remove("weekly")
+        all_tmp_agr.remove(UI_TEXT["weekly"])
     if time_series["datetime"].dt.month.nunique() == 1:
-        all_tmp_agr.remove("monthly")
+        all_tmp_agr.remove(UI_TEXT["monthly"])
     if time_series["datetime"].dt.quarter.nunique() == 1:
-        all_tmp_agr.remove("quarterly")
+        all_tmp_agr.remove(UI_TEXT["quarterly"])
     if time_series["datetime"].dt.year.nunique() == 1:
-        all_tmp_agr.remove("yearly")
+        all_tmp_agr.remove(UI_TEXT["yearly"])
     if len(all_tmp_agr) == 0:
-        st.write("No se puede realizar el análisis temporal")
+        st.write(UI_TEXT["temporal_analysis_error"])
         return
     select_agr_tmp = st.sidebar.selectbox(
-        "Selecciona la agrupación temporal de los datos",
+        UI_TEXT["select_temporal_grouping"],
         all_tmp_agr,
         label_visibility="collapsed",
     )
 
     if columns_id:
         # Setup select series
-        selected_item = select_series(time_series, columns_id)
-        if st.sidebar.button("Add selected series"):
+        selected_item = select_series(time_series, columns_id, UI_TEXT)
+        if st.sidebar.button(UI_TEXT["add_selected_series"]):
             # Avoid adding duplicates
             if selected_item not in st.session_state["selected_series"]:
                 st.session_state["selected_series"].append(selected_item)
             else:
-                st.toast("The selected series is already in the list", icon="❌")
+                st.toast(UI_TEXT["series_already_added"], icon="❌")
 
         # Display the selected series in the sidebar with remove button
         for idx, serie in enumerate(st.session_state["selected_series"]):
             serie = "-".join(serie.values())
-            col1, col2 = st.sidebar.columns(
-                [8, 2]
-            )  # Create two columns: 8 units for text, 2 units for button
+            col1, col2 = st.sidebar.columns([8, 2])
             with col1:
-                st.write(
-                    f"{idx + 1}. {serie}"
-                )  # Display the series name in the first column
+                st.write(f"{idx + 1}. {serie}")
             with col2:
-                if st.button(
-                        "❌", key=f"remove_{idx}"
-                ):  # Display the button in the second column
-                    st.session_state["selected_series"].pop(
-                        idx
-                    )  # Remove the series name from the first column
-                    st.rerun()  # Rerun the app to update the sidebar
-            # Remove all selected series
+                if st.button("❌", key=f"remove_{idx}"):
+                    st.session_state["selected_series"].pop(idx)
+                    st.rerun()
+        # Remove all selected series
         if st.session_state["selected_series"]:
-            if st.sidebar.button("Remove all selected series"):
+            if st.sidebar.button(UI_TEXT["remove_all_series"]):
                 st.session_state["selected_series"] = []
                 st.rerun()
     else:
-        st.sidebar.write("No hay columnas para filtrar. Solo una serie detectada")
+        st.sidebar.write(UI_TEXT["no_columns_to_filter"])
         st.session_state["selected_series"] = [{}]
 
     return select_agr_tmp, visualization
 
 
-def plot_forecast(forecast, selected_series):
-    st.subheader("Forecast plot")
+def plot_forecast(forecast, selected_series, UI_TEXT):
+    st.subheader(UI_TEXT["forecast_plot_title"])
     if not selected_series:
-        st.write("Select at least one series to plot the forecast")
+        st.write(UI_TEXT["select_series_to_plot"])
         return
     # Get dates for the selected series
     filter_cond = ""
@@ -452,7 +449,7 @@ def plot_forecast(forecast, selected_series):
         forecast_restricted = forecast.copy()
 
     selected_date = st.date_input(
-        "Choose a date",
+        UI_TEXT["choose_date"],
         min_value=forecast_restricted["forecast_origin"].min(),
         max_value=forecast_restricted["forecast_origin"].max(),
         value=forecast_restricted["forecast_origin"].min(),
@@ -477,20 +474,29 @@ def plot_forecast(forecast, selected_series):
         # weekday from datetime
 
         selected_data["weekday"] = selected_data["datetime"].dt.dayofweek
-        # map to DAY_NAME_DICT
-        selected_data["weekday"] = selected_data["weekday"].map(DAY_NAME_DICT)
-        st.write(selected_data)
-        # TODO: change range_y to work for negative values
+        # Use UI_TEXT for DAY_NAME_DICT
+        selected_data["weekday"] = selected_data["weekday"].map(
+            UI_TEXT["DAY_NAME_DICT"]
+        )
         fig = px.line(
             selected_data,
             x="datetime",
             y=["y", "f"],
             title="-".join(serie.values()),
-            labels={"datetime": "Fecha", "value": "Valor"},
+            labels={
+                "datetime": UI_TEXT["axis_labels"]["date"],
+                "value": UI_TEXT["axis_labels"]["value"],
+            },
             hover_data=["err", "abs_err", "perc_err", "perc_abs_err", "weekday"],
-            range_y=[selected_data[["y", "f"]].min().min()*0.8, selected_data[["y", "f"]].max().max() * 1.2],
+            range_y=[
+                selected_data[["y", "f"]].min().min() * 0.8,
+                selected_data[["y", "f"]].max().max() * 1.2,
+            ],
         )
-        newnames = {"y": "Real", "f": "Pronóstico"}
+        newnames = {
+            "y": UI_TEXT["series_names"]["real"],
+            "f": UI_TEXT["series_names"]["forecast"],
+        }
         fig.for_each_trace(
             lambda t: t.update(
                 name=newnames[t.name],
@@ -508,11 +514,9 @@ def plot_forecast(forecast, selected_series):
         st.plotly_chart(fig)
 
 
-def plot_error_visualization(forecast, selected_series):
-    st.subheader("Error visualization")
-    st.write(
-        "**Seleccione el rango de fechas** *(columna datetime)* **para visualizar los errores de pronóstico**",
-    )
+def plot_error_visualization(forecast, selected_series, UI_TEXT):
+    st.subheader(UI_TEXT["error_visualization_title"])
+    st.write(UI_TEXT["select_date_range"])
     date_range = date_range_picker(
         picker_type=PickerType.date,
         start=forecast["datetime"].min(),
@@ -539,13 +543,13 @@ def plot_error_visualization(forecast, selected_series):
     median_or_mean_trans = {"Mediana": "median", "Media": "mean"}
 
     # get maximum percentage error in selected data as a table in the streamplit. top10 rows
-    st.write("### Top 10 errores porcentuales absolutos")
+    st.write(UI_TEXT["top_10_errors"])
     for idx, serie in data_dict.items():
         st.write(serie.nlargest(10, "perc_abs_err")[["datetime", "perc_abs_err"]])
 
     mean_or_median_error = st.radio(
-        "Mostrar mediana o media",
-        ["Mediana", "Media"],
+        UI_TEXT["show_median_or_mean"],
+        UI_TEXT["median_or_mean_options"],
         index=0,
         key="median_or_mean_pmrs_diarios",
         horizontal=True,
@@ -561,14 +565,14 @@ def plot_error_visualization(forecast, selected_series):
 
     # Select which plot to show multiple allowed
     plot_options = st.multiselect(
-        "Selecciona los gráficos a mostrar",
-        ["Box plot por horizonte", "Box plot por datetime", "Scatter"],
+        UI_TEXT["select_plots"],
+        UI_TEXT["plot_options_error"],
         default=[],
-        placeholder="Selecciona los gráficos a mostrar",
+        placeholder=UI_TEXT["select_plots"],
         label_visibility="collapsed",
     )
-    if "Box plot por horizonte" in plot_options:
-        st.write("### Box plot por horizonte")
+    if UI_TEXT["plot_options_error"][0] in plot_options:  # "Box plot by horizon"
+        st.write(f"### {UI_TEXT['horizon_boxplot_title']}")
         # Box plot perc_abs_err by horizon (# TODO: Handle multiple series)
         for idx, serie in data_dict.items():
             # Show how many points for each horizon
@@ -586,26 +590,21 @@ def plot_error_visualization(forecast, selected_series):
             st.plotly_chart(fig)
             number_by_horizon = serie.groupby("h").size()
             if number_by_horizon.std() > 0:
-                st.warning(
-                    "El número de puntos por horizonte es muy variable, revisa tu proceso de generación de pronósticos."
-                    " Debes generar para cada datetime la misma cantidad de horizontes, "
-                    "haciendo forecast_origin=forecast_origin-horizonte"
-                    "con todos los horizontes que deseas pronosticar."
-                )
-    if "Box plot por datetime" in plot_options:
-        st.write("### Box plot por datetime")
+                st.warning(UI_TEXT["horizon_warning"])
+    if UI_TEXT["plot_options_error"][1] in plot_options:  # "Box plot by datetime"
+        st.write(f"### {UI_TEXT['datetime_boxplot_title']}")
         # Box plot perc_abs_err by datetime columns depending on user selection
         dict_transformations = {
-            "Diario": lambda x: x.dayofweek,
-            "Mensual": lambda x: x.month,
+            UI_TEXT["temporal_aggregation_options"][0]: lambda x: x.dayofweek,
+            UI_TEXT["temporal_aggregation_options"][1]: lambda x: x.month,
         }
         col_name_dict = {
-            "Diario": "Día",
-            "Mensual": "Mes",
+            UI_TEXT["temporal_aggregation_options"][0]: UI_TEXT["day"],
+            UI_TEXT["temporal_aggregation_options"][1]: UI_TEXT["month"],
         }
         select_agg = st.selectbox(
-            "Selecciona la agrupación temporal para el boxplot",
-            ["Diario", "Mensual"],
+            UI_TEXT["select_temporal_aggregation"],
+            UI_TEXT["temporal_aggregation_options"],
             key="select_agg",
         )
 
@@ -614,7 +613,10 @@ def plot_error_visualization(forecast, selected_series):
             transformed_datetime = serie["datetime"].apply(
                 dict_transformations[select_agg]
             )
-            transformed_datetime = transformed_datetime.map(ALL_DICT[select_agg])
+            # Use UI_TEXT for ALL_DICT
+            transformed_datetime = transformed_datetime.map(
+                UI_TEXT["ALL_DICT"][select_agg]
+            )
 
             # Create a box plot
             fig = px.box(

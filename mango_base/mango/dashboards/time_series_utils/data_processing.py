@@ -8,10 +8,12 @@ def aggregate_to_input_cache(data, freq, SERIES_CONF):
     return aggregate_to_input(data, freq, SERIES_CONF)
 
 
-def process_data(data, columns_id, select_agr_tmp_dict, select_agr_tmp):
+def process_data(data, columns_id, select_agr_tmp_dict, select_agr_tmp, UI_TEXT):
     data["datetime"] = pd.to_datetime(data["datetime"])
 
-    if st.session_state.get("visualization") == "Exploración":
+    if (
+        st.session_state.get("visualization") == UI_TEXT["visualization_options"][0]
+    ):  # "Exploration"
         time_series = data[["datetime", "y"]].drop_duplicates()
         forecast = None
     else:

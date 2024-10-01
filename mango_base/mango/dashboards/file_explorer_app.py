@@ -13,6 +13,7 @@ from PIL import Image
 from mango_base.mango.processing import write_json, load_json
 from mango_base.mango.table import Table
 
+
 class DisplayablePath(object):
     display_filename_prefix_middle = "├──"
     display_filename_prefix_last = "└──"
@@ -451,9 +452,11 @@ class FileExplorerApp:
             paths,
             placeholder="Choose an option",
             index=default_index,
-            format_func=lambda x: x.replace(folder_path, "")
-            if x != self.config["dir_path"]
-            else os.path.basename(x),
+            format_func=lambda x: (
+                x.replace(folder_path, "")
+                if x != self.config["dir_path"]
+                else os.path.basename(x)
+            ),
             key=key,
         )
 
@@ -546,9 +549,11 @@ class FileExplorerApp:
                     )
                     st.plotly_chart(
                         fig,
-                        use_container_width=True
-                        if self.config.get(f"width_{key}", None) is None
-                        else False,
+                        use_container_width=(
+                            True
+                            if self.config.get(f"width_{key}", None) is None
+                            else False
+                        ),
                         theme=None,
                     )
                 except:
@@ -623,7 +628,9 @@ class FileExplorerApp:
                                         key=f"{key_tab}_{path_selected}_{key}",
                                         num_rows="dynamic",
                                     )
-                                    dict_edited = Table.from_pandas(edited_df).replace_nan()
+                                    dict_edited = Table.from_pandas(
+                                        edited_df
+                                    ).replace_nan()
                                     data[key_tab] = dict_edited
                                     if self.editable:
                                         st.button(
@@ -689,9 +696,9 @@ class FileExplorerApp:
             for i_col in range(1, col + 1):
                 try:
                     if st.session_state[f"folder_{row}_{i_col}"] != None:
-                        self.config["dict_layout"][
-                            f"folder_{row}_{i_col}"
-                        ] = st.session_state[f"folder_{row}_{i_col}"]
+                        self.config["dict_layout"][f"folder_{row}_{i_col}"] = (
+                            st.session_state[f"folder_{row}_{i_col}"]
+                        )
                 except:
                     if (
                         self.config["dict_layout"].get(f"folder_{row}_{i_col}", None)
@@ -700,9 +707,9 @@ class FileExplorerApp:
                         self.config["dict_layout"].pop(f"folder_{row}_{i_col}")
                 try:
                     if st.session_state[f"file_{row}_{i_col}"] != None:
-                        self.config["dict_layout"][
-                            f"file_{row}_{i_col}"
-                        ] = st.session_state[f"file_{row}_{i_col}"]
+                        self.config["dict_layout"][f"file_{row}_{i_col}"] = (
+                            st.session_state[f"file_{row}_{i_col}"]
+                        )
                 except:
                     if (
                         self.config["dict_layout"].get(f"file_{row}_{i_col}", None)
