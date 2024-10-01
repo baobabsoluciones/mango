@@ -1,7 +1,11 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.subplots as sp
+from statsmodels.tsa.stattools import acf, pacf
+from plotly.subplots import make_subplots
+import plotly.graph_objs as go
 from dateutil.rrule import weekday
 from statsmodels.tsa.seasonal import STL
 from streamlit_date_picker import date_range_picker, PickerType
@@ -30,7 +34,13 @@ def select_series(data, columns):
 def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_agr_tmp):
     select_plot = st.selectbox(
         "Selecciona el gráfico",
-        ["Serie original", "Serie por año", "STL"],
+        [
+            "Serie original",
+            "Serie por año",
+            "STL",
+            "Análisis de lags",
+            "Boxplot de estacionalidad",
+        ],
         label_visibility="collapsed",
     )
     if select_plot == "Serie original":
@@ -48,7 +58,8 @@ def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_a
             date_end = time_series["datetime"].max()
         for serie in selected_series:
             selected_data = time_series.copy()
-            filter_cond = f"datetime>='{date_start}' & datetime <= '{date_end}' & "
+
+            filter_cond = f"datetime >= '{date_start}' & datetime <= '{date_end}' & "
             for col, col_value in serie.items():
                 filter_cond += f"{col} == '{col_value}' & "
 
@@ -146,12 +157,213 @@ def plot_time_series(time_series, selected_series, select_agr_tmp_dict, select_a
 
             st.plotly_chart(fig, use_container_width=True)
 
+    elif select_plot == "Análisis de lags":
+        for serie in selected_series:
+            selected_data = time_series.copy()
+            filter_cond = ""
+            for col, col_value in serie.items():
+                filter_cond += f"{col} == '{col_value}' & "
+
+            # Remove the last & from the filter condition
+            filter_cond = filter_cond[:-3]
+            if filter_cond:
+                selected_data = selected_data.query(filter_cond)
+            selected_data_lags = selected_data.set_index("datetime")
+            selected_data_lags = selected_data_lags.asfreq(
+                select_agr_tmp_dict[select_agr_tmp]
+            )
+            max_lags = int(len(selected_data_lags) / 2) - 1
+            acf_array = acf(
+                selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
+            )
+            pacf_array = pacf(
+                selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
+            )
+
+            acf_lower_y = acf_array[1][:, 0] - acf_array[0]
+            acf_upper_y = acf_array[1][:, 1] - acf_array[0]
+            pacf_lower_y = pacf_array[1][:, 0] - pacf_array[0]
+            pacf_upper_y = pacf_array[1][:, 1] - pacf_array[0]
+
+            fig = make_subplots(
+                rows=2,
+                cols=1,
+                shared_xaxes=True,
+                subplot_titles=(
+                    "Autocorrelation Function (ACF)",
+                    "Partial Autocorrelation Function (PACF)",
+                ),
+            )
+
+            fig.add_trace(
+                go.Scatter(
+                    x=np.arange(len(acf_array[0])),
+                    y=acf_array[0],
+                    mode="markers",
+                    marker=dict(color="#1f77b4", size=12),
+                    name="ACF",
+                    showlegend=False,
+                ),
+                row=1,
+                col=1,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=np.arange(len(acf_array[0])),
+                    y=acf_upper_y,
+                    mode="lines",
+                    line=dict(color="rgba(255,255,255,0)"),
+                    showlegend=False,
+                ),
+                row=1,
+                col=1,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=np.arange(len(acf_array[0])),
+                    y=acf_lower_y,
+                    mode="lines",
+                    fillcolor="rgba(32, 146, 230,0.3)",
+                    fill="tonexty",
+                    line=dict(color="rgba(255,255,255,0)"),
+                    showlegend=False,
+                ),
+                row=1,
+                col=1,
+            )
+
+            # Adding PACF subplot
+            fig.add_trace(
+                go.Scatter(
+                    x=np.arange(len(pacf_array[0])),
+                    y=pacf_array[0],
+                    mode="markers",
+                    marker=dict(color="#1f77b4", size=12),
+                    name="PACF",
+                    showlegend=False,
+                ),
+                row=2,
+                col=1,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=np.arange(len(pacf_array[0])),
+                    y=pacf_upper_y,
+                    mode="lines",
+                    line=dict(color="rgba(255,255,255,0)"),
+                    showlegend=False,
+                ),
+                row=2,
+                col=1,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=np.arange(len(pacf_array[0])),
+                    y=pacf_lower_y,
+                    mode="lines",
+                    fillcolor="rgba(32, 146, 230,0.3)",
+                    fill="tonexty",
+                    line=dict(color="rgba(255,255,255,0)"),
+                    showlegend=False,
+                ),
+                row=2,
+                col=1,
+            )
+
+            for i in range(len(acf_array[0])):
+                fig.add_shape(
+                    type="line",
+                    x0=i,
+                    y0=0,
+                    x1=i,
+                    y1=acf_array[0][i],
+                    line=dict(color="grey", width=1),
+                    row=1,
+                    col=1,
+                )
+
+            for i in range(len(pacf_array[0])):
+                fig.add_shape(
+                    type="line",
+                    x0=i,
+                    y0=0,
+                    x1=i,
+                    y1=pacf_array[0][i],
+                    line=dict(color="grey", width=1),
+                    row=2,
+                    col=1,
+                )
+
+            fig.update_layout(showlegend=False, title="-".join(serie.values()))
+
+            fig.update_layout(
+                showlegend=False,
+                height=900,
+                width=800,
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+
+    elif select_plot == "Boxplot de estacionalidad":
+        selected_granularity = select_agr_tmp
+
+        if selected_granularity == "daily":
+            freq_options = ["Diaria", "Semanal", "Mensual"]
+        elif selected_granularity == "weekly":
+            freq_options = ["Semanal", "Mensual"]
+        elif selected_granularity == "monthly":
+            freq_options = ["Mensual"]
+        else:
+            st.write(
+                "No se puede visualizar un boxplot adecuado para la granularidad seleccionada."
+            )
+            return
+        selected_freq = st.selectbox("Selecciona la frecuencia", freq_options)
+
+        for serie in selected_series:
+            selected_data = time_series.copy()
+            filter_cond = ""
+            for col, col_value in serie.items():
+                filter_cond += f"{col} == '{col_value}' & "
+
+            # Remove the last & from the filter condition
+            filter_cond = filter_cond[:-3]
+            if filter_cond:
+                selected_data = selected_data.query(filter_cond)
+
+            selected_data = selected_data.set_index("datetime")
+            selected_data.index = pd.to_datetime(selected_data.index)
+
+            if selected_freq == "Diaria":
+                selected_data["day_of_year"] = selected_data.index.dayofyear
+                fig = px.box(
+                    selected_data, x="day_of_year", y="y", title="Boxplot diario"
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+            elif selected_freq == "Semanal":
+                selected_data["day_of_week"] = selected_data.index.weekday
+                fig = px.box(
+                    selected_data, x="day_of_week", y="y", title="Boxplot semanal"
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+            elif selected_freq == "Mensual":
+                selected_data["month"] = selected_data.index.month
+                fig = px.box(selected_data, x="month", y="y", title="Boxplot mensual")
+                st.plotly_chart(fig, use_container_width=True)
+
 
 def setup_sidebar(time_series, columns_id):
     st.sidebar.title("Visualizaciones")
+    if "forecast_origin" in time_series.columns and "f" in time_series.columns:
+        visualization_options = ["Exploración", "Forecast"]
+    else:
+        visualization_options = ["Exploración"]
+
     visualization = st.sidebar.radio(
         "Selecciona la visualización",
-        ["Time Series", "Forecast"],
+        visualization_options,
     )
     st.sidebar.title("Selecciona la agrupación temporal de los datos")
     all_tmp_agr = ["hourly", "daily", "weekly", "monthly", "quarterly", "yearly"]
@@ -178,13 +390,13 @@ def setup_sidebar(time_series, columns_id):
         label_visibility="collapsed",
     )
 
-    # Select series
     if columns_id:
         selected_series = select_series(time_series, columns_id)
         st.session_state["selected_series"].append(selected_series)
     else:
         st.sidebar.write("No hay columnas para filtrar. Solo una serie detectada")
         st.session_state["selected_series"] = [{}]
+
     return select_agr_tmp, visualization
 
 
@@ -295,9 +507,7 @@ def plot_error_visualization(forecast, selected_series):
     # get maximum percentage error in selected data as a table in the streamplit. top10 rows
     st.write("### Top 10 errores porcentuales absolutos")
     for idx, serie in data_dict.items():
-        st.write(
-            serie.nlargest(10, "perc_abs_err")[["datetime", "perc_abs_err"]]
-        )
+        st.write(serie.nlargest(10, "perc_abs_err")[["datetime", "perc_abs_err"]])
 
     mean_or_median_error = st.radio(
         "Mostrar mediana o media",

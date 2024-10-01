@@ -12,8 +12,18 @@ def preview_data(uploaded_file, separator, decimal, thousands, encoding, date_fo
         decimal=decimal,
         thousands=thousands,
         encoding=encoding,
-        parse_dates=["datetime", "forecast_origin"],
     )
+    date_columns = []
+    if "datetime" in data_frame.columns:
+        date_columns.append("datetime")
+    if "forecast_origin" in data_frame.columns:
+        date_columns.append("forecast_origin")
+
+    if date_columns:
+        data_frame[date_columns] = data_frame[date_columns].apply(
+            pd.to_datetime, format=date_format
+        )
+
     st.write(data_frame.head())
 
 
@@ -63,8 +73,17 @@ def upload_files():
                         decimal=decimal,
                         thousands=thousands,
                         encoding=encoding,
-                        parse_dates=["datetime", "forecast_origin"],
                     )
+                    date_columns = []
+                    if "datetime" in data_frame.columns:
+                        date_columns.append("datetime")
+                    if "forecast_origin" in data_frame.columns:
+                        date_columns.append("forecast_origin")
+
+                    if date_columns:
+                        data_frame[date_columns] = data_frame[date_columns].apply(
+                            pd.to_datetime, format=date_format
+                        )
                 elif extension == "xlsx":
                     data_frame = pd.read_excel(uploaded_file)
 
@@ -110,7 +129,10 @@ def manage_files(files_loaded):
                             disabled=True,
                         )
                         decimal = st.text_input(
-                            "Decimal", value=file_info["decimal"], help="e.g., '.', ','", disabled=True
+                            "Decimal",
+                            value=file_info["decimal"],
+                            help="e.g., '.', ','",
+                            disabled=True,
                         )
                     with col2:
                         thousands = st.text_input(
@@ -134,7 +156,7 @@ def manage_files(files_loaded):
                 col1, col2, col3 = st.columns(3)
                 with col2:
                     update_button = st.form_submit_button(label="Update File")
-            col1,col2,col3 = st.columns(3)
+            col1, col2, col3 = st.columns(3)
             with col2:
                 remove_button = st.button("Remove File")
             if update_button:
