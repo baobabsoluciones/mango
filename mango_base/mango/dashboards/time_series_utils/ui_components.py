@@ -1,16 +1,15 @@
-import streamlit as st
+import copy
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.subplots as sp
-from statsmodels.tsa.stattools import acf, pacf
-from plotly.subplots import make_subplots
 import plotly.graph_objs as go
-from dateutil.rrule import weekday
+import plotly.subplots as sp
+import streamlit as st
+from plotly.subplots import make_subplots
 from statsmodels.tsa.seasonal import STL
+from statsmodels.tsa.stattools import acf, pacf
 from streamlit_date_picker import date_range_picker, PickerType
-from .constants import SELECT_AGR_TMP_DICT
-import copy
 
 
 def select_series(data, columns, UI_TEXT):
@@ -516,23 +515,55 @@ def plot_forecast(forecast, selected_series, UI_TEXT):
 
 def plot_error_visualization(forecast, selected_series, UI_TEXT):
     st.subheader(UI_TEXT["error_visualization_title"])
-    st.write(UI_TEXT["select_date_range"])
-    date_range = date_range_picker(
-        picker_type=PickerType.date,
-        start=forecast["datetime"].min(),
-        end=forecast["datetime"].max(),
-        key="date_range_2",
+
+    # Add radio selector for filter type
+    filter_type = st.radio(
+        UI_TEXT["select_filter_type"],
+        [UI_TEXT["datetime_filter"], UI_TEXT["forecast_origin_filter"], UI_TEXT["both_filters"]],
+        horizontal=True
     )
-    if date_range:
-        date_start = pd.to_datetime(date_range[0])
-        date_end = pd.to_datetime(date_range[1])
-    else:
-        date_start = forecast["datetime"].min()
-        date_end = forecast["datetime"].max()
+
+    if filter_type in [UI_TEXT["datetime_filter"], UI_TEXT["both_filters"]]:
+        st.write(UI_TEXT["select_datetime_range"])
+        date_range = date_range_picker(
+            picker_type=PickerType.date,
+            start=forecast["datetime"].min(),
+            end=forecast["datetime"].max(),
+            key="date_range_datetime",
+        )
+        if date_range:
+            date_start = pd.to_datetime(date_range[0])
+            date_end = pd.to_datetime(date_range[1])
+        else:
+            date_start = forecast["datetime"].min()
+            date_end = forecast["datetime"].max()
+
+    if filter_type in [UI_TEXT["forecast_origin_filter"], UI_TEXT["both_filters"]]:
+        st.write(UI_TEXT["select_forecast_origin_range"])
+        forecast_origin_range = date_range_picker(
+            picker_type=PickerType.date,
+            start=forecast["forecast_origin"].min(),
+            end=forecast["forecast_origin"].max(),
+            key="date_range_forecast_origin",
+        )
+        if forecast_origin_range:
+            forecast_origin_start = pd.to_datetime(forecast_origin_range[0])
+            forecast_origin_end = pd.to_datetime(forecast_origin_range[1])
+        else:
+            forecast_origin_start = forecast["forecast_origin"].min()
+            forecast_origin_end = forecast["forecast_origin"].max()
+
     data_dict = {}
     for idx, serie in enumerate(selected_series):
         selected_data = forecast.copy()
-        filter_cond = f"datetime>='{date_start}' & datetime <= '{date_end}' & "
+        filter_cond = ""
+
+        if filter_type in [UI_TEXT["datetime_filter"], UI_TEXT["both_filters"]]:
+            filter_cond += f"datetime >= '{date_start}' & datetime <= '{date_end}' & "
+
+        if filter_type in [UI_TEXT["forecast_origin_filter"], UI_TEXT["both_filters"]]:
+            filter_cond += f"forecast_origin >= '{forecast_origin_start}' & forecast_origin <= '{forecast_origin_end}' & "
+
         for col, col_value in serie.items():
             filter_cond += f"{col} == '{col_value}' & "
 
@@ -540,7 +571,6 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
         filter_cond = filter_cond[:-3]
         selected_data = selected_data.query(filter_cond)
         data_dict[idx] = selected_data.copy()
-    median_or_mean_trans = {"Mediana": "median", "Media": "mean"}
 
     # get maximum percentage error in selected data as a table in the streamplit. top10 rows
     st.write(UI_TEXT["top_10_errors"])
@@ -554,13 +584,18 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
         key="median_or_mean_pmrs_diarios",
         horizontal=True,
     )
-    string_dict = {"Mediana": "mediano", "Media": "medio"}
+    median_or_mean_trans = {
+        UI_TEXT["median_option"]: np.median,
+        UI_TEXT["mean_option"]: np.mean
+    }
 
     # Show mean or median overall perc_abs_err
     for idx, serie in data_dict.items():
         st.write(
-            f"El error porcentual absoluto {string_dict[mean_or_median_error]} de la serie es de "
-            f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**"
+            UI_TEXT["error_message"].format(
+                UI_TEXT["mediana_mean_string_dict"][mean_or_median_error],
+                f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**"
+            )
         )
 
     # Select which plot to show multiple allowed

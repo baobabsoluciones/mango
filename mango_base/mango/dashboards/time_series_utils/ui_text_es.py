@@ -1,5 +1,8 @@
 UI_TEXT = {
     "page_title": "Visualización",
+    "upload_button_text": "Subir archivo",
+    "upload_instructions": "Arrastra y suelta un archivo CSV aquí o haz clic para seleccionar un archivo.",
+    "file_limits": "Máximo {} MB por archivo.",
     "select_series": "Selecciona serie a analizar",
     "choose_plot": "Selecciona el gráfico",
     "plot_options": [
@@ -33,6 +36,9 @@ UI_TEXT = {
     "top_10_errors": "Top 10 errores porcentuales absolutos",
     "show_median_or_mean": "Mostrar mediana o media",
     "median_or_mean_options": ["Mediana", "Media"],
+    "median_option": "Mediana",
+    "mean_option": "Media",
+    "mediana_mean_string_dict": {"Mediana": "mediana", "Media": "media"},
     "error_message": "El error porcentual absoluto {} de la serie es de {}",
     "select_plots": "Selecciona los gráficos a mostrar",
     "plot_options_error": [
@@ -157,4 +163,10 @@ UI_TEXT = {
     },
     "day": "Día",
     "month": "Mes",
+    "select_filter_type": "Selecciona el tipo de filtro:",
+    "datetime_filter": "Filtrar por datetime",
+    "forecast_origin_filter": "Filtrar por origen de pronóstico",
+    "both_filters": "Filtrar por ambos",
+    "select_datetime_range": "Selecciona el rango de datetime:",
+    "select_forecast_origin_range": "Selecciona el rango de origen de pronóstico:",
 }

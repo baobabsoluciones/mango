@@ -2,6 +2,9 @@ UI_TEXT = {
     # General
     "page_title": "Visualization",
     "sidebar_title": "Visualizations",
+    "upload_button_text": "Upload a file",
+    "upload_instructions": "Drag and drop a file here or click to upload",
+    "file_limits": "Maximum {} MB per file.",
     "no_files_uploaded": "No files uploaded.",
 
     # Series Selection
@@ -63,6 +66,9 @@ UI_TEXT = {
     "top_10_errors": "Top 10 absolute percentage errors",
     "show_median_or_mean": "Show median or mean",
     "median_or_mean_options": ["Median", "Mean"],
+    "median_option": "Median",
+    "mean_option": "Mean",
+    "mediana_mean_string_dict": {"Median": "median", "Mean": "mean"},
     "error_message": "The {} absolute percentage error of the series is {}",
     "select_plots": "Select plots to display",
     "plot_options_error": ["Box plot by horizon", "Box plot by datetime", "Scatter"],
@@ -132,4 +138,12 @@ UI_TEXT = {
     },
     "day": "Day",
     "month": "Month",
+
+    # New entries
+    "select_filter_type": "Select filter type:",
+    "datetime_filter": "Filter by datetime",
+    "forecast_origin_filter": "Filter by forecast origin",
+    "both_filters": "Filter by both",
+    "select_datetime_range": "Select datetime range:",
+    "select_forecast_origin_range": "Select forecast origin range:",
 }

@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-import io
 
 
 def preview_data(
@@ -31,7 +30,7 @@ def preview_data(
 
 def upload_files(UI_TEXT):
     files = st.file_uploader(
-        UI_TEXT["upload_file"], type=["csv", "xlsx"], accept_multiple_files=True
+        UI_TEXT["upload_file"], type=["csv", "xlsx"], accept_multiple_files=True, key="file_uploader"
     )
     files_loaded = {}
 

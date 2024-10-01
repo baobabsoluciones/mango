@@ -1,6 +1,9 @@
 UI_TEXT = {
     "page_title": "Visualització",
     "select_series": "Selecciona la sèrie a analitzar",
+    "upload_button_text": "Puja un arxiu",
+    "upload_instructions": "Arrossega i deixa anar un arxiu aquí o fes clic per pujar",
+    "file_limits": "Màxim {} MB per arxiu.",
     "choose_plot": "Selecciona el gràfic",
     "plot_options": [
         "Sèrie original",
@@ -33,6 +36,9 @@ UI_TEXT = {
     "top_10_errors": "Top 10 errors percentuals absoluts",
     "show_median_or_mean": "Mostrar mediana o mitjana",
     "median_or_mean_options": ["Mediana", "Mitjana"],
+    "median_option": "Mediana",
+    "mean_option": "Mitjana",
+    "mediana_mean_string_dict": {"Mediana": "mediana", "Mitjana": "mitjana"},
     "error_message": "L'error percentual absolut {} de la sèrie és de {}",
     "select_plots": "Selecciona els gràfics a mostrar",
     "plot_options_error": [
@@ -157,4 +163,10 @@ UI_TEXT = {
     },
     "day": "Dia",
     "month": "Mes",
+    "select_filter_type": "Selecciona el tipus de filtre:",
+    "datetime_filter": "Filtrar per datetime",
+    "forecast_origin_filter": "Filtrar per origen de previsió",
+    "both_filters": "Filtrar per ambdós",
+    "select_datetime_range": "Selecciona el rang de datetime:",
+    "select_forecast_origin_range": "Selecciona el rang d'origen de previsió:",
 }

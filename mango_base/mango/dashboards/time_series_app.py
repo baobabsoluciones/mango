@@ -1,34 +1,31 @@
-import pandas as pd
-import plotly.express as px
-import plotly.subplots as sp
 import streamlit as st
 
-# from statsmodels.tsa.seasonal import STL
-# from streamlit_date_picker import date_range_picker, PickerType
-
+from mango_base.mango.dashboards.time_series_utils.constants import SELECT_AGR_TMP_DICT
 from mango_base.mango.dashboards.time_series_utils.data_loader import load_data
 from mango_base.mango.dashboards.time_series_utils.data_processing import process_data
+from mango_base.mango.dashboards.time_series_utils.file_uploader import (
+    upload_files,
+    manage_files,
+)
 from mango_base.mango.dashboards.time_series_utils.ui_components import (
-    select_series,
     plot_time_series,
     setup_sidebar,
     plot_forecast,
     plot_error_visualization,
 )
-from mango_base.mango.dashboards.time_series_utils.constants import SELECT_AGR_TMP_DICT
-from mango_base.mango.dashboards.time_series_utils.file_uploader import (
-    upload_files,
-    manage_files,
-)
-from mango_base.mango.dashboards.time_series_utils.ui_text_es import (
-    UI_TEXT as UI_TEXT_ES,
+from mango_base.mango.dashboards.time_series_utils.ui_text_catala import (
+    UI_TEXT as UI_TEXT_CATALA,
 )
 from mango_base.mango.dashboards.time_series_utils.ui_text_en import (
     UI_TEXT as UI_TEXT_EN,
 )
-from mango_base.mango.dashboards.time_series_utils.ui_text_catala import (
-    UI_TEXT as UI_TEXT_CATALA,
+from mango_base.mango.dashboards.time_series_utils.ui_text_es import (
+    UI_TEXT as UI_TEXT_ES,
 )
+
+
+# from statsmodels.tsa.seasonal import STL
+# from streamlit_date_picker import date_range_picker, PickerType
 
 
 def interface_visualization(project_name: str = None):
@@ -39,6 +36,8 @@ def interface_visualization(project_name: str = None):
         initial_sidebar_state="auto",
         menu_items=None,
     )
+
+    # Set up theme
 
     # Language selector
     language = st.sidebar.selectbox(
@@ -56,6 +55,46 @@ def interface_visualization(project_name: str = None):
         UI_TEXT = UI_TEXT_EN
 
     st.title(project_name or UI_TEXT["page_title"])
+
+    hide_label = (
+        """
+        <style>
+            div[data-testid="stFileUploader"]>section[data-testid="stFileUploaderDropzone"]>button[data-testid="baseButton-secondary"] {
+               color:white;
+            }
+            div[data-testid="stFileUploader"]>section[data-testid="stFileUploaderDropzone"]>button[data-testid="baseButton-secondary"]::after {
+                content: "BUTTON_TEXT";
+                color:black;
+                display: block;
+                position: absolute;
+            }
+            div[data-testid="stFileUploaderDropzoneInstructions"]>div>span {
+               visibility:hidden;
+            }
+            div[data-testid="stFileUploaderDropzoneInstructions"]>div>span::after {
+               content:"INSTRUCTIONS_TEXT";
+               visibility:visible;
+               display:block;
+            }
+             div[data-testid="stFileUploaderDropzoneInstructions"]>div>small {
+               visibility:hidden;
+            }
+            div[data-testid="stFileUploaderDropzoneInstructions"]>div>small::before {
+               content:"FILE_LIMITS";
+               visibility:visible;
+               display:block;
+            }
+        </style>
+        """.replace(
+            "BUTTON_TEXT", UI_TEXT["upload_button_text"]
+        )
+        .replace("INSTRUCTIONS_TEXT", UI_TEXT["upload_instructions"])
+        .replace(
+            "FILE_LIMITS",
+            UI_TEXT["file_limits"].format(st.get_option("server.maxUploadSize")),
+        )
+    )
+    st.markdown(hide_label, unsafe_allow_html=True)
 
     if not st.session_state.get("files_loaded"):
         files_loaded = upload_files(UI_TEXT)
