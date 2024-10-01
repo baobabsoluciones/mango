@@ -391,8 +391,38 @@ def setup_sidebar(time_series, columns_id):
     )
 
     if columns_id:
-        selected_series = select_series(time_series, columns_id)
-        st.session_state["selected_series"].append(selected_series)
+        # Setup select series
+        selected_item = select_series(time_series, columns_id)
+        if st.sidebar.button("Add selected series"):
+            # Avoid adding duplicates
+            if selected_item not in st.session_state["selected_series"]:
+                st.session_state["selected_series"].append(selected_item)
+            else:
+                st.toast("The selected series is already in the list", icon="❌")
+
+        # Display the selected series in the sidebar with remove button
+        for idx, serie in enumerate(st.session_state["selected_series"]):
+            serie = "-".join(serie.values())
+            col1, col2 = st.sidebar.columns(
+                [8, 2]
+            )  # Create two columns: 8 units for text, 2 units for button
+            with col1:
+                st.write(
+                    f"{idx + 1}. {serie}"
+                )  # Display the series name in the first column
+            with col2:
+                if st.button(
+                        "❌", key=f"remove_{idx}"
+                ):  # Display the button in the second column
+                    st.session_state["selected_series"].pop(
+                        idx
+                    )  # Remove the series name from the first column
+                    st.rerun()  # Rerun the app to update the sidebar
+            # Remove all selected series
+        if st.session_state["selected_series"]:
+            if st.sidebar.button("Remove all selected series"):
+                st.session_state["selected_series"] = []
+                st.rerun()
     else:
         st.sidebar.write("No hay columnas para filtrar. Solo una serie detectada")
         st.session_state["selected_series"] = [{}]
@@ -439,22 +469,26 @@ def plot_forecast(forecast, selected_series):
             selected_data = forecast_restricted.query(filter_cond)
         else:
             selected_data = forecast_restricted.copy()
+
         selected_data = selected_data[
             selected_data["forecast_origin"] == pd.to_datetime(selected_date)
         ]
         # Plot both real and predicted values x datetime shared y axis y and f column
         # weekday from datetime
+
         selected_data["weekday"] = selected_data["datetime"].dt.dayofweek
         # map to DAY_NAME_DICT
         selected_data["weekday"] = selected_data["weekday"].map(DAY_NAME_DICT)
+        st.write(selected_data)
+        # TODO: change range_y to work for negative values
         fig = px.line(
             selected_data,
             x="datetime",
             y=["y", "f"],
-            title=serie,
+            title="-".join(serie.values()),
             labels={"datetime": "Fecha", "value": "Valor"},
             hover_data=["err", "abs_err", "perc_err", "perc_abs_err", "weekday"],
-            range_y=[200, selected_data[["y", "f"]].max().max() * 1.2],
+            range_y=[selected_data[["y", "f"]].min().min()*0.8, selected_data[["y", "f"]].max().max() * 1.2],
         )
         newnames = {"y": "Real", "f": "Pronóstico"}
         fig.for_each_trace(

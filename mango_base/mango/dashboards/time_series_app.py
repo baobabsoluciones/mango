@@ -22,7 +22,7 @@ from mango_base.mango.dashboards.time_series_utils.file_uploader import (
 )
 
 
-def interface_visualization(file, logo_path: str = None, project_name: str = None):
+def interface_visualization(project_name: str = None):
     # SETUP web page
     st.set_page_config(
         page_title="Visualizacion",
@@ -87,5 +87,5 @@ if __name__ == "__main__":
     file = "daily_forecast_error.csv"
     logo_path = r"https://www.multiserviciosaeroportuarios.com/wp-content/uploads/2024/03/cropped-Logo-transparente-blanco-Multiservicios-Aeroportuarios-Maero-1-192x192.png"
     interface_visualization(
-        file=file, logo_path=logo_path, project_name="Testing Dashboard Time Series"
+        project_name="Testing Dashboard Time Series"
     )

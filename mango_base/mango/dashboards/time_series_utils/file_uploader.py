@@ -38,35 +38,44 @@ def upload_files():
             st.write(f"### File: {uploaded_file.name}")
             extension = uploaded_file.name.split(".")[-1]
 
-            # Create a form for user inputs
-            with st.form(key=f"form_{uploaded_file.name}"):
-                file_name = st.text_input("File name", value=uploaded_file.name)
-                if extension == "csv":
-                    col1, col2, col3, col4, col5 = st.columns(5)
-                    with col1:
-                        separator = st.selectbox(
-                            "Separator", options=[",", ";", "|", "\t"], index=0
-                        )
-                    with col2:
-                        decimal = st.text_input(
-                            "Decimal", value=".", help="e.g., '.', ','"
-                        )
-                    with col3:
-                        thousands = st.text_input(
-                            "Thousands", value=",", help="e.g., ',', '.', ' '"
-                        )
-                    with col4:
-                        encoding = st.text_input(
-                            "Encoding",
-                            value="utf-8",
-                            help="e.g., 'utf-8', 'latin1', 'ascii'",
-                        )
-                    with col5:
-                        date_format = st.text_input(
-                            "Date format",
-                            value="%Y-%m-%d",
-                            help="e.g., '%Y-%m-%d', '%d/%m/%Y'",
-                        )
+            file_name = st.text_input("File name", value=uploaded_file.name)
+            if extension == "csv":
+                col1, col2, col3, col4, col5 = st.columns(5)
+                with col1:
+                    separator = st.selectbox(
+                        "Separator", options=[",", ";", "|", "\t"], index=0
+                    )
+                with col2:
+                    decimal = st.text_input(
+                        "Decimal", value=".", help="e.g., '.', ','"
+                    )
+                with col3:
+                    thousands = st.text_input(
+                        "Thousands", value=",", help="e.g., ',', '.', ' '"
+                    )
+                with col4:
+                    encoding = st.text_input(
+                        "Encoding",
+                        value="utf-8",
+                        help="e.g., 'utf-8', 'latin1', 'ascii'",
+                    )
+                with col5:
+                    date_format = st.text_input(
+                        "Date format",
+                        value="%Y-%m-%d",
+                        help="e.g., '%Y-%m-%d', '%d/%m/%Y'",
+                    )
+
+                try:
+                    data_frame = pd.read_csv(
+                        uploaded_file,
+                        sep=separator,
+                        decimal=decimal,
+                        thousands=thousands,
+                        encoding=encoding,
+                        parse_dates=["datetime"],
+                    )
+                except:
                     data_frame = pd.read_csv(
                         uploaded_file,
                         sep=separator,
@@ -84,12 +93,10 @@ def upload_files():
                         data_frame[date_columns] = data_frame[date_columns].apply(
                             pd.to_datetime, format=date_format
                         )
-                elif extension == "xlsx":
-                    data_frame = pd.read_excel(uploaded_file)
+            elif extension == "xlsx":
+                data_frame = pd.read_excel(uploaded_file)
 
-                submit_button = st.form_submit_button(label="Load Data")
-
-            if submit_button:
+            if st.button(f"Load Data {uploaded_file.name}"):
                 if extension == "csv":
                     files_loaded[file_name] = {
                         "data": data_frame,
