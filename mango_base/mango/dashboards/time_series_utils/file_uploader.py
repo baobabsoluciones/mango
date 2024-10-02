@@ -91,6 +91,9 @@ def upload_files(UI_TEXT):
                 elif extension == "xlsx":
                     data_frame = pd.read_excel(uploaded_file)
 
+                if "model" not in data_frame.columns:
+                    data_frame["model"] = file_name
+
                 submit_button = st.form_submit_button(label=UI_TEXT["load_data"])
 
             if submit_button:
@@ -115,11 +118,12 @@ def upload_files(UI_TEXT):
 def manage_files(files_loaded, UI_TEXT):
     st.sidebar.write(UI_TEXT["manage_files"])
     remaining_files = files_loaded.copy()
-    for file_name, file_info in files_loaded.items():
-        with st.sidebar.expander(file_name):
-            st.write(f"{UI_TEXT['file_title']} {file_name}")
+    extension = list(remaining_files.keys())[0].split(".")[-1]
+    for file_name_old, file_info in files_loaded.items():
+        with st.sidebar.expander(file_name_old):
+            st.write(f"{UI_TEXT['file_title']} {file_name_old}")
 
-            with st.form(key=f"manage_form_{file_name}", border=0):
+            with st.form(key=f"manage_form_{file_name_old}", border=0):
                 file_name = st.text_input(
                     UI_TEXT["file_name"], value=file_info["file_name"]
                 )
@@ -164,15 +168,26 @@ def manage_files(files_loaded, UI_TEXT):
                 remove_button = st.button(UI_TEXT["remove_file"])
             if update_button:
                 del remaining_files[file_info["file_name"]]
-                remaining_files[file_name] = {
-                    "data": file_info["data"],
-                    "separator": separator,
-                    "decimal": decimal,
-                    "thousands": thousands,
-                    "encoding": encoding,
-                    "date_format": date_format,
-                    "file_name": file_name,
-                }
+                df = file_info["data"].copy()
+                if (df["model"] == file_name_old).all():
+                    df = file_info["data"].copy()
+                    df["model"] = file_name
+
+                if extension == "csv":
+                    remaining_files[file_name] = {
+                        "data": file_info["data"],
+                        "separator": separator,
+                        "decimal": decimal,
+                        "thousands": thousands,
+                        "encoding": encoding,
+                        "date_format": date_format,
+                        "file_name": file_name,
+                    }
+                elif extension == "xlsx":
+                    remaining_files[file_name]= {
+                        "data": file_info["data"],
+                        "file_name": file_name,
+                    }
 
             if remove_button:
                 del remaining_files[file_name]

@@ -28,7 +28,7 @@ def process_data(data, columns_id, select_agr_tmp_dict, select_agr_tmp, UI_TEXT)
                 forecast,
                 freq=select_agr_tmp_dict[select_agr_tmp],
                 SERIES_CONF={
-                    "KEY_COLS": columns_id + ["forecast_origin", "h"],
+                    "KEY_COLS": columns_id + ["forecast_origin", "h", "model"],
                     "AGG_OPERATIONS": {
                         "y": "sum",
                         "f": "sum",

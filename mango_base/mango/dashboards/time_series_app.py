@@ -117,6 +117,7 @@ def interface_visualization(project_name: str = None):
                 not in [
                     "forecast_origin",
                     "datetime",
+                    "model",
                     "h",
                     "y",
                     "f",

@@ -305,11 +305,11 @@ def plot_time_series(
     elif select_plot == UI_TEXT["plot_options"][4]:  # "Seasonality boxplot"
         selected_granularity = select_agr_tmp
 
-        if selected_granularity == "daily":
+        if selected_granularity == UI_TEXT["daily"]:
             freq_options = UI_TEXT["frequency_options"]
-        elif selected_granularity == "weekly":
+        elif selected_granularity == UI_TEXT["weekly"]:
             freq_options = UI_TEXT["frequency_options"][1:]
-        elif selected_granularity == "monthly":
+        elif selected_granularity == UI_TEXT["monthly"]:
             freq_options = [UI_TEXT["frequency_options"][2]]
         else:
             st.write(UI_TEXT["boxplot_error"])
@@ -336,7 +336,7 @@ def plot_time_series(
                     selected_data,
                     x="day_of_year",
                     y="y",
-                    title=UI_TEXT["boxplot_titles"][0],
+                    title=UI_TEXT["boxplot_titles"]["daily"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -346,14 +346,17 @@ def plot_time_series(
                     selected_data,
                     x="day_of_week",
                     y="y",
-                    title=UI_TEXT["boxplot_titles"][1],
+                    title=UI_TEXT["boxplot_titles"]["weekly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
             elif selected_freq == UI_TEXT["frequency_options"][2]:
                 selected_data["month"] = selected_data.index.month
                 fig = px.box(
-                    selected_data, x="month", y="y", title=UI_TEXT["boxplot_titles"][2]
+                    selected_data,
+                    x="month",
+                    y="y",
+                    title=UI_TEXT["boxplot_titles"]["monthly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -477,31 +480,82 @@ def plot_forecast(forecast, selected_series, UI_TEXT):
         selected_data["weekday"] = selected_data["weekday"].map(
             UI_TEXT["DAY_NAME_DICT"]
         )
-        fig = px.line(
-            selected_data,
-            x="datetime",
-            y=["y", "f"],
-            title="-".join(serie.values()),
-            labels={
-                "datetime": UI_TEXT["axis_labels"]["date"],
-                "value": UI_TEXT["axis_labels"]["value"],
-            },
-            hover_data=["err", "abs_err", "perc_err", "perc_abs_err", "weekday"],
-            range_y=[
-                selected_data[["y", "f"]].min().min() * 0.8,
-                selected_data[["y", "f"]].max().max() * 1.2,
-            ],
-        )
+
+        time_series = selected_data[["datetime", "y", "weekday"]].drop_duplicates()
+        if "model" in selected_data.columns:
+            fig = go.Figure()
+
+            for i, (model_name, model_data) in enumerate(
+                selected_data.groupby("model")
+            ):
+                fig.add_trace(
+                    go.Scatter(
+                        x=model_data["datetime"],
+                        y=model_data["f"],
+                        mode="lines",
+                        name=f"Forecast ({model_name})",
+                        line=dict(
+                            color=px.colors.qualitative.Plotly[
+                                i % len(px.colors.qualitative.Plotly)
+                            ]
+                        ),
+                        hovertemplate=(
+                            f"Model: {model_name}<br>"
+                            + "datetime: %{x}<br>"
+                            + "forecast: %{y}<br>"
+                            + "Error: %{customdata[0]}<br>"
+                            + "Abs Error: %{customdata[1]}<br>"
+                            + "Perc Error: %{customdata[2]}<br>"
+                            + "Perc Abs Error: %{customdata[3]}<br>"
+                            + "Weekday: %{customdata[4]}"
+                        ),
+                        customdata=model_data[
+                            ["err", "abs_err", "perc_err", "perc_abs_err", "weekday"]
+                        ],
+                    )
+                )
+
+            fig.add_trace(
+                go.Scatter(
+                    x=time_series["datetime"],
+                    y=time_series["y"],
+                    mode="lines",
+                    name=UI_TEXT["series_names"]["real"],
+                    line=dict(color=px.colors.qualitative.Plotly[0]),
+                    hovertemplate="datetime: %{x}<br>real: %{y}<br>Weekday: %{customdata[4]}",
+                    customdata=time_series[["weekday"]],
+                    opacity=1,
+                )
+            )
+
+        else:
+            fig = px.line(
+                selected_data,
+                x="datetime",
+                y=["y", "f"],
+                title="-".join(serie.values()),
+                labels={
+                    "datetime": UI_TEXT["axis_labels"]["date"],
+                    "value": UI_TEXT["axis_labels"]["value"],
+                },
+                hover_data=["err", "abs_err", "perc_err", "perc_abs_err", "weekday"],
+                range_y=[
+                    selected_data[["y", "f"]].min().min() * 0.8,
+                    selected_data[["y", "f"]].max().max() * 1.2,
+                ],
+            )
+
         newnames = {
             "y": UI_TEXT["series_names"]["real"],
             "f": UI_TEXT["series_names"]["forecast"],
         }
+
         fig.for_each_trace(
             lambda t: t.update(
-                name=newnames[t.name],
-                legendgroup=newnames[t.name],
+                name=newnames.get(t.name, t.name),
+                legendgroup=newnames.get(t.name, t.name),
                 hovertemplate=t.hovertemplate.replace(
-                    f"variable={t.name}", f"variable={newnames[t.name]}"
+                    f"variable={t.name}", f"variable={newnames.get(t.name, t.name)}"
                 )
                 .replace("perc_abs_err", "Error porcentual absoluto")
                 .replace("perc_err", "Error porcentual")
@@ -510,6 +564,7 @@ def plot_forecast(forecast, selected_series, UI_TEXT):
                 .replace("weekday", "Día de la semana"),
             )
         )
+
         st.plotly_chart(fig)
 
 
@@ -519,8 +574,12 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
     # Add radio selector for filter type
     filter_type = st.radio(
         UI_TEXT["select_filter_type"],
-        [UI_TEXT["datetime_filter"], UI_TEXT["forecast_origin_filter"], UI_TEXT["both_filters"]],
-        horizontal=True
+        [
+            UI_TEXT["datetime_filter"],
+            UI_TEXT["forecast_origin_filter"],
+            UI_TEXT["both_filters"],
+        ],
+        horizontal=True,
     )
 
     if filter_type in [UI_TEXT["datetime_filter"], UI_TEXT["both_filters"]]:
@@ -586,7 +645,7 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
     )
     median_or_mean_trans = {
         UI_TEXT["median_option"]: np.median,
-        UI_TEXT["mean_option"]: np.mean
+        UI_TEXT["mean_option"]: np.mean,
     }
 
     # Show mean or median overall perc_abs_err
@@ -594,7 +653,7 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
         st.write(
             UI_TEXT["error_message"].format(
                 UI_TEXT["mediana_mean_string_dict"][mean_or_median_error],
-                f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**"
+                f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**",
             )
         )
 
