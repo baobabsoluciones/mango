@@ -4,6 +4,13 @@ import numpy as np
 import pandas as pd
 from statsmodels.tsa.seasonal import STL, MSTL
 
+from mango_base.mango.logging.logger import get_basic_logger
+from mango_time_series.mango.time_series.heteroscedasticity import (
+    detect_and_transform_heteroscedasticity,
+)
+
+logger = get_basic_logger()
+
 
 class SeasonalityDecompose:
 
@@ -22,7 +29,26 @@ class SeasonalityDecompose:
         :param period: The seasonal period (e.g., 12 for monthly data with yearly seasonality).
         :return: A tuple of (trend, seasonal, residual) components.
         """
-        stl = STL(series, seasonal=period)
+
+        series_array = series.values
+
+        # Detect heteroscedasticity
+        transformed_series, lambda_value = detect_and_transform_heteroscedasticity(
+            series_array
+        )
+
+        transformed_series = pd.Series(transformed_series, index=series.index)
+        if lambda_value is not None:
+            # Multiplicative STL decomposition
+            stl = STL(transformed_series, seasonal=period, robust=True)
+            logger.info(
+                "Applying multiplicative STL due to detected heteroscedasticity."
+            )
+        else:
+            # Additive STL decomposition
+            stl = STL(series, seasonal=period)
+            logger.info("Applying additive STL (no heteroscedasticity detected).")
+
         result = stl.fit()
         return result.trend, result.seasonal, result.resid
 
@@ -36,8 +62,12 @@ class SeasonalityDecompose:
         :param periods: A tuple of seasonal periods to decompose the series.
         :return: Three Polars Series: trend, seasonal components, and residual.
         """
-        mstl = MSTL(series, periods=periods)
-        result = mstl.fit()
+        if (series <= 0).any():
+            mstl = MSTL(series, periods=periods)
+            result = mstl.fit()
+        else:
+            mstl = MSTL(series, periods=periods, lmbda="auto")
+            result = mstl.fit()
 
         return result.trend, result.seasonal, result.resid
 

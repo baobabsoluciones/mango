@@ -50,22 +50,14 @@ def apply_boxcox_with_lambda(series: np.ndarray, lambda_value: float) -> np.ndar
 
 
 def detect_and_transform_heteroscedasticity(
-    df: pl.DataFrame, target_column: str
+    series: np.ndarray,
 ) -> Tuple[np.ndarray, float or None]:
     """
     Detect heteroscedasticity in a time series using the Breusch-Pagan test and apply Box-Cox transformation if detected.
 
-    :param df: A Polars dataframe containing the time series data.
-    :param target_column: The name of the target column containing the time series values.
+    :param series: A numpy array representing the time series data.
     :return: A tuple with the transformed series (or original if no transformation is applied) and the lambda value (or None).
     """
-    df_pandas = df.to_pandas()
-
-    if target_column not in df_pandas.columns:
-        raise ValueError(f"Column '{target_column}' not found in DataFrame")
-
-    series = df_pandas[target_column].values
-
     if len(series) <= 1:
         raise ValueError(
             "The time series must contain more than one data point for the test"

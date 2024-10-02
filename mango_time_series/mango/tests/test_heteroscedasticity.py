@@ -1,7 +1,6 @@
 from unittest import TestCase
 
 import numpy as np
-import polars as pl
 
 from mango_time_series.mango.time_series.heteroscedasticity import (
     detect_and_transform_heteroscedasticity,
@@ -24,12 +23,12 @@ class TestHeteroscedasticityTester(TestCase):
         # Generate homoscedasticity data
         self.series_without_heteroscedasticity = np.random.normal(0, 1, 100)
 
-        self.df_heteroscedastic = pl.DataFrame(
-            {"target": self.series_with_heteroscedasticity}
-        )
-        self.df_homoscedastic = pl.DataFrame(
-            {"target": self.series_without_heteroscedasticity}
-        )
+        # self.df_heteroscedastic = pl.DataFrame(
+        #     {"target": self.series_with_heteroscedasticity}
+        # )
+        # self.df_homoscedastic = pl.DataFrame(
+        #     {"target": self.series_without_heteroscedasticity}
+        # )
 
     def test_get_optimal_lambda_with_negative_values(self):
         """
@@ -83,7 +82,7 @@ class TestHeteroscedasticityTester(TestCase):
         """
         # Test for a series with heteroscedasticity
         transformed_series, optimal_lambda = detect_and_transform_heteroscedasticity(
-            self.df_heteroscedastic, "target"
+            series=self.series_with_heteroscedasticity
         )
         self.assertIsNotNone(optimal_lambda)
         self.assertEqual(
@@ -92,7 +91,7 @@ class TestHeteroscedasticityTester(TestCase):
 
         # Test for a series without heteroscedasticity
         transformed_series, optimal_lambda = detect_and_transform_heteroscedasticity(
-            self.df_homoscedastic, "target"
+            series=self.series_without_heteroscedasticity
         )
         self.assertIsNone(optimal_lambda)
         self.assertEqual(
