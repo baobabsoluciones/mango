@@ -73,7 +73,17 @@ def plot_time_series(
                 ),
                 use_container_width=True,
             )
-    elif select_plot == UI_TEXT["plot_options"][1]:  # "Series by year"
+    elif select_plot == UI_TEXT["plot_options"][1]:
+        st.markdown("""
+            <style>
+            /* Cambiar el color de las etiquetas seleccionadas en el multiselect */
+            .stMultiSelect [data-baseweb="tag"] {
+                background-color: #66b3ff !important;  /* Color azul */
+                color: white !important;  /* Texto en blanco */
+            }
+            </style>
+            """, unsafe_allow_html=True)
+        # "Series by year"
         options = st.multiselect(
             UI_TEXT["choose_years"],
             sorted(time_series["datetime"].dt.year.unique(), reverse=True),

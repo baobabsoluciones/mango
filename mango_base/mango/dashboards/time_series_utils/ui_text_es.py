@@ -169,4 +169,5 @@ UI_TEXT = {
     "both_filters": "Filtrar por ambos",
     "select_datetime_range": "Selecciona el rango de datetime:",
     "select_forecast_origin_range": "Selecciona el rango de origen de pronóstico:",
+    "add_new_file": 'Añadir nuevo archivo',
 }

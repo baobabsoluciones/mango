@@ -51,7 +51,7 @@ def upload_files(UI_TEXT):
                     col1, col2, col3, col4, col5 = st.columns(5)
                     with col1:
                         separator = st.selectbox(
-                            UI_TEXT["separator"], options=[",", ";", "|", "\t"], index=0
+                            UI_TEXT["separator"], options=[",", ";", "|", "\t"], index=0,
                         )
                     with col2:
                         decimal = st.text_input(
@@ -72,7 +72,7 @@ def upload_files(UI_TEXT):
                     with col5:
                         date_format = st.text_input(
                             UI_TEXT["date_format"],
-                            value="%Y-%m-%d",
+                            value="auto",
                             help=UI_TEXT["date_format_help"],
                         )
                     data_frame = pd.read_csv(
@@ -90,7 +90,7 @@ def upload_files(UI_TEXT):
 
                     if date_columns:
                         data_frame[date_columns] = data_frame[date_columns].apply(
-                            pd.to_datetime, format=date_format
+                            pd.to_datetime, format=date_format if date_format!="auto" else None
                         )
                 elif extension == "xlsx":
                     data_frame = pd.read_excel(uploaded_file)
@@ -99,7 +99,8 @@ def upload_files(UI_TEXT):
                     no_model_column = True
 
                 submit_button = st.form_submit_button(label=UI_TEXT["load_data"])
-
+            if st.button("Preview"):
+                st.write(data_frame)
             if submit_button:
                 if extension == "csv":
                     files_loaded[file_name] = {
@@ -123,6 +124,7 @@ def manage_files(files_loaded, UI_TEXT):
     st.sidebar.write(UI_TEXT["manage_files"])
     remaining_files = files_loaded.copy()
     extension = list(remaining_files.keys())[0].split(".")[-1]
+
     for file_name_old, file_info in files_loaded.items():
         with st.sidebar.expander(file_name_old):
             st.write(f"{UI_TEXT['file_title']} {file_name_old}")
@@ -139,26 +141,26 @@ def manage_files(files_loaded, UI_TEXT):
                             UI_TEXT["separator"],
                             value=file_info["separator"],
                             help=UI_TEXT["separator_help"],
-                            disabled=True,
+                            # disabled=True,
                         )
                         decimal = st.text_input(
                             UI_TEXT["decimal"],
                             value=file_info["decimal"],
                             help=UI_TEXT["decimal_help"],
-                            disabled=True,
+                            # disabled=True,
                         )
                     with col2:
                         thousands = st.text_input(
                             UI_TEXT["thousands"],
                             value=file_info["thousands"],
                             help=UI_TEXT["thousands_help"],
-                            disabled=True,
+                            # disabled=True,
                         )
                         encoding = st.text_input(
                             UI_TEXT["encoding"],
                             value=file_info["encoding"],
                             help=UI_TEXT["encoding_help"],
-                            disabled=True,
+                            # disabled=True,
                         )
                     date_format = st.text_input(
                         UI_TEXT["date_format"],
@@ -199,6 +201,12 @@ def manage_files(files_loaded, UI_TEXT):
                 st.rerun()
             if remove_button:
                 del remaining_files[file_name]
+
+    if st.sidebar.button(UI_TEXT["add_new_file"]):
+        new_files = upload_files(UI_TEXT)
+        files_loaded.update(new_files)
+        st.session_state["files_loaded"] = files_loaded
+
     if remaining_files.keys() != files_loaded.keys():
         st.session_state["files_loaded"] = remaining_files
         st.rerun()

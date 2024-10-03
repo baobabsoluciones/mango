@@ -169,4 +169,5 @@ UI_TEXT = {
     "both_filters": "Filtrar per ambdós",
     "select_datetime_range": "Selecciona el rang de datetime:",
     "select_forecast_origin_range": "Selecciona el rang d'origen de previsió:",
+    "add_new_file": "Afegir nou arxiu",
 }
