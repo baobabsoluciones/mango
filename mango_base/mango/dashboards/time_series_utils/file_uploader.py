@@ -30,9 +30,13 @@ def preview_data(
 
 def upload_files(UI_TEXT):
     files = st.file_uploader(
-        UI_TEXT["upload_file"], type=["csv", "xlsx"], accept_multiple_files=True, key="file_uploader"
+        UI_TEXT["upload_file"],
+        type=["csv", "xlsx"],
+        accept_multiple_files=True,
+        key="file_uploader",
     )
     files_loaded = {}
+    no_model_column = False
 
     if files:
         for uploaded_file in files:
@@ -90,9 +94,9 @@ def upload_files(UI_TEXT):
                         )
                 elif extension == "xlsx":
                     data_frame = pd.read_excel(uploaded_file)
-
                 if "model" not in data_frame.columns:
                     data_frame["model"] = file_name
+                    no_model_column = True
 
                 submit_button = st.form_submit_button(label=UI_TEXT["load_data"])
 
@@ -112,7 +116,7 @@ def upload_files(UI_TEXT):
                         "data": data_frame,
                         "file_name": file_name,
                     }
-    return files_loaded
+    return files_loaded, no_model_column
 
 
 def manage_files(files_loaded, UI_TEXT):
@@ -122,11 +126,12 @@ def manage_files(files_loaded, UI_TEXT):
     for file_name_old, file_info in files_loaded.items():
         with st.sidebar.expander(file_name_old):
             st.write(f"{UI_TEXT['file_title']} {file_name_old}")
-
+            no_model_column = False
             with st.form(key=f"manage_form_{file_name_old}", border=0):
                 file_name = st.text_input(
                     UI_TEXT["file_name"], value=file_info["file_name"]
                 )
+
                 if "separator" in file_info:
                     col1, col2 = st.columns(2)
                     with col1:
@@ -167,6 +172,7 @@ def manage_files(files_loaded, UI_TEXT):
             with col2:
                 remove_button = st.button(UI_TEXT["remove_file"])
             if update_button:
+
                 del remaining_files[file_info["file_name"]]
                 df = file_info["data"].copy()
                 if (df["model"] == file_name_old).all():
@@ -184,13 +190,17 @@ def manage_files(files_loaded, UI_TEXT):
                         "file_name": file_name,
                     }
                 elif extension == "xlsx":
-                    remaining_files[file_name]= {
+                    remaining_files[file_name] = {
                         "data": file_info["data"],
                         "file_name": file_name,
                     }
-
+                st.session_state["files_loaded"] = remaining_files
+                st.session_state["selected_series"] = []
+                st.rerun()
             if remove_button:
                 del remaining_files[file_name]
     if remaining_files.keys() != files_loaded.keys():
         st.session_state["files_loaded"] = remaining_files
         st.rerun()
+
+    return

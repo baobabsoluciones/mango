@@ -521,7 +521,7 @@ def plot_forecast(forecast, selected_series, UI_TEXT):
                     y=time_series["y"],
                     mode="lines",
                     name=UI_TEXT["series_names"]["real"],
-                    line=dict(color=px.colors.qualitative.Plotly[0]),
+                    line=dict(color=px.colors.qualitative.Dark2[0]),
                     hovertemplate="datetime: %{x}<br>real: %{y}<br>Weekday: %{customdata[4]}",
                     customdata=time_series[["weekday"]],
                     opacity=1,
@@ -644,8 +644,8 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
         horizontal=True,
     )
     median_or_mean_trans = {
-        UI_TEXT["median_option"]: np.median,
-        UI_TEXT["mean_option"]: np.mean,
+        UI_TEXT["median_option"]: "median",
+        UI_TEXT["mean_option"]: "mean",
     }
 
     # Show mean or median overall perc_abs_err

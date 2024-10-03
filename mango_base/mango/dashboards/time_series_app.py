@@ -95,20 +95,20 @@ def interface_visualization(project_name: str = None):
         )
     )
     st.markdown(hide_label, unsafe_allow_html=True)
-
     if not st.session_state.get("files_loaded"):
-        files_loaded = upload_files(UI_TEXT)
+        files_loaded, no_model_column = upload_files(UI_TEXT)
         st.session_state["files_loaded"] = files_loaded
+        st.session_state["no_model_column"] = no_model_column
     else:
         # Sidebar was loaded so we can place a manage button
         manage_files(st.session_state["files_loaded"], UI_TEXT)
-
     if st.session_state.get("files_loaded"):
         # Manage selected series using session_state
         if "selected_series" not in st.session_state:
             st.session_state["selected_series"] = []
-
+        no_model_column = st.session_state.get("no_model_column", False)
         data, visualization = load_data(st.session_state.get("files_loaded"), UI_TEXT)
+
         if data is not None:
             columns_id = [
                 col
@@ -148,7 +148,20 @@ def interface_visualization(project_name: str = None):
                     UI_TEXT,
                 )
             elif visualization == UI_TEXT["visualization_options"][1]:  # "Forecast"
-                plot_forecast(forecast, st.session_state["selected_series"], UI_TEXT)
+                if (
+                    no_model_column
+                    and (forecast["model"]
+                    != list(st.session_state["files_loaded"].keys())[0]).all()
+                ):
+                    forecast["model"] = list(st.session_state["files_loaded"].keys())[0]
+                    plot_forecast(
+                        forecast, st.session_state["selected_series"], UI_TEXT
+                    )
+
+                else:
+                    plot_forecast(
+                        forecast, st.session_state["selected_series"], UI_TEXT
+                    )
                 plot_error_visualization(
                     forecast, st.session_state["selected_series"], UI_TEXT
                 )
