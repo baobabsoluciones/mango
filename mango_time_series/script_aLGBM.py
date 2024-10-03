@@ -11,7 +11,7 @@ from darts.dataprocessing.transformers import BoxCox
 df = pd.read_excel(
     r"G:\Unidades compartidas\clece_pmr_202207\proyecto\desarrollo\datos\time_series_synthetic_interpolate.xlsx"
 )
-df["airport"] = "BCN"
+df["aeropuerto"] = "BCN"
 df.drop(columns=["PNP", "TOTAL"], inplace=True)
 
 # Convert to TimeSeries

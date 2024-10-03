@@ -11,15 +11,15 @@ logger = get_basic_logger()
 df = pd.read_excel(
     r"G:\Unidades compartidas\clece_pmr_202207\proyecto\desarrollo\datos\time_series_synthetic_interpolate.xlsx"
 )
-df["airport"] = "BCN"
-df.drop(columns=["PNP", "TOTAL"], inplace=True)
+# df["aeropuerto"] = "BCN"
+# df.drop(columns=["PNP", "TOTAL"], inplace=True)
 
 # Create an instance of SeriesConfiguration directly
 config = SeriesConfiguration(
-    key_cols=["airport"],
+    key_cols=["aeropuerto"],
     time_period_descr="day",
-    time_col="Fecha_Vuelo",
-    value_col="FIN",
+    time_col="datetime",
+    value_col="finalizadas",
     recent_folds=2,
     seasonal_folds=1,
     agg_operations={"y": "sum"},
@@ -35,9 +35,9 @@ ts.load_data(df)
 df_pd = ts.data.collect().to_pandas()
 
 df_pd = df_pd.reset_index()
-df_pd = df_pd[["airport", "datetime", "y"]]
+df_pd = df_pd[["aeropuerto", "datetime", "y"]]
 # rename to ds
-df_pd = df_pd.rename(columns={"datetime": "ds", "airport": "unique_id"})
+df_pd = df_pd.rename(columns={"datetime": "ds", "aeropuerto": "unique_id"})
 date_end_train = "2024-09-22"
 df_pd_tr = df_pd[df_pd["ds"] < date_end_train]
 df_pd_te = df_pd[df_pd["ds"] >= date_end_train]
@@ -62,7 +62,7 @@ crossvalidation_df = sf.cross_validation(
     df=df_pd,
     h=56,  # Forecast horizon of 30 days
     step_size=7,  # Run forecasting process every 30 days
-    n_windows=52,
+    n_windows=12,
 )
 logger.info("Cross validation finished")
 
@@ -80,7 +80,7 @@ crossvalidation_df["h"] = (
 # ]
 
 
-crossvalidation_df.to_excel("mstlautoTheta_crossvalidation_52w.xlsx", index=False)
+crossvalidation_df.to_excel("mstlautoTheta_crossvalidation_12w.xlsx", index=False)
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 
 # df_score = df_pd_te[df_pd_te.horizon <= 7]
