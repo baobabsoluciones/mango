@@ -147,4 +147,5 @@ UI_TEXT = {
     "select_datetime_range": "Select datetime range:",
     "select_forecast_origin_range": "Select forecast origin range:",
     "add_new_file": "Add new file",
+    "aggregated_summary_title": "Error summary",
 }

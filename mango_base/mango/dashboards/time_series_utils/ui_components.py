@@ -74,7 +74,8 @@ def plot_time_series(
                 use_container_width=True,
             )
     elif select_plot == UI_TEXT["plot_options"][1]:
-        st.markdown("""
+        st.markdown(
+            """
             <style>
             /* Cambiar el color de las etiquetas seleccionadas en el multiselect */
             .stMultiSelect [data-baseweb="tag"] {
@@ -82,7 +83,9 @@ def plot_time_series(
                 color: white !important;  /* Texto en blanco */
             }
             </style>
-            """, unsafe_allow_html=True)
+            """,
+            unsafe_allow_html=True,
+        )
         # "Series by year"
         options = st.multiselect(
             UI_TEXT["choose_years"],
@@ -644,7 +647,9 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
     # get maximum percentage error in selected data as a table in the streamplit. top10 rows
     st.write(UI_TEXT["top_10_errors"])
     for idx, serie in data_dict.items():
-        st.write(serie.nlargest(10, "perc_abs_err")[["datetime", "perc_abs_err"]])
+        st.write(
+            serie.nlargest(10, "perc_abs_err")[["datetime", "model", "perc_abs_err"]]
+        )
 
     mean_or_median_error = st.radio(
         UI_TEXT["show_median_or_mean"],
@@ -667,6 +672,37 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
             )
         )
 
+    st.write(UI_TEXT["aggregated_summary_title"] + ":")
+
+    df_agg = forecast.groupby(by=["model"], as_index=False).agg(
+        y=("y", "mean"),
+        f=("f", "mean"),
+        err=("err", "mean"),
+        abs_err=("abs_err", "mean"),
+        perc_err=("perc_err", "mean"),
+        perc_abs_err_mean=("perc_abs_err", "mean"),
+        perc_abs_err_median=("perc_abs_err", "median"),
+    )
+
+    if mean_or_median_error == UI_TEXT["mean_option"]:
+        df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_mean"]]
+        st.write(
+            df_agg_filtered.rename(
+                columns={
+                    "perc_abs_err_mean": "Mean % Error",
+                }
+            )
+        )
+    else:
+        df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_mean"]]
+        st.write(
+            df_agg_filtered.rename(
+                columns={
+                    "perc_abs_err_median": "Median % Error"
+                }
+            )
+        )
+
     # Select which plot to show multiple allowed
     plot_options = st.multiselect(
         UI_TEXT["select_plots"],
@@ -684,6 +720,7 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
                 serie,
                 x="h",
                 y="perc_abs_err",
+                color="model"
             )
             # Update yaxis to show % values
             fig.update_yaxes(tickformat=".2%")
@@ -727,6 +764,7 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
                 serie,
                 x=transformed_datetime,
                 y="perc_abs_err",
+                color="model",
                 title=f"Box plot de {col_name_dict[select_agg]} para {idx}",
                 labels={
                     "x": col_name_dict[select_agg],
