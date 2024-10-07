@@ -12,6 +12,7 @@ Welcome to mango's documentation!
 
    readme
    changelog
+   experiment_tracking
    genetic/index
    dev/index
    bib
