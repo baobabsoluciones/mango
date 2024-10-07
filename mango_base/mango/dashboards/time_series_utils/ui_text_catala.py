@@ -170,4 +170,5 @@ UI_TEXT = {
     "select_datetime_range": "Selecciona el rang de datetime:",
     "select_forecast_origin_range": "Selecciona el rang d'origen de previsió:",
     "add_new_file": "Afegir nou arxiu",
+    "aggregated_summary_title": "Resum d'errors",
 }
