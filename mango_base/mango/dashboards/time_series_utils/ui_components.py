@@ -434,7 +434,7 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
                 st.rerun()
     else:
         st.sidebar.write(UI_TEXT["no_columns_to_filter"])
-        st.session_state["selected_series"] = [{}]
+        st.session_state["selected_series"] = []
 
     return select_agr_tmp, visualization
 

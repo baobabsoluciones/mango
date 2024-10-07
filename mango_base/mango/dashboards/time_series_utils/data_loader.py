@@ -5,9 +5,12 @@ import streamlit as st
 @st.cache_data
 def load_data(files_loaded, UI_TEXT):
     # Assuming the first file is the main data file
-    if files_loaded:
-        main_file_name = list(files_loaded.keys())[0]
-        data = files_loaded[main_file_name]["data"]
+    list_df = []
+    list_visualization = []
+    change_column_state = False
+
+    for files_name, df in files_loaded.items():
+        data = df['data']
 
         if "forecast_origin" in data.columns and "f" in data.columns:
             visualization = UI_TEXT["visualization_options"][1]  # "Forecast"
@@ -38,7 +41,20 @@ def load_data(files_loaded, UI_TEXT):
             visualization = UI_TEXT["visualization_options"][0]  # "Exploration"
             st.info(UI_TEXT["exploration_mode"])
 
-        return data, visualization
-    else:
-        st.error(UI_TEXT["no_files_uploaded"])
-        return None, None
+        list_df.append(data)
+        list_visualization.append(visualization)
+        if 'model' not in data.columns:
+            change_column_state = True
+            data['model'] = files_name
+
+    if change_column_state and len(list_df) > 1:
+        st.session_state['no_model_column'] = False
+
+    df_final = pd.concat(list_df, ignore_index=True)
+    # How to check if all list visualizations have the same value?
+    check_visualization = all(elem == list_visualization[0] for elem in list_visualization)
+
+    if not check_visualization:
+        raise ValueError("Error visualization")
+
+    return df_final, list_visualization[0]

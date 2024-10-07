@@ -36,14 +36,15 @@ def upload_files(UI_TEXT):
         key="file_uploader",
     )
     files_loaded = {}
+    files_loaded_tmp = {}
     no_model_column = False
 
     if files:
-        for uploaded_file in files:
-            st.write(f"{UI_TEXT['file_title']} {uploaded_file.name}")
-            extension = uploaded_file.name.split(".")[-1]
+        with st.form(key=f"form"):
+            for uploaded_file in files:
+                st.write(f"{UI_TEXT['file_title']} {uploaded_file.name}")
+                extension = uploaded_file.name.split(".")[-1]
 
-            with st.form(key=f"form_{uploaded_file.name}"):
                 file_name = st.text_input(
                     UI_TEXT["file_name"], value=uploaded_file.name
                 )
@@ -51,29 +52,29 @@ def upload_files(UI_TEXT):
                     col1, col2, col3, col4, col5 = st.columns(5)
                     with col1:
                         separator = st.selectbox(
-                            UI_TEXT["separator"], options=[",", ";", "|", "\t"], index=0,
+                            UI_TEXT["separator"], options=[",", ";", "|", "\t"], index=0, key=f"separator_{uploaded_file.name}"
                         )
                     with col2:
                         decimal = st.text_input(
-                            UI_TEXT["decimal"], value=".", help=UI_TEXT["decimal_help"]
+                            UI_TEXT["decimal"], value=".", help=UI_TEXT["decimal_help"], key=f"decimal_{uploaded_file.name}"
                         )
                     with col3:
                         thousands = st.text_input(
                             UI_TEXT["thousands"],
                             value=",",
-                            help=UI_TEXT["thousands_help"],
+                            help=UI_TEXT["thousands_help"], key=f"thousands_{uploaded_file.name}"
                         )
                     with col4:
                         encoding = st.text_input(
                             UI_TEXT["encoding"],
                             value="utf-8",
-                            help=UI_TEXT["encoding_help"],
+                            help=UI_TEXT["encoding_help"], key=f"encoding_{uploaded_file.name}"
                         )
                     with col5:
                         date_format = st.text_input(
                             UI_TEXT["date_format"],
                             value="auto",
-                            help=UI_TEXT["date_format_help"],
+                            help=UI_TEXT["date_format_help"], key=f"date_format_{uploaded_file.name}"
                         )
                     data_frame = pd.read_csv(
                         uploaded_file,
@@ -98,12 +99,8 @@ def upload_files(UI_TEXT):
                     data_frame["model"] = file_name
                     no_model_column = True
 
-                submit_button = st.form_submit_button(label=UI_TEXT["load_data"])
-            if st.button("Preview"):
-                st.write(data_frame)
-            if submit_button:
                 if extension == "csv":
-                    files_loaded[file_name] = {
+                    files_loaded_tmp[file_name] = {
                         "data": data_frame,
                         "separator": separator,
                         "decimal": decimal,
@@ -113,10 +110,13 @@ def upload_files(UI_TEXT):
                         "file_name": file_name,
                     }
                 elif extension == "xlsx":
-                    files_loaded[file_name] = {
+                    files_loaded_tmp[file_name] = {
                         "data": data_frame,
                         "file_name": file_name,
                     }
+            submit_button = st.form_submit_button(label=UI_TEXT["load_data"])
+        if submit_button:
+            files_loaded.update(files_loaded_tmp)
     return files_loaded, no_model_column
 
 
@@ -142,12 +142,14 @@ def manage_files(files_loaded, UI_TEXT):
                             value=file_info["separator"],
                             help=UI_TEXT["separator_help"],
                             # disabled=True,
+                            key=f"separator_{file_name_old}",
                         )
                         decimal = st.text_input(
                             UI_TEXT["decimal"],
                             value=file_info["decimal"],
                             help=UI_TEXT["decimal_help"],
                             # disabled=True,
+                            key=f"decimal_{file_name_old}",
                         )
                     with col2:
                         thousands = st.text_input(
@@ -155,24 +157,27 @@ def manage_files(files_loaded, UI_TEXT):
                             value=file_info["thousands"],
                             help=UI_TEXT["thousands_help"],
                             # disabled=True,
+                            key=f"thousands_{file_name_old}",
                         )
                         encoding = st.text_input(
                             UI_TEXT["encoding"],
                             value=file_info["encoding"],
                             help=UI_TEXT["encoding_help"],
                             # disabled=True,
+                            key=f"encoding_{file_name_old}",
                         )
                     date_format = st.text_input(
                         UI_TEXT["date_format"],
                         value=file_info["date_format"],
                         help=UI_TEXT["date_format_help"],
+                        key=f"date_format_{file_name_old}",
                     )
                 col1, col2, col3 = st.columns(3)
                 with col2:
                     update_button = st.form_submit_button(label=UI_TEXT["update_file"])
             col1, col2, col3 = st.columns(3)
             with col2:
-                remove_button = st.button(UI_TEXT["remove_file"])
+                remove_button = st.button(UI_TEXT["remove_file"], key=f"remove_{file_name_old}")
             if update_button:
 
                 del remaining_files[file_info["file_name"]]
@@ -202,10 +207,10 @@ def manage_files(files_loaded, UI_TEXT):
             if remove_button:
                 del remaining_files[file_name]
 
-    if st.sidebar.button(UI_TEXT["add_new_file"]):
-        new_files = upload_files(UI_TEXT)
-        files_loaded.update(new_files)
-        st.session_state["files_loaded"] = files_loaded
+    # if st.sidebar.button(UI_TEXT["add_new_file"]):
+    #     new_files = upload_files(UI_TEXT)
+    #     files_loaded.update(new_files)
+    #     st.session_state["files_loaded"] = files_loaded
 
     if remaining_files.keys() != files_loaded.keys():
         st.session_state["files_loaded"] = remaining_files
