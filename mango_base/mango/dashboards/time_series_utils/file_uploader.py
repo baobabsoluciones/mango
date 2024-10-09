@@ -52,29 +52,38 @@ def upload_files(UI_TEXT):
                     col1, col2, col3, col4, col5 = st.columns(5)
                     with col1:
                         separator = st.selectbox(
-                            UI_TEXT["separator"], options=[",", ";", "|", "\t"], index=0, key=f"separator_{uploaded_file.name}"
+                            UI_TEXT["separator"],
+                            options=[",", ";", "|", "\t"],
+                            index=0,
+                            key=f"separator_{uploaded_file.name}",
                         )
                     with col2:
                         decimal = st.text_input(
-                            UI_TEXT["decimal"], value=".", help=UI_TEXT["decimal_help"], key=f"decimal_{uploaded_file.name}"
+                            UI_TEXT["decimal"],
+                            value=".",
+                            help=UI_TEXT["decimal_help"],
+                            key=f"decimal_{uploaded_file.name}",
                         )
                     with col3:
                         thousands = st.text_input(
                             UI_TEXT["thousands"],
                             value=",",
-                            help=UI_TEXT["thousands_help"], key=f"thousands_{uploaded_file.name}"
+                            help=UI_TEXT["thousands_help"],
+                            key=f"thousands_{uploaded_file.name}",
                         )
                     with col4:
                         encoding = st.text_input(
                             UI_TEXT["encoding"],
                             value="utf-8",
-                            help=UI_TEXT["encoding_help"], key=f"encoding_{uploaded_file.name}"
+                            help=UI_TEXT["encoding_help"],
+                            key=f"encoding_{uploaded_file.name}",
                         )
                     with col5:
                         date_format = st.text_input(
                             UI_TEXT["date_format"],
                             value="auto",
-                            help=UI_TEXT["date_format_help"], key=f"date_format_{uploaded_file.name}"
+                            help=UI_TEXT["date_format_help"],
+                            key=f"date_format_{uploaded_file.name}",
                         )
                     data_frame = pd.read_csv(
                         uploaded_file,
@@ -91,7 +100,8 @@ def upload_files(UI_TEXT):
 
                     if date_columns:
                         data_frame[date_columns] = data_frame[date_columns].apply(
-                            pd.to_datetime, format=date_format if date_format!="auto" else None
+                            pd.to_datetime,
+                            format=date_format if date_format != "auto" else None,
                         )
                 elif extension == "xlsx":
                     data_frame = pd.read_excel(uploaded_file)
@@ -177,7 +187,9 @@ def manage_files(files_loaded, UI_TEXT):
                     update_button = st.form_submit_button(label=UI_TEXT["update_file"])
             col1, col2, col3 = st.columns(3)
             with col2:
-                remove_button = st.button(UI_TEXT["remove_file"], key=f"remove_{file_name_old}")
+                remove_button = st.button(
+                    UI_TEXT["remove_file"], key=f"remove_{file_name_old}"
+                )
             if update_button:
 
                 del remaining_files[file_info["file_name"]]

@@ -171,4 +171,6 @@ UI_TEXT = {
     "select_forecast_origin_range": "Selecciona el rang d'origen de previsió:",
     "add_new_file": "Afegir nou arxiu",
     "aggregated_summary_title": "Resum d'errors",
+    "select_top_10": "Selecciona el model per veure els 10 errors principals:",
+    "best_error_message": "El millor model és '{}', amb un error percentual absolut de {}",
 }

@@ -148,4 +148,6 @@ UI_TEXT = {
     "select_forecast_origin_range": "Select forecast origin range:",
     "add_new_file": "Add new file",
     "aggregated_summary_title": "Error summary",
+    "select_top_10": "Select the model to see the top 10 errors:",
+    "best_error_message": "The best model is '{}', with an absolute percentage error of {}",
 }

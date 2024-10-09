@@ -150,8 +150,10 @@ def interface_visualization(project_name: str = None):
             elif visualization == UI_TEXT["visualization_options"][1]:  # "Forecast"
                 if (
                     no_model_column
-                    and (forecast["model"]
-                    != list(st.session_state["files_loaded"].keys())[0]).all()
+                    and (
+                        forecast["model"]
+                        != list(st.session_state["files_loaded"].keys())[0]
+                    ).all()
                 ):
                     forecast["model"] = list(st.session_state["files_loaded"].keys())[0]
                     plot_forecast(

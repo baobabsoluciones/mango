@@ -11,6 +11,10 @@ from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import acf, pacf
 from streamlit_date_picker import date_range_picker, PickerType
 
+from mango_base.mango.dashboards.time_series_utils.data_processing import (
+    calculate_min_diff_per_window,
+)
+
 
 def select_series(data, columns, UI_TEXT):
     st.sidebar.title(UI_TEXT["select_series"])
@@ -41,6 +45,7 @@ def plot_time_series(
         UI_TEXT["plot_options"],
         label_visibility="collapsed",
     )
+
     if select_plot == UI_TEXT["plot_options"][0]:  # "Original series"
         date_range = date_range_picker(
             picker_type=PickerType.date,
@@ -385,32 +390,63 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
         UI_TEXT["select_visualization"],
         visualization_options,
     )
+
     st.sidebar.title(UI_TEXT["select_temporal_grouping"])
     all_tmp_agr = copy.deepcopy(UI_TEXT["temporal_grouping_options"])
 
-    # Reduce the list given the detail in the data datetime column
-    if time_series["datetime"].dt.hour.nunique() == 1:
-        all_tmp_agr.remove(UI_TEXT["hourly"])
-    if time_series["datetime"].dt.day.nunique() == 1:
-        all_tmp_agr.remove(UI_TEXT["daily"])
-    if time_series["datetime"].dt.isocalendar().week.nunique() == 1:
-        all_tmp_agr.remove(UI_TEXT["weekly"])
-    if time_series["datetime"].dt.month.nunique() == 1:
-        all_tmp_agr.remove(UI_TEXT["monthly"])
-    if time_series["datetime"].dt.quarter.nunique() == 1:
-        all_tmp_agr.remove(UI_TEXT["quarterly"])
-    if time_series["datetime"].dt.year.nunique() == 1:
-        all_tmp_agr.remove(UI_TEXT["yearly"])
-    if len(all_tmp_agr) == 0:
-        st.write(UI_TEXT["temporal_analysis_error"])
-        return
-    select_agr_tmp = st.sidebar.selectbox(
-        UI_TEXT["select_temporal_grouping"],
-        all_tmp_agr,
-        label_visibility="collapsed",
-    )
+    if "forecast_origin" in time_series.columns and "f" in time_series.columns:
+        min_diff_per_window = time_series.groupby("forecast_origin").apply(
+            calculate_min_diff_per_window
+        )
+        min_diff = min_diff_per_window.min()
+
+        if min_diff >= 1:
+            all_tmp_agr.remove(UI_TEXT["hourly"])
+        if min_diff >= 7:
+            all_tmp_agr.remove(UI_TEXT["daily"])
+        if min_diff >= 28:
+            all_tmp_agr.remove(UI_TEXT["weekly"])
+        if min_diff >= 90:
+            all_tmp_agr.remove(UI_TEXT["monthly"])
+        if min_diff >= 365:
+            all_tmp_agr.remove(UI_TEXT["quarterly"])
+
+        if len(all_tmp_agr) == 0:
+            st.write(UI_TEXT["temporal_analysis_error"])
+            return
+
+        select_agr_tmp = st.sidebar.selectbox(
+            UI_TEXT["select_temporal_grouping"],
+            all_tmp_agr,
+            label_visibility="collapsed",
+        )
+    else:
+        min_diff_per_window = calculate_min_diff_per_window(time_series)
+        min_diff = min_diff_per_window.min()
+
+        if min_diff >= 1:
+            all_tmp_agr.remove(UI_TEXT["hourly"])
+        if min_diff >= 7:
+            all_tmp_agr.remove(UI_TEXT["daily"])
+        if min_diff >= 28:
+            all_tmp_agr.remove(UI_TEXT["weekly"])
+        if min_diff >= 90:
+            all_tmp_agr.remove(UI_TEXT["monthly"])
+        if min_diff >= 365:
+            all_tmp_agr.remove(UI_TEXT["quarterly"])
+
+        if len(all_tmp_agr) == 0:
+            st.write(UI_TEXT["temporal_analysis_error"])
+            return
+
+        select_agr_tmp = st.sidebar.selectbox(
+            UI_TEXT["select_temporal_grouping"],
+            all_tmp_agr,
+            label_visibility="collapsed",
+        )
 
     if columns_id:
+        time_series[columns_id] = time_series[columns_id].astype(str)
         # Setup select series
         selected_item = select_series(time_series, columns_id, UI_TEXT)
         if st.sidebar.button(UI_TEXT["add_selected_series"]):
@@ -437,7 +473,7 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
                 st.rerun()
     else:
         st.sidebar.write(UI_TEXT["no_columns_to_filter"])
-        st.session_state["selected_series"] = []
+        st.session_state["selected_series"] = [{}]
 
     return select_agr_tmp, visualization
 
@@ -645,10 +681,17 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
         data_dict[idx] = selected_data.copy()
 
     # get maximum percentage error in selected data as a table in the streamplit. top10 rows
-    st.write(UI_TEXT["top_10_errors"])
+    models = sorted(
+        set(model for serie in data_dict.values() for model in serie["model"].unique())
+    )
+    select_model = st.selectbox(UI_TEXT["select_top_10"], models)
     for idx, serie in data_dict.items():
+        filter = serie[serie["model"] == select_model]
+        st.write(UI_TEXT["top_10_errors"] + f": {select_model}")
         st.write(
-            serie.nlargest(10, "perc_abs_err")[["datetime", "model", "perc_abs_err"]]
+            filter.nlargest(10, "perc_abs_err")[
+                ["datetime", "forecast_origin", "model", "perc_abs_err"]
+            ]
         )
 
     mean_or_median_error = st.radio(
@@ -672,36 +715,46 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
             )
         )
 
-    st.write(UI_TEXT["aggregated_summary_title"] + ":")
+        st.write(UI_TEXT["aggregated_summary_title"] + ":")
 
-    df_agg = forecast.groupby(by=["model"], as_index=False).agg(
-        y=("y", "mean"),
-        f=("f", "mean"),
-        err=("err", "mean"),
-        abs_err=("abs_err", "mean"),
-        perc_err=("perc_err", "mean"),
-        perc_abs_err_mean=("perc_abs_err", "mean"),
-        perc_abs_err_median=("perc_abs_err", "median"),
-    )
+        df_agg = serie.groupby("model", as_index=False).agg(
+            y=("y", "mean"),
+            f=("f", "mean"),
+            err=("err", "mean"),
+            abs_err=("abs_err", "mean"),
+            perc_err=("perc_err", "mean"),
+            perc_abs_err_mean=("perc_abs_err", "mean"),
+            perc_abs_err_median=("perc_abs_err", "median"),
+        )
 
-    if mean_or_median_error == UI_TEXT["mean_option"]:
-        df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_mean"]]
-        st.write(
-            df_agg_filtered.rename(
-                columns={
-                    "perc_abs_err_mean": "Mean % Error",
-                }
+        df_agg = df_agg.round(2)
+
+        if mean_or_median_error == UI_TEXT["mean_option"]:
+            df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_mean"]]
+            df_agg_ordered = df_agg_filtered.sort_values(
+                by="perc_abs_err_mean"
+            ).reset_index(drop=True)
+            st.write(df_agg_ordered)
+            st.write(
+                UI_TEXT["best_error_message"].format(
+                    f"**{df_agg_ordered['model'].iloc[0]}**",
+                    f"**{df_agg_ordered['perc_abs_err_mean'].iloc[0]}**",
+                )
             )
-        )
-    else:
-        df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_mean"]]
-        st.write(
-            df_agg_filtered.rename(
-                columns={
-                    "perc_abs_err_median": "Median % Error"
-                }
-            )
-        )
+        elif mean_or_median_error == UI_TEXT["median_option"]:
+            df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_median"]]
+            df_agg_ordered = df_agg_filtered.sort_values(
+                by="perc_abs_err_median"
+            ).reset_index(drop=True)
+            st.write(df_agg_ordered)
+
+            if len(models) > 1:
+                st.write(
+                    UI_TEXT["best_error_message"].format(
+                        f"**{df_agg_ordered['model'].iloc[0]}**",
+                        f"**{df_agg_ordered['perc_abs_err_median'].iloc[0]}**",
+                    )
+                )
 
     # Select which plot to show multiple allowed
     plot_options = st.multiselect(
@@ -713,15 +766,10 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
     )
     if UI_TEXT["plot_options_error"][0] in plot_options:  # "Box plot by horizon"
         st.write(f"### {UI_TEXT['horizon_boxplot_title']}")
-        # Box plot perc_abs_err by horizon (# TODO: Handle multiple series)
+        # Box plot perc_abs_err by horizon
         for idx, serie in data_dict.items():
             # Show how many points for each horizon
-            fig = px.box(
-                serie,
-                x="h",
-                y="perc_abs_err",
-                color="model"
-            )
+            fig = px.box(serie, x="h", y="perc_abs_err", color="model")
             # Update yaxis to show % values
             fig.update_yaxes(tickformat=".2%")
             fig.update_layout(

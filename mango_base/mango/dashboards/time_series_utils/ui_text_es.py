@@ -171,4 +171,6 @@ UI_TEXT = {
     "select_forecast_origin_range": "Selecciona el rango de origen de pronóstico:",
     "add_new_file": "Añadir nuevo archivo",
     "aggregated_summary_title": "Resumen de errores",
+    "select_top_10": "Selecciona el modelo para ver el top 10 de errores:",
+    "best_error_message": "El mejor modelo es '{}', con un error porcentual absoluto de {}",
 }

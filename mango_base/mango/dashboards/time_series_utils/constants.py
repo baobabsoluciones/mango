@@ -1,10 +1,10 @@
 # Constants for time aggregation
 SELECT_AGR_TMP_DICT = {
-    "hourly": "H",
+    "hourly": "h",
     "daily": "D",
     "weekly": "W",
     "monthly": "MS",
-    "quarterly": "Q",
+    "quarterly": "QE",
     "yearly": "YE",
 }
 
