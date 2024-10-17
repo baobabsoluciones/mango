@@ -389,6 +389,8 @@ def load_str_iterable(v):
             return ast.literal_eval(v)
         except SyntaxError:
             return v
+        except ValueError:
+            return v
     else:
         return v
 
