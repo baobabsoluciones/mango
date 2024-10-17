@@ -379,16 +379,48 @@ def plot_time_series(
                 st.plotly_chart(fig, use_container_width=True)
 
 
+def adapt_values_based_on_series_length(series_length: int):
+    max_horizon = max(
+        1, series_length // 4
+    )  # El horizonte máximo puede ser el 25% del tamaño de la serie
+    max_step_size = max(
+        1, series_length // 10
+    )  # El tamaño del paso no debe exceder el 10% de la serie
+    max_windows = min(
+        10, series_length // max_horizon
+    )  # Número máximo de ventanas basado en el horizonte
+    return max_horizon, max_step_size, max_windows
+
+
 def setup_sidebar(time_series, columns_id, UI_TEXT):
     st.sidebar.title(UI_TEXT["sidebar_title"])
-    if "forecast_origin" in time_series.columns and "f" in time_series.columns:
-        visualization_options = UI_TEXT["visualization_options"]
+    # if "forecast_origin" in time_series.columns and "f" in time_series.columns:
+    #     st.session_state["visualization_options"] = UI_TEXT["visualization_options"]
+    # else:
+    #     st.session_state["visualization_options"] = [UI_TEXT["visualization_options"][0]]
+
+    if "forecast" in st.session_state and st.session_state["forecast"] is not None:
+        if (
+            UI_TEXT["visualization_options"][1]
+            not in st.session_state["visualization_options"]
+        ):
+            st.session_state["visualization_options"].append(
+                UI_TEXT["visualization_options"][1]
+            )
+
+    # Si el forecast aún no ha sido calculado y no hay columna 'f', solo mostrar "Exploration"
+    elif "forecast_origin" not in time_series.columns or "f" not in time_series.columns:
+        st.session_state["visualization_options"] = [
+            UI_TEXT["visualization_options"][0]
+        ]
+
+    # Si ya tenemos columna 'f', habilitar directamente "Exploration" y "Forecast"
     else:
-        visualization_options = [UI_TEXT["visualization_options"][0]]
+        st.session_state["visualization_options"] = UI_TEXT["visualization_options"]
 
     visualization = st.sidebar.radio(
         UI_TEXT["select_visualization"],
-        visualization_options,
+        st.session_state["visualization_options"],
     )
 
     st.sidebar.title(UI_TEXT["select_temporal_grouping"])
@@ -475,7 +507,7 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
         st.sidebar.write(UI_TEXT["no_columns_to_filter"])
         st.session_state["selected_series"] = [{}]
 
-    return select_agr_tmp, visualization
+    return select_agr_tmp, visualization, st.session_state["visualization_options"]
 
 
 def plot_forecast(forecast, selected_series, UI_TEXT):

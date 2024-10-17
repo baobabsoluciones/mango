@@ -173,4 +173,7 @@ UI_TEXT = {
     "aggregated_summary_title": "Resum d'errors",
     "select_top_10": "Selecciona el model per veure els 10 errors principals:",
     "best_error_message": "El millor model és '{}', amb un error percentual absolut de {}",
+    "model_parameters": "Paràmetres del model",
+    "message_forecast_baseline": "Previsió obtinguda dels models base en aquesta plataforma.",
+    "warning_no_forecast": "No hi ha dades de previsió disponibles. Si us plau, entreneu primer el model."
 }

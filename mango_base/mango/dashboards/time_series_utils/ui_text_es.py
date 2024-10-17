@@ -173,4 +173,8 @@ UI_TEXT = {
     "aggregated_summary_title": "Resumen de errores",
     "select_top_10": "Selecciona el modelo para ver el top 10 de errores:",
     "best_error_message": "El mejor modelo es '{}', con un error porcentual absoluto de {}",
+    "model_parameters": "Parámetros del modelo",
+    "message_forecast_baseline": "Predicciones obtenidas de modelos base en esta plataforma.",
+    "warning_no_forecast": "No hay datos de pronóstico disponibles. Por favor, entrena el modelo primero."
+
 }

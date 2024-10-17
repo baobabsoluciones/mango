@@ -150,4 +150,7 @@ UI_TEXT = {
     "aggregated_summary_title": "Error summary",
     "select_top_10": "Select the model to see the top 10 errors:",
     "best_error_message": "The best model is '{}', with an absolute percentage error of {}",
+    "model_parameters": "Model parameters",
+    "message_forecast_baseline": "Forecast obtained from baseline models in this platform.",
+    "warning_no_forecast": "No forecast data available. Please train the model first."
 }
