@@ -1,19 +1,20 @@
-import logging
 import json
+import logging
 import os
 import time
 import warnings
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
-from mango.processing import load_json
-from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
 from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
     ARCGIS_CAR_TRAVEL_MODE,
     ARCGIS_ODMATRIX_DIRECT_URL,
 )
+
+from mango.processing import load_json
+from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
 
 this_dir, file = os.path.split(__file__)
 schema = load_json(f"{this_dir}/../schemas/location.json")
@@ -210,8 +211,8 @@ class ArcGisClient:
                 f"it did not give back an id: {response.json()}. Exception: {e}"
             )
         timeout = 600
-        start = datetime.utcnow()
-        while (datetime.utcnow() - start).seconds < timeout:
+        start = datetime.now(timezone.utc)
+        while (datetime.now(timezone.utc) - start).seconds < timeout:
             response = requests.get(
                 url=f"{ARCIS_ODMATRIX_JOB_URL}/jobs/{job_id}?f=json&returnMessages=True&token={self.token}"
             )
