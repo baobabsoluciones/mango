@@ -163,4 +163,5 @@ UI_TEXT = {
     "explanation_step_size": f"The **{'step size'}** is the number of time units between each forecast.",
     "explanation_n_windows": f"The **{'number of windows'}** is the number of forecasts to use for cross validation.",
     "documentation": "See documentation",
+    "activate_button_train": "Activate forecast"
 }

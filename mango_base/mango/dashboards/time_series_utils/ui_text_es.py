@@ -24,15 +24,15 @@ UI_TEXT = {
     },
     "sidebar_title": "Visualizaciones",
     "select_visualization": "Selecciona la visualización",
-    "visualization_options": ["Exploración", "Pronóstico"],
+    "visualization_options": ["Exploración", "Forecast"],
     "select_temporal_grouping": "Selecciona la agrupación temporal de los datos",
     "no_columns_to_filter": "No hay columnas para filtrar. Solo una serie detectada",
     "temporal_analysis_error": "No se puede realizar el análisis temporal",
-    "forecast_plot_title": "Gráfico de pronóstico",
-    "select_series_to_plot": "Selecciona al menos una serie para graficar el pronóstico",
+    "forecast_plot_title": "Gráfico de forecast",
+    "select_series_to_plot": "Selecciona al menos una serie para graficar el forecast",
     "choose_date": "Elige una fecha",
     "error_visualization_title": "Visualización de errores",
-    "select_date_range": "Seleccione el rango de fechas (columna datetime) para visualizar los errores de pronóstico",
+    "select_date_range": "Seleccione el rango de fechas (columna datetime) para visualizar los errores de forecast",
     "top_10_errors": "Top 10 errores porcentuales absolutos",
     "show_median_or_mean": "Mostrar mediana o media",
     "median_or_mean_options": ["Mediana", "Media"],
@@ -47,7 +47,7 @@ UI_TEXT = {
         "Scatter",
     ],
     "horizon_boxplot_title": "Box plot por horizonte",
-    "horizon_warning": "El número de puntos por horizonte es muy variable, revisa tu proceso de generación de pronósticos. Debes generar para cada datetime la misma cantidad de horizontes, haciendo forecast_origin=forecast_origin-horizonte con todos los horizontes que deseas pronosticar.",
+    "horizon_warning": "El número de puntos por horizonte es muy variable, revisa tu proceso de generación de forecast. Debes generar para cada datetime la misma cantidad de horizontes, haciendo forecast_origin=forecast_origin-horizonte con todos los horizontes que deseas pronosticar.",
     "datetime_boxplot_title": "Box plot por datetime",
     "select_temporal_aggregation": "Selecciona la agrupación temporal para el boxplot",
     "temporal_aggregation_options": ["Diario", "Mensual"],
@@ -59,7 +59,7 @@ UI_TEXT = {
     },
     "series_names": {
         "real": "Real",
-        "forecast": "Pronóstico",
+        "forecast": "Forecast",
     },
     "error_types": {
         "perc_abs_err": "Error porcentual absoluto",
@@ -175,7 +175,7 @@ UI_TEXT = {
     "best_error_message": "El mejor modelo es '{}', con un error porcentual absoluto de {}",
     "model_parameters": "Parámetros del modelo",
     "message_forecast_baseline": "Predicciones obtenidas de modelos base en esta plataforma.",
-    "warning_no_forecast": "No hay datos de pronóstico disponibles. Por favor, entrena el modelo primero.",
+    "warning_no_forecast": "No hay datos de forecast disponibles. Por favor, entrena el modelo primero.",
     "upload_forecast": "Predicciones detectadas en el archivo subido.",
     "forecast_parameters": "Por favor, especifica los parámetros para entrenar:",
     "horizon": "Horizonte",
@@ -186,5 +186,6 @@ UI_TEXT = {
     "explanation_step_size": f"El **{'tamaño del paso'}** es el número de pasos de tiempo entre cada predicción",
     "explanation_n_windows": f"El **{'número de ventanas'}** es el número de veces que se desplaza la ventana de entrenamiento para generar una predicción",
     "documentation": "Ver documentación",
+    "activate_button_train": "Activar previsión"
 
 }

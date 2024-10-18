@@ -6,7 +6,7 @@ from mango_base.mango.dashboards.time_series_utils.constants import default_mode
 from mango_base.mango.dashboards.time_series_utils.data_loader import load_data
 from mango_base.mango.dashboards.time_series_utils.data_processing import (
     process_data,
-    convert_df,
+    convert_df, aggregate_to_input_cache,
 )
 from mango_base.mango.dashboards.time_series_utils.file_uploader import (
     upload_files,
@@ -166,7 +166,7 @@ def interface_visualization(project_name: str = None):
                         st.session_state["forecast_activated"] = False
 
                     if not st.session_state["forecast_activated"]:
-                        if st.sidebar.button("Activate Forecast Options"):
+                        if st.sidebar.button(UI_TEXT["activate_button_train"]):
                             st.session_state["forecast_activated"] = True
 
                     if st.session_state["forecast_activated"]:
@@ -293,13 +293,13 @@ def interface_visualization(project_name: str = None):
                             ][1]
                             st.rerun()
             elif visualization == UI_TEXT["visualization_options"][1]:  # "Forecast"
-                if "f" in data.columns and "err" in data.columns:
+                if "f" in forecast.columns and "err" in forecast.columns:
                     st.info(UI_TEXT["upload_forecast"])
 
-                    plot_forecast(data, st.session_state["selected_series"], UI_TEXT)
+                    plot_forecast(forecast, st.session_state["selected_series"], UI_TEXT)
 
                     plot_error_visualization(
-                        data,
+                        forecast,
                         st.session_state["selected_series"],
                         UI_TEXT,
                     )
@@ -309,8 +309,23 @@ def interface_visualization(project_name: str = None):
                     and st.session_state["forecast"] is not None
                 ):
                     st.info(UI_TEXT["message_forecast_baseline"])
-
-                    data_csv = st.session_state["forecast"].copy()
+                    forecast_st = st.session_state["forecast"].copy()
+                    forecast = aggregate_to_input_cache(
+                        forecast_st,
+                        freq=final_select_agr_tmp_dict[select_agr_tmp],
+                        SERIES_CONF={
+                            "KEY_COLS": columns_id + ["forecast_origin", "model"],
+                            "AGG_OPERATIONS": {
+                                "y": "sum",
+                                "f": "sum",
+                                "err": "mean",
+                                "abs_err": "mean",
+                                "perc_err": "mean",
+                                "perc_abs_err": "mean",
+                            },
+                        },
+                    )
+                    data_csv = forecast.copy()
                     data_csv = convert_df(data_csv)
                     st.download_button(
                         label="Download data as CSV",
@@ -320,13 +335,13 @@ def interface_visualization(project_name: str = None):
                     )
 
                     plot_forecast(
-                        st.session_state["forecast"],
+                        forecast,
                         st.session_state["selected_series"],
                         UI_TEXT,
                     )
 
                     plot_error_visualization(
-                        st.session_state["forecast"],
+                        forecast,
                         st.session_state["selected_series"],
                         UI_TEXT,
                     )

@@ -418,7 +418,7 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
 
     visualization = st.sidebar.radio(
         UI_TEXT["select_visualization"],
-        st.session_state["visualization_options"],
+        UI_TEXT["visualization_options"],
     )
 
     st.sidebar.title(UI_TEXT["select_temporal_grouping"])

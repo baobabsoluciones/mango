@@ -186,5 +186,5 @@ UI_TEXT = {
     "explanation_step_size": f"La **{'mida del pas'}** és el nombre de passos de temps entre cada finestra de previsió.",
     "explanation_n_windows": f"El **{'nombre de finestres'}** és el nombre de finestres de previsió que es volen generar.",
     "documentation": "Veure documentació",
-
+    "activate_button_train": "Activar previsió"
 }
