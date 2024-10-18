@@ -152,5 +152,15 @@ UI_TEXT = {
     "best_error_message": "The best model is '{}', with an absolute percentage error of {}",
     "model_parameters": "Model parameters",
     "message_forecast_baseline": "Forecast obtained from baseline models in this platform.",
-    "warning_no_forecast": "No forecast data available. Please train the model first."
+    "warning_no_forecast": "No forecast data available. Please train the model first.",
+    "upload_forecast": "Forecast data detected from the uploaded file.",
+    "forecast_parameters": "Please, specify the forecast parameters:",
+    "horizon": "Horizon",
+    "step_size": "Step size",
+    "n_windows": "Number of windows",
+    "explanation": "See explanation",
+    "explanation_horizon": f"The **{'horizon'}** is the number of time units ahead of the forecast origin.",
+    "explanation_step_size": f"The **{'step size'}** is the number of time units between each forecast.",
+    "explanation_n_windows": f"The **{'number of windows'}** is the number of forecasts to use for cross validation.",
+    "documentation": "See documentation",
 }

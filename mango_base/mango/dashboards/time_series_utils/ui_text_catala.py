@@ -175,5 +175,16 @@ UI_TEXT = {
     "best_error_message": "El millor model és '{}', amb un error percentual absolut de {}",
     "model_parameters": "Paràmetres del model",
     "message_forecast_baseline": "Previsió obtinguda dels models base en aquesta plataforma.",
-    "warning_no_forecast": "No hi ha dades de previsió disponibles. Si us plau, entreneu primer el model."
+    "warning_no_forecast": "No hi ha dades de previsió disponibles. Si us plau, entreneu primer el model.",
+    "upload_forecast": "Previsió detectada de l'arxiu pujat.",
+    "forecast_parameters": "Si us plau, especifiqueu els paràmetres de previsió:",
+    "horizon": "Horitzó",
+    "step_size": "Mida del pas",
+    "n_windows": "Nombre de finestres",
+    "explanation": "Veure explicació",
+    "explanation_horizon": f"El **{'horitzó'}** és el nombre de passos de temps que es vol predir.",
+    "explanation_step_size": f"La **{'mida del pas'}** és el nombre de passos de temps entre cada finestra de previsió.",
+    "explanation_n_windows": f"El **{'nombre de finestres'}** és el nombre de finestres de previsió que es volen generar.",
+    "documentation": "Veure documentació",
+
 }

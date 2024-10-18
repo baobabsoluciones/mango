@@ -34,7 +34,6 @@ def load_data(files_loaded, UI_TEXT):
         else:
             # "Exploration"
             visualization = UI_TEXT["visualization_options"][0]
-            st.info(UI_TEXT["exploration_mode"])
 
         list_df.append(data)
         list_visualization.append(visualization)

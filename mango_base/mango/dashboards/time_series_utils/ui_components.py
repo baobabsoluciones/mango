@@ -408,13 +408,11 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
                 UI_TEXT["visualization_options"][1]
             )
 
-    # Si el forecast aún no ha sido calculado y no hay columna 'f', solo mostrar "Exploration"
     elif "forecast_origin" not in time_series.columns or "f" not in time_series.columns:
         st.session_state["visualization_options"] = [
             UI_TEXT["visualization_options"][0]
         ]
 
-    # Si ya tenemos columna 'f', habilitar directamente "Exploration" y "Forecast"
     else:
         st.session_state["visualization_options"] = UI_TEXT["visualization_options"]
 
@@ -719,7 +717,7 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
     select_model = st.selectbox(UI_TEXT["select_top_10"], models)
     for idx, serie in data_dict.items():
         filter = serie[serie["model"] == select_model]
-        st.write(UI_TEXT["top_10_errors"] + f": {select_model}")
+        st.write(UI_TEXT["top_10_errors"] + f": **{select_model}**")
         st.write(
             filter.nlargest(10, "perc_abs_err")[
                 ["datetime", "forecast_origin", "model", "perc_abs_err"]

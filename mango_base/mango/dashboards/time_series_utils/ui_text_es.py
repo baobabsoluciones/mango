@@ -175,6 +175,16 @@ UI_TEXT = {
     "best_error_message": "El mejor modelo es '{}', con un error porcentual absoluto de {}",
     "model_parameters": "Parámetros del modelo",
     "message_forecast_baseline": "Predicciones obtenidas de modelos base en esta plataforma.",
-    "warning_no_forecast": "No hay datos de pronóstico disponibles. Por favor, entrena el modelo primero."
+    "warning_no_forecast": "No hay datos de pronóstico disponibles. Por favor, entrena el modelo primero.",
+    "upload_forecast": "Predicciones detectadas en el archivo subido.",
+    "forecast_parameters": "Por favor, especifica los parámetros para entrenar:",
+    "horizon": "Horizonte",
+    "step_size": "Tamaño del paso",
+    "n_windows": "Número de ventanas",
+    "explanation": "Ver explicación",
+    "explanation_horizon": f"El **{'horizonte'}** es el número de pasos de tiempo en el futuro que se desea pronosticar",
+    "explanation_step_size": f"El **{'tamaño del paso'}** es el número de pasos de tiempo entre cada predicción",
+    "explanation_n_windows": f"El **{'número de ventanas'}** es el número de veces que se desplaza la ventana de entrenamiento para generar una predicción",
+    "documentation": "Ver documentación",
 
 }

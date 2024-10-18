@@ -4,7 +4,10 @@ from statsforecast import StatsForecast
 from mango_base.mango.dashboards.time_series_utils.constants import SELECT_AGR_TMP_DICT
 from mango_base.mango.dashboards.time_series_utils.constants import default_models
 from mango_base.mango.dashboards.time_series_utils.data_loader import load_data
-from mango_base.mango.dashboards.time_series_utils.data_processing import process_data
+from mango_base.mango.dashboards.time_series_utils.data_processing import (
+    process_data,
+    convert_df,
+)
 from mango_base.mango.dashboards.time_series_utils.file_uploader import (
     upload_files,
     manage_files,
@@ -158,8 +161,6 @@ def interface_visualization(project_name: str = None):
                     UI_TEXT,
                 )
 
-                select_agr_tmp_lw = select_agr_tmp.lower()
-
                 if len(visualization_options) == 1:
                     if "forecast_activated" not in st.session_state:
                         st.session_state["forecast_activated"] = False
@@ -169,8 +170,7 @@ def interface_visualization(project_name: str = None):
                             st.session_state["forecast_activated"] = True
 
                     if st.session_state["forecast_activated"]:
-                        st.info("It is possible to forecast")
-                        freq_code = SELECT_AGR_TMP_DICT[select_agr_tmp_lw]
+                        freq_code = final_select_agr_tmp_dict[select_agr_tmp]
                         series_length = len(time_series)
                         horizon_limit, step_size_limit, n_windows_limit = (
                             adapt_values_based_on_series_length(series_length)
@@ -186,30 +186,41 @@ def interface_visualization(project_name: str = None):
                             st.session_state["n_windows"] = min(5, n_windows_limit)
 
                         with st.sidebar.form(key="forecast_form"):
-                            # TODO: Add the meaning of these parameters
+                            st.write(UI_TEXT["forecast_parameters"])
                             horizon = st.number_input(
-                                "Horizon",
+                                UI_TEXT["horizon"],
                                 min_value=1,
                                 max_value=horizon_limit,
                                 value=28,
+                                help=UI_TEXT["explanation_horizon"],
                                 # value=st.session_state["horizon"]
                             )
                             step_size = st.number_input(
-                                "Step Size",
+                                UI_TEXT["step_size"],
                                 min_value=1,
                                 max_value=step_size_limit,
                                 value=28,
+                                help=UI_TEXT["explanation_step_size"],
                                 # value=st.session_state["step_size"]
                             )
                             n_windows = st.number_input(
-                                "Number of Windows",
+                                UI_TEXT["n_windows"],
                                 min_value=1,
                                 max_value=n_windows_limit,
                                 value=3,
+                                help=UI_TEXT["explanation_n_windows"],
                                 # value=st.session_state["n_windows"]
                             )
 
-                            train_button = st.form_submit_button(label="Train")
+                            st.link_button(
+                                UI_TEXT["documentation"],
+                                "https://nixtlaverse.nixtla.io/mlforecast/docs/how-to-guides/cross_validation.html#load-and-explore-the-data",
+                                type="secondary",
+                            )
+
+                            train_button = st.form_submit_button(
+                                label="Train", type="primary"
+                            )
                         if train_button:
                             st.info("Starting forecast training")
                             st.session_state["horizon"] = horizon
@@ -283,13 +294,9 @@ def interface_visualization(project_name: str = None):
                             st.rerun()
             elif visualization == UI_TEXT["visualization_options"][1]:  # "Forecast"
                 if "f" in data.columns and "err" in data.columns:
-                    st.write("Forecast data detected from the uploaded file.")
+                    st.info(UI_TEXT["upload_forecast"])
 
-                    plot_forecast(
-                        data,
-                        st.session_state["selected_series"],
-                        UI_TEXT,
-                    )
+                    plot_forecast(data, st.session_state["selected_series"], UI_TEXT)
 
                     plot_error_visualization(
                         data,
@@ -302,6 +309,15 @@ def interface_visualization(project_name: str = None):
                     and st.session_state["forecast"] is not None
                 ):
                     st.info(UI_TEXT["message_forecast_baseline"])
+
+                    data_csv = st.session_state["forecast"].copy()
+                    data_csv = convert_df(data_csv)
+                    st.download_button(
+                        label="Download data as CSV",
+                        data=data_csv,
+                        file_name="predictions.csv",
+                        mime="text/csv",
+                    )
 
                     plot_forecast(
                         st.session_state["forecast"],
