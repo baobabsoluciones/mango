@@ -364,7 +364,6 @@ def load_excel_light(path, sheets=None):
     dataset = {}
     for name, v in dict_sheets.items():
         data = [row for row in v]
-        print(data)
         if len(data):
             dataset[name] = (
                 TupList(data[1:])
@@ -380,6 +379,7 @@ def load_excel_light(path, sheets=None):
 def load_str_iterable(v):
     """
     Evaluate the value of an Excel cell and return strings representing python iterables as such.
+    Return other strings and other types unchanged.
 
     :param v: content of an Excel cell
     :return: value of the cell
@@ -387,7 +387,7 @@ def load_str_iterable(v):
     if isinstance(v, str):
         try:
             return ast.literal_eval(v)
-        except SyntaxError:
+        except (SyntaxError, ValueError):
             return v
     else:
         return v
