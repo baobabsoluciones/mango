@@ -12,13 +12,15 @@ from mango.processing import (
     write_json,
     load_csv,
     write_excel,
-    write_csv, pickle_copy,
+    write_csv,
+    pickle_copy,
 )
 from mango.processing.file_functions import (
     load_csv_light,
     write_csv_light,
     load_excel_light,
     write_excel_light,
+    load_str_iterable,
 )
 from mango.tests.const import normalize_path
 
@@ -203,7 +205,7 @@ class FileTests(TestCase):
     def test_write_excel_light_iter(self):
         file = normalize_path("./data/temp.xlsx")
         data = pickle_copy(self.data_1)
-        data["Sheet1"] = [{'a': [1,2], "b":["a1", "a2"], "c": {"i":1}}]
+        data["Sheet1"] = [{"a": [1, 2], "b": ["a1", "a2"], "c": {"i": 1}}]
         write_excel_light(file, data)
 
         data2 = load_excel_light(file)
@@ -319,3 +321,29 @@ class FileTests(TestCase):
         data = {"a": [1, 2, 3], "b": [4, 5, 6]}
         file = normalize_path("./data/temp.xlsz")
         self.assertRaises(FileNotFoundError, write_csv, file, data)
+
+    def test_load_str_iterable(self):
+        """
+        load_str_iterable should transform string representing pythons objects
+        like lists and dict into the relevant object.
+        Other strings should be left unchanged.
+        """
+        expected = [1, 2, 3]
+        result = load_str_iterable("[1,2,3]")
+        self.assertEqual(expected, result)
+
+        expected = {1: 2}
+        result = load_str_iterable("{1:2}")
+        self.assertEqual(expected, result)
+
+        expected = "column name"
+        result = load_str_iterable("column name")
+        self.assertEqual(expected, result)
+
+        expected = "12/11/2024"
+        result = load_str_iterable("12/11/2024")
+        self.assertEqual(expected, result)
+
+        expected = 12
+        result = load_str_iterable(12)
+        self.assertEqual(expected, result)
