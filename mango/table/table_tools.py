@@ -99,7 +99,7 @@ def invert_dict_list(dictlist, unique=True):
     """
     assert isinstance(dictlist, TupList)
 
-    inverted = {k: [d[k] for d in dictlist] for k in dictlist[0].keys()}
+    inverted = {k: [d.get(k, None) for d in dictlist] for k in dictlist[0].keys()}
     if unique:
         return {k: simplify(v) for k, v in inverted.items()}
     else:

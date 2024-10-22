@@ -434,7 +434,6 @@ class Table(TupList):
         Join a table with itself.
         Useful to create combinations of values from columns of a table.
 
-        :param table: the table
         :param by: list, dict or None.
             If by is a list of keys/column, those columns will be used for the join.
             If by is a dict in the format {name_table1: name_table2}, those columns will be used for the join.
@@ -451,7 +450,7 @@ class Table(TupList):
         Select columns from a table
 
         :param args: names of the columns to select
-        :return: a table (Tuplist) with the selected columns.
+        :return: Table with the selected columns.
         """
         return Table(select(self, *args))
 
@@ -485,13 +484,14 @@ class Table(TupList):
 
         return Table(self.vfilter(func))
 
-    def get_col_names(self) -> "Table":
+    def get_col_names(self, fast=False) -> "Table":
         """
         Get the names of the column of the table.
 
+        :param fast: assume that the first row has all the columns.
         :return: a list of keys
         """
-        return get_col_names(self)
+        return get_col_names(self, fast)
 
     def to_columns(self) -> "SuperDict":
         """
@@ -528,25 +528,27 @@ class Table(TupList):
         """
         return [i for i, v in enumerate(self) if cond(v)]
 
-    def replace(self, replacement=None, to_replace=None) -> "Table":
+    def replace(self, replacement=None, to_replace=None, fast=False) -> "Table":
         """
         Fill missing values of a tuplist.
 
         :param replacement: a single value or a dict of columns and values to use as replacement.
         :param to_replace: a single value or a dict of columns and values to replace.
+        :param fast: assume that the first row has all the columns.
 
         :return: the table with missing values filled.
         """
-        return Table(replace(self, replacement, to_replace))
+        return Table(replace(self, replacement, to_replace, fast))
 
-    def replace_empty(self, replacement=None) -> "Table":
+    def replace_empty(self, replacement=None, fast=False) -> "Table":
         """
         Fill empty values of a tuplist.
 
         :param replacement: a single value or a dict of columns and values to use as replacement.
+        :param fast: assume that the first row has all the columns.
         :return: the table with empty values filled.
         """
-        return Table(replace_empty(self, replacement))
+        return Table(replace_empty(self, replacement, fast))
 
     def replace_nan(self, replacement=None) -> "Table":
         """
@@ -586,13 +588,15 @@ class Table(TupList):
         """
         return Table(pivot_wider(self, names_from, value_from, id_cols, values_fill))
 
-    def drop_empty(self, cols=None) -> "Table":
+    def drop_empty(self, cols=None, fast=False) -> "Table":
         """
         Drop rows with empty values of a tuplist.
 
+        :param cols: list of column names or single name.
+        :param fast: assume that the first row has all the columns.
         :return: the table with empty values dropped.
         """
-        return Table(drop_empty(self, cols))
+        return Table(drop_empty(self, cols, fast))
 
     def lag_col(self, col, i=1, replace=False) -> "Table":
         """
@@ -719,6 +723,19 @@ class Table(TupList):
         """
         return (self + Table(table)).replace(replacement=None, to_replace=None)
 
+    def col_apply(self, columns, func: Callable, **kwargs) -> "Table":
+        """
+        Apply a function to a column or a list of columns.
+
+        :param columns: column or list of columns.
+        :param func: function to apply.
+        :return: the table
+        """
+        result = self
+        for col in as_list(columns):
+            result = result.mutate(**{col: lambda v: func(v[col], **kwargs)})
+        return result
+
     @staticmethod
     def format_dataset(dataset):
         """
@@ -734,14 +751,14 @@ class Table(TupList):
         }
 
     @classmethod
-    def dataset_from_json(cls, path):
+    def dataset_from_json(cls, path, **kwargs):
         """
         Load a json file and format it applying Table() to every table.
 
         :param path: path of the json file
         :return: a dict of Tables
         """
-        data = load_json(path)
+        data = load_json(path, **kwargs)
         return cls.format_dataset(data)
 
     # Save and load functions
@@ -817,14 +834,14 @@ class Table(TupList):
         write_json(str_key_tl(self), path)
 
     @staticmethod
-    def from_json(path):
+    def from_json(path, **kwargs):
         """
         Create a table from a json file.
 
         :param path: path to json file
         :return: a Table containing the data.
         """
-        return Table(load_json(path))
+        return Table(load_json(path, **kwargs))
 
     def apply(self, func: Callable, *args, **kwargs):
         """
@@ -852,10 +869,10 @@ class Table(TupList):
 
     def to_excel(self, path, sheet_name=None):
         """
-        Write the table to an excel file
+        Write the table to an Excel file
 
         :param path: path fo the Excel file.
-        :param sheet_name: Name of the excel sheet.
+        :param sheet_name: Name of the Excel sheet.
         :return: None
         """
         if sheet_name is None:
@@ -865,7 +882,7 @@ class Table(TupList):
     @classmethod
     def from_csv(cls, path, sep=",", encoding=None) -> "Table":
         """
-        Write the table to a csv file.
+        Load the table from a csv file.
 
         :param path: path fo the Excel file.
         :param sep: column separator in the csv file. (detected automatically if None).
@@ -874,3 +891,14 @@ class Table(TupList):
         """
         data = load_csv_light(path, sep, encoding)
         return Table(data)
+
+    def to_csv(self, path, sep=",", encoding=None):
+        """
+        Write the table to a csv file.
+
+        :param path: path fo the Excel file.
+        :param sep: column separator in the csv file.
+        :param encoding: encoding.
+        :return: nothing.
+        """
+        write_csv_light(path, self, sep, encoding)

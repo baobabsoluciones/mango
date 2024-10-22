@@ -1,3 +1,24 @@
+Version 0.2.3
+==============
+
+**Released on Jul 23, 2024**
+
+Modified dependency versions in order to not have install issues.
+
+
+Version 0.2.2
+==============
+
+**Released on Jul 4, 2024**
+
+Improvements to Table class and bugfixes:
+
+**New features:**
+
+- improvements to Table class.
+- arcgis geolocation calls allow to set up the country.
+- arcgis sync distance calculation gives back the correct value for the meters.
+
 Version 0.2.1
 ==============
 

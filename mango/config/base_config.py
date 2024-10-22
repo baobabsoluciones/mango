@@ -1,6 +1,7 @@
 """
 This file contains the classes that are used to parse the configuration files
 """
+import json
 import os
 import warnings
 from configparser import ConfigParser, NoOptionError, NoSectionError
@@ -21,6 +22,7 @@ class ConfigParameter:
         default: Union[int, float, bool, str, List] = None,
         validate: List = None,
         secondary_type: callable = None,
+        dict_types: Dict[str, callable] = None,
         required: bool = True,
         min_value: Union[int, float] = None,
         max_value: Union[int, float] = None,
@@ -34,6 +36,7 @@ class ConfigParameter:
         :param default: set the default value of the parameter
         :param validate: specify a list of values the parameter can take
         :param callable secondary_type: if the value_type is a list, specify the type of data that is allowed in the list
+        :param dict_types: specify the type of data that is allowed in the dictionary
         :param bool required: specify if the parameter is required or not
         :param min_value: specify the minimum value of the parameter (only works if value_type is int or float)
         :param max_value: specify the maximum value of the parameter (only works if value_type is int or float)
@@ -42,6 +45,7 @@ class ConfigParameter:
         self.name = name
         self.value_type = value_type
         self.secondary_type = secondary_type
+        self.dict_types = dict_types
         self.default = default
         self.validate = validate
         self.required = required
@@ -92,6 +96,11 @@ class ConfigParameter:
         elif list == self.value_type:
             value = config_parser.get(section, self.name).split(" ")
             value = [self.secondary_type(x) for x in value]
+        elif dict == self.value_type:
+            value = config_parser.get(section, self.name)
+            value = json.loads(value)
+            if self.dict_types is not None:
+                value = {k: self.dict_types.get(k, str)(v) for k, v in value.items()}
         else:
             raise TypeError(
                 f"The parser can not parse the datatype indicated for {self.name}"
@@ -146,6 +155,8 @@ class BaseConfig:
         self.parameters = {}
         self.map_key_to_section = {}
         parser = ConfigParser()
+        # Case sensitive
+        parser.optionxform = lambda option: option
         if not os.path.isfile(self.file_name):
             raise FileNotFoundError(f"No such config file: {self.file_name}")
 
@@ -221,6 +232,8 @@ class BaseConfig:
         :doc-author: baobab soluciones
         """
         parser = ConfigParser()
+        # Case sensitive
+        parser.optionxform = lambda option: option
         # Available params are attributes in the form _ChildClass__params
         params = cls.__getattribute__(cls, "_{}__params".format(cls.__name__))
         for section, params in params.items():

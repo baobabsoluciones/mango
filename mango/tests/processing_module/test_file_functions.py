@@ -13,12 +13,14 @@ from mango.processing import (
     load_csv,
     write_excel,
     write_csv,
+    pickle_copy,
 )
 from mango.processing.file_functions import (
     load_csv_light,
     write_csv_light,
     load_excel_light,
     write_excel_light,
+    load_str_iterable,
 )
 from mango.tests.const import normalize_path
 
@@ -200,6 +202,16 @@ class FileTests(TestCase):
         write_excel_light(file, self.data_1)
         os.remove(file)
 
+    def test_write_excel_light_iter(self):
+        file = normalize_path("./data/temp.xlsx")
+        data = pickle_copy(self.data_1)
+        data["Sheet1"] = [{"a": [1, 2], "b": ["a1", "a2"], "c": {"i": 1}}]
+        write_excel_light(file, data)
+
+        data2 = load_excel_light(file)
+        self.check_test_excel_write(data2, data)
+        # os.remove(file)
+
     def test_load_write_excel_light_sheet(self):
         file = normalize_path("./data/temp.xlsx")
         write_excel_light(file, self.data_1)
@@ -298,7 +310,40 @@ class FileTests(TestCase):
         self.assertEqual(data2, self.records_to_df)
         os.remove(file)
 
+    def test_write_csv_light_2(self):
+        file = normalize_path("./data/temp.csv")
+        write_csv_light(file, self.records_to_df, sep=";")
+        data2 = load_csv_light(file)
+        self.assertEqual(self.records_to_df, data2)
+        os.remove(file)
+
     def test_write_csv_bad_format(self):
         data = {"a": [1, 2, 3], "b": [4, 5, 6]}
         file = normalize_path("./data/temp.xlsz")
         self.assertRaises(FileNotFoundError, write_csv, file, data)
+
+    def test_load_str_iterable(self):
+        """
+        load_str_iterable should transform string representing pythons objects
+        like lists and dict into the relevant object.
+        Other strings should be left unchanged.
+        """
+        expected = [1, 2, 3]
+        result = load_str_iterable("[1,2,3]")
+        self.assertEqual(expected, result)
+
+        expected = {1: 2}
+        result = load_str_iterable("{1:2}")
+        self.assertEqual(expected, result)
+
+        expected = "column name"
+        result = load_str_iterable("column name")
+        self.assertEqual(expected, result)
+
+        expected = "12/11/2024"
+        result = load_str_iterable("12/11/2024")
+        self.assertEqual(expected, result)
+
+        expected = 12
+        result = load_str_iterable(12)
+        self.assertEqual(expected, result)
