@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mango_time_series.mango.time_series import TimeSeriesDataFrame
+from mango_time_series.time_series import TimeSeriesDataFrame
 
 
 class TestTimeSeriesDataframe(TestCase):
