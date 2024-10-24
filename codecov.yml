@@ -1,0 +1,24 @@
+coverage:
+  status:
+    project: off
+    patch: off
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 5%
+      - type: patch
+        target: 90%
+  individual_flags:
+    - name: base-tests
+      paths:
+        - mango_base/
+    - name: time-series-tests
+      paths:
+        - mango_time_series/
+    - name: unit-tests
+      paths:
+        - ./

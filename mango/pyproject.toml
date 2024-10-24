@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mango"
-version = "0.2.3"
+version = "0.2.3a1"
 authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
 ]
@@ -38,11 +38,13 @@ dependencies = [
 ]
 requires-python = ">=3.8"
 
-[tools.setuptools]
+[tool.setuptools]
 include-package-data = true
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mango", "mango.*"]
+
 
 [project.optional-dependencies]
 cli = ["click>=8.1.7,<9.0.0"]
