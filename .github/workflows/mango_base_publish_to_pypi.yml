@@ -3,14 +3,14 @@ name: Publish mango to Pypi
 on:
   push:
     tags:
-      - "mango_base_*"
+      - 'mango_base_*'
 
 jobs:
   build:
     name: Build and publish to PyPI.
     defaults:
       run:
-        working-directory: ./mango_base
+        working-directory: ./mango
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -29,4 +29,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.pypi_password }}
-          packages_dir: ./mango_base/dist
+          packages_dir: ./mango/dist
