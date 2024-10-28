@@ -2,6 +2,7 @@ from calendar import month
 
 import pandas as pd
 
+from mango_time_series.mango.features.date_utils import get_holidays_df
 from mango_time_series.mango.timeseries_class.base_class import TimeSeriesProcessor
 from mango_time_series.mango.timeseries_class.config_class import SeriesConfiguration
 
@@ -10,18 +11,19 @@ from mango_base.mango.logging.logger import get_basic_logger
 logger = get_basic_logger()
 
 # Load the data
+# Load the data
 df = pd.read_excel(
     r"G:\Unidades compartidas\clece_pmr_202207\proyecto\desarrollo\datos\time_series_synthetic_interpolate.xlsx"
 )
 df["aeropuerto"] = "BCN"
-df.drop(columns=["PNP", "TOTAL"], inplace=True)
+df = df[["datetime", "aeropuerto", "finalizadas"]]
 
 # Create an instance of SeriesConfiguration directly
 config = SeriesConfiguration(
     key_cols=["aeropuerto"],
     time_period_descr="day",
-    time_col="Fecha_Vuelo",
-    value_col="FIN",
+    time_col="datetime",
+    value_col="finalizadas",
     recent_folds=2,
     seasonal_folds=1,
     agg_operations={"y": "sum"},
@@ -35,57 +37,54 @@ ts.load_data(df)
 
 # Convert to pandas DataFrame
 df_pd = ts.data.collect().to_pandas()
+import pandas as pd
+from neuralforecast import NeuralForecast
+from neuralforecast.models import NBEATS, NBEATSx
 
+# Cargar datos
 df_pd = df_pd.reset_index()
 df_pd = df_pd[["aeropuerto", "datetime", "y"]]
-# rename to ds
+hol = get_holidays_df(steps_back=7, steps_forward=7)
+# replace nulls in hol with 99 with polars
+hol = hol.fill_null(99).to_pandas()
+df_pd = pd.merge(df_pd, hol, on="datetime", how="left")
+df_pd = df_pd.fillna(99)
 df_pd = df_pd.rename(columns={"datetime": "ds", "aeropuerto": "unique_id"})
-date_end_train = "2024-08-01"
+date_end_train = "2023-10-01"
 df_pd_tr = df_pd[df_pd["ds"] < date_end_train]
 df_pd_te = df_pd[df_pd["ds"] >= date_end_train]
+regressors = df_pd_tr.columns.difference(["ds", "unique_id", "y"]).tolist()
 
-from statsforecast.models import MSTL, AutoTheta, AutoARIMA, AutoETS
-from statsforecast import StatsForecast
-from mlforecast.lag_transforms import ExpandingMean, RollingMean
-from mlforecast.lag_transforms import ExponentiallyWeightedMean
+
+
 from mlforecast import MLForecast
-from mlforecast.target_transforms import Differences, LocalBoxCox
 import lightgbm as lgb
 from sklearn.preprocessing import FunctionTransformer
 
-from mlforecast.lgb_cv import LightGBMCV
-from mlforecast.target_transforms import GlobalSklearnTransformer
 import numpy as np
 sk_log1p = FunctionTransformer(func=np.log1p, inverse_func=np.expm1)
-
-# fcst = MLForecast(
-#     models=lgb.LGBMRegressor(),
-#     freq="D",
-#     target_transforms=[GlobalSklearnTransformer(sk_log1p), Differences([7])],
-#     lags=[1, 2, 7],
-#     lag_transforms={
-#         1: [ExponentiallyWeightedMean(alpha=0.5), RollingMean(window_size=7)],
-#         7: [RollingMean(window_size=4)],
-#     },
-#     date_features=["month", "dayofweek", "year", "day", "dayofyear"],
-#     num_threads=-1
-# )
 
 # cv = LightGBMCV(
 fcst = MLForecast(
     models=lgb.LGBMRegressor(),
     freq="D",
-    target_transforms=[
-        # GlobalSklearnTransformer(sk_log1p),
-        # Differences([7])
-    ],
+    # target_transforms=[
+    #     # GlobalSklearnTransformer(sk_log1p),
+    #     # Differences([7])
+    # ],
     # lags=range(1, 31),
-    lag_transforms={
-        # 1: [ExponentiallyWeightedMean(alpha=0.5), RollingMean(window_size=7)],
-        1: [RollingMean(window_size=7), RollingMean(window_size=28), ExponentiallyWeightedMean(alpha=0.5)],
-        7: [RollingMean(window_size=4)],
-    },
-    date_features=["month", "year", "dayofweek", "day", "dayofyear", "week"],
+    # lag_transforms={
+    #     # 1: [ExponentiallyWeightedMean(alpha=0.5), RollingMean(window_size=7)],
+    #     # 1: [RollingMean(window_size=7), RollingMean(window_size=28), ExponentiallyWeightedMean(alpha=0.5)],
+    #     # 7: [RollingMean(window_size=4)],
+    # },
+    date_features=["month",
+                   "year",
+                   "dayofweek",
+    #                "day",
+    #                "dayofyear",
+    #                "week"
+                   ], # TODO: si la lista de regressors es una lista de funciones sí funcionaria
     num_threads=4
 )
 
@@ -93,15 +92,9 @@ fcst = MLForecast(
 
 # df_pd_na = df_pd_tr.dropna()
 # aaa = fcst.preprocess(df_pd_na)
-# cv_hist = cv.fit(
-#     df_pd_na,
-#     n_windows=4,
-#     h=56,
-#     params=lgb_params,
-#     eval_every=5,
-#     early_stopping_evals=10,
-#     compute_cv_preds=True,
-# )
+fcst.fit(
+    df_pd_tr, static_features=[],
+)
 
 # sf = sf.fit(df=df_pd_tr)
 logger.info("Cross validation started")
@@ -110,6 +103,7 @@ crossvalidation_df = fcst.cross_validation(
     n_windows=52,  # number of models to train/splits to perform
     step_size=7,  # Run forecasting process every 30 days
     h=56,  # length of the validation set in each window
+    static_features=[]
 )
 logger.info("Cross validation finished")
 
