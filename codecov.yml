@@ -15,7 +15,7 @@ flag_management:
   individual_flags:
     - name: base-tests
       paths:
-        - mango_base/
+        - mango/
     - name: time-series-tests
       paths:
         - mango_time_series/
