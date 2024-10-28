@@ -1,6 +1,10 @@
+import importlib.resources as pkg_resources
+
+import jinja2
 import pandas as pd
 import streamlit as st
 
+from mango_base.mango.dashboards.time_series_utils.constants import all_imports
 from mango_time_series.mango.utils.processing import aggregate_to_input
 
 
@@ -93,3 +97,23 @@ def calculate_min_diff_per_window(df):
         time_diffs = df["datetime"].diff().dropna().apply(lambda x: abs(x.days))
     min_time_diffs = time_diffs.min()
     return min_time_diffs
+
+
+def render_script(models, horizon, step_size, n_windows, freq_code: str):
+    with pkg_resources.path(
+        "mango_base.mango.dashboards.time_series_utils", "forecast_template.py.j2"
+    ) as template_path:
+        templateLoader = jinja2.FileSystemLoader(searchpath=template_path.parent)
+        templateEnv = jinja2.Environment(loader=templateLoader)
+
+        template = templateEnv.get_template("forecast_template.py.j2")
+
+        output_text = template.render(
+            models=models,
+            all_imports=all_imports,
+            horizon=horizon,
+            step_size=step_size,
+            n_windows=n_windows,
+            freq_code=freq_code,
+        )
+    return output_text

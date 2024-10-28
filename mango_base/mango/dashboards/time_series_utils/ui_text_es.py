@@ -186,6 +186,8 @@ UI_TEXT = {
     "explanation_step_size": f"El **{'tamaño del paso'}** es el número de pasos de tiempo entre cada predicción",
     "explanation_n_windows": f"El **{'número de ventanas'}** es el número de veces que se desplaza la ventana de entrenamiento para generar una predicción",
     "documentation": "Ver documentación",
-    "activate_button_train": "Activar previsión"
+    "activate_button_train": "Activar previsión",
+    "jinja_template": "Descargar script de forecast",
+    "downloaded": "Script descargado correctamente."
 
 }

@@ -1,12 +1,17 @@
 import streamlit as st
 from statsforecast import StatsForecast
 
-from mango_base.mango.dashboards.time_series_utils.constants import SELECT_AGR_TMP_DICT
+from mango_base.mango.dashboards.time_series_utils.constants import (
+    SELECT_AGR_TMP_DICT,
+    model_context,
+)
 from mango_base.mango.dashboards.time_series_utils.constants import default_models
 from mango_base.mango.dashboards.time_series_utils.data_loader import load_data
 from mango_base.mango.dashboards.time_series_utils.data_processing import (
     process_data,
-    convert_df, aggregate_to_input_cache,
+    convert_df,
+    aggregate_to_input_cache,
+    render_script,
 )
 from mango_base.mango.dashboards.time_series_utils.file_uploader import (
     upload_files,
@@ -296,7 +301,9 @@ def interface_visualization(project_name: str = None):
                 if "f" in forecast.columns and "err" in forecast.columns:
                     st.info(UI_TEXT["upload_forecast"])
 
-                    plot_forecast(forecast, st.session_state["selected_series"], UI_TEXT)
+                    plot_forecast(
+                        forecast, st.session_state["selected_series"], UI_TEXT
+                    )
 
                     plot_error_visualization(
                         forecast,
@@ -333,6 +340,20 @@ def interface_visualization(project_name: str = None):
                         file_name="predictions.csv",
                         mime="text/csv",
                     )
+                    freq_code = final_select_agr_tmp_dict[select_agr_tmp]
+
+                    if st.download_button(
+                        label=UI_TEXT["jinja_template"],
+                        data=render_script(
+                            models=model_context,
+                            horizon=st.session_state["horizon"],
+                            step_size=st.session_state["step_size"],
+                            n_windows=st.session_state["n_windows"],
+                            freq_code=freq_code,
+                        ),
+                        file_name="forecast_model.py",
+                    ):
+                        st.success(UI_TEXT["downloaded"])
 
                     plot_forecast(
                         forecast,

@@ -378,7 +378,7 @@ def plot_time_series(
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-
+# TODO: Review these parameters
 def adapt_values_based_on_series_length(series_length: int):
     max_horizon = max(
         1, series_length // 4
