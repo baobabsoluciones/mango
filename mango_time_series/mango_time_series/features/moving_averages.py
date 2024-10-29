@@ -1,8 +1,8 @@
 import re
 
 import polars as pl
-from mango_base.mango.logging import log_time
-from mango_base.mango.logging.logger import get_basic_logger
+from mango.logging import log_time
+from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 

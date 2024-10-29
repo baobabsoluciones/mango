@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from mango_time_series.mango.utils.processing import aggregate_to_input_pl
+from mango_time_series.utils.processing import aggregate_to_input_pl
 from pandas.testing import assert_frame_equal
 
 # Define SERIES_CONFIGURATION here for the test

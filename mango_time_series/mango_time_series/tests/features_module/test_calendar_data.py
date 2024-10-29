@@ -1,9 +1,10 @@
 from unittest import TestCase
 
 import pandas as pd
-from mango_time_series.mango.features.calendar_data import get_calendar
-from mango_time_series.mango.tests.const import normalize_path
+from mango_time_series.features.calendar_data import get_calendar
 from pandas.testing import assert_frame_equal
+
+from ..const import normalize_path
 
 
 class CalendarTests(TestCase):

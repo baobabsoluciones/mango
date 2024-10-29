@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 
-from mango_time_series.mango.utils import timedelta_equivalences, PARAMETERS_BASE
+from mango_time_series.utils import timedelta_equivalences, PARAMETERS_BASE
 
 
 class SeriesConfiguration:

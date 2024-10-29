@@ -6,13 +6,14 @@ import plotly.express as px
 import plotly.graph_objs as go
 import plotly.subplots as sp
 import streamlit as st
-from mango_base.mango.dashboards.time_series_utils.data_processing import (
-    calculate_min_diff_per_window,
-)
 from plotly.subplots import make_subplots
 from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import acf, pacf
 from streamlit_date_picker import date_range_picker, PickerType
+
+from .data_processing import (
+    calculate_min_diff_per_window,
+)
 
 
 def select_series(data, columns, UI_TEXT):
@@ -376,6 +377,7 @@ def plot_time_series(
                     title=UI_TEXT["boxplot_titles"]["monthly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
+
 
 # TODO: Review these parameters
 def adapt_values_based_on_series_length(series_length: int):

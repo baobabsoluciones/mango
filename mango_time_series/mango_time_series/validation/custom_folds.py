@@ -1,6 +1,6 @@
 import pandas as pd
 
-from mango_base.mango.logging.logger import get_basic_logger
+from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 
