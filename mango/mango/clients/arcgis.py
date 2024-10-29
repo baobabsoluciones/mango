@@ -3,7 +3,7 @@ import logging
 import os
 import time
 import warnings
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 from mango.processing import load_json
@@ -210,8 +210,8 @@ class ArcGisClient:
                 f"it did not give back an id: {response.json()}. Exception: {e}"
             )
         timeout = 600
-        start = datetime.utcnow()
-        while (datetime.utcnow() - start).seconds < timeout:
+        start = datetime.now(timezone.utc)
+        while (datetime.now(timezone.utc) - start).seconds < timeout:
             response = requests.get(
                 url=f"{ARCIS_ODMATRIX_JOB_URL}/jobs/{job_id}?f=json&returnMessages=True&token={self.token}"
             )

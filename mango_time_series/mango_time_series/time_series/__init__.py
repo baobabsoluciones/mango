@@ -1,5 +1,4 @@
 class TimeSeriesDataFrame:
-
     def __init__(self):
         pass
 

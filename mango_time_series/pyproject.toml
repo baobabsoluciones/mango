@@ -8,6 +8,7 @@ version = "0.0.1a2"
 authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
 ]
+
 description = "Library with a collection of usefull classes and methods for time series"
 readme = "README.rst"
 urls = {repository = "https://github.com/baobabsoluciones/mango"}
@@ -26,7 +27,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["mango", "mango.*"]
+include = ["mango_time_series", "mango_time_series.*"]
 
 
 [project.optional-dependencies]

@@ -1,2 +1,2 @@
--r mango_base/requirements-dev.txt
+-r mango/requirements-dev.txt
 -r mango_time_series/requirements-dev.txt
