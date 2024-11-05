@@ -4,6 +4,16 @@ from mango_time_series.mango.utils import timedelta_equivalences, PARAMETERS_BAS
 
 
 class SeriesConfiguration:
+    """
+    Configuration class for time series
+    :param key_cols: list of key columns
+    :param time_period_descr: time period description
+    :param recent_folds: number of recent folds
+    :param seasonal_folds: number of seasonal folds
+    :param agg_operations: aggregation operations
+    :param time_col: time column
+    :param value_col: value column
+    """
     def __init__(
         self,
         key_cols: List[str],

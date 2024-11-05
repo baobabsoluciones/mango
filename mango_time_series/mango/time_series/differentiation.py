@@ -1,8 +1,12 @@
 import polars as pl
 
-def differentiate_target(df, group_cols, lag):
+def differentiate_target(df, group_cols, lag)-> pl.DataFrame:
     """
     Differentiate the target variable by the lag specified
+    :param df: pl.DataFrame, input dataframe
+    :param group_cols: list, columns to group by
+    :param lag: int, lag to differentiate
+    :return: pl.DataFrame, differentiated dataframe
     """
 
     df = df.with_columns(pl.col("y").alias("y_orig")).sort("datetime")

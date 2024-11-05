@@ -1,14 +1,19 @@
-import polars as pl
 from datetime import datetime, timedelta
+
+import polars as pl
 
 from mango_time_series.mango.features.calendar_features import get_calendar
 
 
-# from src.models.calendar_features import get_calendar
+def get_holidays_df(steps_back: int, steps_forward: int) -> pl.DataFrame:
+    """
+    Get national holidays dataframe with window bounds.
 
-
-def get_holidays_df(steps_back: int, steps_forward: int):
-    """Get national holidays dataframe with window bounds."""
+    :param steps_back: int, number of days to go back from the holiday.
+    :param steps_forward: int, number of days to go forward
+    from the holiday.
+    :return: pd.DataFrame, holidays dataframe with window
+    """
     start_year = 2014
     all_holidays = get_calendar(
         "ES", start_year=start_year, communities=True, calendar_events=True, return_distances=True, distances_config={"steps_forward": steps_forward, "steps_back": steps_back}
@@ -30,8 +35,11 @@ def get_holidays_df(steps_back: int, steps_forward: int):
     return all_holidays
 
 
-def get_covid_lockdowns():
-    """Get COVID lockdown period as a dataframe."""
+def get_covid_lockdowns() -> pl.DataFrame:
+    """
+    Get COVID lockdown period as a dataframe.
+    :return: pd.DataFrame, COVID lockdown period dataframe
+    """
     covid_start = datetime(2020, 3, 1)
     covid_end = datetime(2022, 3, 1)
 
@@ -50,8 +58,11 @@ def get_covid_lockdowns():
     )
 
 
-def get_mwc():
-    """Get Mobile World Congress dates as a dataframe."""
+def get_mwc() -> pl.DataFrame:
+    """
+    Get Mobile World Congress dates as a dataframe.
+    :return: pd.DataFrame, Mobile World Congress dates dataframe
+    """
     data = {
         "datetime": [
             "2024-02-26",
