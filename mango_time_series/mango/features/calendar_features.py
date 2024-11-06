@@ -32,6 +32,14 @@ _WEIGHT_DICT = {
 
 
 def _calculate_distances(df, distances_config):
+    """
+    The _calculate_distances function calculates the distance of each date to the next holiday. It takes a
+    dataframe and a dictionary with the configuration for the distance calculation as arguments.
+
+    :param pd.DataFrame df: Specify the dataframe that will be used in the function
+    :param dict distances_config: Specify the configuration for the distance calculation
+    :return: A dataframe with the distance of each date to the next holiday
+    """
     tmp = df.copy()
     back_days = distances_config["steps_back"]
     forward_days = distances_config["steps_forward"]
@@ -39,9 +47,6 @@ def _calculate_distances(df, distances_config):
     days_df = pd.DataFrame(days, columns=["distance"])
     tmp = tmp.merge(days_df, how="cross")
     tmp["date"] = tmp["date"] + pd.to_timedelta(tmp["distance"], unit="D")
-    # If weight in columns keep only the day where distance=0 else 0
-    if "weight" in tmp.columns:
-        tmp["weight"] = np.where(tmp["distance"] == 0, tmp["weight"], 0)
     return tmp
 
 
@@ -110,7 +115,7 @@ def get_calendar(
     country_holidays_dict = country_holidays(
         country=country,
         years=years,
-        language="en",
+        language="es",
     )
 
     # Dict to DataFrame
@@ -146,7 +151,7 @@ def get_calendar(
         list_com = []
         for community in holidays.ES.subdivisions:
             # Autonomous Community holidays
-            com_holidays = country_holidays("ES", years=years, subdiv=community)
+            com_holidays = country_holidays("ES", years=years, subdiv=community, language="es", observed=False)
             # Dict to DataFrame
             df_com = pd.DataFrame.from_dict(com_holidays, orient="index").reset_index()
             df_com["country_code"] = country

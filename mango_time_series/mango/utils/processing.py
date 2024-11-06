@@ -366,6 +366,7 @@ def process_time_series(
         time_col=SERIES_CONF["TIME_COL"],
         value_col=SERIES_CONF["VALUE_COL"],
     )
+
     # get_basic_stats_from_data(df)
     df = drop_negative_output_pl(df)
     df = aggregate_to_input_pllazy(df, "d", SERIES_CONF)
@@ -375,7 +376,7 @@ def process_time_series(
         id_cols=SERIES_CONF["KEY_COLS"],
         freq="d",
         min_max_by_id=True,
-        date_end="2024-09-30",
+        date_end="2024-10-01",
         time_col="datetime",
     )
 
