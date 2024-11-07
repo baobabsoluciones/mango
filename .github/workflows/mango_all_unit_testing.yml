@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          BRANCH = "${{ github.head_ref || github.ref_name }}"  
+          BRANCH="${{ github.head_ref || github.ref_name }}"  
           python -m pip install --upgrade pip
           pip install -r ./all-requirements.txt
           pip uninstall mango -y
