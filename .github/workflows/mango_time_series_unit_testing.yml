@@ -33,10 +33,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          BRANCH="${{ github.head_ref || github.ref_name }}"
           python -m pip install --upgrade pip
           pip install -r ./requirements-dev.txt
           pip uninstall mango -y
+          BRANCH="${{ github.head_ref || github.ref_name }}"
           pip install -U "git+https://github.com/baobabsoluciones/mango@${BRANCH}#subdirectory=mango"
       - name: Run unit testing
         run: |
