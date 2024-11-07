@@ -151,7 +151,9 @@ def get_calendar(
         list_com = []
         for community in holidays.ES.subdivisions:
             # Autonomous Community holidays
-            com_holidays = country_holidays("ES", years=years, subdiv=community, language="es", observed=False)
+            com_holidays = country_holidays(
+                "ES", years=years, subdiv=community, language="es", observed=False
+            )
             # Dict to DataFrame
             df_com = pd.DataFrame.from_dict(com_holidays, orient="index").reset_index()
             df_com["country_code"] = country

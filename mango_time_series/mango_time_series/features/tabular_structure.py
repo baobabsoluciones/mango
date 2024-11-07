@@ -80,6 +80,3 @@ def create_tabular_structure_pl(
     )
 
     return df
-
-
-

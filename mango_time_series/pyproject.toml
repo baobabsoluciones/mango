@@ -19,7 +19,15 @@ classifiers = [
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
 ]
-dependencies = []
+dependencies = [
+    "pandas>=2.2.3, <3.0.0",
+    "numpy>=1.26.4,<2.0.0",
+    "polars>=1.12.0, <2.0.0",
+    "scipy>=1.14.1, <2.0.0",
+    "statsmodels>=0.14.4, <1.0.0",
+    "mango>=0.2.0, <0.3.0",
+    "pyarrow>=18.0.0, <19.0.0",
+]
 requires-python = ">=3.8"
 
 [tool.setuptools]

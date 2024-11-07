@@ -92,25 +92,25 @@ def test_timeseries_prediction_creation(num_prods=10, horizon=14, return_pandas=
         (pl.col("date") - pl.duration(days=pl.col("horizon"))).alias("forecast_origin")
     )
     df_sales = df_sales.with_columns(
-        (pl.col("sales") + np.random.randint(-10, 10, size=len(df_sales))).alias(
-            "f"
-        )
+        (pl.col("sales") + np.random.randint(-10, 10, size=len(df_sales))).alias("f")
     )
     # Rename columns sales->y, date->datetime
     df_sales = df_sales.with_columns(
         pl.col("sales").alias("y"),
         pl.col("date").alias("datetime"),
-        pl.col("horizon").alias("h")
+        pl.col("horizon").alias("h"),
     )
-    df_sales = df_sales.select([
-        "store",
-        "product",
-        "forecast_origin",
-        "datetime",
-        "h",
-        "y",
-        "f",
-    ])
+    df_sales = df_sales.select(
+        [
+            "store",
+            "product",
+            "forecast_origin",
+            "datetime",
+            "h",
+            "y",
+            "f",
+        ]
+    )
 
     # Add column err,abs_err,perc_err,perc_abs_err
     df_sales = df_sales.with_columns(

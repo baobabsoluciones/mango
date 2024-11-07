@@ -1,6 +1,7 @@
 import polars as pl
 
-def differentiate_target(df, group_cols, lag)-> pl.DataFrame:
+
+def differentiate_target(df, group_cols, lag) -> pl.DataFrame:
     """
     Differentiate the target variable by the lag specified
     :param df: pl.DataFrame, input dataframe

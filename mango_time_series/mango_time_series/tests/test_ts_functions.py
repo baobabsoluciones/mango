@@ -9,7 +9,7 @@ SERIES_CONF = {
     "KEY_COLS": ["product_id", "store_id"],
     "TIME_COL": "datetime",
     "VALUE_COL": "sales",
-    "AGG_OPERATIONS": {"y": "sum", "quantity": "sum"},
+    "AGG_OPERATIONS": {"sales": "sum", "quantity": "sum"},
 }
 
 
@@ -38,7 +38,15 @@ class TestAggregateToInput(unittest.TestCase):
 
         result_df = aggregate_to_input_pl(self.df, "D", SERIES_CONF)
         # sort columns
-        result_df = result_df[expected_df.columns]
+        result_df = (
+            result_df[expected_df.columns]
+            .sort_values(by=["datetime", "product_id", "store_id"])
+            .reset_index(drop=True)
+        )
+        expected_df = expected_df.sort_values(
+            by=["datetime", "product_id", "store_id"]
+        ).reset_index(drop=True)
+
         assert_frame_equal(result_df, expected_df)
 
     def test_aggregate_monthly(self):
