@@ -4,7 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'mango/mango_base/**'
+      - 'mango/pyproject.toml'
+      - 'mango/mango/**'
       - '.github/workflows/**base**'
   push:
     branches:
@@ -18,30 +19,36 @@ jobs:
     strategy:
       max-parallel: 21
       matrix:
-        python-version: [3.8, 3.9, '3.10', '3.11']
-        os: [ubuntu-latest, windows-latest]
-        
+        python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r ./mango_base/requirements-dev.txt
-    - name: Run unit testing
-      run: |
-        coverage run --source=. --rcfile=./mango_base/.coveragerc -m unittest discover -t mango_base -s mango_base/mango/tests
-        coverage report -m
-        coverage xml
-    - name: Upload coverage to artifact
-      if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-report
-        path: coverage.xml
+      - uses: actions/checkout@v1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: './requirements-dev.txt'
+      - name: Install macOS dependencies
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install libomp
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./mango/requirements-dev.txt
+      - name: Run unit testing
+        run: |
+          coverage run --source=. --rcfile=./mango/.coveragerc -m unittest discover -t mango -s mango/mango/tests
+          coverage report -m
+          coverage xml
+      - name: Upload coverage to artifact
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   upload-coverage:
     name: Upload coverage to Codecov
@@ -59,13 +66,12 @@ jobs:
           flags: base-tests
           token: ${{ secrets.CODECOV_TOKEN }}
 
-
   setup-testing:
     name: Build the library to test that it gets correctly built
     needs: unit-testing
     defaults:
       run:
-        working-directory: ./mango_base
+        working-directory: ./mango
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

@@ -1,7 +1,15 @@
+Version 0.2.3
+==============
+
+**Released on Jul 23, 2024**
+
+Modified dependency versions in order to not have install issues.
+
+
 Version 0.2.2
 ==============
 
-**Release on Jul 4, 2024**
+**Released on Jul 4, 2024**
 
 Improvements to Table class and bugfixes:
 
