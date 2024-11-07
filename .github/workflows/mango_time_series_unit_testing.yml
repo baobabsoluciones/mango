@@ -16,6 +16,9 @@ jobs:
   unit-testing:
     name: Run all unit test suites
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./mango_time_series
     strategy:
       max-parallel: 21
       matrix:
@@ -30,11 +33,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          BRANCH = "${{ github.head_ref || github.ref_name }}"
           python -m pip install --upgrade pip
-          pip install -r ./mango_time_series/requirements-dev.txt
+          pip install -r ./requirements-dev.txt
+          pip uninstall mango -y
+          pip install -U "git+https://github.com/baobabsoluciones/mango@${BRANCH}#subdirectory=mango"
       - name: Run unit testing
         run: |
-          coverage run --source=. --rcfile=./mango_time_series/.coveragerc -m unittest discover -t mango_time_series -s mango_time_series/mango_time_series/tests
+          coverage run --source=. --rcfile=./.coveragerc -m unittest discover -s mango_time_series/tests
           coverage report -m
           coverage xml
       - name: Upload coverage to artifact
@@ -47,6 +53,9 @@ jobs:
   upload-coverage:
     name: Upload coverage to Codecov
     needs: unit-testing
+    defaults:
+      run:
+        working-directory: ./mango_time_series
     runs-on: ubuntu-latest
     steps:
       - name: Get artifact with the coverage
