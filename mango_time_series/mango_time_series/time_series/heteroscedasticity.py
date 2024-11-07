@@ -5,7 +5,7 @@ import statsmodels.api as sm
 from scipy.stats import boxcox, boxcox_normmax
 from statsmodels.stats.diagnostic import het_breuschpagan
 
-from mango_base.mango.logging.logger import get_basic_logger
+from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 

@@ -1,9 +1,9 @@
 import pandas as pd
 import polars as pl
 
-from mango_base.mango.logging import log_time
-from mango_base.mango.logging.logger import get_basic_logger
-from mango_time_series.mango.utils.processing_time_series import (
+from mango.logging import log_time
+from mango.logging.logger import get_basic_logger
+from mango_time_series.utils.processing_time_series import (
     create_dense_data_pl,
 )
 

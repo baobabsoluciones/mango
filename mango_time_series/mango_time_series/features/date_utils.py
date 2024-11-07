@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import polars as pl
 
-from mango_time_series.mango.features.calendar_features import get_calendar
+from mango_time_series.features.calendar_features import get_calendar
 
 
 def get_holidays_df(steps_back: int, steps_forward: int) -> pl.DataFrame:

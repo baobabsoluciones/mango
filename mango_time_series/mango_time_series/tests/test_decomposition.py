@@ -3,7 +3,7 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from mango_time_series.mango.time_series.decomposition import SeasonalityDecompose
+from mango_time_series.time_series.decomposition import SeasonalityDecompose
 
 
 class TestSeasonalityDecompose(TestCase):

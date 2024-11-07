@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from statsmodels.tsa.seasonal import STL, MSTL
 
-from mango_base.mango.logging.logger import get_basic_logger
-from mango_time_series.mango.time_series.heteroscedasticity import (
+from mango.logging.logger import get_basic_logger
+from mango_time_series.time_series.heteroscedasticity import (
     detect_and_transform_heteroscedasticity,
 )
 
