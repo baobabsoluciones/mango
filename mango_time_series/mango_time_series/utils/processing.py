@@ -1,9 +1,9 @@
 import pandas as pd
 import polars as pl
 
-from mango.logging import log_time
-from mango.logging.logger import get_basic_logger
-from mango_time_series.utils.processing_time_series import (
+from mango_base.mango.logging import log_time
+from mango_base.mango.logging.logger import get_basic_logger
+from mango_time_series.mango.utils.processing_time_series import (
     create_dense_data_pl,
 )
 
@@ -376,7 +376,7 @@ def process_time_series(
         id_cols=SERIES_CONF["KEY_COLS"],
         freq="d",
         min_max_by_id=True,
-        # date_end="2024-11-03",
+        date_end="2024-10-01",
         time_col="datetime",
     )
 
