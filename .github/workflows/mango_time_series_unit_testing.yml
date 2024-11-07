@@ -36,8 +36,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r ./requirements-dev.txt
           pip uninstall mango -y
-          BRANCH="${{ github.head_ref || github.ref_name }}"
           pip install -U "git+https://github.com/baobabsoluciones/mango@${BRANCH}#subdirectory=mango"
+        env:
+          BRANCH: "${{ github.head_ref || github.ref_name }}"
       - name: Run unit testing
         run: |
           coverage run --source=. --rcfile=./.coveragerc -m unittest discover -s mango_time_series/tests
