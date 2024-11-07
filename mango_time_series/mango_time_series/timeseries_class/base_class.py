@@ -6,6 +6,7 @@ class TimeSeriesProcessor:
     Base class for processing time series
     :param config: configuration object
     """
+
     def __init__(self, config):
         """
         Constructor

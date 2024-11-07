@@ -14,6 +14,7 @@ class SeriesConfiguration:
     :param time_col: time column
     :param value_col: value column
     """
+
     def __init__(
         self,
         key_cols: List[str],
