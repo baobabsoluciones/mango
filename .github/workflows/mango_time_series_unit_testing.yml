@@ -37,6 +37,7 @@ jobs:
           pip install -r ./requirements-dev.txt
           pip uninstall mango -y
           pip install -U "git+https://github.com/baobabsoluciones/mango@${BRANCH}#subdirectory=mango"
+        shell: bash
         env:
           BRANCH: "${{ github.head_ref || github.ref_name }}"
       - name: Run unit testing
