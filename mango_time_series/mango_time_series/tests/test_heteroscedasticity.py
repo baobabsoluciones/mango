@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from mango_time_series.mango.time_series.heteroscedasticity import (
+from mango_time_series.time_series.heteroscedasticity import (
     detect_and_transform_heteroscedasticity,
     apply_boxcox_with_lambda,
     get_optimal_lambda,

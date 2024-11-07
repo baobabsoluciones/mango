@@ -1,6 +1,6 @@
 from unittest import TestCase
 import numpy as np
-from mango_time_series.mango.time_series.seasonal import SeasonalityDetector
+from mango_time_series.time_series.seasonal import SeasonalityDetector
 
 
 class TestSeasonalityDetector(TestCase):
