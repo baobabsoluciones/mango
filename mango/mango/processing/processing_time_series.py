@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Dict
 
 import numpy as np
-from mango_base.mango.logging import log_time
+from mango.mango.logging import log_time
 
 try:
     import pandas as pd
