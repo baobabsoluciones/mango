@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import polars as pl
 
-from mango_time_series.mango.features.calendar_features import get_calendar
+from mango_time_series.mango_time_series.features.calendar_features import get_calendar
 
 
 def get_holidays_df(steps_back: int, steps_forward: int) -> pl.DataFrame:
@@ -16,11 +16,16 @@ def get_holidays_df(steps_back: int, steps_forward: int) -> pl.DataFrame:
     """
     start_year = 2014
     all_holidays = get_calendar(
-        "ES", start_year=start_year, communities=True, calendar_events=True, return_distances=True, distances_config={"steps_forward": steps_forward, "steps_back": steps_back}
+        "ES",
+        start_year=start_year,
+        communities=True,
+        calendar_events=True,
+        return_distances=True,
+        distances_config={"steps_forward": steps_forward, "steps_back": steps_back},
     )
     all_holidays = all_holidays[all_holidays["weight"] >= 0.5].copy()
     all_holidays = all_holidays[["date", "name", "distance"]]
-    
+
     # Drop duplicates
     all_holidays = all_holidays.drop_duplicates(subset=["date", "name"])
 
@@ -28,7 +33,7 @@ def get_holidays_df(steps_back: int, steps_forward: int) -> pl.DataFrame:
     all_holidays = pl.from_pandas(all_holidays).with_columns(
         pl.col("datetime").dt.date()
     )
-    
+
     # Pivot with date as index
     all_holidays = all_holidays.pivot(index="datetime", on="name", values="distance")
 
@@ -111,6 +116,4 @@ def get_mwc() -> pl.DataFrame:
         "name": ["MWC"] * 42,
         "distance": [0] * 42,
     }
-    return pl.DataFrame(data).with_columns(
-        pl.col("datetime").dt.date()
-    )
+    return pl.DataFrame(data).with_columns(pl.col("datetime").dt.date())

@@ -101,7 +101,7 @@ def calculate_min_diff_per_window(df):
 
 def render_script(models, horizon, step_size, n_windows, freq_code: str):
     with pkg_resources.path(
-        "mango_base.mango.dashboards.time_series_utils", "forecast_template.py.j2"
+        "mango_time_series.mango_time_series.dashboards.time_series_utils", "forecast_template.py.j2"
     ) as template_path:
         templateLoader = jinja2.FileSystemLoader(searchpath=template_path.parent)
         templateEnv = jinja2.Environment(loader=templateLoader)

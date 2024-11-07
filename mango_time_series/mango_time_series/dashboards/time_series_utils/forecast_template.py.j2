@@ -2,11 +2,9 @@ from typing import Dict, Union
 
 from statsforecast import StatsForecast
 from statsforecast.models import (
-
-{ % -
-for model_class in all_imports -%}
-{{model_class}}{% if not loop.last %}, {%endif %}
-{% - endfor - %}
+{%- for model_class in all_imports -%}
+    {{ model_class }}{% if not loop.last %}, {% endif %}
+{%- endfor -%}
 )
 
 # Crear el diccionario `default_models` con instancias de modelos
@@ -24,7 +22,7 @@ default_models: Dict[str, Union[
             {{ param_value.__class__.__name__ }}()  {# Agrega `()` para instanciar la clase #}
         {%- else -%}
             {{ param_value }} {# No es una clase de modelo, solo usa el valor tal cual #}
-        {%- endif -%}
+        {%- endif %}
         {% if not loop.last %}, {% endif %}
         {%- endif -%}
         {%- endfor -%}

@@ -10,8 +10,10 @@ import pandas as pd
 import plotly
 import streamlit as st
 from PIL import Image
-from mango_base.mango.processing import write_json, load_json
-from mango_base.mango.table import Table
+
+from mango.mango.processing import write_json
+from mango.mango.table import Table
+
 
 class DisplayablePath(object):
     display_filename_prefix_middle = "├──"
