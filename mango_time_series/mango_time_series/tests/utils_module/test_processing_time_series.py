@@ -2,7 +2,7 @@ import random
 from unittest import TestCase, mock
 
 from mango.data import get_ts_dataset
-from mango.processing import create_lags_col, create_recurrent_dataset
+from mango_time_series.utils.processing_time_series import create_lags_col, create_recurrent_dataset
 
 try:
     import pandas as pd
@@ -44,7 +44,7 @@ class ProcessingTests(TestCase):
 
             self.assertEqual(
                 str(context.exception),
-                "pandas need to be installed to use this function",
+                "pandas and numpy need to be installed to use this function",
             )
 
     def test_create_for_recurrent_network(self):
