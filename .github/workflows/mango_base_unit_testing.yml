@@ -44,6 +44,11 @@ jobs:
           coverage run --source=. --rcfile=./.coveragerc -m unittest discover -s mango/tests
           coverage report -m
           coverage xml
+      - name: List files in working directory
+        run: |
+          ls -R  # List all files and directories recursively
+        shell: bash
+
       - name: Upload coverage to artifact
         if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
