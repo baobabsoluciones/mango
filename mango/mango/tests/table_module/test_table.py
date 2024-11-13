@@ -164,7 +164,7 @@ class TestTable(TestCase):
         def try_mutate():
             return Table(self.default_data).mutate(points=points)
 
-        self.assertRaises(TypeError, try_mutate,msg=msg)
+        self.assertRaises(TypeError, try_mutate, msg=msg)
 
     def test_mutate_func(self):
         msg = "mutate with a function for the new column."
@@ -1535,18 +1535,23 @@ class TestTable(TestCase):
 
     def test_col_apply(self):
         msg = "apply a function to a column"
-        result = Table(self.default_data).col_apply("Age",str)
+        result = Table(self.default_data).col_apply("Age", str)
         expected = [
-        {"Name": "Albert", "Age": "20"},
-        {"Name": "Bernard", "Age": "25"},
-        {"Name": "Charlie", "Age": "30"},
-        {"Name": "Daniel", "Age": "35"},
+            {"Name": "Albert", "Age": "20"},
+            {"Name": "Bernard", "Age": "25"},
+            {"Name": "Charlie", "Age": "30"},
+            {"Name": "Daniel", "Age": "35"},
         ]
         self.assertEqual(result, expected, msg=msg)
 
+
 def test_col_apply_2(self):
     msg = "apply a function to a list of column"
-    result = Table(self.default_data).col_apply("Age", str).col_apply(["Age", "Name"], lambda v: v[0])
+    result = (
+        Table(self.default_data)
+        .col_apply("Age", str)
+        .col_apply(["Age", "Name"], lambda v: v[0])
+    )
     expected = [
         {"Name": "A", "Age": "2"},
         {"Name": "B", "Age": "2"},

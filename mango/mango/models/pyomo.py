@@ -268,6 +268,7 @@ def solver_result_to_json(result, path):
     :param path: path of the file
     :return: nothing
     """
+
     def get_val(v):
         try:
             if isinstance(v.value, UndefinedData):
