@@ -28,9 +28,6 @@ from mango_time_series.dashboards.time_series_utils.ui_components import (
     plot_error_visualization,
     adapt_values_based_on_series_length,
 )
-from mango_time_series.dashboards.time_series_utils.ui_text_catala import (
-    UI_TEXT as UI_TEXT_CATALA,
-)
 from mango_time_series.dashboards.time_series_utils.ui_text_en import (
     UI_TEXT as UI_TEXT_EN,
 )
@@ -56,7 +53,7 @@ def interface_visualization(project_name: str = None):
 
     # Language selector
     language = st.sidebar.selectbox(
-        "Language / Idioma / Llengua", ["English", "Español", "Català"]
+        "Language / Idioma / Llengua", ["English", "Español"]
     )
 
     # Load appropriate UI text
@@ -64,8 +61,6 @@ def interface_visualization(project_name: str = None):
         UI_TEXT = UI_TEXT_EN
     elif language == "Español":
         UI_TEXT = UI_TEXT_ES
-    elif language == "Català":
-        UI_TEXT = UI_TEXT_CATALA
     else:
         UI_TEXT = UI_TEXT_EN
 
