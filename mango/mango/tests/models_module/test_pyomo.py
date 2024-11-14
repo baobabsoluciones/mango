@@ -91,7 +91,9 @@ class TestTools(TestCase):
         )
         variables_to_excel(instance, path, file_name="variables_test.xlsx")
 
-        instance_result = instance_from_excel(deepcopy(self.instance), path, file_name="variables_test.xlsx")
+        instance_result = instance_from_excel(
+            deepcopy(self.instance), path, file_name="variables_test.xlsx"
+        )
         result = var_to_table(
             instance_result.vVariable,
             ["sSet", "Value"],

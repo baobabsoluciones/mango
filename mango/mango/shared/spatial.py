@@ -3,9 +3,11 @@ from .decorators import pydantic_validation
 from pydantic import BaseModel, confloat
 from typing import Tuple
 
+
 class HaversineArgs(BaseModel):
-    point1: Tuple[confloat(ge=-90.0, le=90.0),confloat(ge=-180.0, le=180.0)]
-    point2: Tuple[confloat(ge=-90.0, le=90.0),confloat(ge=-180.0, le=180.0)]
+    point1: Tuple[confloat(ge=-90.0, le=90.0), confloat(ge=-180.0, le=180.0)]
+    point2: Tuple[confloat(ge=-90.0, le=90.0), confloat(ge=-180.0, le=180.0)]
+
 
 @pydantic_validation(HaversineArgs)
 def haversine(point1, point2) -> float:

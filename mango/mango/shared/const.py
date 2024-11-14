@@ -1,6 +1,7 @@
 """
 ARCGIS CONSTANTS
 """
+
 ARCGIS_TOKEN_URL = "https://www.arcgis.com/sharing/rest/oauth2/token"
 ARCGIS_GEOCODE_URL = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates"
 ARCGIS_ODMATRIX_DIRECT_URL = (

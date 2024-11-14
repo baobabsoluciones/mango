@@ -1,4 +1,5 @@
 """ This file contains the constants used to validate the configuration parameters for the config """
+
 INDIVIDUAL_ENCODINGS = ["real", "binary", "integer", "categorical"]
 SELECTION_METHODS = ["roulette", "tournament", "rank", "random", "elitism", "order"]
 CROSSOVER_METHODS = [

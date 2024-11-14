@@ -3,6 +3,7 @@ from logging import log
 from typing import Union
 
 import pandas as pd
+
 # Import from external modules
 import plotly.express as px
 from bs4 import BeautifulSoup
