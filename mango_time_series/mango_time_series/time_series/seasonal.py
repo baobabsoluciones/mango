@@ -1,8 +1,7 @@
 import numpy as np
+from mango.logging.logger import get_basic_logger
 from scipy.signal import periodogram
 from statsmodels.tsa.stattools import acf
-
-from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 
@@ -63,9 +62,7 @@ class SeasonalityDetector:
                 acf_values[valid_period_lags] > acf_threshold
             )
 
-            if (
-                significant_multiples >= min_repetitions
-            ):  # Only consider the period if enough multiples are significant
+            if significant_multiples >= min_repetitions:
                 return most_common_period
             else:
                 return 0
