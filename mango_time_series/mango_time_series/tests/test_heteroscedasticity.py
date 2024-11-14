@@ -1,6 +1,5 @@
-from unittest import TestCase
-
 import numpy as np
+from unittest import TestCase
 
 from mango_time_series.time_series.heteroscedasticity import (
     detect_and_transform_heteroscedasticity,
@@ -22,13 +21,6 @@ class TestHeteroscedasticityTester(TestCase):
         ) + np.random.normal(0, 1, 100)
         # Generate homoscedasticity data
         self.series_without_heteroscedasticity = np.random.normal(0, 1, 100)
-
-        # self.df_heteroscedastic = pl.DataFrame(
-        #     {"target": self.series_with_heteroscedasticity}
-        # )
-        # self.df_homoscedastic = pl.DataFrame(
-        #     {"target": self.series_without_heteroscedasticity}
-        # )
 
     def test_get_optimal_lambda_with_negative_values(self):
         """

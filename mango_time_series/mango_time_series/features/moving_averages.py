@@ -1,9 +1,7 @@
-import re
-
 import polars as pl
-
-from mango.mango.logging import log_time
-from mango.mango.logging.logger import get_basic_logger
+import re
+from mango.logging import log_time
+from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 
@@ -78,7 +76,7 @@ def create_recent_variables(
         rolling_col_name = f"y_{colname}roll_{w}"
         variables_df = variables_df.with_columns(
             pl.col("y")
-            .shift(gap)  # Shift values by the gap to exclude the current row
+            .shift(gap)
             .rolling_mean(window_size=w)
             .over(group_cols)
             .alias(rolling_col_name)
@@ -88,10 +86,7 @@ def create_recent_variables(
     for l in lags:
         lag_col_name = f"y_{colname}lag_{l*freq}"
         variables_df = variables_df.with_columns(
-            pl.col("y")
-            .shift(gap - 1 + l)  # Shift values by the gap to exclude the current row
-            .over(group_cols)
-            .alias(lag_col_name)
+            pl.col("y").shift(gap - 1 + l).over(group_cols).alias(lag_col_name)
         )
 
     variables_df = variables_df.drop("y")
@@ -124,7 +119,6 @@ def create_recent_variables(
 def create_seasonal_variables(
     df: pl.LazyFrame,
     SERIES_CONF: dict,
-    # group_cols: list,
     window: list,
     lags: list,
     season_unit: str,
@@ -137,10 +131,11 @@ def create_seasonal_variables(
     by the key columns in SERIES_CONF.
 
     :param df: pd.DataFrame
-    :param group_cols: list of columns to group by
+    :param SERIES_CONF: dictionary with the configuration of the series.
     :param window: list of integers specifying the rolling window sizes in time unit.
     :param lags: list of integers specifying the lag sizes in time unit.
     :param season_unit: string specifying the unit of the seasonality.
+    :param freq: integer specifying the frequency of the seasonality.
     :param gap: integer specifying how many previous rows to start the window from, excluding the current row.
     :return: pd.DataFrame with new columns for each rolling average.
     """

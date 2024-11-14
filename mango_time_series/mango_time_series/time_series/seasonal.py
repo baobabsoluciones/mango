@@ -1,8 +1,7 @@
 import numpy as np
+from mango.logging.logger import get_basic_logger
 from scipy.signal import periodogram
 from statsmodels.tsa.stattools import acf
-
-from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 

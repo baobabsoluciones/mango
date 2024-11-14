@@ -3,8 +3,8 @@ import re
 import pandas as pd
 import polars as pl
 
-from mango.mango.logging import log_time
-from mango.mango.logging.logger import get_basic_logger
+from mango.logging import log_time
+from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 

@@ -1,7 +1,7 @@
 import logging
 import warnings
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 
@@ -234,9 +234,6 @@ def add_covid_mark(df: pl.LazyFrame) -> pl.LazyFrame:
     return df
 
 
-from typing import List
-
-
 def create_lags_col(
     df: pd.DataFrame,
     col: str,
@@ -361,10 +358,16 @@ def series_as_rows(df, SERIES_CONF):
 
 
 def process_time_series(
-    df,
-    SERIES_CONF,
-    # add_kwargs
+    df: Union[pd.DataFrame, pl.DataFrame, pl.LazyFrame],
+    SERIES_CONF: Dict,
 ):
+    """
+    Process the time series data
+
+    :param df: pd.DataFrame with the sales information
+    :param SERIES_CONF: dict with the configuration of the series
+    :return: pd.DataFrame
+    """
     # if df is a pd.DataFrame then convert to pl.DataFrame
     if isinstance(df, pd.DataFrame):
         df = pl.from_pandas(df).lazy()
