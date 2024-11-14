@@ -5,6 +5,8 @@ on:
     branches:
       - master
       - develop
+  
+  workflow_dispatch:
 
 jobs:
   unit-testing:
@@ -33,12 +35,13 @@ jobs:
           BRANCH: "${{ github.head_ref || github.ref_name }}"
       - name: Run base unit testing
         run: |
-          coverage run --source=. --rcfile=./mango/.coveragerc -m unittest discover -t mango -s mango/mango/tests
+          cd mango
+          coverage run --source=. --rcfile=./.coveragerc -m unittest discover -s mango/tests
           coverage report -m
-
       - name: Run time series unit testing
         run: |
-          coverage run -a --source=. --rcfile=./mango_time_series/.coveragerc -m unittest discover -t mango_time_series -s mango_time_series/mango_time_series/tests
+          cd mango_time_series
+          coverage run --source=. --rcfile=./.coveragerc -m unittest discover -s mango_time_series/tests
           coverage report -m
           coverage xml
       - name: Upload coverage to artifact
