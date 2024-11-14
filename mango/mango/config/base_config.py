@@ -1,6 +1,7 @@
 """
 This file contains the classes that are used to parse the configuration files
 """
+
 import json
 import os
 import warnings
