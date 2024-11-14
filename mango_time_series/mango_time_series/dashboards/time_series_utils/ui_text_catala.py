@@ -192,5 +192,5 @@ UI_TEXT = {
     "downloaded": "Script descarregat amb èxit.",
     "periods_detec": "No s'han detectat períodes estacionals significatius.",
     "no_periods_detec": "No s'han detectat períodes estacionals significatius.",
-
+    "experimental_features_warning": "Característiques experimentals no activades. Si us plau, activeu la variable d'entorn 'ENABLE_EXPERIMENTAL_FEATURES' per accedir a aquestes funcionalitats.",
 }

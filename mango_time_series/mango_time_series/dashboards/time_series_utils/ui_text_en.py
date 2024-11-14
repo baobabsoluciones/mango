@@ -6,7 +6,6 @@ UI_TEXT = {
     "upload_instructions": "Drag and drop a file here or click to upload",
     "file_limits": "Maximum {} MB per file.",
     "no_files_uploaded": "No files uploaded.",
-
     # Series Selection
     "select_series": "Select series to analyze",
     "choose_column": "Choose {}:",
@@ -15,7 +14,6 @@ UI_TEXT = {
     "remove_all_series": "Remove all selected series",
     "no_series_selected": "No series selected",
     "no_columns_to_filter": "No columns to filter. Only one series detected",
-
     # Plot Options
     "choose_plot": "Select the plot",
     "plot_options": [
@@ -24,7 +22,7 @@ UI_TEXT = {
         "STL",
         "Lag analysis",
         "Seasonality boxplot",
-        "Periodogram"
+        "Periodogram",
     ],
     "choose_years": "Choose years to visualize",
     "select_frequency": "Select frequency",
@@ -36,21 +34,26 @@ UI_TEXT = {
         "y_axis": "y",
         "day_of_year_axis": "Day of year",
         "day_of_week_axis": "Day of week",
-        "month_axis": "Month"
+        "month_axis": "Month",
     },
-
     # Visualization
     "select_visualization": "Select visualization",
     "visualization_options": ["Exploration", "Forecast"],
     "select_temporal_grouping": "Select temporal grouping of data",
-    "temporal_grouping_options": ["Hourly", "Daily", "Weekly", "Monthly", "Quarterly", "Yearly"],
+    "temporal_grouping_options": [
+        "Hourly",
+        "Daily",
+        "Weekly",
+        "Monthly",
+        "Quarterly",
+        "Yearly",
+    ],
     "hourly": "Hourly",
     "daily": "Daily",
     "weekly": "Weekly",
     "monthly": "Monthly",
     "quarterly": "Quarterly",
     "yearly": "Yearly",
-
     # Errors and Warnings
     "stl_error": "STL decomposition cannot be performed for the selected series, try another level of temporal aggregation.",
     "boxplot_error": "An appropriate boxplot cannot be displayed for the selected granularity.",
@@ -59,12 +62,10 @@ UI_TEXT = {
     "f_column_missing": "The 'f' column is not present, so errors will not be calculated.",
     "exploration_mode": "The current mode is 'Exploration', forecast columns and errors will not be calculated.",
     "visualization_not_implemented": "The visualization '{}' is not implemented. Please select '{}' or '{}'.",
-
     # Forecast
     "forecast_plot_title": "Forecast plot",
     "select_series_to_plot": "Select at least one series to plot the forecast",
     "choose_date": "Choose a date",
-
     # Error Visualization
     "error_visualization_title": "Error visualization",
     "select_date_range": "Select date range (datetime column) to visualize forecast errors",
@@ -82,7 +83,6 @@ UI_TEXT = {
     "datetime_boxplot_title": "Box plot by datetime",
     "select_temporal_aggregation": "Select temporal aggregation for the boxplot",
     "temporal_aggregation_options": ["Daily", "Monthly"],
-
     # Labels
     "axis_labels": {
         "date": "Date",
@@ -101,7 +101,6 @@ UI_TEXT = {
         "err": "Error",
         "weekday": "Weekday",
     },
-
     # File Upload
     "preview_title": "Preview",
     "upload_file": "Upload a file",
@@ -121,29 +120,57 @@ UI_TEXT = {
     "separator_help": "e.g., ',', ';', '|', '\\t'",
     "update_file": "Update file",
     "remove_file": "Remove file",
-
     # Time-related dictionaries
     "DAY_NAME_DICT": {
-        0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday",
-        4: "Friday", 5: "Saturday", 6: "Sunday",
+        0: "Monday",
+        1: "Tuesday",
+        2: "Wednesday",
+        3: "Thursday",
+        4: "Friday",
+        5: "Saturday",
+        6: "Sunday",
     },
     "MONTH_NAME_DICT": {
-        1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
-        7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December",
+        1: "January",
+        2: "February",
+        3: "March",
+        4: "April",
+        5: "May",
+        6: "June",
+        7: "July",
+        8: "August",
+        9: "September",
+        10: "October",
+        11: "November",
+        12: "December",
     },
     "ALL_DICT": {
         "Daily": {
-            0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday",
-            4: "Friday", 5: "Saturday", 6: "Sunday",
+            0: "Monday",
+            1: "Tuesday",
+            2: "Wednesday",
+            3: "Thursday",
+            4: "Friday",
+            5: "Saturday",
+            6: "Sunday",
         },
         "Monthly": {
-            1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
-            7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December",
+            1: "January",
+            2: "February",
+            3: "March",
+            4: "April",
+            5: "May",
+            6: "June",
+            7: "July",
+            8: "August",
+            9: "September",
+            10: "October",
+            11: "November",
+            12: "December",
         },
     },
     "day": "Day",
     "month": "Month",
-
     # New entries
     "select_filter_type": "Select filter type:",
     "datetime_filter": "Filter by datetime",
@@ -171,6 +198,7 @@ UI_TEXT = {
     "activate_button_train": "Activate forecast",
     "jinja_template": "Download forecast script",
     "downloaded": "Script downloaded successfully.",
+    "experimental_features_warning": "Experimental features not enabled. Please set the 'ENABLE_EXPERIMENTAL_FEATURES' environment variable to access these functionalities.",
     "stl": {
         "title": "STL",
         "periods_detected": "Detected periods:",
@@ -180,8 +208,8 @@ UI_TEXT = {
             "original": "Original Series",
             "trend": "Trend",
             "seasonal": "Seasonality",
-            "residual": "Residuals"
-        }
+            "residual": "Residuals",
+        },
     },
     "periodogram": {
         "title": "Periodogram",
@@ -191,11 +219,10 @@ UI_TEXT = {
         "yaxis_title": "Power",
         "power_spectrum": "Power Spectrum",
     },
-
     "lag_analysis": {
         "lag_analysis_components": {
             "acf": "Autocorrelation Function (ACF)",
-            "pacf": "Partial Autocorrelation Function (PACF)"
+            "pacf": "Partial Autocorrelation Function (PACF)",
         }
     },
 }

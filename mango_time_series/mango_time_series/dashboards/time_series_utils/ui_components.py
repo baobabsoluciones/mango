@@ -1,4 +1,5 @@
 import copy
+import os
 
 import numpy as np
 import pandas as pd
@@ -15,6 +16,7 @@ from .data_processing import (
 )
 from ...time_series.decomposition import SeasonalityDecompose
 from ...time_series.seasonal import SeasonalityDetector
+from ...utils.utils import cast_env_to_bool
 
 
 def select_series(data, columns, UI_TEXT):
@@ -49,7 +51,8 @@ def plot_time_series(
     seasonality_decompose = SeasonalityDecompose()
     seasonality_detector = SeasonalityDetector()
 
-    if select_plot == UI_TEXT["plot_options"][0]:  # "Original series"
+    # "Original series"
+    if select_plot == UI_TEXT["plot_options"][0]:
         date_range = date_range_picker(
             picker_type=PickerType.date,
             start=time_series["datetime"].min(),
@@ -81,6 +84,7 @@ def plot_time_series(
                 ),
                 use_container_width=True,
             )
+    # "Series by year"
     elif select_plot == UI_TEXT["plot_options"][1]:
         st.markdown(
             """
@@ -94,7 +98,6 @@ def plot_time_series(
             """,
             unsafe_allow_html=True,
         )
-        # "Series by year"
         options = st.multiselect(
             UI_TEXT["choose_years"],
             sorted(time_series["datetime"].dt.year.unique(), reverse=True),
@@ -120,7 +123,11 @@ def plot_time_series(
                     ),
                     use_container_width=True,
                 )
-    elif select_plot == UI_TEXT["plot_options"][2]:  # "STL"
+    # STL
+    elif select_plot == UI_TEXT["plot_options"][2]:
+        if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
+            st.write(UI_TEXT["experimental_features_warning"])
+            return
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -192,8 +199,8 @@ def plot_time_series(
             )
 
             st.plotly_chart(fig, use_container_width=True)
-
-    elif select_plot == UI_TEXT["plot_options"][3]:  # "Lag analysis"
+    # "Lag analysis"
+    elif select_plot == UI_TEXT["plot_options"][3]:
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -340,7 +347,8 @@ def plot_time_series(
 
             st.plotly_chart(fig, use_container_width=True)
 
-    elif select_plot == UI_TEXT["plot_options"][4]:  # "Seasonality boxplot"
+    # "Seasonality boxplot"
+    elif select_plot == UI_TEXT["plot_options"][4]:
         selected_granularity = select_agr_tmp
 
         if selected_granularity == UI_TEXT["daily"]:
@@ -398,7 +406,11 @@ def plot_time_series(
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-    elif select_plot == UI_TEXT["plot_options"][5]:  # "Periodograma"
+    # "Periodogram"
+    elif select_plot == UI_TEXT["plot_options"][5]:
+        if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
+            st.write(UI_TEXT["experimental_features_warning"])
+            return
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
