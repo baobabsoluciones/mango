@@ -212,6 +212,9 @@ def plot_time_series(
             filter_cond = filter_cond[:-3]
             if filter_cond:
                 selected_data = selected_data.query(filter_cond)
+
+            if "uid" in selected_data.columns:
+                selected_data = selected_data.drop(columns=["uid"])
             selected_data_lags = selected_data.set_index("datetime")
             selected_data_lags = selected_data_lags.asfreq(
                 select_agr_tmp_dict[select_agr_tmp]
@@ -381,8 +384,8 @@ def plot_time_series(
                 selected_data["day_of_year"] = selected_data.index.dayofyear
                 fig = px.box(
                     selected_data,
-                    x=UI_TEXT["boxplot_titles"]["day_of_year_axis"],
-                    y=UI_TEXT["boxplot_titles"]["y_axis"],
+                    x="day_of_year",
+                    y="y",
                     title=UI_TEXT["boxplot_titles"]["daily"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -391,8 +394,8 @@ def plot_time_series(
                 selected_data["day_of_week"] = selected_data.index.weekday
                 fig = px.box(
                     selected_data,
-                    x=UI_TEXT["boxplot_titles"]["day_of_week_axis"],
-                    y=UI_TEXT["boxplot_titles"]["y_axis"],
+                    x="day_of_week",
+                    y="y",
                     title=UI_TEXT["boxplot_titles"]["weekly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -401,8 +404,8 @@ def plot_time_series(
                 selected_data["month"] = selected_data.index.month
                 fig = px.box(
                     selected_data,
-                    x=UI_TEXT["boxplot_titles"]["month_axis"],
-                    y=UI_TEXT["boxplot_titles"]["y_axis"],
+                    x="month",
+                    y="y",
                     title=UI_TEXT["boxplot_titles"]["monthly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
