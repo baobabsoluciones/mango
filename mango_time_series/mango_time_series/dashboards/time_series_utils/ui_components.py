@@ -1,5 +1,4 @@
 import copy
-import os
 
 import numpy as np
 import pandas as pd
@@ -126,8 +125,10 @@ def plot_time_series(
     # STL
     elif select_plot == UI_TEXT["plot_options"][2]:
         if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
-            st.write(UI_TEXT["experimental_features_warning"])
+            st.warning(UI_TEXT["experimental_features_warning"], icon="⚠️")
             return
+        else:
+            st.info(UI_TEXT["experimental_features_info"], icon="ℹ️")
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -409,8 +410,10 @@ def plot_time_series(
     # "Periodogram"
     elif select_plot == UI_TEXT["plot_options"][5]:
         if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
-            st.write(UI_TEXT["experimental_features_warning"])
+            st.warning(UI_TEXT["experimental_features_warning"], icon="⚠️")
             return
+        else:
+            st.info(UI_TEXT["experimental_features_info"], icon="ℹ️")
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""

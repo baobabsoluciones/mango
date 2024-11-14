@@ -199,6 +199,7 @@ UI_TEXT = {
     "jinja_template": "Download forecast script",
     "downloaded": "Script downloaded successfully.",
     "experimental_features_warning": "Experimental features not enabled. Please set the 'ENABLE_EXPERIMENTAL_FEATURES' environment variable to access these functionalities.",
+    "experimental_features_info": "Experimental features are enabled. The following functionalities might have errors or unexpected behavior.",
     "stl": {
         "title": "STL",
         "periods_detected": "Detected periods:",
