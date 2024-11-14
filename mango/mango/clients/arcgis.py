@@ -55,7 +55,7 @@ class ArcGisClient:
                 f"There was an error on login into ArcGis: {response.json()}. Exception: {e}"
             )
 
-    def get_geolocation(self, address: str, country: str="ESP") -> tuple:
+    def get_geolocation(self, address: str, country: str = "ESP") -> tuple:
         """
         Get the geolocation of an address.
 

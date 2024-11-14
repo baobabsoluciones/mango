@@ -331,9 +331,9 @@ class ShapAnalyzer:
         shap.summary_plot(
             self.shap_values,
             plot_type="bar",
-            class_names=self._model.classes_
-            if self._problem_type != "regression"
-            else None,
+            class_names=(
+                self._model.classes_ if self._problem_type != "regression" else None
+            ),
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
             **kwargs,
@@ -342,9 +342,11 @@ class ShapAnalyzer:
         if file_path_save != None:
             self._save_fig(
                 title="Bar Summary Plot",
-                file_path_save=f"{file_path_save}.png"
-                if not file_path_save.endswith(".png")
-                else file_path_save,
+                file_path_save=(
+                    f"{file_path_save}.png"
+                    if not file_path_save.endswith(".png")
+                    else file_path_save
+                ),
             )
 
     def summary_plot(
@@ -370,9 +372,11 @@ class ShapAnalyzer:
                 )
 
         shap.summary_plot(
-            self.shap_values[self._get_class_index(class_name)]
-            if self._problem_type != "regression"
-            else self.shap_values,
+            (
+                self.shap_values[self._get_class_index(class_name)]
+                if self._problem_type != "regression"
+                else self.shap_values
+            ),
             self._x_transformed,
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
@@ -381,12 +385,16 @@ class ShapAnalyzer:
 
         if file_path_save != None:
             self._save_fig(
-                title=f"Summary Plot class {self._model.classes_[self._get_class_index(class_name)]}"
-                if self._problem_type != "regression"
-                else "Summary Plot",
-                file_path_save=f"{file_path_save}.png"
-                if not file_path_save.endswith(".png")
-                else file_path_save,
+                title=(
+                    f"Summary Plot class {self._model.classes_[self._get_class_index(class_name)]}"
+                    if self._problem_type != "regression"
+                    else "Summary Plot"
+                ),
+                file_path_save=(
+                    f"{file_path_save}.png"
+                    if not file_path_save.endswith(".png")
+                    else file_path_save
+                ),
             )
 
     def waterfall_plot(self, query: str, path_save: str = None, **kwargs):
@@ -474,9 +482,11 @@ class ShapAnalyzer:
         """
         shap.dependence_plot(
             feature,
-            self.shap_values[self._get_class_index(class_name)]
-            if self._problem_type != "regression"
-            else self.shap_values,
+            (
+                self.shap_values[self._get_class_index(class_name)]
+                if self._problem_type != "regression"
+                else self.shap_values
+            ),
             self._x_transformed,
             interaction_index=interaction_feature,
             feature_names=self._feature_names,
@@ -485,9 +495,11 @@ class ShapAnalyzer:
         )
         if file_path_save != None:
             self._save_fig(
-                title=f"Partial dependence plot: {feature} and {interaction_feature}"
-                if interaction_feature != None
-                else f"Partial dependence plot: {feature}",
+                title=(
+                    f"Partial dependence plot: {feature} and {interaction_feature}"
+                    if interaction_feature != None
+                    else f"Partial dependence plot: {feature}"
+                ),
                 file_path_save=file_path_save,
             )
 
