@@ -24,6 +24,7 @@ UI_TEXT = {
         "STL",
         "Lag analysis",
         "Seasonality boxplot",
+        "Periodogram"
     ],
     "choose_years": "Choose years to visualize",
     "select_frequency": "Select frequency",
@@ -32,6 +33,10 @@ UI_TEXT = {
         "daily": "Daily boxplot",
         "weekly": "Weekly boxplot",
         "monthly": "Monthly boxplot",
+        "y_axis": "y",
+        "day_of_year_axis": "Day of year",
+        "day_of_week_axis": "Day of week",
+        "month_axis": "Month"
     },
 
     # Visualization
@@ -165,5 +170,32 @@ UI_TEXT = {
     "documentation": "See documentation",
     "activate_button_train": "Activate forecast",
     "jinja_template": "Download forecast script",
-    "downloaded": "Script downloaded successfully."
+    "downloaded": "Script downloaded successfully.",
+    "stl": {
+        "title": "STL",
+        "periods_detected": "Detected periods:",
+        "periods_detec": "No significant seasonal periods detected.",
+        "no_periods_detec": "STL decomposition cannot be performed with the selected settings.",
+        "stl_components": {
+            "original": "Original Series",
+            "trend": "Trend",
+            "seasonal": "Seasonality",
+            "residual": "Residuals"
+        }
+    },
+    "periodogram": {
+        "title": "Periodogram",
+        "significant_periods": "Highlighted periods in the periodogram:",
+        "percentile_threshold": "99th Percentile Threshold",
+        "xaxis_title": "Period",
+        "yaxis_title": "Power",
+        "power_spectrum": "Power Spectrum",
+    },
+
+    "lag_analysis": {
+        "lag_analysis_components": {
+            "acf": "Autocorrelation Function (ACF)",
+            "pacf": "Partial Autocorrelation Function (PACF)"
+        }
+    },
 }

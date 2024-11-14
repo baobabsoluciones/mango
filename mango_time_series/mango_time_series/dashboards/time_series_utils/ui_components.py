@@ -7,13 +7,14 @@ import plotly.graph_objs as go
 import plotly.subplots as sp
 import streamlit as st
 from plotly.subplots import make_subplots
-from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import acf, pacf
 from streamlit_date_picker import date_range_picker, PickerType
 
 from .data_processing import (
     calculate_min_diff_per_window,
 )
+from ...time_series.decomposition import SeasonalityDecompose
+from ...time_series.seasonal import SeasonalityDetector
 
 
 def select_series(data, columns, UI_TEXT):
@@ -45,6 +46,8 @@ def plot_time_series(
         UI_TEXT["plot_options"],
         label_visibility="collapsed",
     )
+    seasonality_decompose = SeasonalityDecompose()
+    seasonality_detector = SeasonalityDetector()
 
     if select_plot == UI_TEXT["plot_options"][0]:  # "Original series"
         date_range = date_range_picker(
@@ -132,30 +135,47 @@ def plot_time_series(
             selected_data_stl = selected_data_stl.asfreq(
                 select_agr_tmp_dict[select_agr_tmp]
             )
+            ts_data = selected_data_stl["y"].ffill().values
+            detected_periods = seasonality_detector.detect_seasonality(ts=ts_data)
+            if detected_periods:
+                st.write(f"{UI_TEXT['stl']['periods_detected']} {detected_periods}")
+            else:
+                st.write(UI_TEXT["stl"]["periods_detec"])
 
-            # Descomposición STL
             try:
-                stl = STL(selected_data_stl["y"].ffill())
-                result = stl.fit()
+                if len(detected_periods) == 1:
+                    # Descomposición STL si hay solo un período detectado
+                    trend, seasonal, resid = seasonality_decompose.decompose_stl(
+                        selected_data_stl["y"].ffill(), period=detected_periods[0]
+                    )
+                elif len(detected_periods) > 1:
+                    # Descomposición MSTL si hay múltiples períodos detectados
+                    trend, seasonal, resid = seasonality_decompose.decompose_mstl(
+                        selected_data_stl["y"].ffill(), periods=detected_periods
+                    )
+                else:
+                    st.write(UI_TEXT["stl"]["periods_detected"])
+                    continue
             except ValueError:
-                st.write(
-                    "No se puede realizar la descomposición STL para la serie seleccionada, "
-                    "prueba otro nivel de agregación temporal."
-                )
+                st.write(UI_TEXT["stl"]["no_periods_detec"])
                 continue
-            fig1 = px.line(result.observed, title="Serie original")
-            fig2 = px.line(result.trend, title="Tendencia")
-            fig3 = px.line(result.seasonal, title="Estacionalidad")
-            fig4 = px.line(result.resid, title="Residuales")
+
+            fig1 = px.line(
+                selected_data_stl["y"],
+                title=UI_TEXT["stl"]["stl_components"]["original"],
+            )
+            fig2 = px.line(trend, title=UI_TEXT["stl"]["stl_components"]["trend"])
+            fig3 = px.line(seasonal, title=UI_TEXT["stl"]["stl_components"]["seasonal"])
+            fig4 = px.line(resid, title=UI_TEXT["stl"]["stl_components"]["residual"])
             # Put each plot in a subplot
             fig = sp.make_subplots(
                 rows=4,
                 cols=1,
                 subplot_titles=[
-                    "Serie Original",
-                    "Tendencia",
-                    "Estacionalidad",
-                    "Residuales",
+                    UI_TEXT["stl"]["stl_components"]["original"],
+                    UI_TEXT["stl"]["stl_components"]["trend"],
+                    UI_TEXT["stl"]["stl_components"]["seasonal"],
+                    UI_TEXT["stl"]["stl_components"]["residual"],
                 ],
                 shared_xaxes=True,
             )
@@ -206,8 +226,8 @@ def plot_time_series(
                 cols=1,
                 shared_xaxes=True,
                 subplot_titles=(
-                    "Autocorrelation Function (ACF)",
-                    "Partial Autocorrelation Function (PACF)",
+                    UI_TEXT["lag_analysis"]["lag_analysis_components"]["acf"],
+                    UI_TEXT["lag_analysis"]["lag_analysis_components"]["pacf"],
                 ),
             )
 
@@ -217,7 +237,7 @@ def plot_time_series(
                     y=acf_array[0],
                     mode="markers",
                     marker=dict(color="#1f77b4", size=12),
-                    name="ACF",
+                    name=UI_TEXT["lag_analysis"]["lag_analysis_components"]["acf"],
                     showlegend=False,
                 ),
                 row=1,
@@ -255,7 +275,7 @@ def plot_time_series(
                     y=pacf_array[0],
                     mode="markers",
                     marker=dict(color="#1f77b4", size=12),
-                    name="PACF",
+                    name=UI_TEXT["lag_analysis"]["lag_analysis_components"]["pacf"],
                     showlegend=False,
                 ),
                 row=2,
@@ -352,8 +372,8 @@ def plot_time_series(
                 selected_data["day_of_year"] = selected_data.index.dayofyear
                 fig = px.box(
                     selected_data,
-                    x="day_of_year",
-                    y="y",
+                    x=UI_TEXT["boxplot_titles"]["day_of_year_axis"],
+                    y=UI_TEXT["boxplot_titles"]["y_axis"],
                     title=UI_TEXT["boxplot_titles"]["daily"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -362,8 +382,8 @@ def plot_time_series(
                 selected_data["day_of_week"] = selected_data.index.weekday
                 fig = px.box(
                     selected_data,
-                    x="day_of_week",
-                    y="y",
+                    x=UI_TEXT["boxplot_titles"]["day_of_week_axis"],
+                    y=UI_TEXT["boxplot_titles"]["y_axis"],
                     title=UI_TEXT["boxplot_titles"]["weekly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -372,11 +392,98 @@ def plot_time_series(
                 selected_data["month"] = selected_data.index.month
                 fig = px.box(
                     selected_data,
-                    x="month",
-                    y="y",
+                    x=UI_TEXT["boxplot_titles"]["month_axis"],
+                    y=UI_TEXT["boxplot_titles"]["y_axis"],
                     title=UI_TEXT["boxplot_titles"]["monthly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
+
+    elif select_plot == UI_TEXT["plot_options"][5]:  # "Periodograma"
+        for serie in selected_series:
+            selected_data = time_series.copy()
+            filter_cond = ""
+            for col, col_value in serie.items():
+                filter_cond += f"{col} == '{col_value}' & "
+
+            # Eliminar el último "&" de la condición de filtro
+            filter_cond = filter_cond[:-3]
+            if filter_cond:
+                selected_data = selected_data.query(filter_cond)
+            selected_data_periodogram = selected_data.set_index("datetime")
+            selected_data_periodogram = selected_data_periodogram.asfreq(
+                select_agr_tmp_dict[select_agr_tmp]
+            )
+            ts_data = selected_data_periodogram["y"].ffill().values
+
+            significant_periods, filtered_periods, filtered_power_spectrum = (
+                seasonality_detector.detect_seasonality_periodogram(
+                    ts=ts_data,
+                    min_period=2,
+                    max_period=365,
+                )
+            )
+            st.write(
+                f"{UI_TEXT['periodogram']['significant_periods']} {significant_periods}"
+            )
+            fig = go.Figure()
+
+            fig.add_trace(
+                go.Scatter(
+                    x=filtered_periods,
+                    y=filtered_power_spectrum,
+                    mode="lines",
+                    name=UI_TEXT["periodogram"]["power_spectrum"],
+                )
+            )
+
+            threshold_value = np.percentile(filtered_power_spectrum, 99)
+            fig.add_shape(
+                type="line",
+                x0=filtered_periods.min(),
+                x1=filtered_periods.max(),
+                y0=threshold_value,
+                y1=threshold_value,
+                line=dict(color="red", dash="dash"),
+            )
+            fig.add_annotation(
+                x=filtered_periods.mean(),
+                y=threshold_value,
+                text=UI_TEXT["periodogram"]["percentile_threshold"],
+                showarrow=False,
+                yshift=10,
+                font=dict(color="red"),
+            )
+
+            # Resaltar los períodos significativos
+            for period in significant_periods:
+                fig.add_shape(
+                    type="line",
+                    x0=period,
+                    y0=0,
+                    x1=period,
+                    y1=max(filtered_power_spectrum),
+                    line=dict(color="green", dash="dot"),
+                )
+                fig.add_annotation(
+                    x=period,
+                    y=max(filtered_power_spectrum) * 0.9,
+                    text=f"{period:.1f}",
+                    showarrow=True,
+                    arrowhead=2,
+                    ax=0,
+                    ay=-40,
+                    font=dict(color="green"),
+                )
+
+            # Configurar layout del gráfico
+            fig.update_layout(
+                title=UI_TEXT["periodogram"]["title"],
+                xaxis_title=UI_TEXT["periodogram"]["xaxis_title"],
+                yaxis_title=UI_TEXT["periodogram"]["yaxis_title"],
+                showlegend=False,
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
 
 
 # TODO: Review these parameters

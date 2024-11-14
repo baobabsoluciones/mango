@@ -1,10 +1,9 @@
 import logging
 import warnings
 from datetime import datetime
-from typing import List, Dict
+from typing import Dict
 
 import numpy as np
-from mango.logging import log_time
 
 try:
     import pandas as pd
@@ -16,7 +15,7 @@ try:
 except ImportError:
     pl = None
 
-import pandas as pd
+from mango.logging import log_time
 from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
@@ -233,6 +232,9 @@ def add_covid_mark(df: pl.LazyFrame) -> pl.LazyFrame:
     )
 
     return df
+
+
+from typing import List
 
 
 def create_lags_col(

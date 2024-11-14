@@ -11,6 +11,7 @@ UI_TEXT = {
         "STL",
         "Anàlisi de retards",
         "Boxplot d'estacionalitat",
+        "Periodograma",
     ],
     "choose_years": "Tria els anys a visualitzar",
     "stl_error": "No es pot realitzar la descomposició STL per a la sèrie seleccionada, prova un altre nivell d'agregació temporal.",
@@ -188,5 +189,8 @@ UI_TEXT = {
     "documentation": "Veure documentació",
     "activate_button_train": "Activar previsió",
     "jinja_template": "Descarregar script de previsió",
-    "downloaded": "Script descarregat amb èxit."
+    "downloaded": "Script descarregat amb èxit.",
+    "periods_detec": "No s'han detectat períodes estacionals significatius.",
+    "no_periods_detec": "No s'han detectat períodes estacionals significatius.",
+
 }

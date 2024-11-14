@@ -2,7 +2,7 @@ import numpy as np
 from scipy.signal import periodogram
 from statsmodels.tsa.stattools import acf
 
-from mango.mango.logging.logger import get_basic_logger
+from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 
@@ -74,7 +74,7 @@ class SeasonalityDetector:
 
     def detect_seasonality_periodogram(
         self, ts: np.ndarray, min_period: int = 2, max_period: int = 365
-    ) -> list:
+    ) -> [list, np.ndarray, np.ndarray]:
         """
         Detect seasonality in a time series using the periodogram.
 
@@ -95,15 +95,37 @@ class SeasonalityDetector:
         filtered_periods = periods[valid_periods]
         filtered_power_spectrum = power_spectrum[valid_periods]
 
-        # Detect peaks in the power spectrum that are above threshold
+        strict_percentile = 99
+        threshold_value = np.percentile(filtered_power_spectrum, strict_percentile)
+
+        # Detect peaks above the stricter threshold
         significant_periods = filtered_periods[
-            filtered_power_spectrum
-            > np.percentile(filtered_power_spectrum, self.percentile_periodogram)
+            filtered_power_spectrum > threshold_value
         ]
 
-        final_detected_periods = sorted(np.unique(np.round(significant_periods)))
+        # Refine peaks by ensuring sufficient difference in power
+        refined_periods = []
+        for i, period in enumerate(significant_periods):
+            if (
+                i == 0
+                or filtered_power_spectrum[i] > 1.5 * filtered_power_spectrum[i - 1]
+            ):
+                refined_periods.append(period)
 
-        return final_detected_periods
+        # Remove redundant multiples of detected periods and keep only near-integer periods
+        final_detected_periods = []
+        for period in refined_periods:
+            # Check if the period is close to an integer within a small tolerance (e.g., 0.05)
+            if np.isclose(period, round(period), atol=0.05):
+                rounded_period = round(period)
+                # Ensure no redundant multiples of detected periods
+                if not any(
+                    np.isclose(rounded_period % other, 0, atol=0.1)
+                    for other in final_detected_periods
+                ):
+                    final_detected_periods.append(rounded_period)
+
+        return final_detected_periods, filtered_periods, filtered_power_spectrum
 
     def detect_seasonality(self, ts: np.ndarray, max_lag: int = 366) -> list:
         """
@@ -125,7 +147,7 @@ class SeasonalityDetector:
         # Step 1: Check for the presence of seasonality using ACF
         if self.detect_significant_seasonality_acf(ts=ts, max_lag=max_lag):
             # Step 2: If seasonality is detected by ACF, use the periodogram to find the specific seasonal periods
-            detected_seasonalities = self.detect_seasonality_periodogram(ts=ts)
+            detected_seasonalities, _, _ = self.detect_seasonality_periodogram(ts=ts)
             if len(detected_seasonalities) > 0:
                 logger.info(f"Seasonalities detected: {detected_seasonalities}")
             else:

@@ -11,6 +11,7 @@ UI_TEXT = {
         "STL",
         "Análisis de lags",
         "Boxplot de estacionalidad",
+        "Periodograma"
     ],
     "choose_years": "Elige los años a visualizar",
     "stl_error": "No se puede realizar la descomposición STL para la serie seleccionada, prueba otro nivel de agregación temporal.",
@@ -188,6 +189,33 @@ UI_TEXT = {
     "documentation": "Ver documentación",
     "activate_button_train": "Activar previsión",
     "jinja_template": "Descargar script de forecast",
-    "downloaded": "Script descargado correctamente."
+    "downloaded": "Script descargado correctamente.",
+    "stl": {
+        "title": "STL",
+        "periods_detected": "Periodos detectados:",
+        "periods_detec": "No se han detectado periodos estacionales significativos.",
+        "no_periods_detec": "No se puede realizar la descomposición STL con la configuración seleccionada.",
+        "stl_components": {
+            "original": "Serie Original",
+            "trend": "Tendencia",
+            "seasonal": "Estacionalidad",
+            "residual": "Residuos"
+        }
+    },
+    "periodogram": {
+        "title": "Periodograma",
+        "significant_periods": "Periodos significativos",
+        "percentile_threshold": "Umbral del percentil 99",
+        "xaxis_title": "Periodo",
+        "yaxis_title": "Power",
+        "power_spectrum": "Power Spectrum",
+    },
+
+    "lag_analysis": {
+        "lag_analysis_components": {
+            "acf": "Autocorrelation Function (ACF)",
+            "pacf": "Partial Autocorrelation Function (PACF)"
+        }
+    },
 
 }

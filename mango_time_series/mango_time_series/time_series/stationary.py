@@ -6,11 +6,11 @@ import polars as pl
 from statsmodels.tools.sm_exceptions import InterpolationWarning
 from statsmodels.tsa.stattools import adfuller, kpss
 
-from mango.mango.logging.logger import get_basic_logger
-from mango_time_series.mango_time_series.time_series.decomposition import (
+from mango.logging.logger import get_basic_logger
+from mango_time_series.time_series.decomposition import (
     SeasonalityDecompose,
 )
-from mango_time_series.mango_time_series.time_series.seasonal import SeasonalityDetector
+from mango_time_series.time_series.seasonal import SeasonalityDetector
 
 logger = get_basic_logger()
 

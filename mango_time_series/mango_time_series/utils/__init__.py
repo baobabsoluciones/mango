@@ -1,1 +1,4 @@
-from mango_time_series.utils.CONST import timedelta_equivalences, PARAMETERS_BASE
+from mango_time_series.utils.CONST import (
+    timedelta_equivalences,
+    PARAMETERS_BASE,
+)
