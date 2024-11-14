@@ -3,7 +3,7 @@ import numpy as np
 import warnings
 from datetime import datetime
 from mango.logging import log_time
-from typing import List, Dict
+from typing import List, Dict, Union
 
 try:
     import pandas as pd
@@ -358,7 +358,7 @@ def series_as_rows(df, SERIES_CONF):
 
 
 def process_time_series(
-    df: pd.DataFrame | pl.DataFrame | pl.LazyFrame,
+    df: Union[pd.DataFrame, pl.DataFrame, pl.LazyFrame],
     SERIES_CONF: Dict,
 ):
     """

@@ -1,6 +1,7 @@
 import pandas as pd
 import polars as pl
 from datetime import datetime, timedelta
+from typing import Union
 
 from mango_time_series.features.calendar_features import get_calendar
 
@@ -11,7 +12,7 @@ def get_holidays_df(
     start_year: int = 2014,
     country: str = "ES",
     output_format: str = "polars",
-) -> pl.DataFrame | pd.DataFrame:
+) -> Union[pl.DataFrame, pd.DataFrame]:
     """
     Get national holidays dataframe with window bounds.
 
