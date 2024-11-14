@@ -124,7 +124,6 @@ def get_calendar(
     # Rename columns
     df.columns = ["date", "name", "country_code"]
 
-    # TODO: Add more dates that are not in the holidays package (e.g. 11-11 AliExpress, etc.)
     if calendar_events:
         # Add Black Friday
         usa_holidays_dict = country_holidays(

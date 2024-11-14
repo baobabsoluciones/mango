@@ -1,10 +1,9 @@
 import logging
+import numpy as np
 import warnings
 from datetime import datetime
-from typing import List, Dict
-
-import numpy as np
 from mango.logging import log_time
+from typing import List, Dict
 
 try:
     import pandas as pd
@@ -359,10 +358,16 @@ def series_as_rows(df, SERIES_CONF):
 
 
 def process_time_series(
-    df,
-    SERIES_CONF,
-    # add_kwargs
+    df: pd.DataFrame | pl.DataFrame | pl.LazyFrame,
+    SERIES_CONF: Dict,
 ):
+    """
+    Process the time series data
+
+    :param df: pd.DataFrame with the sales information
+    :param SERIES_CONF: dict with the configuration of the series
+    :return: pd.DataFrame
+    """
     # if df is a pd.DataFrame then convert to pl.DataFrame
     if isinstance(df, pd.DataFrame):
         df = pl.from_pandas(df).lazy()

@@ -1,41 +1,62 @@
-from datetime import datetime, timedelta
-
+import pandas as pd
 import polars as pl
+from datetime import datetime, timedelta
 
 from mango_time_series.features.calendar_features import get_calendar
 
 
-def get_holidays_df(steps_back: int, steps_forward: int) -> pl.DataFrame:
+def get_holidays_df(
+    steps_back: int,
+    steps_forward: int,
+    start_year: int = 2014,
+    country: str = "ES",
+    output_format: str = "polars",
+) -> pl.DataFrame | pd.DataFrame:
     """
     Get national holidays dataframe with window bounds.
 
     :param steps_back: int, number of days to go back from the holiday.
-    :param steps_forward: int, number of days to go forward
-    from the holiday.
-    :return: pd.DataFrame, holidays dataframe with window
+    :param steps_forward: int, number of days to go forward from the holiday.
+    :param start_year: int, start year for the holiday calendar.
+    :param country: str, country code for holiday calendar.
+    :param output_format: str, 'polars' or 'pandas' to specify the output format.
+    :return: polars.DataFrame or pandas.DataFrame, holidays dataframe with window bounds.
     """
-    start_year = 2014
+    # Handle error if output_format is not 'polars' or 'pandas'
+    if output_format not in ["polars", "pandas"]:
+        raise ValueError(
+            f"output_format should be either 'polars' or 'pandas', got {output_format}"
+        )
+    # Fetch the holidays data with specified parameters
     all_holidays = get_calendar(
-        "ES",
+        country,
         start_year=start_year,
         communities=True,
         calendar_events=True,
         return_distances=True,
         distances_config={"steps_forward": steps_forward, "steps_back": steps_back},
     )
+
+    # Filter, clean, and process the data
     all_holidays = all_holidays[all_holidays["weight"] >= 0.5].copy()
-    all_holidays = all_holidays[["date", "name", "distance"]]
-
-    # Drop duplicates
-    all_holidays = all_holidays.drop_duplicates(subset=["date", "name"])
-
+    all_holidays = all_holidays[["date", "name", "distance"]].drop_duplicates(
+        subset=["date", "name"]
+    )
     all_holidays = all_holidays.rename(columns={"date": "datetime"})
+
+    # Convert to Polars DataFrame and adjust date column
     all_holidays = pl.from_pandas(all_holidays).with_columns(
         pl.col("datetime").dt.date()
     )
 
-    # Pivot with date as index
-    all_holidays = all_holidays.pivot(index="datetime", on="name", values="distance")
+    # Pivot the DataFrame
+    all_holidays = all_holidays.pivot(
+        index="datetime", columns="name", values="distance"
+    )
+
+    # Return in specified format
+    if output_format == "pandas":
+        return all_holidays.to_pandas()
 
     return all_holidays
 

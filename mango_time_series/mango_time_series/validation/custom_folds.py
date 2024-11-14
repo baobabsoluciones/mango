@@ -6,12 +6,19 @@ logger = get_basic_logger()
 
 
 def create_recent_folds(df: pd.DataFrame, horizon, SERIES_CONF, recent_folds: int = 3):
+    """
+    Create the recent folds for the time series cross validation
 
+    :param df: pd.DataFrame
+    :param horizon: int
+    :param SERIES_CONF: dict
+    :param recent_folds: int
+    :return: pd.DataFrame
+    """
     logger.info(
         f"Creating time series recent folds. Horizon: {horizon}. Folds: {recent_folds}"
     )
 
-    # TODO: correct this to work from the parameters
     if horizon < 28:
         test_len = 28
     else:
@@ -24,7 +31,6 @@ def create_recent_folds(df: pd.DataFrame, horizon, SERIES_CONF, recent_folds: in
     # conditions: first fold is the most recent one. from last_date - test_len to last_date, then last_date - test_len*2 to last_date - test_len
     for i in range(1, recent_folds + 1):
         # test set
-
         df_temp = df.copy()
         lower_window = last_date - pd.to_timedelta(
             test_len * i, unit=SERIES_CONF["TIME_PERIOD_DESCR"]
@@ -54,12 +60,19 @@ def create_recent_folds(df: pd.DataFrame, horizon, SERIES_CONF, recent_folds: in
 def create_recent_seasonal_folds(
     df: pd.DataFrame, horizon, SERIES_CONF, season_folds: int = 1
 ):
+    """
+    Create the seasonal folds for the time series cross validation
 
+    :param df: pd.DataFrame
+    :param horizon: int
+    :param SERIES_CONF: dict
+    :param season_folds: int
+    :return: pd.DataFrame
+    """
     logger.info(
         f"Creating time series seasonal folds. Horizon: {horizon}. Folds: {season_folds}"
     )
 
-    # TODO: correct this to work from the parameters
     if horizon < 28:
         test_len = 28
     else:
