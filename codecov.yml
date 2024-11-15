@@ -3,6 +3,9 @@ coverage:
     project: off
     patch: off
 
+fixes:
+  - "::mango/"
+
 flag_management:
   default_rules:
     carryforward: true
