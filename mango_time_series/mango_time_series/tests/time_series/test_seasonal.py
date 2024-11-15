@@ -1,5 +1,7 @@
 from unittest import TestCase
+
 import numpy as np
+
 from mango_time_series.time_series.seasonal import SeasonalityDetector
 
 
@@ -27,7 +29,7 @@ class TestSeasonalityDetector(TestCase):
         self.series_noise = np.random.normal(0, 1, 365)
 
         # Generate a time series with clear annual seasonality (12-month period for monthly data)
-        months = np.arange(0, 12 * 5)  # 5 years of monthly data
+        months = np.arange(0, 12 * 5)
         self.annual_seasonal_series = 20 * np.sin(
             2 * np.pi * months / 12
         ) + np.random.normal(0, 1, len(months))

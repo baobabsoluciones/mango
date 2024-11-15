@@ -1,3 +1,5 @@
+from typing import Dict
+
 import pandas as pd
 import streamlit as st
 
@@ -5,6 +7,16 @@ import streamlit as st
 def preview_data(
     uploaded_file, separator, decimal, thousands, encoding, date_format, UI_TEXT
 ):
+    """
+    Preview the data from the uploaded file.
+    :param uploaded_file: The uploaded file.
+    :param separator: The separator used in the file.
+    :param decimal: The decimal separator used in the file.
+    :param thousands: The thousands separator used in the file.
+    :param encoding: The encoding used in the file.
+    :param date_format: The date format used in the file.
+    :param UI_TEXT: The dictionary containing the UI text.
+    """
     st.write(UI_TEXT["preview_title"])
     st.write(separator, decimal, thousands, encoding, date_format)
     data_frame = pd.read_csv(
@@ -28,7 +40,12 @@ def preview_data(
     st.write(data_frame.head())
 
 
-def upload_files(UI_TEXT):
+def upload_files(UI_TEXT: Dict):
+    """
+    Upload files to the application.
+    :param UI_TEXT: The dictionary containing the UI text.
+    :return: The uploaded files and no_model_column flag.
+    """
     files = st.file_uploader(
         UI_TEXT["upload_file"],
         type=["csv", "xlsx"],
@@ -131,6 +148,12 @@ def upload_files(UI_TEXT):
 
 
 def manage_files(files_loaded, UI_TEXT):
+    """
+    Manage the files that have been uploaded.
+    :param files_loaded: The files that have been uploaded.
+    :param UI_TEXT: The dictionary containing the UI text.
+    :return: The updated files.
+    """
     st.sidebar.write(UI_TEXT["manage_files"])
     remaining_files = files_loaded.copy()
     extension = list(remaining_files.keys())[0].split(".")[-1]
@@ -138,7 +161,6 @@ def manage_files(files_loaded, UI_TEXT):
     for file_name_old, file_info in files_loaded.items():
         with st.sidebar.expander(file_name_old):
             st.write(f"{UI_TEXT['file_title']} {file_name_old}")
-            no_model_column = False
             with st.form(key=f"manage_form_{file_name_old}", border=0):
                 file_name = st.text_input(
                     UI_TEXT["file_name"], value=file_info["file_name"]
@@ -219,13 +241,7 @@ def manage_files(files_loaded, UI_TEXT):
             if remove_button:
                 del remaining_files[file_name]
 
-    # if st.sidebar.button(UI_TEXT["add_new_file"]):
-    #     new_files = upload_files(UI_TEXT)
-    #     files_loaded.update(new_files)
-    #     st.session_state["files_loaded"] = files_loaded
-
     if remaining_files.keys() != files_loaded.keys():
         st.session_state["files_loaded"] = remaining_files
         st.rerun()
 
-    return

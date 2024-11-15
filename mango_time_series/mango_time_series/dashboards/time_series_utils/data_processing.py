@@ -1,4 +1,5 @@
 import importlib.resources as pkg_resources
+from typing import List, Dict
 
 import jinja2
 import pandas as pd
@@ -14,7 +15,7 @@ def aggregate_to_input_cache(data, freq, SERIES_CONF):
 
 
 @st.cache_data
-def convert_df(df):
+def convert_df(df: pd.DataFrame):
     # IMPORTANT: Cache the conversion to prevent computation on every rerun
     return df.to_csv(index=False).encode("utf-8")
 
@@ -48,7 +49,22 @@ def calculate_horizon(df: pd.DataFrame, freq: str) -> pd.DataFrame:
     return df
 
 
-def process_data(data, columns_id, select_agr_tmp_dict, select_agr_tmp, UI_TEXT):
+def process_data(
+    data: pd.DataFrame,
+    columns_id: List,
+    select_agr_tmp_dict: Dict,
+    select_agr_tmp: str,
+    UI_TEXT: Dict,
+):
+    """
+    Process the input data for the time series analysis.
+    :param data: pd.DataFrame with the input data
+    :param columns_id: list of str with the columns to use as identifiers
+    :param select_agr_tmp_dict: dict with the aggregation options
+    :param select_agr_tmp: str with the selected aggregation option
+    :param UI_TEXT: dict with the UI text
+    :return: tuple with the aggregated time series and forecast data
+    """
     data["datetime"] = pd.to_datetime(data["datetime"])
     if (
         st.session_state.get("visualization") == UI_TEXT["visualization_options"][0]
@@ -89,7 +105,12 @@ def process_data(data, columns_id, select_agr_tmp_dict, select_agr_tmp, UI_TEXT)
     return time_series, forecast
 
 
-def calculate_min_diff_per_window(df):
+def calculate_min_diff_per_window(df: pd.DataFrame) -> float:
+    """
+    Calculate the minimum time difference between consecutive timestamps in a time series.
+    :param df: pd.DataFrame with a 'datetime' column
+    :return: float with the minimum time difference
+    """
     time_diffs = df["datetime"].diff().dropna().dt.total_seconds() / 86400
     time_diffs = abs(time_diffs)
 
@@ -99,7 +120,18 @@ def calculate_min_diff_per_window(df):
     return min_time_diffs
 
 
-def render_script(models, horizon, step_size, n_windows, freq_code: str):
+def render_script(
+    models: List, horizon: int, step_size: int, n_windows: int, freq_code: str
+):
+    """
+    Render the script for the forecast template.
+    :param models: list of str with the model names
+    :param horizon: int with the forecast horizon
+    :param step_size: int with the step size
+    :param n_windows: int with the number of windows
+    :param freq_code: str with the frequency code
+    :return: str with the rendered script
+    """
     with pkg_resources.path(
         "mango_time_series.dashboards.time_series_utils", "forecast_template.py.j2"
     ) as template_path:

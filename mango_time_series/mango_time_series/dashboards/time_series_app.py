@@ -26,7 +26,6 @@ from mango_time_series.dashboards.time_series_utils.ui_components import (
     setup_sidebar,
     plot_forecast,
     plot_error_visualization,
-    adapt_values_based_on_series_length,
 )
 from mango_time_series.dashboards.time_series_utils.ui_text_en import (
     UI_TEXT as UI_TEXT_EN,
@@ -36,11 +35,11 @@ from mango_time_series.dashboards.time_series_utils.ui_text_es import (
 )
 
 
-# from statsmodels.tsa.seasonal import STL
-# from streamlit_date_picker import date_range_picker, PickerType
-
-
 def interface_visualization(project_name: str = None):
+    """
+    Main interface for the time series visualization dashboard.
+    :param project_name: str with the name of the project
+    """
     # SETUP web page
     st.set_page_config(
         page_title="Visualization",
@@ -116,7 +115,6 @@ def interface_visualization(project_name: str = None):
         # Manage selected series using session_state
         if "selected_series" not in st.session_state:
             st.session_state["selected_series"] = []
-        no_model_column = st.session_state.get("no_model_column", False)
         data, visualization = load_data(st.session_state.get("files_loaded"), UI_TEXT)
 
         if data is not None:
@@ -155,8 +153,8 @@ def interface_visualization(project_name: str = None):
             time_series, forecast = process_data(
                 data, columns_id, final_select_agr_tmp_dict, select_agr_tmp, UI_TEXT
             )
-
-            if visualization == UI_TEXT["visualization_options"][0]:  # "Exploration"
+            # "Exploration"
+            if visualization == UI_TEXT["visualization_options"][0]:
                 plot_time_series(
                     time_series,
                     st.session_state["selected_series"],
@@ -175,45 +173,31 @@ def interface_visualization(project_name: str = None):
 
                     if st.session_state["forecast_activated"]:
                         freq_code = final_select_agr_tmp_dict[select_agr_tmp]
-                        series_length = len(time_series)
-                        horizon_limit, step_size_limit, n_windows_limit = (
-                            adapt_values_based_on_series_length(series_length)
-                        )
-
                         st.sidebar.write(UI_TEXT["model_parameters"])
 
                         if "horizon" not in st.session_state:
-                            st.session_state["horizon"] = min(10, horizon_limit)
+                            st.session_state["horizon"] = 1
                         if "step_size" not in st.session_state:
-                            st.session_state["step_size"] = min(3, step_size_limit)
+                            st.session_state["step_size"] = 1
                         if "n_windows" not in st.session_state:
-                            st.session_state["n_windows"] = min(5, n_windows_limit)
+                            st.session_state["n_windows"] = 1
 
                         with st.sidebar.form(key="forecast_form"):
                             st.write(UI_TEXT["forecast_parameters"])
                             horizon = st.number_input(
                                 UI_TEXT["horizon"],
-                                min_value=1,
-                                max_value=horizon_limit,
-                                value=28,
                                 help=UI_TEXT["explanation_horizon"],
-                                # value=st.session_state["horizon"]
+                                value=st.session_state["horizon"],
                             )
                             step_size = st.number_input(
                                 UI_TEXT["step_size"],
-                                min_value=1,
-                                max_value=step_size_limit,
-                                value=28,
                                 help=UI_TEXT["explanation_step_size"],
-                                # value=st.session_state["step_size"]
+                                value=st.session_state["step_size"],
                             )
                             n_windows = st.number_input(
                                 UI_TEXT["n_windows"],
-                                min_value=1,
-                                max_value=n_windows_limit,
-                                value=3,
                                 help=UI_TEXT["explanation_n_windows"],
-                                # value=st.session_state["n_windows"]
+                                value=st.session_state["n_windows"],
                             )
 
                             st.link_button(
@@ -238,6 +222,7 @@ def interface_visualization(project_name: str = None):
                             )
 
                             time_serie = time_series.copy()
+                            st.dataframe(time_serie)
 
                             if not columns_id:
                                 time_serie["unique_id"] = "id_1"
@@ -296,7 +281,8 @@ def interface_visualization(project_name: str = None):
                                 "visualization_options"
                             ][1]
                             st.rerun()
-            elif visualization == UI_TEXT["visualization_options"][1]:  # "Forecast"
+            # "Forecast"
+            elif visualization == UI_TEXT["visualization_options"][1]:
                 if "f" in forecast.columns and "err" in forecast.columns:
                     st.info(UI_TEXT["upload_forecast"])
 

@@ -1,9 +1,16 @@
+from typing import Dict
+
 import pandas as pd
 import streamlit as st
 
 
 @st.cache_data
-def load_data(files_loaded, UI_TEXT):
+def load_data(files_loaded: Dict, UI_TEXT: Dict):
+    """
+    Load data from the files loaded in the app.
+    :param files_loaded: Dictionary with the files loaded in the app.
+    :param UI_TEXT: Dictionary with the text to display in the app.
+    """
     # Assuming the first file is the main data file
     list_df = []
     list_visualization = []

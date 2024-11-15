@@ -1,4 +1,5 @@
 import copy
+from typing import List, Dict
 
 import numpy as np
 import pandas as pd
@@ -18,7 +19,13 @@ from ...time_series.seasonal import SeasonalityDetector
 from ...utils.utils import cast_env_to_bool
 
 
-def select_series(data, columns, UI_TEXT):
+def select_series(data: pd.DataFrame, columns: List, UI_TEXT: Dict):
+    """
+    Create a sidebar to select a series from the DataFrame based on the values in the specified columns.
+    :param data: The DataFrame containing the time series data.
+    :param columns: The columns to use for filtering the series.
+    :param UI_TEXT: The dictionary containing the UI text.
+    """
     st.sidebar.title(UI_TEXT["select_series"])
     filtered_data = data.copy()
     for column in columns:
@@ -40,8 +47,26 @@ def select_series(data, columns, UI_TEXT):
 
 
 def plot_time_series(
-    time_series, selected_series, select_agr_tmp_dict, select_agr_tmp, UI_TEXT
+    time_series: pd.DataFrame,
+    selected_series: List,
+    select_agr_tmp_dict: Dict,
+    select_agr_tmp: str,
+    UI_TEXT: Dict,
 ):
+    """
+    Plot the selected time series data. The user can choose between different types of plots:
+    - Original series: Plot the original time series data.
+    - Series by year: Plot the time series data for each year.
+    - STL: Plot the original series and its STL decomposition.
+    - Lag analysis: Plot the ACF and PACF of the time series data.
+    - Seasonality boxplot: Plot boxplots of the time series data by day of year, day of week, or month.
+    - Periodogram: Plot the periodogram of the time series data.
+    :param time_series: The DataFrame containing the time series data.
+    :param selected_series: The list of selected series to plot.
+    :param select_agr_tmp_dict: The dictionary mapping the temporal grouping options to their corresponding frequency.
+    :param select_agr_tmp: The selected temporal grouping option.
+    :param UI_TEXT: The dictionary containing the UI text.
+    """
     select_plot = st.selectbox(
         UI_TEXT["choose_plot"],
         UI_TEXT["plot_options"],
@@ -152,12 +177,12 @@ def plot_time_series(
 
             try:
                 if len(detected_periods) == 1:
-                    # Descomposición STL si hay solo un período detectado
+                    # STL decomposition if only one period is detected
                     trend, seasonal, resid = seasonality_decompose.decompose_stl(
                         selected_data_stl["y"].ffill(), period=detected_periods[0]
                     )
                 elif len(detected_periods) > 1:
-                    # Descomposición MSTL si hay múltiples períodos detectados
+                    # MSTL decomposition if multiple periods are detected
                     trend, seasonal, resid = seasonality_decompose.decompose_mstl(
                         selected_data_stl["y"].ffill(), periods=detected_periods
                     )
@@ -423,7 +448,7 @@ def plot_time_series(
             for col, col_value in serie.items():
                 filter_cond += f"{col} == '{col_value}' & "
 
-            # Eliminar el último "&" de la condición de filtro
+            # Delete the last & from the filter condition
             filter_cond = filter_cond[:-3]
             if filter_cond:
                 selected_data = selected_data.query(filter_cond)
@@ -472,7 +497,6 @@ def plot_time_series(
                 font=dict(color="red"),
             )
 
-            # Resaltar los períodos significativos
             for period in significant_periods:
                 fig.add_shape(
                     type="line",
@@ -493,7 +517,6 @@ def plot_time_series(
                     font=dict(color="green"),
                 )
 
-            # Configurar layout del gráfico
             fig.update_layout(
                 title=UI_TEXT["periodogram"]["title"],
                 xaxis_title=UI_TEXT["periodogram"]["xaxis_title"],
@@ -504,26 +527,15 @@ def plot_time_series(
             st.plotly_chart(fig, use_container_width=True)
 
 
-# TODO: Review these parameters
-def adapt_values_based_on_series_length(series_length: int):
-    max_horizon = max(
-        1, series_length // 4
-    )  # El horizonte máximo puede ser el 25% del tamaño de la serie
-    max_step_size = max(
-        1, series_length // 10
-    )  # El tamaño del paso no debe exceder el 10% de la serie
-    max_windows = min(
-        10, series_length // max_horizon
-    )  # Número máximo de ventanas basado en el horizonte
-    return max_horizon, max_step_size, max_windows
-
-
-def setup_sidebar(time_series, columns_id, UI_TEXT):
+def setup_sidebar(time_series: pd.DataFrame, columns_id: List, UI_TEXT: Dict):
+    """
+    Set up the sidebar for the time series analysis dashboard.
+    :param time_series: The DataFrame containing the time series data.
+    :param columns_id: The list of columns to use as identifiers for the series.
+    :param UI_TEXT: The dictionary containing the UI text.
+    :return: The selected temporal grouping option, the selected visualization option, and the list of visualization options.
+    """
     st.sidebar.title(UI_TEXT["sidebar_title"])
-    # if "forecast_origin" in time_series.columns and "f" in time_series.columns:
-    #     st.session_state["visualization_options"] = UI_TEXT["visualization_options"]
-    # else:
-    #     st.session_state["visualization_options"] = [UI_TEXT["visualization_options"][0]]
 
     if "forecast" in st.session_state and st.session_state["forecast"] is not None:
         if (
@@ -577,6 +589,8 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
             label_visibility="collapsed",
         )
     else:
+        if "uid" in time_series.columns:
+            time_series = time_series.sort_values(by=["uid", "datetime"])
         min_diff_per_window = calculate_min_diff_per_window(time_series)
         min_diff = min_diff_per_window.min()
 
@@ -634,7 +648,13 @@ def setup_sidebar(time_series, columns_id, UI_TEXT):
     return select_agr_tmp, visualization, st.session_state["visualization_options"]
 
 
-def plot_forecast(forecast, selected_series, UI_TEXT):
+def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
+    """
+    Plot the forecast for the selected series.
+    :param forecast: The DataFrame containing the forecast data.
+    :param selected_series: The list of selected series to plot.
+    :param UI_TEXT: The dictionary containing the UI text.
+    """
     st.subheader(UI_TEXT["forecast_plot_title"])
     if not selected_series:
         st.write(UI_TEXT["select_series_to_plot"])
@@ -773,7 +793,15 @@ def plot_forecast(forecast, selected_series, UI_TEXT):
         st.plotly_chart(fig)
 
 
-def plot_error_visualization(forecast, selected_series, UI_TEXT):
+def plot_error_visualization(
+    forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict[str, str]
+):
+    """
+    Plot the error visualization for the selected series.
+    :param forecast: The DataFrame containing the forecast data.
+    :param selected_series: The list of selected series to plot.
+    :param UI_TEXT: The dictionary containing the UI text.
+    """
     st.subheader(UI_TEXT["error_visualization_title"])
 
     # Add radio selector for filter type
@@ -920,7 +948,8 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
         placeholder=UI_TEXT["select_plots"],
         label_visibility="collapsed",
     )
-    if UI_TEXT["plot_options_error"][0] in plot_options:  # "Box plot by horizon"
+    # "Box plot by horizon"
+    if UI_TEXT["plot_options_error"][0] in plot_options:
         st.write(f"### {UI_TEXT['horizon_boxplot_title']}")
         # Box plot perc_abs_err by horizon
         for idx, serie in data_dict.items():
@@ -936,7 +965,8 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
             number_by_horizon = serie.groupby("h").size()
             if number_by_horizon.std() > 0:
                 st.warning(UI_TEXT["horizon_warning"])
-    if UI_TEXT["plot_options_error"][1] in plot_options:  # "Box plot by datetime"
+    # "Box plot by datetime"
+    if UI_TEXT["plot_options_error"][1] in plot_options:
         st.write(f"### {UI_TEXT['datetime_boxplot_title']}")
         # Box plot perc_abs_err by datetime columns depending on user selection
         dict_transformations = {
@@ -963,7 +993,6 @@ def plot_error_visualization(forecast, selected_series, UI_TEXT):
                 UI_TEXT["ALL_DICT"][select_agg]
             )
 
-            # Create a box plot
             fig = px.box(
                 serie,
                 x=transformed_datetime,
