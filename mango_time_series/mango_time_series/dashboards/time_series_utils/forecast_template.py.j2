@@ -32,6 +32,14 @@ default_models: Dict[str, Union[
 
 class ForecastModel:
     def __init__(self, models=default_models, horizon={{ horizon }}, step_size={{ step_size }}, n_windows={{ n_windows }}, freq="{{ freq_code }}"):
+        """
+        ForecastModel class to run forecast with multiple models.
+        :param models: dictionary with the models to use.
+        :param horizon: int with the forecast horizon.
+        :param step_size: int with the step size.
+        :param n_windows: int with the number of windows.
+        :param freq: str with the frequency code.
+        """
         self.models = models
         self.horizon = horizon
         self.step_size = step_size
@@ -39,6 +47,12 @@ class ForecastModel:
         self.freq = freq
 
     def prepare_data(self, df, columns_id=None):
+        """
+        Prepare the data for the forecast.
+        :param df: DataFrame with the time series data.
+        :param columns_id: str with the id column name.
+        :return: DataFrame with the prepared data and the id column name.
+        """
         df = df.copy()
         if not columns_id:
             df["unique_id"] = "id_1"
@@ -47,6 +61,12 @@ class ForecastModel:
         return df, columns_id
 
     def run_forecast(self, df, columns_id=None):
+        """
+        Run the forecast with the models.
+        :param df: DataFrame with the time series data.
+        :param columns_id: str with the id column name.
+        :return: DataFrame with the forecast results.
+        """
         time_series, columns_id = self.prepare_data(df, columns_id)
         fcst = StatsForecast(models=list(self.models.values()), freq=self.freq)
 

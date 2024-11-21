@@ -26,7 +26,6 @@ default_models: Dict[str, ModelType] = {
     "HistoricAverage": HistoricAverage(),
     "Naive": Naive(),
     "RWD": RandomWalkWithDrift(),
-    # TODO: Add model parameters based on frequency/granularity
     "MSTL": MSTL(season_length=[7, 365], trend_forecaster=AutoTheta()),
 }
 
@@ -53,8 +52,3 @@ for name, model_instance in default_models.items():
     all_imports.add(model_instance.__class__.__name__)
 
 all_imports = list(all_imports)
-
-# Remove these dictionaries from here and add them to the UI_TEXT files
-# DAY_NAME_DICT = {...}
-# MONTH_NAME_DICT = {...}
-# ALL_DICT = {...}

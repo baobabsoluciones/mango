@@ -22,41 +22,41 @@ logger = get_basic_logger()
 
 
 @log_time()
-def aggregate_to_input(df: pd.DataFrame, freq: str, SERIES_CONF: dict) -> pd.DataFrame:
+def aggregate_to_input(df: pd.DataFrame, freq: str, series_conf: dict) -> pd.DataFrame:
     """
     Aggregate data to the frequency defined in the input
     :param df: pd.DataFrame with the sales information
     :param freq: str with the frequency to aggregate the data
-    :param group_cols: list with the columns to group by
+    :param series_conf: dict with the configuration of the series
     :return: pd.DataFrame
     """
 
     logger.info(f"Aggregating data to: {freq}")
 
-    list_grouper = SERIES_CONF["KEY_COLS"] + [pd.Grouper(key="datetime", freq=freq)]
+    list_grouper = series_conf["KEY_COLS"] + [pd.Grouper(key="datetime", freq=freq)]
 
     # group by KEY_COLS
-    df = df.groupby(list_grouper).agg(SERIES_CONF["AGG_OPERATIONS"]).reset_index()
+    df = df.groupby(list_grouper).agg(series_conf["AGG_OPERATIONS"]).reset_index()
 
     return df
 
 
 @log_time()
 def aggregate_to_input_pl(
-    df: pd.DataFrame, freq: str, SERIES_CONF: dict
+    df: pd.DataFrame, freq: str, series_conf: dict
 ) -> pd.DataFrame:
     """
     Aggregate data to the frequency defined in the input
     :param df: pd.DataFrame with the sales information
     :param freq: str with the frequency to aggregate the data
-    :param group_cols: list with the columns to group by
+    :param series_conf: dict with the configuration of the series.
     :return: pd.DataFrame
     """
 
     logger.info(f"Aggregating data to: {freq}")
     # if freq is "m" or "MS" or "ME" freq_input = "mo"
-    group_cols = SERIES_CONF["KEY_COLS"]
-    agg_ops = SERIES_CONF["AGG_OPERATIONS"]
+    group_cols = series_conf["KEY_COLS"]
+    agg_ops = series_conf["AGG_OPERATIONS"]
 
     if freq in ["m", "MS", "ME"]:
         freq_input = "1" + "mo"
@@ -88,20 +88,20 @@ def aggregate_to_input_pl(
 
 @log_time()
 def aggregate_to_input_pllazy(
-    df: pl.LazyFrame, freq: str, SERIES_CONF: dict
+    df: pl.LazyFrame, freq: str, series_conf: dict
 ) -> pl.LazyFrame:
     """
     Aggregate data to the frequency defined in the input
     :param df: pd.DataFrame with the sales information
     :param freq: str with the frequency to aggregate the data
-    :param SERIES_CONF: dict with the configuration of the series
+    :param series_conf: dict with the configuration of the series
     :return: pd.DataFrame
     """
 
     logger.info(f"Aggregating data to: {freq}")
     # if freq is "m" or "MS" or "ME" freq_input = "mo"
-    group_cols = SERIES_CONF["KEY_COLS"]
-    agg_ops = SERIES_CONF["AGG_OPERATIONS"]
+    group_cols = series_conf["KEY_COLS"]
+    agg_ops = series_conf["AGG_OPERATIONS"]
 
     freq_input = "1" + freq.lower()
 
@@ -303,17 +303,16 @@ def create_lags_col(
     return df_c
 
 
-def series_as_columns(df, SERIES_CONF):
+def series_as_columns(df, series_conf):
     """
     Pivot the dataframe to have the series as columns
     :param df: pd.DataFrame
-    :param key_cols: list with the columns to group by
-    :param value_col: str with the name of the column to pivot
+    :param series_conf: dict with the configuration of the series
     :return: pd.DataFrame
     """
     logger.info("Pivoting the dataframe")
-    key_cols = SERIES_CONF["KEY_COLS"]
-    value_col = SERIES_CONF["VALUE_COL"]
+    key_cols = series_conf["KEY_COLS"]
+    value_col = series_conf["VALUE_COL"]
 
     # pivot the dataframe
     pivot_df = df.pivot_table(
@@ -328,17 +327,16 @@ def series_as_columns(df, SERIES_CONF):
     return pivot_df
 
 
-def series_as_rows(df, SERIES_CONF):
+def series_as_rows(df, series_conf):
     """
     Pivot the dataframe to have the series as columns
     :param df: pd.DataFrame
-    :param key_cols: list with the columns to group by
-    :param value_col: str with the name of the column to pivot
+    :param series_conf: dict with the configuration of the series
     :return: pd.DataFrame
     """
     logger.info("Pivoting the dataframe")
-    value_col = SERIES_CONF["VALUE_COL"]
-    key_cols = SERIES_CONF["KEY_COLS"]
+    value_col = series_conf["VALUE_COL"]
+    key_cols = series_conf["KEY_COLS"]
 
     long_df = df.melt(
         id_vars="datetime",  # The columns to keep as is
@@ -359,13 +357,13 @@ def series_as_rows(df, SERIES_CONF):
 
 def process_time_series(
     df: Union[pd.DataFrame, pl.DataFrame, pl.LazyFrame],
-    SERIES_CONF: Dict,
+    series_conf: Dict,
 ):
     """
     Process the time series data
 
     :param df: pd.DataFrame with the sales information
-    :param SERIES_CONF: dict with the configuration of the series
+    :param series_conf: dict with the configuration of the series
     :return: pd.DataFrame
     """
     # if df is a pd.DataFrame then convert to pl.DataFrame
@@ -377,26 +375,26 @@ def process_time_series(
     # df = adapt_columns_cl(df)
     df = rename_to_common_ts_names_pl(
         df,
-        time_col=SERIES_CONF["TIME_COL"],
-        value_col=SERIES_CONF["VALUE_COL"],
+        time_col=series_conf["TIME_COL"],
+        value_col=series_conf["VALUE_COL"],
     )
 
     # get_basic_stats_from_data(df)
     df = drop_negative_output_pl(df)
-    df = aggregate_to_input_pllazy(df, "d", SERIES_CONF)
+    df = aggregate_to_input_pllazy(df, "d", series_conf)
 
     df = create_dense_data_pl(
         df=df,
-        id_cols=SERIES_CONF["KEY_COLS"],
+        id_cols=series_conf["KEY_COLS"],
         freq="d",
         min_max_by_id=True,
         date_end="2024-10-01",
         time_col="datetime",
     )
 
-    if SERIES_CONF["TS_PARAMETERS"]["agg"] != "d":
+    if series_conf["TS_PARAMETERS"]["agg"] != "d":
         df = aggregate_to_input_pllazy(
-            df, SERIES_CONF["TS_PARAMETERS"]["agg"], SERIES_CONF
+            df, series_conf["TS_PARAMETERS"]["agg"], series_conf
         )
 
     df = add_covid_mark(df)

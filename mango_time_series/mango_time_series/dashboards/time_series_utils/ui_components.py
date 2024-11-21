@@ -19,21 +19,21 @@ from ...time_series.seasonal import SeasonalityDetector
 from ...utils.utils import cast_env_to_bool
 
 
-def select_series(data: pd.DataFrame, columns: List, UI_TEXT: Dict):
+def select_series(data: pd.DataFrame, columns: List, ui_text: Dict):
     """
     Create a sidebar to select a series from the DataFrame based on the values in the specified columns.
     :param data: The DataFrame containing the time series data.
     :param columns: The columns to use for filtering the series.
-    :param UI_TEXT: The dictionary containing the UI text.
+    :param ui_text: The dictionary containing the UI text.
     """
-    st.sidebar.title(UI_TEXT["select_series"])
+    st.sidebar.title(ui_text["select_series"])
     filtered_data = data.copy()
     for column in columns:
         filter_values = filtered_data[column].unique()
 
         # Create a selectbox for each filter
         selected_value = st.sidebar.selectbox(
-            UI_TEXT["choose_column"].format(column),
+            ui_text["choose_column"].format(column),
             filter_values,
             key=f"selectbox_{column}",
         )
@@ -51,7 +51,7 @@ def plot_time_series(
     selected_series: List,
     select_agr_tmp_dict: Dict,
     select_agr_tmp: str,
-    UI_TEXT: Dict,
+    ui_text: Dict,
 ):
     """
     Plot the selected time series data. The user can choose between different types of plots:
@@ -65,18 +65,18 @@ def plot_time_series(
     :param selected_series: The list of selected series to plot.
     :param select_agr_tmp_dict: The dictionary mapping the temporal grouping options to their corresponding frequency.
     :param select_agr_tmp: The selected temporal grouping option.
-    :param UI_TEXT: The dictionary containing the UI text.
+    :param ui_text: The dictionary containing the UI text.
     """
     select_plot = st.selectbox(
-        UI_TEXT["choose_plot"],
-        UI_TEXT["plot_options"],
+        ui_text["choose_plot"],
+        ui_text["plot_options"],
         label_visibility="collapsed",
     )
     seasonality_decompose = SeasonalityDecompose()
     seasonality_detector = SeasonalityDetector()
 
     # "Original series"
-    if select_plot == UI_TEXT["plot_options"][0]:
+    if select_plot == ui_text["plot_options"][0]:
         date_range = date_range_picker(
             picker_type=PickerType.date,
             start=time_series["datetime"].min(),
@@ -109,7 +109,7 @@ def plot_time_series(
                 use_container_width=True,
             )
     # "Series by year"
-    elif select_plot == UI_TEXT["plot_options"][1]:
+    elif select_plot == ui_text["plot_options"][1]:
         st.markdown(
             """
             <style>
@@ -123,7 +123,7 @@ def plot_time_series(
             unsafe_allow_html=True,
         )
         options = st.multiselect(
-            UI_TEXT["choose_years"],
+            ui_text["choose_years"],
             sorted(time_series["datetime"].dt.year.unique(), reverse=True),
         )
         for serie in selected_series:
@@ -148,12 +148,12 @@ def plot_time_series(
                     use_container_width=True,
                 )
     # STL
-    elif select_plot == UI_TEXT["plot_options"][2]:
+    elif select_plot == ui_text["plot_options"][2]:
         if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
-            st.warning(UI_TEXT["experimental_features_warning"], icon="⚠️")
+            st.warning(ui_text["experimental_features_warning"], icon="⚠️")
             return
         else:
-            st.info(UI_TEXT["experimental_features_info"], icon="ℹ️")
+            st.info(ui_text["experimental_features_info"], icon="ℹ️")
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -171,9 +171,9 @@ def plot_time_series(
             ts_data = selected_data_stl["y"].ffill().values
             detected_periods = seasonality_detector.detect_seasonality(ts=ts_data)
             if detected_periods:
-                st.write(f"{UI_TEXT['stl']['periods_detected']} {detected_periods}")
+                st.write(f"{ui_text['stl']['periods_detected']} {detected_periods}")
             else:
-                st.write(UI_TEXT["stl"]["periods_detec"])
+                st.write(ui_text["stl"]["periods_detec"])
 
             try:
                 if len(detected_periods) == 1:
@@ -187,28 +187,28 @@ def plot_time_series(
                         selected_data_stl["y"].ffill(), periods=detected_periods
                     )
                 else:
-                    st.write(UI_TEXT["stl"]["periods_detected"])
+                    st.write(ui_text["stl"]["periods_detected"])
                     continue
             except ValueError:
-                st.write(UI_TEXT["stl"]["no_periods_detec"])
+                st.write(ui_text["stl"]["no_periods_detec"])
                 continue
 
             fig1 = px.line(
                 selected_data_stl["y"],
-                title=UI_TEXT["stl"]["stl_components"]["original"],
+                title=ui_text["stl"]["stl_components"]["original"],
             )
-            fig2 = px.line(trend, title=UI_TEXT["stl"]["stl_components"]["trend"])
-            fig3 = px.line(seasonal, title=UI_TEXT["stl"]["stl_components"]["seasonal"])
-            fig4 = px.line(resid, title=UI_TEXT["stl"]["stl_components"]["residual"])
+            fig2 = px.line(trend, title=ui_text["stl"]["stl_components"]["trend"])
+            fig3 = px.line(seasonal, title=ui_text["stl"]["stl_components"]["seasonal"])
+            fig4 = px.line(resid, title=ui_text["stl"]["stl_components"]["residual"])
             # Put each plot in a subplot
             fig = sp.make_subplots(
                 rows=4,
                 cols=1,
                 subplot_titles=[
-                    UI_TEXT["stl"]["stl_components"]["original"],
-                    UI_TEXT["stl"]["stl_components"]["trend"],
-                    UI_TEXT["stl"]["stl_components"]["seasonal"],
-                    UI_TEXT["stl"]["stl_components"]["residual"],
+                    ui_text["stl"]["stl_components"]["original"],
+                    ui_text["stl"]["stl_components"]["trend"],
+                    ui_text["stl"]["stl_components"]["seasonal"],
+                    ui_text["stl"]["stl_components"]["residual"],
                 ],
                 shared_xaxes=True,
             )
@@ -226,7 +226,7 @@ def plot_time_series(
 
             st.plotly_chart(fig, use_container_width=True)
     # "Lag analysis"
-    elif select_plot == UI_TEXT["plot_options"][3]:
+    elif select_plot == ui_text["plot_options"][3]:
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -262,8 +262,8 @@ def plot_time_series(
                 cols=1,
                 shared_xaxes=True,
                 subplot_titles=(
-                    UI_TEXT["lag_analysis"]["lag_analysis_components"]["acf"],
-                    UI_TEXT["lag_analysis"]["lag_analysis_components"]["pacf"],
+                    ui_text["lag_analysis"]["lag_analysis_components"]["acf"],
+                    ui_text["lag_analysis"]["lag_analysis_components"]["pacf"],
                 ),
             )
 
@@ -273,7 +273,7 @@ def plot_time_series(
                     y=acf_array[0],
                     mode="markers",
                     marker=dict(color="#1f77b4", size=12),
-                    name=UI_TEXT["lag_analysis"]["lag_analysis_components"]["acf"],
+                    name=ui_text["lag_analysis"]["lag_analysis_components"]["acf"],
                     showlegend=False,
                 ),
                 row=1,
@@ -311,7 +311,7 @@ def plot_time_series(
                     y=pacf_array[0],
                     mode="markers",
                     marker=dict(color="#1f77b4", size=12),
-                    name=UI_TEXT["lag_analysis"]["lag_analysis_components"]["pacf"],
+                    name=ui_text["lag_analysis"]["lag_analysis_components"]["pacf"],
                     showlegend=False,
                 ),
                 row=2,
@@ -377,19 +377,19 @@ def plot_time_series(
             st.plotly_chart(fig, use_container_width=True)
 
     # "Seasonality boxplot"
-    elif select_plot == UI_TEXT["plot_options"][4]:
+    elif select_plot == ui_text["plot_options"][4]:
         selected_granularity = select_agr_tmp
 
-        if selected_granularity == UI_TEXT["daily"]:
-            freq_options = UI_TEXT["frequency_options"]
-        elif selected_granularity == UI_TEXT["weekly"]:
-            freq_options = UI_TEXT["frequency_options"][1:]
-        elif selected_granularity == UI_TEXT["monthly"]:
-            freq_options = [UI_TEXT["frequency_options"][2]]
+        if selected_granularity == ui_text["daily"]:
+            freq_options = ui_text["frequency_options"]
+        elif selected_granularity == ui_text["weekly"]:
+            freq_options = ui_text["frequency_options"][1:]
+        elif selected_granularity == ui_text["monthly"]:
+            freq_options = [ui_text["frequency_options"][2]]
         else:
-            st.write(UI_TEXT["boxplot_error"])
+            st.write(ui_text["boxplot_error"])
             return
-        selected_freq = st.selectbox(UI_TEXT["select_frequency"], freq_options)
+        selected_freq = st.selectbox(ui_text["select_frequency"], freq_options)
 
         for serie in selected_series:
             selected_data = time_series.copy()
@@ -405,43 +405,43 @@ def plot_time_series(
             selected_data = selected_data.set_index("datetime")
             selected_data.index = pd.to_datetime(selected_data.index)
 
-            if selected_freq == UI_TEXT["frequency_options"][0]:
+            if selected_freq == ui_text["frequency_options"][0]:
                 selected_data["day_of_year"] = selected_data.index.dayofyear
                 fig = px.box(
                     selected_data,
                     x="day_of_year",
                     y="y",
-                    title=UI_TEXT["boxplot_titles"]["daily"],
+                    title=ui_text["boxplot_titles"]["daily"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-            elif selected_freq == UI_TEXT["frequency_options"][1]:
+            elif selected_freq == ui_text["frequency_options"][1]:
                 selected_data["day_of_week"] = selected_data.index.weekday
                 fig = px.box(
                     selected_data,
                     x="day_of_week",
                     y="y",
-                    title=UI_TEXT["boxplot_titles"]["weekly"],
+                    title=ui_text["boxplot_titles"]["weekly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-            elif selected_freq == UI_TEXT["frequency_options"][2]:
+            elif selected_freq == ui_text["frequency_options"][2]:
                 selected_data["month"] = selected_data.index.month
                 fig = px.box(
                     selected_data,
                     x="month",
                     y="y",
-                    title=UI_TEXT["boxplot_titles"]["monthly"],
+                    title=ui_text["boxplot_titles"]["monthly"],
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
     # "Periodogram"
-    elif select_plot == UI_TEXT["plot_options"][5]:
+    elif select_plot == ui_text["plot_options"][5]:
         if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
-            st.warning(UI_TEXT["experimental_features_warning"], icon="⚠️")
+            st.warning(ui_text["experimental_features_warning"], icon="⚠️")
             return
         else:
-            st.info(UI_TEXT["experimental_features_info"], icon="ℹ️")
+            st.info(ui_text["experimental_features_info"], icon="ℹ️")
         for serie in selected_series:
             selected_data = time_series.copy()
             filter_cond = ""
@@ -466,7 +466,7 @@ def plot_time_series(
                 )
             )
             st.write(
-                f"{UI_TEXT['periodogram']['significant_periods']} {significant_periods}"
+                f"{ui_text['periodogram']['significant_periods']} {significant_periods}"
             )
             fig = go.Figure()
 
@@ -475,7 +475,7 @@ def plot_time_series(
                     x=filtered_periods,
                     y=filtered_power_spectrum,
                     mode="lines",
-                    name=UI_TEXT["periodogram"]["power_spectrum"],
+                    name=ui_text["periodogram"]["power_spectrum"],
                 )
             )
 
@@ -491,7 +491,7 @@ def plot_time_series(
             fig.add_annotation(
                 x=filtered_periods.mean(),
                 y=threshold_value,
-                text=UI_TEXT["periodogram"]["percentile_threshold"],
+                text=ui_text["periodogram"]["percentile_threshold"],
                 showarrow=False,
                 yshift=10,
                 font=dict(color="red"),
@@ -518,49 +518,49 @@ def plot_time_series(
                 )
 
             fig.update_layout(
-                title=UI_TEXT["periodogram"]["title"],
-                xaxis_title=UI_TEXT["periodogram"]["xaxis_title"],
-                yaxis_title=UI_TEXT["periodogram"]["yaxis_title"],
+                title=ui_text["periodogram"]["title"],
+                xaxis_title=ui_text["periodogram"]["xaxis_title"],
+                yaxis_title=ui_text["periodogram"]["yaxis_title"],
                 showlegend=False,
             )
 
             st.plotly_chart(fig, use_container_width=True)
 
 
-def setup_sidebar(time_series: pd.DataFrame, columns_id: List, UI_TEXT: Dict):
+def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
     """
     Set up the sidebar for the time series analysis dashboard.
     :param time_series: The DataFrame containing the time series data.
     :param columns_id: The list of columns to use as identifiers for the series.
-    :param UI_TEXT: The dictionary containing the UI text.
+    :param ui_text: The dictionary containing the UI text.
     :return: The selected temporal grouping option, the selected visualization option, and the list of visualization options.
     """
-    st.sidebar.title(UI_TEXT["sidebar_title"])
+    st.sidebar.title(ui_text["sidebar_title"])
 
     if "forecast" in st.session_state and st.session_state["forecast"] is not None:
         if (
-            UI_TEXT["visualization_options"][1]
+            ui_text["visualization_options"][1]
             not in st.session_state["visualization_options"]
         ):
             st.session_state["visualization_options"].append(
-                UI_TEXT["visualization_options"][1]
+                ui_text["visualization_options"][1]
             )
 
     elif "forecast_origin" not in time_series.columns or "f" not in time_series.columns:
         st.session_state["visualization_options"] = [
-            UI_TEXT["visualization_options"][0]
+            ui_text["visualization_options"][0]
         ]
 
     else:
-        st.session_state["visualization_options"] = UI_TEXT["visualization_options"]
+        st.session_state["visualization_options"] = ui_text["visualization_options"]
 
     visualization = st.sidebar.radio(
-        UI_TEXT["select_visualization"],
-        UI_TEXT["visualization_options"],
+        ui_text["select_visualization"],
+        ui_text["visualization_options"],
     )
 
-    st.sidebar.title(UI_TEXT["select_temporal_grouping"])
-    all_tmp_agr = copy.deepcopy(UI_TEXT["temporal_grouping_options"])
+    st.sidebar.title(ui_text["select_temporal_grouping"])
+    all_tmp_agr = copy.deepcopy(ui_text["temporal_grouping_options"])
 
     if "forecast_origin" in time_series.columns and "f" in time_series.columns:
         min_diff_per_window = time_series.groupby("forecast_origin").apply(
@@ -569,22 +569,22 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, UI_TEXT: Dict):
         min_diff = min_diff_per_window.min()
 
         if min_diff >= 1:
-            all_tmp_agr.remove(UI_TEXT["hourly"])
+            all_tmp_agr.remove(ui_text["hourly"])
         if min_diff >= 7:
-            all_tmp_agr.remove(UI_TEXT["daily"])
+            all_tmp_agr.remove(ui_text["daily"])
         if min_diff >= 28:
-            all_tmp_agr.remove(UI_TEXT["weekly"])
+            all_tmp_agr.remove(ui_text["weekly"])
         if min_diff >= 90:
-            all_tmp_agr.remove(UI_TEXT["monthly"])
+            all_tmp_agr.remove(ui_text["monthly"])
         if min_diff >= 365:
-            all_tmp_agr.remove(UI_TEXT["quarterly"])
+            all_tmp_agr.remove(ui_text["quarterly"])
 
         if len(all_tmp_agr) == 0:
-            st.write(UI_TEXT["temporal_analysis_error"])
+            st.write(ui_text["temporal_analysis_error"])
             return
 
         select_agr_tmp = st.sidebar.selectbox(
-            UI_TEXT["select_temporal_grouping"],
+            ui_text["select_temporal_grouping"],
             all_tmp_agr,
             label_visibility="collapsed",
         )
@@ -595,22 +595,22 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, UI_TEXT: Dict):
         min_diff = min_diff_per_window.min()
 
         if min_diff >= 1:
-            all_tmp_agr.remove(UI_TEXT["hourly"])
+            all_tmp_agr.remove(ui_text["hourly"])
         if min_diff >= 7:
-            all_tmp_agr.remove(UI_TEXT["daily"])
+            all_tmp_agr.remove(ui_text["daily"])
         if min_diff >= 28:
-            all_tmp_agr.remove(UI_TEXT["weekly"])
+            all_tmp_agr.remove(ui_text["weekly"])
         if min_diff >= 90:
-            all_tmp_agr.remove(UI_TEXT["monthly"])
+            all_tmp_agr.remove(ui_text["monthly"])
         if min_diff >= 365:
-            all_tmp_agr.remove(UI_TEXT["quarterly"])
+            all_tmp_agr.remove(ui_text["quarterly"])
 
         if len(all_tmp_agr) == 0:
-            st.write(UI_TEXT["temporal_analysis_error"])
+            st.write(ui_text["temporal_analysis_error"])
             return
 
         select_agr_tmp = st.sidebar.selectbox(
-            UI_TEXT["select_temporal_grouping"],
+            ui_text["select_temporal_grouping"],
             all_tmp_agr,
             label_visibility="collapsed",
         )
@@ -618,13 +618,13 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, UI_TEXT: Dict):
     if columns_id:
         time_series[columns_id] = time_series[columns_id].astype(str)
         # Setup select series
-        selected_item = select_series(time_series, columns_id, UI_TEXT)
-        if st.sidebar.button(UI_TEXT["add_selected_series"]):
+        selected_item = select_series(time_series, columns_id, ui_text)
+        if st.sidebar.button(ui_text["add_selected_series"]):
             # Avoid adding duplicates
             if selected_item not in st.session_state["selected_series"]:
                 st.session_state["selected_series"].append(selected_item)
             else:
-                st.toast(UI_TEXT["series_already_added"], icon="❌")
+                st.toast(ui_text["series_already_added"], icon="❌")
 
         # Display the selected series in the sidebar with remove button
         for idx, serie in enumerate(st.session_state["selected_series"]):
@@ -638,26 +638,26 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, UI_TEXT: Dict):
                     st.rerun()
         # Remove all selected series
         if st.session_state["selected_series"]:
-            if st.sidebar.button(UI_TEXT["remove_all_series"]):
+            if st.sidebar.button(ui_text["remove_all_series"]):
                 st.session_state["selected_series"] = []
                 st.rerun()
     else:
-        st.sidebar.write(UI_TEXT["no_columns_to_filter"])
+        st.sidebar.write(ui_text["no_columns_to_filter"])
         st.session_state["selected_series"] = [{}]
 
     return select_agr_tmp, visualization, st.session_state["visualization_options"]
 
 
-def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
+def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
     """
     Plot the forecast for the selected series.
     :param forecast: The DataFrame containing the forecast data.
     :param selected_series: The list of selected series to plot.
-    :param UI_TEXT: The dictionary containing the UI text.
+    :param ui_text: The dictionary containing the UI text.
     """
-    st.subheader(UI_TEXT["forecast_plot_title"])
+    st.subheader(ui_text["forecast_plot_title"])
     if not selected_series:
-        st.write(UI_TEXT["select_series_to_plot"])
+        st.write(ui_text["select_series_to_plot"])
         return
     # Get dates for the selected series
     filter_cond = ""
@@ -676,7 +676,7 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
         forecast_restricted = forecast.copy()
 
     selected_date = st.date_input(
-        UI_TEXT["choose_date"],
+        ui_text["choose_date"],
         min_value=forecast_restricted["forecast_origin"].min(),
         max_value=forecast_restricted["forecast_origin"].max(),
         value=forecast_restricted["forecast_origin"].min(),
@@ -701,9 +701,9 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
         # weekday from datetime
 
         selected_data["weekday"] = selected_data["datetime"].dt.dayofweek
-        # Use UI_TEXT for DAY_NAME_DICT
+        # Use ui_text for DAY_NAME_DICT
         selected_data["weekday"] = selected_data["weekday"].map(
-            UI_TEXT["DAY_NAME_DICT"]
+            ui_text["DAY_NAME_DICT"]
         )
 
         time_series = selected_data[["datetime", "y", "weekday"]].drop_duplicates()
@@ -745,7 +745,7 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
                     x=time_series["datetime"],
                     y=time_series["y"],
                     mode="lines",
-                    name=UI_TEXT["series_names"]["real"],
+                    name=ui_text["series_names"]["real"],
                     line=dict(color=px.colors.qualitative.Dark2[0]),
                     hovertemplate="datetime: %{x}<br>real: %{y}<br>Weekday: %{customdata[4]}",
                     customdata=time_series[["weekday"]],
@@ -760,8 +760,8 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
                 y=["y", "f"],
                 title="-".join(serie.values()),
                 labels={
-                    "datetime": UI_TEXT["axis_labels"]["date"],
-                    "value": UI_TEXT["axis_labels"]["value"],
+                    "datetime": ui_text["axis_labels"]["date"],
+                    "value": ui_text["axis_labels"]["value"],
                 },
                 hover_data=["err", "abs_err", "perc_err", "perc_abs_err", "weekday"],
                 range_y=[
@@ -771,8 +771,8 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
             )
 
         newnames = {
-            "y": UI_TEXT["series_names"]["real"],
-            "f": UI_TEXT["series_names"]["forecast"],
+            "y": ui_text["series_names"]["real"],
+            "f": ui_text["series_names"]["forecast"],
         }
 
         fig.for_each_trace(
@@ -794,29 +794,29 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict):
 
 
 def plot_error_visualization(
-    forecast: pd.DataFrame, selected_series: List, UI_TEXT: Dict[str, str]
+    forecast: pd.DataFrame, selected_series: List, ui_text: Dict[str, str]
 ):
     """
     Plot the error visualization for the selected series.
     :param forecast: The DataFrame containing the forecast data.
     :param selected_series: The list of selected series to plot.
-    :param UI_TEXT: The dictionary containing the UI text.
+    :param ui_text: The dictionary containing the UI text.
     """
-    st.subheader(UI_TEXT["error_visualization_title"])
+    st.subheader(ui_text["error_visualization_title"])
 
     # Add radio selector for filter type
     filter_type = st.radio(
-        UI_TEXT["select_filter_type"],
+        ui_text["select_filter_type"],
         [
-            UI_TEXT["datetime_filter"],
-            UI_TEXT["forecast_origin_filter"],
-            UI_TEXT["both_filters"],
+            ui_text["datetime_filter"],
+            ui_text["forecast_origin_filter"],
+            ui_text["both_filters"],
         ],
         horizontal=True,
     )
 
-    if filter_type in [UI_TEXT["datetime_filter"], UI_TEXT["both_filters"]]:
-        st.write(UI_TEXT["select_datetime_range"])
+    if filter_type in [ui_text["datetime_filter"], ui_text["both_filters"]]:
+        st.write(ui_text["select_datetime_range"])
         date_range = date_range_picker(
             picker_type=PickerType.date,
             start=forecast["datetime"].min(),
@@ -830,8 +830,8 @@ def plot_error_visualization(
             date_start = forecast["datetime"].min()
             date_end = forecast["datetime"].max()
 
-    if filter_type in [UI_TEXT["forecast_origin_filter"], UI_TEXT["both_filters"]]:
-        st.write(UI_TEXT["select_forecast_origin_range"])
+    if filter_type in [ui_text["forecast_origin_filter"], ui_text["both_filters"]]:
+        st.write(ui_text["select_forecast_origin_range"])
         forecast_origin_range = date_range_picker(
             picker_type=PickerType.date,
             start=forecast["forecast_origin"].min(),
@@ -850,10 +850,10 @@ def plot_error_visualization(
         selected_data = forecast.copy()
         filter_cond = ""
 
-        if filter_type in [UI_TEXT["datetime_filter"], UI_TEXT["both_filters"]]:
+        if filter_type in [ui_text["datetime_filter"], ui_text["both_filters"]]:
             filter_cond += f"datetime >= '{date_start}' & datetime <= '{date_end}' & "
 
-        if filter_type in [UI_TEXT["forecast_origin_filter"], UI_TEXT["both_filters"]]:
+        if filter_type in [ui_text["forecast_origin_filter"], ui_text["both_filters"]]:
             filter_cond += f"forecast_origin >= '{forecast_origin_start}' & forecast_origin <= '{forecast_origin_end}' & "
 
         for col, col_value in serie.items():
@@ -868,10 +868,10 @@ def plot_error_visualization(
     models = sorted(
         set(model for serie in data_dict.values() for model in serie["model"].unique())
     )
-    select_model = st.selectbox(UI_TEXT["select_top_10"], models)
+    select_model = st.selectbox(ui_text["select_top_10"], models)
     for idx, serie in data_dict.items():
         filter = serie[serie["model"] == select_model]
-        st.write(UI_TEXT["top_10_errors"] + f": **{select_model}**")
+        st.write(ui_text["top_10_errors"] + f": **{select_model}**")
         st.write(
             filter.nlargest(10, "perc_abs_err")[
                 ["datetime", "forecast_origin", "model", "perc_abs_err"]
@@ -879,27 +879,27 @@ def plot_error_visualization(
         )
 
     mean_or_median_error = st.radio(
-        UI_TEXT["show_median_or_mean"],
-        UI_TEXT["median_or_mean_options"],
+        ui_text["show_median_or_mean"],
+        ui_text["median_or_mean_options"],
         index=0,
         key="median_or_mean_pmrs_diarios",
         horizontal=True,
     )
     median_or_mean_trans = {
-        UI_TEXT["median_option"]: "median",
-        UI_TEXT["mean_option"]: "mean",
+        ui_text["median_option"]: "median",
+        ui_text["mean_option"]: "mean",
     }
 
     # Show mean or median overall perc_abs_err
     for idx, serie in data_dict.items():
         st.write(
-            UI_TEXT["error_message"].format(
-                UI_TEXT["mediana_mean_string_dict"][mean_or_median_error],
+            ui_text["error_message"].format(
+                ui_text["mediana_mean_string_dict"][mean_or_median_error],
                 f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**",
             )
         )
 
-        st.write(UI_TEXT["aggregated_summary_title"] + ":")
+        st.write(ui_text["aggregated_summary_title"] + ":")
 
         df_agg = serie.groupby("model", as_index=False).agg(
             y=("y", "mean"),
@@ -913,19 +913,19 @@ def plot_error_visualization(
 
         df_agg = df_agg.round(2)
 
-        if mean_or_median_error == UI_TEXT["mean_option"]:
+        if mean_or_median_error == ui_text["mean_option"]:
             df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_mean"]]
             df_agg_ordered = df_agg_filtered.sort_values(
                 by="perc_abs_err_mean"
             ).reset_index(drop=True)
             st.write(df_agg_ordered)
             st.write(
-                UI_TEXT["best_error_message"].format(
+                ui_text["best_error_message"].format(
                     f"**{df_agg_ordered['model'].iloc[0]}**",
                     f"**{df_agg_ordered['perc_abs_err_mean'].iloc[0]}**",
                 )
             )
-        elif mean_or_median_error == UI_TEXT["median_option"]:
+        elif mean_or_median_error == ui_text["median_option"]:
             df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_median"]]
             df_agg_ordered = df_agg_filtered.sort_values(
                 by="perc_abs_err_median"
@@ -934,7 +934,7 @@ def plot_error_visualization(
 
             if len(models) > 1:
                 st.write(
-                    UI_TEXT["best_error_message"].format(
+                    ui_text["best_error_message"].format(
                         f"**{df_agg_ordered['model'].iloc[0]}**",
                         f"**{df_agg_ordered['perc_abs_err_median'].iloc[0]}**",
                     )
@@ -942,15 +942,15 @@ def plot_error_visualization(
 
     # Select which plot to show multiple allowed
     plot_options = st.multiselect(
-        UI_TEXT["select_plots"],
-        UI_TEXT["plot_options_error"],
+        ui_text["select_plots"],
+        ui_text["plot_options_error"],
         default=[],
-        placeholder=UI_TEXT["select_plots"],
+        placeholder=ui_text["select_plots"],
         label_visibility="collapsed",
     )
     # "Box plot by horizon"
-    if UI_TEXT["plot_options_error"][0] in plot_options:
-        st.write(f"### {UI_TEXT['horizon_boxplot_title']}")
+    if ui_text["plot_options_error"][0] in plot_options:
+        st.write(f"### {ui_text['horizon_boxplot_title']}")
         # Box plot perc_abs_err by horizon
         for idx, serie in data_dict.items():
             # Show how many points for each horizon
@@ -964,22 +964,22 @@ def plot_error_visualization(
             st.plotly_chart(fig)
             number_by_horizon = serie.groupby("h").size()
             if number_by_horizon.std() > 0:
-                st.warning(UI_TEXT["horizon_warning"])
+                st.warning(ui_text["horizon_warning"])
     # "Box plot by datetime"
-    if UI_TEXT["plot_options_error"][1] in plot_options:
-        st.write(f"### {UI_TEXT['datetime_boxplot_title']}")
+    if ui_text["plot_options_error"][1] in plot_options:
+        st.write(f"### {ui_text['datetime_boxplot_title']}")
         # Box plot perc_abs_err by datetime columns depending on user selection
         dict_transformations = {
-            UI_TEXT["temporal_aggregation_options"][0]: lambda x: x.dayofweek,
-            UI_TEXT["temporal_aggregation_options"][1]: lambda x: x.month,
+            ui_text["temporal_aggregation_options"][0]: lambda x: x.dayofweek,
+            ui_text["temporal_aggregation_options"][1]: lambda x: x.month,
         }
         col_name_dict = {
-            UI_TEXT["temporal_aggregation_options"][0]: UI_TEXT["day"],
-            UI_TEXT["temporal_aggregation_options"][1]: UI_TEXT["month"],
+            ui_text["temporal_aggregation_options"][0]: ui_text["day"],
+            ui_text["temporal_aggregation_options"][1]: ui_text["month"],
         }
         select_agg = st.selectbox(
-            UI_TEXT["select_temporal_aggregation"],
-            UI_TEXT["temporal_aggregation_options"],
+            ui_text["select_temporal_aggregation"],
+            ui_text["temporal_aggregation_options"],
             key="select_agg",
         )
 
@@ -988,9 +988,9 @@ def plot_error_visualization(
             transformed_datetime = serie["datetime"].apply(
                 dict_transformations[select_agg]
             )
-            # Use UI_TEXT for ALL_DICT
+            # Use ui_text for ALL_DICT
             transformed_datetime = transformed_datetime.map(
-                UI_TEXT["ALL_DICT"][select_agg]
+                ui_text["ALL_DICT"][select_agg]
             )
 
             fig = px.box(

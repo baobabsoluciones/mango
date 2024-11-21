@@ -4,8 +4,6 @@ from statsforecast import StatsForecast
 from mango_time_series.dashboards.time_series_utils.constants import (
     SELECT_AGR_TMP_DICT,
     model_context,
-)
-from mango_time_series.dashboards.time_series_utils.constants import (
     default_models,
 )
 from mango_time_series.dashboards.time_series_utils.data_loader import (
@@ -267,7 +265,6 @@ def interface_visualization(project_name: str = None):
                                     data_long["abs_err"] / data_long["y"]
                                 )
 
-                            # st.write(data_long)
                             st.session_state["forecast"] = data_long
                             if (
                                 UI_TEXT["visualization_options"][1]

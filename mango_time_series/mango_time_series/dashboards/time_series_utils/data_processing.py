@@ -10,8 +10,8 @@ from .constants import all_imports
 
 
 @st.cache_data
-def aggregate_to_input_cache(data, freq, SERIES_CONF):
-    return aggregate_to_input(data, freq, SERIES_CONF)
+def aggregate_to_input_cache(data, freq, series_conf):
+    return aggregate_to_input(data, freq, series_conf)
 
 
 @st.cache_data
@@ -54,7 +54,7 @@ def process_data(
     columns_id: List,
     select_agr_tmp_dict: Dict,
     select_agr_tmp: str,
-    UI_TEXT: Dict,
+    ui_text: Dict,
 ):
     """
     Process the input data for the time series analysis.
@@ -62,13 +62,13 @@ def process_data(
     :param columns_id: list of str with the columns to use as identifiers
     :param select_agr_tmp_dict: dict with the aggregation options
     :param select_agr_tmp: str with the selected aggregation option
-    :param UI_TEXT: dict with the UI text
+    :param ui_text: dict with the UI text
     :return: tuple with the aggregated time series and forecast data
     """
     data["datetime"] = pd.to_datetime(data["datetime"])
     if (
-        st.session_state.get("visualization") == UI_TEXT["visualization_options"][0]
-    ):  # "Exploration"
+        st.session_state.get("visualization") == ui_text["visualization_options"][0]
+    ):
         time_series = data[["datetime", "y"]].drop_duplicates()
         forecast = None
     else:
@@ -82,7 +82,7 @@ def process_data(
             forecast = aggregate_to_input_cache(
                 forecast,
                 freq=select_agr_tmp_dict[select_agr_tmp],
-                SERIES_CONF={
+                series_conf={
                     "KEY_COLS": columns_id + ["forecast_origin", "model"],
                     "AGG_OPERATIONS": {
                         "y": "sum",
@@ -99,7 +99,7 @@ def process_data(
     time_series = aggregate_to_input(
         time_series,
         freq=select_agr_tmp_dict[select_agr_tmp],
-        SERIES_CONF={"KEY_COLS": columns_id, "AGG_OPERATIONS": {"y": "sum"}},
+        series_conf={"KEY_COLS": columns_id, "AGG_OPERATIONS": {"y": "sum"}},
     )
 
     return time_series, forecast

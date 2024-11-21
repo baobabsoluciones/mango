@@ -5,11 +5,11 @@ import streamlit as st
 
 
 @st.cache_data
-def load_data(files_loaded: Dict, UI_TEXT: Dict):
+def load_data(files_loaded: Dict, ui_text: Dict):
     """
     Load data from the files loaded in the app.
     :param files_loaded: Dictionary with the files loaded in the app.
-    :param UI_TEXT: Dictionary with the text to display in the app.
+    :param ui_text: Dictionary with the text to display in the app.
     """
     # Assuming the first file is the main data file
     list_df = []
@@ -21,7 +21,7 @@ def load_data(files_loaded: Dict, UI_TEXT: Dict):
 
         if "forecast_origin" in data.columns and "f" in data.columns:
             # "Forecast"
-            visualization = UI_TEXT["visualization_options"][1]
+            visualization = ui_text["visualization_options"][1]
             if "f" in data.columns:
                 if "err" not in data.columns:
                     data["err"] = data["y"] - data["f"]
@@ -37,10 +37,10 @@ def load_data(files_loaded: Dict, UI_TEXT: Dict):
                 no_perc_cols = ["err", "abs_err"]
                 data[no_perc_cols] = data[no_perc_cols].round(0)
             else:
-                st.info(UI_TEXT["f_column_missing"])
+                st.info(ui_text["f_column_missing"])
         else:
             # "Exploration"
-            visualization = UI_TEXT["visualization_options"][0]
+            visualization = ui_text["visualization_options"][0]
 
         list_df.append(data)
         list_visualization.append(visualization)
