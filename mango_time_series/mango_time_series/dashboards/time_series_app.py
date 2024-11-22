@@ -1,4 +1,5 @@
 import streamlit as st
+from numpy.matlib import empty
 from statsforecast import StatsForecast
 
 from mango_time_series.dashboards.time_series_utils.constants import (
@@ -145,8 +146,8 @@ def interface_visualization(project_name: str = None):
             for key, value in SELECT_AGR_TMP_DICT.items():
                 if key in UI_TEXT:
                     final_select_agr_tmp_dict[UI_TEXT[key]] = value
-            select_agr_tmp, visualization, visualization_options = setup_sidebar(
-                data, columns_id, UI_TEXT
+            select_agr_tmp, visualization, visualization_options, selected_uid = (
+                setup_sidebar(data, columns_id, UI_TEXT)
             )
             time_series, forecast = process_data(
                 data, columns_id, final_select_agr_tmp_dict, select_agr_tmp, UI_TEXT
@@ -218,22 +219,32 @@ def interface_visualization(project_name: str = None):
                             fcst = StatsForecast(
                                 models=list(models_to_use.values()), freq=freq_code
                             )
+                            # Verify if the first element (dictionary) of the list is empty
+                            if selected_uid[0]:
+                                columns_id = selected_uid[0].get("uid")
+                                # Filter uid column = columns_id
+                                time_series = time_series[
+                                    time_series["uid"] == columns_id
+                                ]
 
                             time_serie = time_series.copy()
-                            st.dataframe(time_serie)
 
                             if not columns_id:
                                 time_serie["unique_id"] = "id_1"
-                                columns_id = "unique_id"
+                            else:
+                                time_serie = time_series.rename(
+                                    columns={"uid": "unique_id"}
+                                )
                             time_serie = time_serie.rename(
                                 columns={"datetime": "ds", "y": "y"}
                             )
+
                             crossvalidation_df = fcst.cross_validation(
                                 df=time_serie,
                                 h=st.session_state["horizon"],
                                 step_size=st.session_state["step_size"],
                                 n_windows=st.session_state["n_windows"],
-                                id_col=columns_id,
+                                id_col="unique_id",
                             )
 
                             model_columns = [
@@ -282,7 +293,6 @@ def interface_visualization(project_name: str = None):
             elif visualization == UI_TEXT["visualization_options"][1]:
                 if "f" in forecast.columns and "err" in forecast.columns:
                     st.info(UI_TEXT["upload_forecast"])
-
                     plot_forecast(
                         forecast, st.session_state["selected_series"], UI_TEXT
                     )
@@ -299,10 +309,14 @@ def interface_visualization(project_name: str = None):
                 ):
                     st.info(UI_TEXT["message_forecast_baseline"])
                     forecast_st = st.session_state["forecast"].copy()
+
+                    if selected_uid[0]:
+                        columns_id_multiple = selected_uid[0].get("uid")
+                        forecast_st["uid"] = columns_id_multiple
                     forecast = aggregate_to_input_cache(
                         forecast_st,
                         freq=final_select_agr_tmp_dict[select_agr_tmp],
-                        SERIES_CONF={
+                        series_conf={
                             "KEY_COLS": columns_id + ["forecast_origin", "model"],
                             "AGG_OPERATIONS": {
                                 "y": "sum",

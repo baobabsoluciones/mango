@@ -625,7 +625,6 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
                 st.session_state["selected_series"].append(selected_item)
             else:
                 st.toast(ui_text["series_already_added"], icon="❌")
-
         # Display the selected series in the sidebar with remove button
         for idx, serie in enumerate(st.session_state["selected_series"]):
             serie = "-".join(serie.values())
@@ -645,7 +644,12 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
         st.sidebar.write(ui_text["no_columns_to_filter"])
         st.session_state["selected_series"] = [{}]
 
-    return select_agr_tmp, visualization, st.session_state["visualization_options"]
+    return (
+        select_agr_tmp,
+        visualization,
+        st.session_state["visualization_options"],
+        st.session_state["selected_series"],
+    )
 
 
 def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
