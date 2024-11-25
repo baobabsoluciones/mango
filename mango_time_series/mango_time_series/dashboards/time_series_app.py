@@ -149,6 +149,24 @@ def interface_visualization(project_name: str = None):
             select_agr_tmp, visualization, visualization_options, selected_uid = (
                 setup_sidebar(data, columns_id, UI_TEXT)
             )
+
+            if selected_uid and selected_uid[0]:
+                current_uid = selected_uid[0].get("uid")
+                if "previous_uid" not in st.session_state:
+                    st.session_state["previous_uid"] = current_uid
+
+                if current_uid != st.session_state["previous_uid"]:
+                    st.session_state["previous_uid"] = current_uid
+                    st.session_state["forecast"] = False
+                    st.warning("Nuevo ID seleccionado.")
+                    st.rerun()
+
+            elif "previous_uid" in st.session_state:
+                st.session_state.pop("previous_uid", None)
+                st.session_state["forecast"] = None
+                st.rerun()
+
+
             time_series, forecast = process_data(
                 data, columns_id, final_select_agr_tmp_dict, select_agr_tmp, UI_TEXT
             )
@@ -219,10 +237,9 @@ def interface_visualization(project_name: str = None):
                             fcst = StatsForecast(
                                 models=list(models_to_use.values()), freq=freq_code
                             )
-                            # Verify if the first element (dictionary) of the list is empty
+
                             if selected_uid[0]:
                                 columns_id = selected_uid[0].get("uid")
-                                # Filter uid column = columns_id
                                 time_series = time_series[
                                     time_series["uid"] == columns_id
                                 ]
@@ -310,9 +327,10 @@ def interface_visualization(project_name: str = None):
                     st.info(UI_TEXT["message_forecast_baseline"])
                     forecast_st = st.session_state["forecast"].copy()
 
-                    if selected_uid[0]:
+                    if selected_uid and selected_uid[0]:
                         columns_id_multiple = selected_uid[0].get("uid")
                         forecast_st["uid"] = columns_id_multiple
+
                     forecast = aggregate_to_input_cache(
                         forecast_st,
                         freq=final_select_agr_tmp_dict[select_agr_tmp],
