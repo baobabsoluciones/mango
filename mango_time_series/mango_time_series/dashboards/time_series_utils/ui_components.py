@@ -67,11 +67,14 @@ def plot_time_series(
     :param select_agr_tmp: The selected temporal grouping option.
     :param ui_text: The dictionary containing the UI text.
     """
-    select_plot = st.selectbox(
-        ui_text["choose_plot"],
-        ui_text["plot_options"],
-        label_visibility="collapsed",
-    )
+    col1, col2, col3 = st.columns([0.25, 1, 0.25])
+
+    with col1:
+        select_plot = st.selectbox(
+            ui_text["choose_plot"],
+            ui_text["plot_options"],
+            label_visibility="hidden",
+        )
     seasonality_decompose = SeasonalityDecompose()
     seasonality_detector = SeasonalityDetector()
 
@@ -563,6 +566,18 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
     all_tmp_agr = copy.deepcopy(ui_text["temporal_grouping_options"])
 
     if "forecast_origin" in time_series.columns and "f" in time_series.columns:
+        if "uid" in time_series.columns:
+            sort_columns = ["uid"]
+            if (
+                "model" in time_series.columns
+                and "forecast_origin" in time_series.columns
+            ):
+                sort_columns.extend(["model", "datetime"])
+            elif "forecast_origin" in time_series.columns:
+                sort_columns.extend(["forecast_origin", "datetime"])
+            else:
+                sort_columns.append("datetime")
+            time_series = time_series.sort_values(by=sort_columns)
         min_diff_per_window = time_series.groupby("forecast_origin").apply(
             calculate_min_diff_per_window
         )
@@ -679,13 +694,15 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
     else:
         forecast_restricted = forecast.copy()
 
-    selected_date = st.date_input(
-        ui_text["choose_date"],
-        min_value=forecast_restricted["forecast_origin"].min(),
-        max_value=forecast_restricted["forecast_origin"].max(),
-        value=forecast_restricted["forecast_origin"].min(),
-        label_visibility="collapsed",
-    )
+    col1, col2, col3 = st.columns([0.25, 1, 0.25])
+    with col1:
+        selected_date = st.date_input(
+            ui_text["choose_date"],
+            min_value=forecast_restricted["forecast_origin"].min(),
+            max_value=forecast_restricted["forecast_origin"].max(),
+            value=forecast_restricted["forecast_origin"].min(),
+            label_visibility="visible",
+        )
     for serie in selected_series:
         filter_cond = ""
         for col, col_value in serie.items():
@@ -872,15 +889,26 @@ def plot_error_visualization(
     models = sorted(
         set(model for serie in data_dict.values() for model in serie["model"].unique())
     )
-    select_model = st.selectbox(ui_text["select_top_10"], models)
-    for idx, serie in data_dict.items():
-        filter = serie[serie["model"] == select_model]
-        st.write(ui_text["top_10_errors"] + f": **{select_model}**")
-        st.write(
-            filter.nlargest(10, "perc_abs_err")[
-                ["datetime", "forecast_origin", "model", "perc_abs_err"]
-            ]
+
+    col1, col2, col3 = st.columns([0.3, 1, 0.3])
+
+    with col1:
+        select_model = st.selectbox(
+            label=ui_text["select_top_10"],
+            options=models,
+            index=None,
+            placeholder=ui_text["select_top_10"],
+            label_visibility="hidden",
         )
+    if select_model:
+        for idx, serie in data_dict.items():
+            filter = serie[serie["model"] == select_model]
+            st.write(ui_text["top_10_errors"] + f": **{select_model}**")
+            st.write(
+                filter.nlargest(10, "perc_abs_err")[
+                    ["datetime", "forecast_origin", "model", "perc_abs_err"]
+                ]
+            )
 
     mean_or_median_error = st.radio(
         ui_text["show_median_or_mean"],
@@ -945,13 +973,15 @@ def plot_error_visualization(
                 )
 
     # Select which plot to show multiple allowed
-    plot_options = st.multiselect(
-        ui_text["select_plots"],
-        ui_text["plot_options_error"],
-        default=[],
-        placeholder=ui_text["select_plots"],
-        label_visibility="collapsed",
-    )
+    col1, col2, col3 = st.columns([0.25, 1, 0.25])
+    with col1:
+        plot_options = st.multiselect(
+            ui_text["select_plots"],
+            ui_text["plot_options_error"],
+            default=[],
+            placeholder=ui_text["select_plots"],
+            label_visibility="collapsed",
+        )
     # "Box plot by horizon"
     if ui_text["plot_options_error"][0] in plot_options:
         st.write(f"### {ui_text['horizon_boxplot_title']}")

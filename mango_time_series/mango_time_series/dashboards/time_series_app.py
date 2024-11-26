@@ -6,6 +6,7 @@ from mango_time_series.dashboards.time_series_utils.constants import (
     SELECT_AGR_TMP_DICT,
     model_context,
     default_models,
+    PROJECT_NAME,
 )
 from mango_time_series.dashboards.time_series_utils.data_loader import (
     load_data,
@@ -41,7 +42,7 @@ def interface_visualization(project_name: str = None):
     """
     # SETUP web page
     st.set_page_config(
-        page_title="Visualization",
+        page_title=project_name,
         layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
@@ -62,7 +63,7 @@ def interface_visualization(project_name: str = None):
     else:
         UI_TEXT = UI_TEXT_EN
 
-    st.title(project_name or UI_TEXT["page_title"])
+    st.title(project_name)
 
     hide_label = (
         """
@@ -158,7 +159,6 @@ def interface_visualization(project_name: str = None):
                 if current_uid != st.session_state["previous_uid"]:
                     st.session_state["previous_uid"] = current_uid
                     st.session_state["forecast"] = False
-                    st.warning("Nuevo ID seleccionado.")
                     st.rerun()
 
             elif "previous_uid" in st.session_state:
@@ -166,12 +166,12 @@ def interface_visualization(project_name: str = None):
                 st.session_state["forecast"] = None
                 st.rerun()
 
-
             time_series, forecast = process_data(
                 data, columns_id, final_select_agr_tmp_dict, select_agr_tmp, UI_TEXT
             )
             # "Exploration"
             if visualization == UI_TEXT["visualization_options"][0]:
+                st.subheader(UI_TEXT["page_title_visualization"], divider=True)
                 plot_time_series(
                     time_series,
                     st.session_state["selected_series"],
@@ -308,6 +308,7 @@ def interface_visualization(project_name: str = None):
                             st.rerun()
             # "Forecast"
             elif visualization == UI_TEXT["visualization_options"][1]:
+                st.subheader(UI_TEXT["page_title_forecast"], divider=True)
                 if "f" in forecast.columns and "err" in forecast.columns:
                     st.info(UI_TEXT["upload_forecast"])
                     plot_forecast(
@@ -393,4 +394,4 @@ def interface_visualization(project_name: str = None):
 
 
 if __name__ == "__main__":
-    interface_visualization()
+    interface_visualization(project_name=PROJECT_NAME)

@@ -9,6 +9,8 @@ from statsforecast.models import (
     AutoTheta,
 )
 
+PROJECT_NAME = "Project"
+
 ModelType = Union[HistoricAverage, Naive, RandomWalkWithDrift, MSTL]
 
 

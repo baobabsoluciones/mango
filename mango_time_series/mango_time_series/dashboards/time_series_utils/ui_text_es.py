@@ -1,5 +1,8 @@
 UI_TEXT = {
-    "page_title": "Visualización",
+    "page_title_visualization": "Visualización",
+    "page_title_forecast": "Predicción",
+    "select_plot": "Selecciona el gráfico",
+    "select_forecast_origin": "Selecciona el origen de pronóstico",
     "upload_button_text": "Subir archivo",
     "upload_instructions": "Arrastra y suelta un archivo CSV aquí o haz clic para seleccionar un archivo.",
     "file_limits": "Máximo {} MB por archivo.",
@@ -31,7 +34,7 @@ UI_TEXT = {
     "temporal_analysis_error": "No se puede realizar el análisis temporal",
     "forecast_plot_title": "Gráfico de forecast",
     "select_series_to_plot": "Selecciona al menos una serie para graficar el forecast",
-    "choose_date": "Elige una fecha",
+    "choose_date": "Elige la fecha de predicción:",
     "error_visualization_title": "Visualización de errores",
     "select_date_range": "Seleccione el rango de fechas (columna datetime) para visualizar los errores de forecast",
     "top_10_errors": "Top 10 errores porcentuales absolutos",

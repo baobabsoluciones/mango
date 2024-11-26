@@ -1,6 +1,9 @@
 UI_TEXT = {
     # General
-    "page_title": "Visualization",
+    "page_title_visualization": "Visualization",
+    "page_title_forecast": "Forecast",
+    "select_plot": "Select plot",
+    "select_forecast_origin": "Select forecast origin",
     "sidebar_title": "Visualizations",
     "upload_button_text": "Upload a file",
     "upload_instructions": "Drag and drop a file here or click to upload",
@@ -65,7 +68,7 @@ UI_TEXT = {
     # Forecast
     "forecast_plot_title": "Forecast plot",
     "select_series_to_plot": "Select at least one series to plot the forecast",
-    "choose_date": "Choose a date",
+    "choose_date": "Choose forecast date:",
     # Error Visualization
     "error_visualization_title": "Error visualization",
     "select_date_range": "Select date range (datetime column) to visualize forecast errors",
