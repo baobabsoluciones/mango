@@ -1,10 +1,9 @@
 from unittest import TestCase
 
-from pydantic import BaseModel
-
 from mango.shared import validate_args, ValidationError, pydantic_validation
 from mango.tests.const import VALIDATION_SCHEMA, normalize_path
 from mango.validators.arcgis import LocationsList, Locations
+from pydantic import BaseModel
 
 
 class ValidationTests(TestCase):

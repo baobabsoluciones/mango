@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-from pytups import TupList
-
 from mango.table.table_tools import (
     mean,
     is_subset,
@@ -12,6 +10,7 @@ from mango.table.table_tools import (
     invert_dict_list,
     simplify,
 )
+from pytups import TupList
 
 
 class TestTools(TestCase):

@@ -39,13 +39,16 @@ class SeasonalityDetector:
         :param min_repetitions: Minimum number of significant multiples to consider a period as a valid seasonality (default 2).
         :return: The most common detected seasonal period if significant; 0 otherwise.
         """
-        acf_values = acf(x=ts, nlags=max_lag)
+        acf_values, confint = acf(ts, nlags=max_lag, alpha=0.05)
 
         # Find local maxima in the ACF values (indicative of seasonality)
         local_maxima = (np.diff(np.sign(np.diff(acf_values))) < 0).nonzero()[0] + 1
 
         significant_maxima = [
-            lag for lag in local_maxima if acf_values[lag] > acf_threshold
+            lag
+            for lag in local_maxima
+            if (acf_values[lag] > acf_threshold)
+            and (acf_values[lag] > confint[lag, 1] or acf_values[lag] < confint[lag, 0])
         ]
 
         if len(significant_maxima) > 1:
@@ -59,19 +62,26 @@ class SeasonalityDetector:
             valid_period_lags = period_lags[period_lags < len(acf_values)]
             # Count how many multiples of the period are above the ACF threshold
             significant_multiples = np.sum(
-                acf_values[valid_period_lags] > acf_threshold
+                (acf_values[valid_period_lags] > acf_threshold)
+                & (
+                    (acf_values[valid_period_lags] > confint[valid_period_lags, 1])
+                    | (acf_values[valid_period_lags] < confint[valid_period_lags, 0])
+                )
             )
 
-            if significant_multiples >= min_repetitions:
+            if (
+                significant_multiples >= min_repetitions
+            ):  # Only consider the period if enough multiples are significant
                 return most_common_period
             else:
                 return 0
         else:
             return 0
 
+    @staticmethod
     def detect_seasonality_periodogram(
-        self, ts: np.ndarray, min_period: int = 2, max_period: int = 365
-    ) -> list:
+        ts: np.ndarray, min_period: int = 2, max_period: int = 365
+    ) -> [list, np.ndarray, np.ndarray]:
         """
         Detect seasonality in a time series using the periodogram.
 
@@ -92,15 +102,37 @@ class SeasonalityDetector:
         filtered_periods = periods[valid_periods]
         filtered_power_spectrum = power_spectrum[valid_periods]
 
-        # Detect peaks in the power spectrum that are above threshold
+        strict_percentile = 99
+        threshold_value = np.percentile(filtered_power_spectrum, strict_percentile)
+
+        # Detect peaks above the stricter threshold
         significant_periods = filtered_periods[
-            filtered_power_spectrum
-            > np.percentile(filtered_power_spectrum, self.percentile_periodogram)
+            filtered_power_spectrum > threshold_value
         ]
 
-        final_detected_periods = sorted(np.unique(np.round(significant_periods)))
+        # Refine peaks by ensuring sufficient difference in power
+        refined_periods = []
+        for i, period in enumerate(significant_periods):
+            if (
+                i == 0
+                or filtered_power_spectrum[i] > 1.5 * filtered_power_spectrum[i - 1]
+            ):
+                refined_periods.append(period)
 
-        return final_detected_periods
+        # Remove redundant multiples of detected periods and keep only near-integer periods
+        final_detected_periods = []
+        for period in refined_periods:
+            # Check if the period is close to an integer within a small tolerance (e.g., 0.05)
+            if np.isclose(period, round(period), atol=0.05):
+                rounded_period = round(period)
+                # Ensure no redundant multiples of detected periods
+                if not any(
+                    np.isclose(rounded_period % other, 0, atol=0.1)
+                    for other in final_detected_periods
+                ):
+                    final_detected_periods.append(rounded_period)
+
+        return final_detected_periods, filtered_periods, filtered_power_spectrum
 
     def detect_seasonality(self, ts: np.ndarray, max_lag: int = 366) -> list:
         """
@@ -116,18 +148,25 @@ class SeasonalityDetector:
         :return: A list of detected seasonal periods. If no seasonality is detected, an empty list is returned.
         """
         # Adjust max_lag based on the length of the time series
-        if max_lag is None:
-            max_lag = min(366, len(ts))
+        if len(ts) < max_lag:
+            max_lag = len(ts) - 1
 
-        # Step 1: Check for the presence of seasonality using ACF
-        if self.detect_significant_seasonality_acf(ts=ts, max_lag=max_lag):
-            # Step 2: If seasonality is detected by ACF, use the periodogram to find the specific seasonal periods
-            detected_seasonalities = self.detect_seasonality_periodogram(ts=ts)
-            if len(detected_seasonalities) > 0:
-                logger.info(f"Seasonalities detected: {detected_seasonalities}")
-            else:
-                logger.info("No significant seasonal periods detected.")
-            return detected_seasonalities
-        else:
-            logger.info("No seasonality detected by ACF.")
-            return []
+        # Step 1: Detect potential seasonality using ACF
+        most_common_period = self.detect_significant_seasonality_acf(
+            ts, max_lag=max_lag
+        )
+
+        # Initialize list of detected periods
+        detected_periods = []
+
+        # If ACF suggests a significant period, verify it with the periodogram
+        if most_common_period:
+            detected_periods.append(most_common_period)
+
+        # Step 2: Use periodogram to validate the ACF period and find additional significant periods
+        periodogram_periods, _, _ = self.detect_seasonality_periodogram(ts)
+        for period in periodogram_periods:
+            if period not in detected_periods:
+                detected_periods.append(period)
+
+        return sorted(detected_periods)

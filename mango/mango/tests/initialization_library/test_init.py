@@ -1,7 +1,9 @@
-import mango
-from unittest import TestCase
 import os
+from unittest import TestCase
+
 from mango.tests.const import normalize_path
+
+import mango
 
 
 class InitializeTest(TestCase):

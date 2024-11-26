@@ -1,3 +1,11 @@
+from mango.processing import (
+    as_list,
+    load_json,
+    write_json,
+    load_excel_light,
+    write_excel_light,
+)
+from mango.table import Table
 from pyomo.core import value, Var
 from pyomo.opt import (
     SolverResults,
@@ -7,15 +15,6 @@ from pyomo.opt import (
     SolutionStatus,
 )
 from pytups import SuperDict
-
-from mango.processing import (
-    as_list,
-    load_json,
-    write_json,
-    load_excel_light,
-    write_excel_light,
-)
-from mango.table import Table
 
 
 def is_feasible(status):

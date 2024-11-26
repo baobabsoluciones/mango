@@ -2,7 +2,6 @@ from random import seed
 from unittest import TestCase
 
 import numpy as np
-
 from mango.benchmark.optimization import (
     ackley,
     inverted_griewank,

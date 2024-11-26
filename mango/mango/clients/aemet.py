@@ -3,11 +3,10 @@ import os
 from datetime import datetime
 from typing import Union, Any, Tuple, Literal
 
-from tqdm import tqdm
-
 from mango.clients.rest_client import RESTClient
 from mango.shared import ApiKeyError, haversine
 from mango.validators.aemet import *
+from tqdm import tqdm
 
 
 class AEMETClient(RESTClient):

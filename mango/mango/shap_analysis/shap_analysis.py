@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shap
-from sklearn.pipeline import Pipeline
-
 from mango.shap_analysis.const import TREE_EXPLAINER_MODELS, KERNEL_EXPLAINER_MODELS
+from sklearn.pipeline import Pipeline
 
 
 class ShapAnalyzer:

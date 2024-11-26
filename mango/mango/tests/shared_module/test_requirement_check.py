@@ -1,9 +1,9 @@
 import os
 from unittest import TestCase, mock
 
+from mango.shared.requirement_check import check_dependencies
 from pkg_resources import DistributionNotFound
 
-from mango.shared.requirement_check import check_dependencies
 
 
 def raise_exception(*args, **kwargs):

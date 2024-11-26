@@ -1,5 +1,4 @@
 import os
-
 # Set wait time to 0 to avoid waiting time between requests as it is not needed for testing
 from datetime import datetime
 from unittest import TestCase, mock

@@ -4,7 +4,6 @@ from random import randint
 from typing import Union
 
 import numpy as np
-
 from mango.models.genetic.config import GeneticBaseConfig
 from mango.models.genetic.individual import Individual
 from mango.models.genetic.problem import Problem
