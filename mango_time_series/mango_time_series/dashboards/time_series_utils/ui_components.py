@@ -71,463 +71,650 @@ def plot_time_series(
 
     with col1:
         select_plot = st.selectbox(
-            ui_text["choose_plot"],
-            ui_text["plot_options"],
+            label=ui_text["choose_plot"],
+            options=ui_text["plot_options"],
+            index=None,
+            key="select_plot",
             label_visibility="hidden",
+            placeholder=ui_text["choose_plot"],
         )
+
     seasonality_decompose = SeasonalityDecompose()
     seasonality_detector = SeasonalityDetector()
 
+    time_series = time_series.copy()
+
+    if "uid" in time_series.columns:
+        time_series["uid"] = time_series["uid"].astype(str)
     # "Original series"
-    if select_plot == ui_text["plot_options"][0]:
-        date_range = date_range_picker(
-            picker_type=PickerType.date,
-            start=time_series["datetime"].min(),
-            end=time_series["datetime"].max(),
-            key="date_range_1",
-        )
-        if date_range:
-            date_start = pd.to_datetime(date_range[0])
-            date_end = pd.to_datetime(date_range[1])
-        else:
-            date_start = time_series["datetime"].min()
-            date_end = time_series["datetime"].max()
-        for serie in selected_series:
-            selected_data = time_series.copy()
 
-            filter_cond = f"datetime >= '{date_start}' & datetime <= '{date_end}' & "
-            for col, col_value in serie.items():
-                filter_cond += f"{col} == '{col_value}' & "
-
-            # Remove the last & from the filter condition
-            filter_cond = filter_cond[:-3]
-            selected_data = selected_data.query(filter_cond)
-            st.plotly_chart(
-                px.line(
-                    selected_data,
-                    x="datetime",
-                    y="y",
-                    title="-".join(serie.values()),
-                ),
-                use_container_width=True,
+    if select_plot is not None:
+        if select_plot == ui_text["plot_options"][0]:
+            date_range = date_range_picker(
+                picker_type=PickerType.date,
+                start=time_series["datetime"].min(),
+                end=time_series["datetime"].max(),
+                key="date_range_1",
             )
-    # "Series by year"
-    elif select_plot == ui_text["plot_options"][1]:
-        st.markdown(
-            """
-            <style>
-            /* Cambiar el color de las etiquetas seleccionadas en el multiselect */
-            .stMultiSelect [data-baseweb="tag"] {
-                background-color: #66b3ff !important;  /* Color azul */
-                color: white !important;  /* Texto en blanco */
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-        options = st.multiselect(
-            ui_text["choose_years"],
-            sorted(time_series["datetime"].dt.year.unique(), reverse=True),
-        )
-        for serie in selected_series:
-            selected_data = time_series.copy()
-            filter_cond = ""
-            for col, col_value in serie.items():
-                filter_cond += f"{col} == '{col_value}' & "
+            if date_range:
+                date_start = pd.to_datetime(date_range[0])
+                date_end = pd.to_datetime(date_range[1])
+            else:
+                date_start = time_series["datetime"].min()
+                date_end = time_series["datetime"].max()
 
-            # Remove the last & from the filter condition
-            filter_cond = filter_cond[:-3]
-            if filter_cond:
-                selected_data = selected_data.query(filter_cond)
-            for year in reversed(sorted(options)):
-                selected_data_year = selected_data.query(f"datetime.dt.year == {year}")
+            if len(selected_series) == 1:
+                serie = selected_series[0]
+                selected_data = time_series.copy()
+
+                filter_cond = (
+                    f"datetime >= '{date_start}' & datetime <= '{date_end}' & "
+                )
+                for col, col_value in serie.items():
+                    filter_cond += f"{col} == '{col_value}' & "
+
+                filter_cond = filter_cond[:-3]
+                filtered_data = selected_data.query(filter_cond)
+                # Original Series Plot
                 st.plotly_chart(
                     px.line(
-                        selected_data_year,
+                        filtered_data,
                         x="datetime",
                         y="y",
-                        title=f"{'-'.join(serie.values())} - {year}",
+                        title=f"Original serie {'-'.join(serie.values())}",
                     ),
                     use_container_width=True,
                 )
-    # STL
-    elif select_plot == ui_text["plot_options"][2]:
-        if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
-            st.warning(ui_text["experimental_features_warning"], icon="⚠️")
-            return
-        else:
-            st.info(ui_text["experimental_features_info"], icon="ℹ️")
-        for serie in selected_series:
-            selected_data = time_series.copy()
-            filter_cond = ""
-            for col, col_value in serie.items():
-                filter_cond += f"{col} == '{col_value}' & "
+            elif len(selected_series) > 1:
+                # Caso múltiple series seleccionadas
+                col1, col2, col3 = st.columns([0.25, 1, 0.25])
 
-            # Remove the last & from the filter condition
-            filter_cond = filter_cond[:-3]
-            if filter_cond:
-                selected_data = selected_data.query(filter_cond)
-            selected_data_stl = selected_data.set_index("datetime")
-            selected_data_stl = selected_data_stl.asfreq(
-                select_agr_tmp_dict[select_agr_tmp]
-            )
-            ts_data = selected_data_stl["y"].ffill().values
-            detected_periods = seasonality_detector.detect_seasonality(ts=ts_data)
-            if detected_periods:
-                st.write(f"{ui_text['stl']['periods_detected']} {detected_periods}")
-            else:
-                st.write(ui_text["stl"]["periods_detec"])
+                with col1:
+                    view_option = st.selectbox(
+                        label=ui_text["choose_view_option"],
+                        options=ui_text["view_plot_options"],
+                        index=None,
+                        key="multi_series_view_option",
+                        label_visibility="collapsed",
+                        placeholder=ui_text["choose_view_option"],
+                    )
+                if view_option is not None:
+                    if view_option == ui_text["view_plot_options"][0]:
+                        col1, col2, col3 = st.columns([0.25, 1, 0.25])
 
-            try:
-                if len(detected_periods) == 1:
-                    # STL decomposition if only one period is detected
-                    trend, seasonal, resid = seasonality_decompose.decompose_stl(
-                        selected_data_stl["y"].ffill(), period=detected_periods[0]
-                    )
-                elif len(detected_periods) > 1:
-                    # MSTL decomposition if multiple periods are detected
-                    trend, seasonal, resid = seasonality_decompose.decompose_mstl(
-                        selected_data_stl["y"].ffill(), periods=detected_periods
-                    )
+                        with col1:
+                            scale_option = st.selectbox(
+                                ui_text["choose_scale_option"],
+                                ui_text["scale_plot_options"],
+                                label_visibility="hidden",
+                            )
+
+                        combined_data = []
+                        for serie in selected_series:
+                            selected_data = time_series.copy()
+                            filter_cond = f"datetime >= '{date_start}' & datetime <= '{date_end}' & "
+                            for col, col_value in serie.items():
+                                filter_cond += f"{col} == '{col_value}' & "
+
+                            # Remove the last & from the filter condition
+                            filter_cond = filter_cond[:-3]
+                            filtered_data = selected_data.query(filter_cond)
+                            filtered_data["Series"] = "-".join(serie.values())
+
+                            if scale_option == ui_text["scale_plot_options"][1]:
+                                filtered_data["y"] = filtered_data["y"].apply(
+                                    lambda x: np.log(x) if x > 0 else None
+                                )
+                            combined_data.append(filtered_data)
+                        combined_data = pd.concat(combined_data)
+                        st.plotly_chart(
+                            px.line(
+                                combined_data,
+                                x="datetime",
+                                y="y",
+                                color="Series",
+                                title="Original Series",
+                            ),
+                            use_container_width=True,
+                        )
+                    else:
+                        for serie in selected_series:
+                            selected_data = time_series.copy()
+                            filter_cond = f"datetime >= '{date_start}' & datetime <= '{date_end}' & "
+                            for col, col_value in serie.items():
+                                filter_cond += f"{col} == '{col_value}' & "
+
+                            # Remove the last & from the filter condition
+                            filter_cond = filter_cond[:-3]
+                            selected_data = selected_data.query(filter_cond)
+                            st.plotly_chart(
+                                px.line(
+                                    selected_data,
+                                    x="datetime",
+                                    y="y",
+                                    title=f"Original series - {'-'.join(serie.values())}",
+                                ),
+                                use_container_width=True,
+                            )
                 else:
-                    st.write(ui_text["stl"]["periods_detected"])
+                    return
+
+            else:
+                st.write(ui_text["no_series_selected"])
+                return
+
+        # "Series by year"
+        elif select_plot == ui_text["plot_options"][1]:
+            st.markdown(
+                """
+                <style>
+                /* Cambiar el color de las etiquetas seleccionadas en el multiselect */
+                .stMultiSelect [data-baseweb="tag"] {
+                    background-color: #66b3ff !important;  /* Color azul */
+                    color: white !important;  /* Texto en blanco */
+                }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
+            options = st.multiselect(
+                ui_text["choose_years"],
+                sorted(time_series["datetime"].dt.year.unique(), reverse=True),
+            )
+            if len(selected_series) == 1:
+                serie = selected_series[0]
+                selected_data = time_series.copy()
+                filter_cond = ""
+                for col, col_value in serie.items():
+                    filter_cond += f"{col} == '{col_value}' & "
+
+                # Remove the last & from the filter condition
+                filter_cond = filter_cond[:-3]
+                if filter_cond:
+                    selected_data = selected_data.query(filter_cond)
+                for year in reversed(sorted(options)):
+                    selected_data_year = selected_data.query(
+                        f"datetime.dt.year == {year}"
+                    )
+                    st.plotly_chart(
+                        px.line(
+                            selected_data_year,
+                            x="datetime",
+                            y="y",
+                            title=f" Serie by year {'-'.join(serie.values())} - {year}",
+                        ),
+                        use_container_width=True,
+                    )
+
+            elif len(selected_series) > 1:
+                # Caso múltiple series seleccionadas
+                col1, col2, col3 = st.columns([0.25, 1, 0.25])
+
+                with col1:
+                    view_option = st.selectbox(
+                        ui_text["choose_view_option"],
+                        ui_text["view_plot_options"],
+                        key="multi_series_view_option",
+                    )
+
+                if view_option == ui_text["view_plot_options"][0]:
+                    col1, col2, col3 = st.columns([0.25, 1, 0.25])
+
+                    with col1:
+                        scale_option = st.selectbox(
+                            ui_text["choose_scale_option"],
+                            ui_text["scale_plot_options"],
+                            label_visibility="hidden",
+                        )
+
+                    combined_data = []
+                    for serie in selected_series:
+                        filtered_data = time_series.copy()
+                        filter_cond = ""
+                        for col, col_value in serie.items():
+                            filter_cond += f"{col} == '{col_value}' & "
+
+                        # Remove the last & from the filter condition
+                        filter_cond = filter_cond[:-3]
+                        if filter_cond:
+                            filtered_data = filtered_data.query(filter_cond)
+                            filtered_data["Series"] = "-".join(serie.values())
+
+                        if scale_option == ui_text["scale_plot_options"][1]:
+                            filtered_data["y"] = filtered_data["y"].apply(
+                                lambda x: np.log(x) if x > 0 else None
+                            )
+
+                        combined_data.append(filtered_data)
+                    combined_data = pd.concat(combined_data)
+                    for year in reversed(sorted(options)):
+                        selected_data_year = combined_data.query(
+                            f"datetime.dt.year == {year}"
+                        )
+                        st.plotly_chart(
+                            px.line(
+                                selected_data_year,
+                                x="datetime",
+                                y="y",
+                                color="Series",
+                                title="Series by year",
+                            ),
+                            use_container_width=True,
+                        )
+                else:
+                    for serie in selected_series:
+                        filtered_data = time_series.copy()
+                        filter_cond = ""
+                        for col, col_value in serie.items():
+                            filter_cond += f"{col} == '{col_value}' & "
+
+                        # Remove the last & from the filter condition
+                        filter_cond = filter_cond[:-3]
+                        if filter_cond:
+                            filtered_data = filtered_data.query(filter_cond)
+                            filtered_data["Series"] = "-".join(serie.values())
+
+                        for year in reversed(sorted(options)):
+                            selected_data_year = filtered_data.query(
+                                f"datetime.dt.year == {year}"
+                            )
+                            st.plotly_chart(
+                                px.line(
+                                    selected_data_year,
+                                    x="datetime",
+                                    y="y",
+                                    title=f" Serie by year - {'-'.join(serie.values())} - {year}",
+                                ),
+                                use_container_width=True,
+                            )
+            else:
+                st.write(ui_text["no_series_selected"])
+                return
+
+        # STL
+        elif select_plot == ui_text["plot_options"][2]:
+            if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
+                st.warning(ui_text["experimental_features_warning"], icon="⚠️")
+                return
+            else:
+                st.info(ui_text["experimental_features_info"], icon="ℹ️")
+            for serie in selected_series:
+                selected_data = time_series.copy()
+                filter_cond = ""
+                for col, col_value in serie.items():
+                    filter_cond += f"{col} == '{col_value}' & "
+
+                # Remove the last & from the filter condition
+                filter_cond = filter_cond[:-3]
+                if filter_cond:
+                    selected_data = selected_data.query(filter_cond)
+                selected_data_stl = selected_data.set_index("datetime")
+                selected_data_stl = selected_data_stl.asfreq(
+                    select_agr_tmp_dict[select_agr_tmp]
+                )
+                ts_data = selected_data_stl["y"].ffill().values
+                detected_periods = seasonality_detector.detect_seasonality(ts=ts_data)
+                if detected_periods:
+                    st.write(f"{ui_text['stl']['periods_detected']} {detected_periods}")
+                else:
+                    st.write(ui_text["stl"]["periods_detec"])
+
+                try:
+                    if len(detected_periods) == 1:
+                        # STL decomposition if only one period is detected
+                        trend, seasonal, resid = seasonality_decompose.decompose_stl(
+                            selected_data_stl["y"].ffill(), period=detected_periods[0]
+                        )
+                    elif len(detected_periods) > 1:
+                        # MSTL decomposition if multiple periods are detected
+                        trend, seasonal, resid = seasonality_decompose.decompose_mstl(
+                            selected_data_stl["y"].ffill(), periods=detected_periods
+                        )
+                    else:
+                        st.write(ui_text["stl"]["periods_detected"])
+                        continue
+                except ValueError:
+                    st.write(ui_text["stl"]["no_periods_detec"])
                     continue
-            except ValueError:
-                st.write(ui_text["stl"]["no_periods_detec"])
-                continue
 
-            fig1 = px.line(
-                selected_data_stl["y"],
-                title=ui_text["stl"]["stl_components"]["original"],
-            )
-            fig2 = px.line(trend, title=ui_text["stl"]["stl_components"]["trend"])
-            fig3 = px.line(seasonal, title=ui_text["stl"]["stl_components"]["seasonal"])
-            fig4 = px.line(resid, title=ui_text["stl"]["stl_components"]["residual"])
-            # Put each plot in a subplot
-            fig = sp.make_subplots(
-                rows=4,
-                cols=1,
-                subplot_titles=[
-                    ui_text["stl"]["stl_components"]["original"],
-                    ui_text["stl"]["stl_components"]["trend"],
-                    ui_text["stl"]["stl_components"]["seasonal"],
-                    ui_text["stl"]["stl_components"]["residual"],
-                ],
-                shared_xaxes=True,
-            )
-            fig.add_trace(fig1.data[0], row=1, col=1)
-            fig.add_trace(fig2.data[0], row=2, col=1)
-            fig.add_trace(fig3.data[0], row=3, col=1)
-            fig.add_trace(fig4.data[0], row=4, col=1)
-            fig.update_layout(showlegend=False, title="-".join(serie.values()))
+                fig1 = px.line(
+                    selected_data_stl["y"],
+                    title=ui_text["stl"]["stl_components"]["original"],
+                )
+                fig2 = px.line(trend, title=ui_text["stl"]["stl_components"]["trend"])
+                fig3 = px.line(
+                    seasonal, title=ui_text["stl"]["stl_components"]["seasonal"]
+                )
+                fig4 = px.line(
+                    resid, title=ui_text["stl"]["stl_components"]["residual"]
+                )
+                # Put each plot in a subplot
+                fig = sp.make_subplots(
+                    rows=4,
+                    cols=1,
+                    subplot_titles=[
+                        ui_text["stl"]["stl_components"]["original"],
+                        ui_text["stl"]["stl_components"]["trend"],
+                        ui_text["stl"]["stl_components"]["seasonal"],
+                        ui_text["stl"]["stl_components"]["residual"],
+                    ],
+                    shared_xaxes=True,
+                )
+                fig.add_trace(fig1.data[0], row=1, col=1)
+                fig.add_trace(fig2.data[0], row=2, col=1)
+                fig.add_trace(fig3.data[0], row=3, col=1)
+                fig.add_trace(fig4.data[0], row=4, col=1)
+                fig.update_layout(showlegend=False, title="-".join(serie.values()))
 
-            fig.update_layout(
-                showlegend=False,
-                height=900,
-                width=800,
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
-    # "Lag analysis"
-    elif select_plot == ui_text["plot_options"][3]:
-        for serie in selected_series:
-            selected_data = time_series.copy()
-            filter_cond = ""
-            for col, col_value in serie.items():
-                filter_cond += f"{col} == '{col_value}' & "
-
-            # Remove the last & from the filter condition
-            filter_cond = filter_cond[:-3]
-            if filter_cond:
-                selected_data = selected_data.query(filter_cond)
-
-            if "uid" in selected_data.columns:
-                selected_data = selected_data.drop(columns=["uid"])
-            selected_data_lags = selected_data.set_index("datetime")
-            selected_data_lags = selected_data_lags.asfreq(
-                select_agr_tmp_dict[select_agr_tmp]
-            )
-            max_lags = int(len(selected_data_lags) / 2) - 1
-            acf_array = acf(
-                selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
-            )
-            pacf_array = pacf(
-                selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
-            )
-
-            acf_lower_y = acf_array[1][:, 0] - acf_array[0]
-            acf_upper_y = acf_array[1][:, 1] - acf_array[0]
-            pacf_lower_y = pacf_array[1][:, 0] - pacf_array[0]
-            pacf_upper_y = pacf_array[1][:, 1] - pacf_array[0]
-
-            fig = make_subplots(
-                rows=2,
-                cols=1,
-                shared_xaxes=True,
-                subplot_titles=(
-                    ui_text["lag_analysis"]["lag_analysis_components"]["acf"],
-                    ui_text["lag_analysis"]["lag_analysis_components"]["pacf"],
-                ),
-            )
-
-            fig.add_trace(
-                go.Scatter(
-                    x=np.arange(len(acf_array[0])),
-                    y=acf_array[0],
-                    mode="markers",
-                    marker=dict(color="#1f77b4", size=12),
-                    name=ui_text["lag_analysis"]["lag_analysis_components"]["acf"],
+                fig.update_layout(
                     showlegend=False,
-                ),
-                row=1,
-                col=1,
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=np.arange(len(acf_array[0])),
-                    y=acf_upper_y,
-                    mode="lines",
-                    line=dict(color="rgba(255,255,255,0)"),
-                    showlegend=False,
-                ),
-                row=1,
-                col=1,
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=np.arange(len(acf_array[0])),
-                    y=acf_lower_y,
-                    mode="lines",
-                    fillcolor="rgba(32, 146, 230,0.3)",
-                    fill="tonexty",
-                    line=dict(color="rgba(255,255,255,0)"),
-                    showlegend=False,
-                ),
-                row=1,
-                col=1,
-            )
+                    height=900,
+                    width=800,
+                )
 
-            # Adding PACF subplot
-            fig.add_trace(
-                go.Scatter(
-                    x=np.arange(len(pacf_array[0])),
-                    y=pacf_array[0],
-                    mode="markers",
-                    marker=dict(color="#1f77b4", size=12),
-                    name=ui_text["lag_analysis"]["lag_analysis_components"]["pacf"],
-                    showlegend=False,
-                ),
-                row=2,
-                col=1,
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=np.arange(len(pacf_array[0])),
-                    y=pacf_upper_y,
-                    mode="lines",
-                    line=dict(color="rgba(255,255,255,0)"),
-                    showlegend=False,
-                ),
-                row=2,
-                col=1,
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=np.arange(len(pacf_array[0])),
-                    y=pacf_lower_y,
-                    mode="lines",
-                    fillcolor="rgba(32, 146, 230,0.3)",
-                    fill="tonexty",
-                    line=dict(color="rgba(255,255,255,0)"),
-                    showlegend=False,
-                ),
-                row=2,
-                col=1,
-            )
+                st.plotly_chart(fig, use_container_width=True)
+        # "Lag analysis"
+        elif select_plot == ui_text["plot_options"][3]:
+            for serie in selected_series:
+                selected_data = time_series.copy()
+                filter_cond = ""
+                for col, col_value in serie.items():
+                    filter_cond += f"{col} == '{col_value}' & "
 
-            for i in range(len(acf_array[0])):
-                fig.add_shape(
-                    type="line",
-                    x0=i,
-                    y0=0,
-                    x1=i,
-                    y1=acf_array[0][i],
-                    line=dict(color="grey", width=1),
+                # Remove the last & from the filter condition
+                filter_cond = filter_cond[:-3]
+                if filter_cond:
+                    selected_data = selected_data.query(filter_cond)
+
+                if "uid" in selected_data.columns:
+                    selected_data = selected_data.drop(columns=["uid"])
+                selected_data_lags = selected_data.set_index("datetime")
+                selected_data_lags = selected_data_lags.asfreq(
+                    select_agr_tmp_dict[select_agr_tmp]
+                )
+                max_lags = int(len(selected_data_lags) / 2) - 1
+                acf_array = acf(
+                    selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
+                )
+                pacf_array = pacf(
+                    selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
+                )
+
+                acf_lower_y = acf_array[1][:, 0] - acf_array[0]
+                acf_upper_y = acf_array[1][:, 1] - acf_array[0]
+                pacf_lower_y = pacf_array[1][:, 0] - pacf_array[0]
+                pacf_upper_y = pacf_array[1][:, 1] - pacf_array[0]
+
+                fig = make_subplots(
+                    rows=2,
+                    cols=1,
+                    shared_xaxes=True,
+                    subplot_titles=(
+                        ui_text["lag_analysis"]["lag_analysis_components"]["acf"],
+                        ui_text["lag_analysis"]["lag_analysis_components"]["pacf"],
+                    ),
+                )
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=np.arange(len(acf_array[0])),
+                        y=acf_array[0],
+                        mode="markers",
+                        marker=dict(color="#1f77b4", size=12),
+                        name=ui_text["lag_analysis"]["lag_analysis_components"]["acf"],
+                        showlegend=False,
+                    ),
+                    row=1,
+                    col=1,
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=np.arange(len(acf_array[0])),
+                        y=acf_upper_y,
+                        mode="lines",
+                        line=dict(color="rgba(255,255,255,0)"),
+                        showlegend=False,
+                    ),
+                    row=1,
+                    col=1,
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=np.arange(len(acf_array[0])),
+                        y=acf_lower_y,
+                        mode="lines",
+                        fillcolor="rgba(32, 146, 230,0.3)",
+                        fill="tonexty",
+                        line=dict(color="rgba(255,255,255,0)"),
+                        showlegend=False,
+                    ),
                     row=1,
                     col=1,
                 )
 
-            for i in range(len(pacf_array[0])):
-                fig.add_shape(
-                    type="line",
-                    x0=i,
-                    y0=0,
-                    x1=i,
-                    y1=pacf_array[0][i],
-                    line=dict(color="grey", width=1),
+                # Adding PACF subplot
+                fig.add_trace(
+                    go.Scatter(
+                        x=np.arange(len(pacf_array[0])),
+                        y=pacf_array[0],
+                        mode="markers",
+                        marker=dict(color="#1f77b4", size=12),
+                        name=ui_text["lag_analysis"]["lag_analysis_components"]["pacf"],
+                        showlegend=False,
+                    ),
+                    row=2,
+                    col=1,
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=np.arange(len(pacf_array[0])),
+                        y=pacf_upper_y,
+                        mode="lines",
+                        line=dict(color="rgba(255,255,255,0)"),
+                        showlegend=False,
+                    ),
+                    row=2,
+                    col=1,
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=np.arange(len(pacf_array[0])),
+                        y=pacf_lower_y,
+                        mode="lines",
+                        fillcolor="rgba(32, 146, 230,0.3)",
+                        fill="tonexty",
+                        line=dict(color="rgba(255,255,255,0)"),
+                        showlegend=False,
+                    ),
                     row=2,
                     col=1,
                 )
 
-            fig.update_layout(showlegend=False, title="-".join(serie.values()))
+                for i in range(len(acf_array[0])):
+                    fig.add_shape(
+                        type="line",
+                        x0=i,
+                        y0=0,
+                        x1=i,
+                        y1=acf_array[0][i],
+                        line=dict(color="grey", width=1),
+                        row=1,
+                        col=1,
+                    )
 
-            fig.update_layout(
-                showlegend=False,
-                height=900,
-                width=800,
-            )
+                for i in range(len(pacf_array[0])):
+                    fig.add_shape(
+                        type="line",
+                        x0=i,
+                        y0=0,
+                        x1=i,
+                        y1=pacf_array[0][i],
+                        line=dict(color="grey", width=1),
+                        row=2,
+                        col=1,
+                    )
 
-            st.plotly_chart(fig, use_container_width=True)
+                fig.update_layout(showlegend=False, title="-".join(serie.values()))
 
-    # "Seasonality boxplot"
-    elif select_plot == ui_text["plot_options"][4]:
-        selected_granularity = select_agr_tmp
-
-        if selected_granularity == ui_text["daily"]:
-            freq_options = ui_text["frequency_options"]
-        elif selected_granularity == ui_text["weekly"]:
-            freq_options = ui_text["frequency_options"][1:]
-        elif selected_granularity == ui_text["monthly"]:
-            freq_options = [ui_text["frequency_options"][2]]
-        else:
-            st.write(ui_text["boxplot_error"])
-            return
-        selected_freq = st.selectbox(ui_text["select_frequency"], freq_options)
-
-        for serie in selected_series:
-            selected_data = time_series.copy()
-            filter_cond = ""
-            for col, col_value in serie.items():
-                filter_cond += f"{col} == '{col_value}' & "
-
-            # Remove the last & from the filter condition
-            filter_cond = filter_cond[:-3]
-            if filter_cond:
-                selected_data = selected_data.query(filter_cond)
-
-            selected_data = selected_data.set_index("datetime")
-            selected_data.index = pd.to_datetime(selected_data.index)
-
-            if selected_freq == ui_text["frequency_options"][0]:
-                selected_data["day_of_year"] = selected_data.index.dayofyear
-                fig = px.box(
-                    selected_data,
-                    x="day_of_year",
-                    y="y",
-                    title=ui_text["boxplot_titles"]["daily"],
+                fig.update_layout(
+                    showlegend=False,
+                    height=900,
+                    width=800,
                 )
+
                 st.plotly_chart(fig, use_container_width=True)
 
-            elif selected_freq == ui_text["frequency_options"][1]:
-                selected_data["day_of_week"] = selected_data.index.weekday
-                fig = px.box(
-                    selected_data,
-                    x="day_of_week",
-                    y="y",
-                    title=ui_text["boxplot_titles"]["weekly"],
+        # "Seasonality boxplot"
+        elif select_plot == ui_text["plot_options"][4]:
+            selected_granularity = select_agr_tmp
+
+            if selected_granularity == ui_text["daily"]:
+                freq_options = ui_text["frequency_options"]
+            elif selected_granularity == ui_text["weekly"]:
+                freq_options = ui_text["frequency_options"][1:]
+            elif selected_granularity == ui_text["monthly"]:
+                freq_options = [ui_text["frequency_options"][2]]
+            else:
+                st.write(ui_text["boxplot_error"])
+                return
+            selected_freq = st.selectbox(ui_text["select_frequency"], freq_options)
+
+            for serie in selected_series:
+                selected_data = time_series.copy()
+                filter_cond = ""
+                for col, col_value in serie.items():
+                    filter_cond += f"{col} == '{col_value}' & "
+
+                # Remove the last & from the filter condition
+                filter_cond = filter_cond[:-3]
+                if filter_cond:
+                    selected_data = selected_data.query(filter_cond)
+
+                selected_data = selected_data.set_index("datetime")
+                selected_data.index = pd.to_datetime(selected_data.index)
+
+                if selected_freq == ui_text["frequency_options"][0]:
+                    selected_data["day_of_year"] = selected_data.index.dayofyear
+                    fig = px.box(
+                        selected_data,
+                        x="day_of_year",
+                        y="y",
+                        title=ui_text["boxplot_titles"]["daily"],
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+                elif selected_freq == ui_text["frequency_options"][1]:
+                    selected_data["day_of_week"] = selected_data.index.weekday
+                    fig = px.box(
+                        selected_data,
+                        x="day_of_week",
+                        y="y",
+                        title=ui_text["boxplot_titles"]["weekly"],
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+                elif selected_freq == ui_text["frequency_options"][2]:
+                    selected_data["month"] = selected_data.index.month
+                    fig = px.box(
+                        selected_data,
+                        x="month",
+                        y="y",
+                        title=ui_text["boxplot_titles"]["monthly"],
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+        # "Periodogram"
+        elif select_plot == ui_text["plot_options"][5]:
+            if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
+                st.warning(ui_text["experimental_features_warning"], icon="⚠️")
+                return
+            else:
+                st.info(ui_text["experimental_features_info"], icon="ℹ️")
+            for serie in selected_series:
+                selected_data = time_series.copy()
+                filter_cond = ""
+                for col, col_value in serie.items():
+                    filter_cond += f"{col} == '{col_value}' & "
+
+                # Delete the last & from the filter condition
+                filter_cond = filter_cond[:-3]
+                if filter_cond:
+                    selected_data = selected_data.query(filter_cond)
+                selected_data_periodogram = selected_data.set_index("datetime")
+                selected_data_periodogram = selected_data_periodogram.asfreq(
+                    select_agr_tmp_dict[select_agr_tmp]
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                ts_data = selected_data_periodogram["y"].ffill().values
 
-            elif selected_freq == ui_text["frequency_options"][2]:
-                selected_data["month"] = selected_data.index.month
-                fig = px.box(
-                    selected_data,
-                    x="month",
-                    y="y",
-                    title=ui_text["boxplot_titles"]["monthly"],
+                significant_periods, filtered_periods, filtered_power_spectrum = (
+                    seasonality_detector.detect_seasonality_periodogram(
+                        ts=ts_data,
+                        min_period=2,
+                        max_period=365,
+                    )
                 )
-                st.plotly_chart(fig, use_container_width=True)
-
-    # "Periodogram"
-    elif select_plot == ui_text["plot_options"][5]:
-        if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
-            st.warning(ui_text["experimental_features_warning"], icon="⚠️")
-            return
-        else:
-            st.info(ui_text["experimental_features_info"], icon="ℹ️")
-        for serie in selected_series:
-            selected_data = time_series.copy()
-            filter_cond = ""
-            for col, col_value in serie.items():
-                filter_cond += f"{col} == '{col_value}' & "
-
-            # Delete the last & from the filter condition
-            filter_cond = filter_cond[:-3]
-            if filter_cond:
-                selected_data = selected_data.query(filter_cond)
-            selected_data_periodogram = selected_data.set_index("datetime")
-            selected_data_periodogram = selected_data_periodogram.asfreq(
-                select_agr_tmp_dict[select_agr_tmp]
-            )
-            ts_data = selected_data_periodogram["y"].ffill().values
-
-            significant_periods, filtered_periods, filtered_power_spectrum = (
-                seasonality_detector.detect_seasonality_periodogram(
-                    ts=ts_data,
-                    min_period=2,
-                    max_period=365,
+                st.write(
+                    f"{ui_text['periodogram']['significant_periods']} {significant_periods}"
                 )
-            )
-            st.write(
-                f"{ui_text['periodogram']['significant_periods']} {significant_periods}"
-            )
-            fig = go.Figure()
+                fig = go.Figure()
 
-            fig.add_trace(
-                go.Scatter(
-                    x=filtered_periods,
-                    y=filtered_power_spectrum,
-                    mode="lines",
-                    name=ui_text["periodogram"]["power_spectrum"],
+                fig.add_trace(
+                    go.Scatter(
+                        x=filtered_periods,
+                        y=filtered_power_spectrum,
+                        mode="lines",
+                        name=ui_text["periodogram"]["power_spectrum"],
+                    )
                 )
-            )
 
-            threshold_value = np.percentile(filtered_power_spectrum, 99)
-            fig.add_shape(
-                type="line",
-                x0=filtered_periods.min(),
-                x1=filtered_periods.max(),
-                y0=threshold_value,
-                y1=threshold_value,
-                line=dict(color="red", dash="dash"),
-            )
-            fig.add_annotation(
-                x=filtered_periods.mean(),
-                y=threshold_value,
-                text=ui_text["periodogram"]["percentile_threshold"],
-                showarrow=False,
-                yshift=10,
-                font=dict(color="red"),
-            )
-
-            for period in significant_periods:
+                threshold_value = np.percentile(filtered_power_spectrum, 99)
                 fig.add_shape(
                     type="line",
-                    x0=period,
-                    y0=0,
-                    x1=period,
-                    y1=max(filtered_power_spectrum),
-                    line=dict(color="green", dash="dot"),
+                    x0=filtered_periods.min(),
+                    x1=filtered_periods.max(),
+                    y0=threshold_value,
+                    y1=threshold_value,
+                    line=dict(color="red", dash="dash"),
                 )
                 fig.add_annotation(
-                    x=period,
-                    y=max(filtered_power_spectrum) * 0.9,
-                    text=f"{period:.1f}",
-                    showarrow=True,
-                    arrowhead=2,
-                    ax=0,
-                    ay=-40,
-                    font=dict(color="green"),
+                    x=filtered_periods.mean(),
+                    y=threshold_value,
+                    text=ui_text["periodogram"]["percentile_threshold"],
+                    showarrow=False,
+                    yshift=10,
+                    font=dict(color="red"),
                 )
 
-            fig.update_layout(
-                title=ui_text["periodogram"]["title"],
-                xaxis_title=ui_text["periodogram"]["xaxis_title"],
-                yaxis_title=ui_text["periodogram"]["yaxis_title"],
-                showlegend=False,
-            )
+                for period in significant_periods:
+                    fig.add_shape(
+                        type="line",
+                        x0=period,
+                        y0=0,
+                        x1=period,
+                        y1=max(filtered_power_spectrum),
+                        line=dict(color="green", dash="dot"),
+                    )
+                    fig.add_annotation(
+                        x=period,
+                        y=max(filtered_power_spectrum) * 0.9,
+                        text=f"{period:.1f}",
+                        showarrow=True,
+                        arrowhead=2,
+                        ax=0,
+                        ay=-40,
+                        font=dict(color="green"),
+                    )
 
-            st.plotly_chart(fig, use_container_width=True)
+                fig.update_layout(
+                    title=ui_text["periodogram"]["title"],
+                    xaxis_title=ui_text["periodogram"]["xaxis_title"],
+                    yaxis_title=ui_text["periodogram"]["yaxis_title"],
+                    showlegend=False,
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+    else:
+        return
 
 
 def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
@@ -606,6 +793,7 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
     else:
         if "uid" in time_series.columns:
             time_series = time_series.sort_values(by=["uid", "datetime"])
+
         min_diff_per_window = calculate_min_diff_per_window(time_series)
         min_diff = min_diff_per_window.min()
 
@@ -678,9 +866,13 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
     if not selected_series:
         st.write(ui_text["select_series_to_plot"])
         return
+
+    forecast = forecast.copy()
     # Get dates for the selected series
     filter_cond = ""
     for serie in selected_series:
+        if "uid" in forecast.columns:
+            forecast["uid"] = forecast["uid"].astype(str)
         filter_cond_serie = "("
         for col, col_value in serie.items():
             filter_cond_serie += f"{col} == '{col_value}' & "
@@ -688,6 +880,7 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
         # Remove the last & from the filter condition
         filter_cond_series = filter_cond_serie[:-3] + ")"
         filter_cond += filter_cond_series + " | "
+
     filter_cond = filter_cond[:-3]
     if filter_cond != ")":
         forecast_restricted = forecast.query(filter_cond)
@@ -704,6 +897,11 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
             label_visibility="visible",
         )
     for serie in selected_series:
+        if "uid" in forecast_restricted.columns:
+            title = f"Serie: {' - '.join(forecast_restricted[['uid']].values[0])}"
+            st.write(f"##### {title}")
+            forecast["uid"] = forecast["uid"].astype(str)
+            forecast = forecast[forecast["uid"] == serie["uid"]].copy()
         filter_cond = ""
         for col, col_value in serie.items():
             filter_cond += f"{col} == '{col_value}' & "
@@ -767,7 +965,7 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
                     y=time_series["y"],
                     mode="lines",
                     name=ui_text["series_names"]["real"],
-                    line=dict(color=px.colors.qualitative.Dark2[0]),
+                    line=dict(color="black", dash="dash", width=3),
                     hovertemplate="datetime: %{x}<br>real: %{y}<br>Weekday: %{customdata[4]}",
                     customdata=time_series[["weekday"]],
                     opacity=1,
@@ -869,6 +1067,10 @@ def plot_error_visualization(
     data_dict = {}
     for idx, serie in enumerate(selected_series):
         selected_data = forecast.copy()
+        if "uid" in selected_data.columns:
+            selected_data["uid"] = selected_data["uid"].astype(str)
+            selected_data = selected_data[selected_data["uid"] == serie["uid"]].copy()
+
         filter_cond = ""
 
         if filter_type in [ui_text["datetime_filter"], ui_text["both_filters"]]:
@@ -902,6 +1104,10 @@ def plot_error_visualization(
         )
     if select_model:
         for idx, serie in data_dict.items():
+            if "uid" in serie.columns:
+                title = f"Serie: {' - '.join(serie[['uid', 'model']].values[0])}"
+                st.write(f"##### {title}")
+
             filter = serie[serie["model"] == select_model]
             st.write(ui_text["top_10_errors"] + f": **{select_model}**")
             st.write(
@@ -924,6 +1130,9 @@ def plot_error_visualization(
 
     # Show mean or median overall perc_abs_err
     for idx, serie in data_dict.items():
+        if "uid" in serie.columns:
+            title = f"Serie: {' - '.join(serie[['uid']].values[0])}"
+            st.write(f"##### {title}")
         st.write(
             ui_text["error_message"].format(
                 ui_text["mediana_mean_string_dict"][mean_or_median_error],
@@ -951,24 +1160,25 @@ def plot_error_visualization(
                 by="perc_abs_err_mean"
             ).reset_index(drop=True)
             st.write(df_agg_ordered)
-            st.write(
-                ui_text["best_error_message"].format(
-                    f"**{df_agg_ordered['model'].iloc[0]}**",
-                    f"**{df_agg_ordered['perc_abs_err_mean'].iloc[0]}**",
+            if len(models) > 1:
+                st.write(
+                    ui_text["best_error_message"].format(
+                        model=f"**{df_agg_ordered['model'].iloc[0]}**",
+                        err=f"**{df_agg_ordered['perc_abs_err_mean'].iloc[0].round(2)}**",
+                    )
                 )
-            )
         elif mean_or_median_error == ui_text["median_option"]:
             df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_median"]]
             df_agg_ordered = df_agg_filtered.sort_values(
                 by="perc_abs_err_median"
             ).reset_index(drop=True)
-            st.write(df_agg_ordered)
+            st.dataframe(df_agg_ordered)
 
             if len(models) > 1:
                 st.write(
                     ui_text["best_error_message"].format(
-                        f"**{df_agg_ordered['model'].iloc[0]}**",
-                        f"**{df_agg_ordered['perc_abs_err_median'].iloc[0]}**",
+                        model=f"**{df_agg_ordered['model'].iloc[0]}**",
+                        err=f"**{df_agg_ordered['perc_abs_err_median'].iloc[0].round(2)}**",
                     )
                 )
 
@@ -987,6 +1197,9 @@ def plot_error_visualization(
         st.write(f"### {ui_text['horizon_boxplot_title']}")
         # Box plot perc_abs_err by horizon
         for idx, serie in data_dict.items():
+            if "uid" in serie.columns:
+                title = f"Serie: {' - '.join(serie[['uid']].values[0])}"
+                st.write(f"##### {title}")
             # Show how many points for each horizon
             fig = px.box(serie, x="h", y="perc_abs_err", color="model")
             # Update yaxis to show % values
@@ -1018,6 +1231,12 @@ def plot_error_visualization(
         )
 
         for idx, serie in data_dict.items():
+            if "uid" in serie.columns:
+                title = f"Serie: {' - '.join(serie[['uid', 'model']].values[0])}"
+                st.write(f"##### {title}")
+            else:
+                title = f"Serie: {' - '.join(serie[['model']].values[0])}"
+                st.write(f"##### {title}")
             # Apply the selected transformation to the datetime column
             transformed_datetime = serie["datetime"].apply(
                 dict_transformations[select_agg]

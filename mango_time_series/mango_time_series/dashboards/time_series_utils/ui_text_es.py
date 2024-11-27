@@ -8,6 +8,8 @@ UI_TEXT = {
     "file_limits": "Máximo {} MB por archivo.",
     "select_series": "Selecciona serie a analizar",
     "choose_plot": "Selecciona el gráfico",
+    "choose_scale_option": "Elige la opción de escala",
+    "choose_view_option": "Elige la forma de visualizar la gráfica",
     "plot_options": [
         "Serie original",
         "Serie por año",
@@ -15,6 +17,14 @@ UI_TEXT = {
         "Análisis de lags",
         "Boxplot de estacionalidad",
         "Periodograma",
+    ],
+    "scale_plot_options": [
+        "Ver misma escala",
+        "Ver escala logarítmica",
+    ],
+    "view_plot_options": [
+        "Ver todas las series juntas",
+        "Ver cada serie por separado",
     ],
     "choose_years": "Elige los años a visualizar",
     "stl_error": "No se puede realizar la descomposición STL para la serie seleccionada, prueba otro nivel de agregación temporal.",

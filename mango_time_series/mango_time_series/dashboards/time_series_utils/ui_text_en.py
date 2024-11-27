@@ -19,6 +19,8 @@ UI_TEXT = {
     "no_columns_to_filter": "No columns to filter. Only one series detected",
     # Plot Options
     "choose_plot": "Select the plot",
+    "choose_view_option": "Choose the way to visualize the plot",
+    "choose_scale_option": "Choose scale option",
     "plot_options": [
         "Original series",
         "Series by year",
@@ -26,6 +28,14 @@ UI_TEXT = {
         "Lag analysis",
         "Seasonality boxplot",
         "Periodogram",
+    ],
+    "view_plot_options": [
+        "View all series together",
+        "View each series separately",
+    ],
+    "scale_plot_options": [
+        "View same scale",
+        "View logaritmic scale",
     ],
     "choose_years": "Choose years to visualize",
     "select_frequency": "Select frequency",
@@ -184,7 +194,7 @@ UI_TEXT = {
     "add_new_file": "Add new file",
     "aggregated_summary_title": "Error summary",
     "select_top_10": "Select the model to see the top 10 errors:",
-    "best_error_message": "The best model is '{}', with an absolute percentage error of {}",
+    "best_error_message": "The best model is '{model}', with an absolute percentage error of {err}",
     "model_parameters": "Model parameters",
     "message_forecast_baseline": "Forecast obtained from baseline models in this platform.",
     "warning_no_forecast": "No forecast data available. Please train the model first.",
