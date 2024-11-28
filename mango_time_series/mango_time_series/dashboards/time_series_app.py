@@ -67,8 +67,20 @@ def interface_visualization(project_name: str = None):
     hide_label = (
         """
         <style>
+            div[data-testid="stFileUploader"] button {
+               background-color: white !important; /* Fondo azul */
+               color: black !important; /* Texto blanco */
+               cursor: pointer !important; /* Cambia el cursor al pasar */
+               border: 1px solid #3d9df3; 
+        }
+            div[data-testid="stFileUploader"] button:hover {
+               color: #3d9df3;
+               border: 1px solid #3d9df3; 
+            }
+
             div[data-testid="stFileUploader"]>section[data-testid="stFileUploaderDropzone"]>button[data-testid="baseButton-secondary"] {
                color:white;
+               background-color: darkblue
             }
             div[data-testid="stFileUploader"]>section[data-testid="stFileUploaderDropzone"]>button[data-testid="baseButton-secondary"]::after {
                 content: "BUTTON_TEXT";
@@ -91,6 +103,20 @@ def interface_visualization(project_name: str = None):
                content:"FILE_LIMITS";
                visibility:visible;
                display:block;
+            }
+            div[data-testid="stFormSubmitButton"] button {
+               background-color: white !important;
+               color: black !important; 
+               cursor: pointer !important;
+               border: 1px solid #3d9df3; 
+            }
+    
+            div[data-testid="stFormSubmitButton"] button:hover {
+               color: #3d9df3;
+               border: 1px solid #3d9df3; 
+            }
+            .st-dx {
+                background-color: #3d9df3 !important; 
             }
         </style>
         """.replace(
