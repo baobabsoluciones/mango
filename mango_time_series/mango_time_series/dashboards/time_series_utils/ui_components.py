@@ -53,6 +53,7 @@ def plot_time_series(
     select_agr_tmp_dict: Dict,
     select_agr_tmp: str,
     ui_text: Dict,
+    columns_id_name: str,
 ):
     """
     Plot the selected time series data. The user can choose between different types of plots:
@@ -85,8 +86,8 @@ def plot_time_series(
 
     time_series = time_series.copy()
 
-    if "uid" in time_series.columns:
-        time_series["uid"] = time_series["uid"].astype(str)
+    if columns_id_name in time_series.columns:
+        time_series[columns_id_name] = time_series[columns_id_name].astype(str)
     # "Original series"
 
     if select_plot is not None:
@@ -427,8 +428,8 @@ def plot_time_series(
                 if filter_cond:
                     selected_data = selected_data.query(filter_cond)
 
-                if "uid" in selected_data.columns:
-                    selected_data = selected_data.drop(columns=["uid"])
+                if columns_id_name in selected_data.columns:
+                    selected_data = selected_data.drop(columns=[columns_id_name])
                 selected_data_lags = selected_data.set_index("datetime")
                 selected_data_lags = selected_data_lags.asfreq(
                     select_agr_tmp_dict[select_agr_tmp]
@@ -718,7 +719,9 @@ def plot_time_series(
         return
 
 
-def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
+def setup_sidebar(
+    time_series: pd.DataFrame, columns_id: List, ui_text: Dict, columns_id_name: str
+):
     """
     Set up the sidebar for the time series analysis dashboard.
     :param time_series: The DataFrame containing the time series data.
@@ -754,8 +757,8 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
     all_tmp_agr = copy.deepcopy(ui_text["temporal_grouping_options"])
 
     if "forecast_origin" in time_series.columns and "f" in time_series.columns:
-        if "uid" in time_series.columns:
-            sort_columns = ["uid"]
+        if columns_id_name in time_series.columns:
+            sort_columns = [columns_id_name]
             if (
                 "model" in time_series.columns
                 and "forecast_origin" in time_series.columns
@@ -792,8 +795,8 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
             label_visibility="collapsed",
         )
     else:
-        if "uid" in time_series.columns:
-            time_series = time_series.sort_values(by=["uid", "datetime"])
+        if columns_id_name in time_series.columns:
+            time_series = time_series.sort_values(by=[columns_id_name, "datetime"])
 
         min_diff_per_window = calculate_min_diff_per_window(time_series)
         min_diff = min_diff_per_window.min()
@@ -856,7 +859,9 @@ def setup_sidebar(time_series: pd.DataFrame, columns_id: List, ui_text: Dict):
     )
 
 
-def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
+def plot_forecast(
+    forecast: pd.DataFrame, selected_series: List, ui_text: Dict, columns_id_name: str
+):
     """
     Plot the forecast for the selected series.
     :param forecast: The DataFrame containing the forecast data.
@@ -872,8 +877,8 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
     # Get dates for the selected series
     filter_cond = ""
     for serie in selected_series:
-        if "uid" in forecast.columns:
-            forecast["uid"] = forecast["uid"].astype(str)
+        if columns_id_name in forecast.columns:
+            forecast[columns_id_name] = forecast[columns_id_name].astype(str)
         filter_cond_serie = "("
         for col, col_value in serie.items():
             filter_cond_serie += f"{col} == '{col_value}' & "
@@ -898,11 +903,15 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
             label_visibility="visible",
         )
     for serie in selected_series:
-        if "uid" in forecast_restricted.columns:
-            title = f"Serie: {' - '.join(forecast_restricted[['uid']].values[0])}"
+        if columns_id_name in forecast_restricted.columns:
+            title = (
+                f"Serie: {' - '.join(forecast_restricted[[columns_id_name]].values[0])}"
+            )
             st.write(f"##### {title}")
-            forecast["uid"] = forecast["uid"].astype(str)
-            forecast = forecast[forecast["uid"] == serie["uid"]].copy()
+            forecast[columns_id_name] = forecast[columns_id_name].astype(str)
+            forecast = forecast[
+                forecast[columns_id_name] == serie[columns_id_name]
+            ].copy()
         filter_cond = ""
         for col, col_value in serie.items():
             filter_cond += f"{col} == '{col_value}' & "
@@ -1018,6 +1027,7 @@ def plot_error_visualization(
     selected_series: List,
     ui_text: Dict[str, str],
     freq: str = None,
+    columns_id_name: str = None,
 ):
     """
     Plot the error visualization for the selected series.
@@ -1072,9 +1082,11 @@ def plot_error_visualization(
     data_dict = {}
     for idx, serie in enumerate(selected_series):
         selected_data = forecast.copy()
-        if "uid" in selected_data.columns:
-            selected_data["uid"] = selected_data["uid"].astype(str)
-            selected_data = selected_data[selected_data["uid"] == serie["uid"]].copy()
+        if columns_id_name in selected_data.columns:
+            selected_data[columns_id_name] = selected_data[columns_id_name].astype(str)
+            selected_data = selected_data[
+                selected_data[columns_id_name] == serie[columns_id_name]
+            ].copy()
 
         filter_cond = ""
 
@@ -1109,8 +1121,10 @@ def plot_error_visualization(
         )
     if select_model:
         for idx, serie in data_dict.items():
-            if "uid" in serie.columns:
-                title = f"Serie: {' - '.join(serie[['uid', 'model']].values[0])}"
+            if columns_id_name in serie.columns:
+                title = (
+                    f"Serie: {' - '.join(serie[[columns_id_name, 'model']].values[0])}"
+                )
                 st.write(f"##### {title}")
 
             filter = serie[serie["model"] == select_model]
@@ -1135,8 +1149,8 @@ def plot_error_visualization(
 
     # Show mean or median overall perc_abs_err
     for idx, serie in data_dict.items():
-        if "uid" in serie.columns:
-            title = f"Serie: {' - '.join(serie[['uid']].values[0])}"
+        if columns_id_name in serie.columns:
+            title = f"Serie: {' - '.join(serie[[columns_id_name]].values[0])}"
             st.write(f"##### {title}")
         st.write(
             ui_text["error_message"].format(
@@ -1202,8 +1216,8 @@ def plot_error_visualization(
         st.write(f"### {ui_text['horizon_boxplot_title']}")
         # Box plot perc_abs_err by horizon
         for idx, serie in data_dict.items():
-            if "uid" in serie.columns:
-                title = f"Serie: {' - '.join(serie[['uid']].values[0])}"
+            if columns_id_name in serie.columns:
+                title = f"Serie: {' - '.join(serie[[columns_id_name]].values[0])}"
                 st.write(f"##### {title}")
             # Show how many points for each horizon
             if "h" not in serie.columns:
@@ -1213,7 +1227,7 @@ def plot_error_visualization(
             fig.update_yaxes(tickformat=".2%")
             fig.update_layout(
                 xaxis_title="Horizonte",
-                yaxis_title="Error porcentual absoluto",
+                yaxis_title=ui_text["error_types"][0],
             )
             st.plotly_chart(fig)
             number_by_horizon = serie.groupby("h").size()
@@ -1238,8 +1252,10 @@ def plot_error_visualization(
         )
 
         for idx, serie in data_dict.items():
-            if "uid" in serie.columns:
-                title = f"Serie: {' - '.join(serie[['uid', 'model']].values[0])}"
+            if columns_id_name in serie.columns:
+                title = (
+                    f"Serie: {' - '.join(serie[[columns_id_name, 'model']].values[0])}"
+                )
                 st.write(f"##### {title}")
             else:
                 title = f"Serie: {' - '.join(serie[['model']].values[0])}"
@@ -1261,7 +1277,7 @@ def plot_error_visualization(
                 title=f"Box plot de {col_name_dict[select_agg]} para {idx}",
                 labels={
                     "x": col_name_dict[select_agg],
-                    "perc_abs_err": "Error porcentual absoluto",
+                    "perc_abs_err": ui_text["error_types"][0],
                 },
             )
             fig.update_yaxes(tickformat=".2%")

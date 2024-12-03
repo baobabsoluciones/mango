@@ -164,6 +164,8 @@ def interface_visualization(project_name: str = None):
                         ]
                     ]
 
+                    columns_id_name = columns_id[0] if columns_id else None
+
                     if "visualization_options" not in st.session_state:
                         st.session_state["visualization_options"] = [
                             UI_TEXT["visualization_options"]
@@ -180,10 +182,10 @@ def interface_visualization(project_name: str = None):
                         visualization,
                         visualization_options,
                         selected_uid,
-                    ) = setup_sidebar(data, columns_id, UI_TEXT)
+                    ) = setup_sidebar(data, columns_id, UI_TEXT, columns_id_name)
 
                     if selected_uid and selected_uid[0]:
-                        current_uid = selected_uid[0].get("uid")
+                        current_uid = selected_uid[0].get(columns_id_name)
                         if "previous_uid" not in st.session_state:
                             st.session_state["previous_uid"] = current_uid
 
@@ -225,8 +227,8 @@ def interface_visualization(project_name: str = None):
                             final_select_agr_tmp_dict,
                             select_agr_tmp,
                             UI_TEXT,
+                            columns_id_name,
                         )
-
                         if len(visualization_options) == 1:
                             if "forecast_activated" not in st.session_state:
                                 st.session_state["forecast_activated"] = False
@@ -299,9 +301,12 @@ def interface_visualization(project_name: str = None):
                                         )
 
                                         if selected_uid[0]:
-                                            columns_id = selected_uid[0].get("uid")
+                                            columns_id = selected_uid[0].get(
+                                                columns_id_name
+                                            )
                                             time_series = time_series[
-                                                time_series["uid"] == columns_id
+                                                time_series[columns_id_name]
+                                                == columns_id
                                             ]
 
                                         time_serie = time_series.copy()
@@ -310,7 +315,7 @@ def interface_visualization(project_name: str = None):
                                             time_serie["unique_id"] = "id_1"
                                         else:
                                             time_serie = time_series.rename(
-                                                columns={"uid": "unique_id"}
+                                                columns={columns_id_name: "unique_id"}
                                             )
                                         time_serie = time_serie.rename(
                                             columns={"datetime": "ds", "y": "y"}
@@ -387,7 +392,7 @@ def interface_visualization(project_name: str = None):
 
                                         if "forecast_params" not in st.session_state:
                                             st.session_state["forecast_params"] = {
-                                                series_id.get("uid"): {
+                                                series_id.get(columns_id_name): {
                                                     "horizon": 1,
                                                     "step_size": 1,
                                                     "n_windows": 1,
@@ -401,7 +406,7 @@ def interface_visualization(project_name: str = None):
                                         for series_id in st.session_state[
                                             "selected_series"
                                         ]:
-                                            uid = series_id.get("uid")
+                                            uid = series_id.get(columns_id_name)
                                             with st.sidebar.form(
                                                 key=f"forecast_form_{uid}"
                                             ):
@@ -475,26 +480,28 @@ def interface_visualization(project_name: str = None):
                                             for series_id in st.session_state[
                                                 "selected_series"
                                             ]:
-                                                uid = series_id.get("uid")
+                                                uid = series_id.get(columns_id_name)
                                                 time_series_filtered = (
                                                     time_series.copy()
                                                 )
 
                                                 time_series_filtered = (
                                                     time_series_filtered[
-                                                        time_series_filtered["uid"]
-                                                        == series_id.get("uid")
+                                                        time_series_filtered[
+                                                            columns_id_name
+                                                        ]
+                                                        == series_id.get(
+                                                            columns_id_name
+                                                        )
                                                     ]
                                                 )
 
-                                                time_series_filtered = (
-                                                    time_series_filtered.rename(
-                                                        columns={
-                                                            "datetime": "ds",
-                                                            "y": "y",
-                                                            "uid": "unique_id",
-                                                        }
-                                                    )
+                                                time_series_filtered = time_series_filtered.rename(
+                                                    columns={
+                                                        "datetime": "ds",
+                                                        "y": "y",
+                                                        columns_id_name: "unique_id",
+                                                    }
                                                 )
 
                                                 models_to_use = {
@@ -540,7 +547,7 @@ def interface_visualization(project_name: str = None):
                                                 )
 
                                                 # Adding uid to the forecast
-                                                data_long["uid"] = uid
+                                                data_long[columns_id_name] = uid
                                                 data_long["err"] = (
                                                     data_long["y"] - data_long["f"]
                                                 )
@@ -580,7 +587,6 @@ def interface_visualization(project_name: str = None):
                     # "Forecast"
                     elif visualization == UI_TEXT["visualization_options"][1]:
                         st.subheader(UI_TEXT["page_title_forecast"], divider=True)
-
                         if len(st.session_state["selected_series"]) > 2:
                             st.warning(UI_TEXT["warning_no_forecast_possible"])
                         else:
@@ -590,6 +596,7 @@ def interface_visualization(project_name: str = None):
                                     forecast,
                                     st.session_state["selected_series"],
                                     UI_TEXT,
+                                    columns_id_name,
                                 )
 
                                 plot_error_visualization(
@@ -607,8 +614,12 @@ def interface_visualization(project_name: str = None):
                                     forecast_st = st.session_state["forecast"].copy()
 
                                     if selected_uid and selected_uid[0]:
-                                        columns_id_multiple = selected_uid[0].get("uid")
-                                        forecast_st["uid"] = columns_id_multiple
+                                        columns_id_multiple = selected_uid[0].get(
+                                            columns_id_name
+                                        )
+                                        forecast_st[columns_id_name] = (
+                                            columns_id_multiple
+                                        )
 
                                     forecast = aggregate_to_input_cache(
                                         forecast_st,
@@ -657,6 +668,7 @@ def interface_visualization(project_name: str = None):
                                             "selected_series"
                                         ],
                                         ui_text=UI_TEXT,
+                                        columns_id_name=columns_id_name,
                                     )
 
                                     plot_error_visualization(
@@ -666,6 +678,7 @@ def interface_visualization(project_name: str = None):
                                         ],
                                         ui_text=UI_TEXT,
                                         freq=freq_code,
+                                        columns_id_name=columns_id_name,
                                     )
                                 elif len(st.session_state["selected_series"]) == 2:
                                     st.info(UI_TEXT["two_id_trained"])
@@ -705,6 +718,7 @@ def interface_visualization(project_name: str = None):
                                             "selected_series"
                                         ],
                                         ui_text=UI_TEXT,
+                                        columns_id_name=columns_id_name,
                                     )
                                     plot_error_visualization(
                                         forecast=combined_forecasts,
@@ -713,6 +727,7 @@ def interface_visualization(project_name: str = None):
                                         ],
                                         ui_text=UI_TEXT,
                                         freq=freq_code,
+                                        columns_id_name=columns_id_name,
                                     )
 
                                 else:
