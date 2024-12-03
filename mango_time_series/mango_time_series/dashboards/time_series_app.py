@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 from statsforecast import StatsForecast
 
@@ -115,9 +116,6 @@ def interface_visualization(project_name: str = None):
                color: #3d9df3;
                border: 1px solid #3d9df3; 
             }
-            .st-dx {
-                background-color: #3d9df3 !important; 
-            }
         </style>
         """.replace(
             "BUTTON_TEXT", UI_TEXT["upload_button_text"]
@@ -189,7 +187,19 @@ def interface_visualization(project_name: str = None):
                         if "previous_uid" not in st.session_state:
                             st.session_state["previous_uid"] = current_uid
 
-                        if current_uid != st.session_state["previous_uid"]:
+                        current_length = len(selected_uid)
+                        if "previous_length" not in st.session_state:
+                            st.session_state["previous_length"] = current_length
+
+                        if current_length != st.session_state["previous_length"]:
+                            # Reset forecast if the number of series selected changes
+                            st.session_state["forecast_activated"] = False
+                            st.session_state["forecast"] = None
+                            st.session_state["selected_series"] = selected_uid
+                            st.session_state["previous_length"] = current_length
+                            st.rerun()
+
+                        if current_uid != st.session_state.get("previous_uid", None):
                             st.session_state["previous_uid"] = current_uid
                             st.session_state["forecast"] = False
                             st.rerun()
@@ -221,9 +231,15 @@ def interface_visualization(project_name: str = None):
                             if "forecast_activated" not in st.session_state:
                                 st.session_state["forecast_activated"] = False
 
-                            if not st.session_state["forecast_activated"]:
-                                if st.sidebar.button(UI_TEXT["activate_button_train"]):
-                                    st.session_state["forecast_activated"] = True
+                            if len(st.session_state.get("selected_series", [])) > 2:
+                                st.session_state["forecast_activated"] = False
+                                st.warning(UI_TEXT["warning_no_forecast_possible"])
+                            else:
+                                if not st.session_state["forecast_activated"]:
+                                    if st.sidebar.button(
+                                        UI_TEXT["activate_button_train"]
+                                    ):
+                                        st.session_state["forecast_activated"] = True
 
                             if st.session_state["forecast_activated"]:
                                 freq_code = final_select_agr_tmp_dict[select_agr_tmp]
@@ -236,200 +252,474 @@ def interface_visualization(project_name: str = None):
                                 if "n_windows" not in st.session_state:
                                     st.session_state["n_windows"] = 1
 
-                                with st.sidebar.form(key="forecast_form"):
-                                    st.write(UI_TEXT["forecast_parameters"])
-                                    horizon = st.number_input(
-                                        UI_TEXT["horizon"],
-                                        help=UI_TEXT["explanation_horizon"],
-                                        value=st.session_state["horizon"],
-                                    )
-                                    step_size = st.number_input(
-                                        UI_TEXT["step_size"],
-                                        help=UI_TEXT["explanation_step_size"],
-                                        value=st.session_state["step_size"],
-                                    )
-                                    n_windows = st.number_input(
-                                        UI_TEXT["n_windows"],
-                                        help=UI_TEXT["explanation_n_windows"],
-                                        value=st.session_state["n_windows"],
-                                    )
-
-                                    st.link_button(
-                                        UI_TEXT["documentation"],
-                                        "https://nixtlaverse.nixtla.io/mlforecast/docs/how-to-guides/cross_validation.html#load-and-explore-the-data",
-                                        type="secondary",
-                                    )
-
-                                    train_button = st.form_submit_button(
-                                        label="Train", type="primary"
-                                    )
-                                if train_button:
-                                    st.info("Starting forecast training")
-                                    st.session_state["horizon"] = horizon
-                                    st.session_state["step_size"] = step_size
-                                    st.session_state["n_windows"] = n_windows
-
-                                    models_to_use = {
-                                        k: v for k, v in default_models.items()
-                                    }
-
-                                    fcst = StatsForecast(
-                                        models=list(models_to_use.values()),
-                                        freq=freq_code,
-                                    )
-
-                                    if selected_uid[0]:
-                                        columns_id = selected_uid[0].get("uid")
-                                        time_series = time_series[
-                                            time_series["uid"] == columns_id
-                                        ]
-
-                                    time_serie = time_series.copy()
-
-                                    if not columns_id:
-                                        time_serie["unique_id"] = "id_1"
-                                    else:
-                                        time_serie = time_series.rename(
-                                            columns={"uid": "unique_id"}
+                                if len(st.session_state["selected_series"]) == 1:
+                                    with st.sidebar.form(key="forecast_form"):
+                                        st.write(UI_TEXT["forecast_parameters"])
+                                        horizon = st.number_input(
+                                            UI_TEXT["horizon"],
+                                            min_value=1,
+                                            help=UI_TEXT["explanation_horizon"],
+                                            value=st.session_state["horizon"],
                                         )
-                                    time_serie = time_serie.rename(
-                                        columns={"datetime": "ds", "y": "y"}
-                                    )
+                                        step_size = st.number_input(
+                                            UI_TEXT["step_size"],
+                                            min_value=1,
+                                            help=UI_TEXT["explanation_step_size"],
+                                            value=st.session_state["step_size"],
+                                        )
+                                        n_windows = st.number_input(
+                                            UI_TEXT["n_windows"],
+                                            min_value=1,
+                                            help=UI_TEXT["explanation_n_windows"],
+                                            value=st.session_state["n_windows"],
+                                        )
 
-                                    crossvalidation_df = fcst.cross_validation(
-                                        df=time_serie,
-                                        h=st.session_state["horizon"],
-                                        step_size=st.session_state["step_size"],
-                                        n_windows=st.session_state["n_windows"],
-                                        id_col="unique_id",
-                                    )
+                                        st.link_button(
+                                            UI_TEXT["documentation"],
+                                            "https://nixtlaverse.nixtla.io/mlforecast/docs/how-to-guides/cross_validation.html#load-and-explore-the-data",
+                                            type="secondary",
+                                        )
 
-                                    model_columns = [
-                                        col
-                                        for col in crossvalidation_df.columns
-                                        if col not in ["ds", "cutoff", "y"]
-                                    ]
-                                    data_long = crossvalidation_df.melt(
-                                        id_vars=["ds", "cutoff", "y"],
-                                        value_vars=model_columns,
-                                        var_name="model",
-                                        value_name="f",
-                                    )
+                                        train_button = st.form_submit_button(
+                                            label="Train", type="primary"
+                                        )
+                                    if train_button:
+                                        st.info("Starting forecast training")
+                                        st.session_state["horizon"] = horizon
+                                        st.session_state["step_size"] = step_size
+                                        st.session_state["n_windows"] = n_windows
 
-                                    data_long = data_long.rename(
-                                        columns={
-                                            "cutoff": "forecast_origin",
-                                            "ds": "datetime",
+                                        models_to_use = {
+                                            k: v for k, v in default_models.items()
                                         }
-                                    )
 
-                                    if "err" not in data_long.columns:
-                                        data_long["err"] = (
-                                            data_long["y"] - data_long["f"]
-                                        )
-                                    if "abs_err" not in data_long.columns:
-                                        data_long["abs_err"] = data_long["err"].abs()
-                                    if "perc_err" not in data_long.columns:
-                                        data_long["perc_err"] = (
-                                            data_long["err"] / data_long["y"]
-                                        )
-                                    if "perc_abs_err" not in data_long.columns:
-                                        data_long["perc_abs_err"] = (
-                                            data_long["abs_err"] / data_long["y"]
+                                        fcst = StatsForecast(
+                                            models=list(models_to_use.values()),
+                                            freq=freq_code,
                                         )
 
-                                    st.session_state["forecast"] = data_long
-                                    if (
-                                        UI_TEXT["visualization_options"][1]
-                                        not in st.session_state["visualization_options"]
-                                    ):
-                                        st.session_state[
+                                        if selected_uid[0]:
+                                            columns_id = selected_uid[0].get("uid")
+                                            time_series = time_series[
+                                                time_series["uid"] == columns_id
+                                            ]
+
+                                        time_serie = time_series.copy()
+
+                                        if not columns_id:
+                                            time_serie["unique_id"] = "id_1"
+                                        else:
+                                            time_serie = time_series.rename(
+                                                columns={"uid": "unique_id"}
+                                            )
+                                        time_serie = time_serie.rename(
+                                            columns={"datetime": "ds", "y": "y"}
+                                        )
+
+                                        crossvalidation_df = fcst.cross_validation(
+                                            df=time_serie,
+                                            h=st.session_state["horizon"],
+                                            step_size=st.session_state["step_size"],
+                                            n_windows=st.session_state["n_windows"],
+                                            id_col="unique_id",
+                                        )
+
+                                        model_columns = [
+                                            col
+                                            for col in crossvalidation_df.columns
+                                            if col not in ["ds", "cutoff", "y"]
+                                        ]
+                                        data_long = crossvalidation_df.melt(
+                                            id_vars=["ds", "cutoff", "y"],
+                                            value_vars=model_columns,
+                                            var_name="model",
+                                            value_name="f",
+                                        )
+
+                                        data_long = data_long.rename(
+                                            columns={
+                                                "cutoff": "forecast_origin",
+                                                "ds": "datetime",
+                                            }
+                                        )
+
+                                        if "err" not in data_long.columns:
+                                            data_long["err"] = (
+                                                data_long["y"] - data_long["f"]
+                                            )
+                                        if "abs_err" not in data_long.columns:
+                                            data_long["abs_err"] = data_long[
+                                                "err"
+                                            ].abs()
+                                        if "perc_err" not in data_long.columns:
+                                            data_long["perc_err"] = (
+                                                data_long["err"] / data_long["y"]
+                                            )
+                                        if "perc_abs_err" not in data_long.columns:
+                                            data_long["perc_abs_err"] = (
+                                                data_long["abs_err"] / data_long["y"]
+                                            )
+
+                                        st.session_state["forecast"] = data_long
+                                        if (
+                                            UI_TEXT["visualization_options"][1]
+                                            not in st.session_state[
+                                                "visualization_options"
+                                            ]
+                                        ):
+                                            st.session_state[
+                                                "visualization_options"
+                                            ].append(
+                                                UI_TEXT["visualization_options"][1]
+                                            )
+
+                                        st.session_state["visualization"] = UI_TEXT[
                                             "visualization_options"
-                                        ].append(UI_TEXT["visualization_options"][1])
+                                        ][1]
+                                        st.rerun()
 
-                                    st.session_state["visualization"] = UI_TEXT[
-                                        "visualization_options"
-                                    ][1]
-                                    st.rerun()
+                                elif len(st.session_state["selected_series"]) == 2:
+                                    if st.session_state["forecast_activated"]:
+                                        freq_code = final_select_agr_tmp_dict[
+                                            select_agr_tmp
+                                        ]
+                                        st.sidebar.write(UI_TEXT["model_parameters"])
+
+                                        if "forecast_params" not in st.session_state:
+                                            st.session_state["forecast_params"] = {
+                                                series_id.get("uid"): {
+                                                    "horizon": 1,
+                                                    "step_size": 1,
+                                                    "n_windows": 1,
+                                                }
+                                                for series_id in st.session_state[
+                                                    "selected_series"
+                                                ]
+                                            }
+                                        if "saved_params" not in st.session_state:
+                                            st.session_state["saved_params"] = {}
+                                        for series_id in st.session_state[
+                                            "selected_series"
+                                        ]:
+                                            uid = series_id.get("uid")
+                                            with st.sidebar.form(
+                                                key=f"forecast_form_{uid}"
+                                            ):
+                                                st.write(
+                                                    f"Forecast parameters for series: {uid}"
+                                                )
+                                                horizon = st.number_input(
+                                                    UI_TEXT["horizon_uid"].format(
+                                                        uid=uid
+                                                    ),
+                                                    min_value=1,
+                                                    value=st.session_state[
+                                                        "forecast_params"
+                                                    ][uid]["horizon"],
+                                                    help=UI_TEXT["explanation_horizon"],
+                                                )
+                                                step_size = st.number_input(
+                                                    UI_TEXT["step_size_uid"].format(
+                                                        uid=uid
+                                                    ),
+                                                    min_value=1,
+                                                    value=st.session_state[
+                                                        "forecast_params"
+                                                    ][uid]["step_size"],
+                                                    help=UI_TEXT[
+                                                        "explanation_step_size"
+                                                    ],
+                                                )
+                                                n_windows = st.number_input(
+                                                    UI_TEXT["n_windows_uid"].format(
+                                                        uid=uid
+                                                    ),
+                                                    min_value=1,
+                                                    value=st.session_state[
+                                                        "forecast_params"
+                                                    ][uid]["n_windows"],
+                                                    help=UI_TEXT[
+                                                        "explanation_n_windows"
+                                                    ],
+                                                )
+
+                                                st.link_button(
+                                                    UI_TEXT["documentation"],
+                                                    "https://nixtlaverse.nixtla.io/mlforecast/docs/how-to-guides/cross_validation.html#load-and-explore-the-data",
+                                                    type="secondary",
+                                                )
+
+                                                train_button = st.form_submit_button(
+                                                    label="Save parameters"
+                                                )
+
+                                                if train_button:
+                                                    st.session_state["forecast_params"][
+                                                        uid
+                                                    ] = {
+                                                        "horizon": horizon,
+                                                        "step_size": step_size,
+                                                        "n_windows": n_windows,
+                                                    }
+                                                    st.session_state["saved_params"][
+                                                        uid
+                                                    ] = True
+                                                if st.session_state["saved_params"].get(
+                                                    uid, False
+                                                ):
+                                                    st.success(
+                                                        f"Parameters saved for series: {uid}"
+                                                    )
+                                        if st.sidebar.button("Train"):
+                                            forecasts = []
+                                            for series_id in st.session_state[
+                                                "selected_series"
+                                            ]:
+                                                uid = series_id.get("uid")
+                                                time_series_filtered = (
+                                                    time_series.copy()
+                                                )
+
+                                                time_series_filtered = (
+                                                    time_series_filtered[
+                                                        time_series_filtered["uid"]
+                                                        == series_id.get("uid")
+                                                    ]
+                                                )
+
+                                                time_series_filtered = (
+                                                    time_series_filtered.rename(
+                                                        columns={
+                                                            "datetime": "ds",
+                                                            "y": "y",
+                                                            "uid": "unique_id",
+                                                        }
+                                                    )
+                                                )
+
+                                                models_to_use = {
+                                                    k: v
+                                                    for k, v in default_models.items()
+                                                }
+                                                fcst = StatsForecast(
+                                                    models=list(models_to_use.values()),
+                                                    freq=freq_code,
+                                                )
+
+                                                params = st.session_state[
+                                                    "forecast_params"
+                                                ][uid]
+
+                                                crossvalidation_df = (
+                                                    fcst.cross_validation(
+                                                        df=time_series_filtered,
+                                                        h=params["horizon"],
+                                                        step_size=params["step_size"],
+                                                        n_windows=params["n_windows"],
+                                                        id_col="unique_id",
+                                                    )
+                                                )
+
+                                                model_columns = [
+                                                    col
+                                                    for col in crossvalidation_df.columns
+                                                    if col not in ["ds", "cutoff", "y"]
+                                                ]
+                                                data_long = crossvalidation_df.melt(
+                                                    id_vars=["ds", "cutoff", "y"],
+                                                    value_vars=model_columns,
+                                                    var_name="model",
+                                                    value_name="f",
+                                                )
+
+                                                data_long = data_long.rename(
+                                                    columns={
+                                                        "cutoff": "forecast_origin",
+                                                        "ds": "datetime",
+                                                    }
+                                                )
+
+                                                # Adding uid to the forecast
+                                                data_long["uid"] = uid
+                                                data_long["err"] = (
+                                                    data_long["y"] - data_long["f"]
+                                                )
+                                                data_long["abs_err"] = data_long[
+                                                    "err"
+                                                ].abs()
+                                                data_long["perc_err"] = (
+                                                    data_long["err"] / data_long["y"]
+                                                )
+                                                data_long["perc_abs_err"] = (
+                                                    data_long["abs_err"]
+                                                    / data_long["y"]
+                                                )
+
+                                                forecasts.append(data_long)
+
+                                            st.session_state["forecast"] = forecasts
+
+                                            if (
+                                                UI_TEXT["visualization_options"][1]
+                                                not in st.session_state[
+                                                    "visualization_options"
+                                                ]
+                                            ):
+                                                st.session_state[
+                                                    "visualization_options"
+                                                ].append(
+                                                    UI_TEXT["visualization_options"][1]
+                                                )
+
+                                            st.session_state["visualization"] = UI_TEXT[
+                                                "visualization_options"
+                                            ][1]
+                                            st.success(UI_TEXT["forecast_completed"])
+                                            st.rerun()
+
                     # "Forecast"
                     elif visualization == UI_TEXT["visualization_options"][1]:
                         st.subheader(UI_TEXT["page_title_forecast"], divider=True)
-                        if "f" in forecast.columns and "err" in forecast.columns:
-                            st.info(UI_TEXT["upload_forecast"])
-                            plot_forecast(
-                                forecast, st.session_state["selected_series"], UI_TEXT
-                            )
 
-                            plot_error_visualization(
-                                forecast,
-                                st.session_state["selected_series"],
-                                UI_TEXT,
-                            )
-
-                        elif (
-                            "forecast" in st.session_state
-                            and st.session_state["forecast"] is not None
-                        ):
-                            st.info(UI_TEXT["message_forecast_baseline"])
-                            forecast_st = st.session_state["forecast"].copy()
-
-                            if selected_uid and selected_uid[0]:
-                                columns_id_multiple = selected_uid[0].get("uid")
-                                forecast_st["uid"] = columns_id_multiple
-
-                            forecast = aggregate_to_input_cache(
-                                forecast_st,
-                                freq=final_select_agr_tmp_dict[select_agr_tmp],
-                                series_conf={
-                                    "KEY_COLS": columns_id
-                                    + ["forecast_origin", "model"],
-                                    "AGG_OPERATIONS": {
-                                        "y": "sum",
-                                        "f": "sum",
-                                        "err": "mean",
-                                        "abs_err": "mean",
-                                        "perc_err": "mean",
-                                        "perc_abs_err": "mean",
-                                    },
-                                },
-                            )
-                            data_csv = forecast.copy()
-                            data_csv = convert_df(data_csv)
-                            st.download_button(
-                                label="Download data as CSV",
-                                data=data_csv,
-                                file_name="predictions.csv",
-                                mime="text/csv",
-                            )
-                            freq_code = final_select_agr_tmp_dict[select_agr_tmp]
-
-                            if st.download_button(
-                                label=UI_TEXT["jinja_template"],
-                                data=render_script(
-                                    models=model_context,
-                                    horizon=st.session_state["horizon"],
-                                    step_size=st.session_state["step_size"],
-                                    n_windows=st.session_state["n_windows"],
-                                    freq_code=freq_code,
-                                ),
-                                file_name="forecast_model.py",
-                            ):
-                                st.success(UI_TEXT["downloaded"])
-
-                            plot_forecast(
-                                forecast,
-                                st.session_state["selected_series"],
-                                UI_TEXT,
-                            )
-
-                            plot_error_visualization(
-                                forecast,
-                                st.session_state["selected_series"],
-                                UI_TEXT,
-                            )
-
+                        if len(st.session_state["selected_series"]) > 2:
+                            st.warning(UI_TEXT["warning_no_forecast_possible"])
                         else:
-                            st.warning(UI_TEXT["warning_no_forecast"])
+                            if "f" in forecast.columns and "err" in forecast.columns:
+                                st.info(UI_TEXT["upload_forecast"])
+                                plot_forecast(
+                                    forecast,
+                                    st.session_state["selected_series"],
+                                    UI_TEXT,
+                                )
+
+                                plot_error_visualization(
+                                    forecast,
+                                    st.session_state["selected_series"],
+                                    UI_TEXT,
+                                )
+
+                            elif (
+                                "forecast" in st.session_state
+                                and st.session_state["forecast"] is not None
+                            ):
+                                if len(st.session_state["selected_series"]) == 1:
+                                    st.info(UI_TEXT["message_forecast_baseline"])
+                                    forecast_st = st.session_state["forecast"].copy()
+
+                                    if selected_uid and selected_uid[0]:
+                                        columns_id_multiple = selected_uid[0].get("uid")
+                                        forecast_st["uid"] = columns_id_multiple
+
+                                    forecast = aggregate_to_input_cache(
+                                        forecast_st,
+                                        freq=final_select_agr_tmp_dict[select_agr_tmp],
+                                        series_conf={
+                                            "KEY_COLS": columns_id
+                                            + ["forecast_origin", "model"],
+                                            "AGG_OPERATIONS": {
+                                                "y": "sum",
+                                                "f": "sum",
+                                                "err": "mean",
+                                                "abs_err": "mean",
+                                                "perc_err": "mean",
+                                                "perc_abs_err": "mean",
+                                            },
+                                        },
+                                    )
+                                    data_csv = forecast.copy()
+                                    data_csv = convert_df(data_csv)
+                                    st.download_button(
+                                        label="Download data as CSV",
+                                        data=data_csv,
+                                        file_name="predictions.csv",
+                                        mime="text/csv",
+                                    )
+                                    freq_code = final_select_agr_tmp_dict[
+                                        select_agr_tmp
+                                    ]
+
+                                    if st.download_button(
+                                        label=UI_TEXT["jinja_template"],
+                                        data=render_script(
+                                            models=model_context,
+                                            horizon=st.session_state["horizon"],
+                                            step_size=st.session_state["step_size"],
+                                            n_windows=st.session_state["n_windows"],
+                                            freq_code=freq_code,
+                                        ),
+                                        file_name="forecast_model.py",
+                                    ):
+                                        st.success(UI_TEXT["downloaded"])
+
+                                    plot_forecast(
+                                        forecast=forecast,
+                                        selected_series=st.session_state[
+                                            "selected_series"
+                                        ],
+                                        ui_text=UI_TEXT,
+                                    )
+
+                                    plot_error_visualization(
+                                        forecast=forecast,
+                                        selected_series=st.session_state[
+                                            "selected_series"
+                                        ],
+                                        ui_text=UI_TEXT,
+                                        freq=freq_code,
+                                    )
+                                elif len(st.session_state["selected_series"]) == 2:
+                                    st.info(UI_TEXT["two_id_trained"])
+                                    combined_forecasts = pd.concat(
+                                        st.session_state["forecast"], ignore_index=True
+                                    )
+
+                                    data_csv = combined_forecasts.copy()
+                                    data_csv = convert_df(data_csv)
+                                    st.download_button(
+                                        label="Download combined predictions as CSV",
+                                        data=data_csv,
+                                        file_name="combined_predictions.csv",
+                                        mime="text/csv",
+                                    )
+
+                                    freq_code = final_select_agr_tmp_dict[
+                                        select_agr_tmp
+                                    ]
+
+                                    if st.download_button(
+                                        label=UI_TEXT["jinja_template"],
+                                        data=render_script(
+                                            models=model_context,
+                                            horizon=st.session_state["horizon"],
+                                            step_size=st.session_state["step_size"],
+                                            n_windows=st.session_state["n_windows"],
+                                            freq_code=freq_code,
+                                        ),
+                                        file_name="forecast_model.py",
+                                    ):
+                                        st.success(UI_TEXT["downloaded"])
+
+                                    plot_forecast(
+                                        forecast=combined_forecasts,
+                                        selected_series=st.session_state[
+                                            "selected_series"
+                                        ],
+                                        ui_text=UI_TEXT,
+                                    )
+                                    plot_error_visualization(
+                                        forecast=combined_forecasts,
+                                        selected_series=st.session_state[
+                                            "selected_series"
+                                        ],
+                                        ui_text=UI_TEXT,
+                                        freq=freq_code,
+                                    )
+
+                                else:
+                                    st.warning(UI_TEXT["warning_no_forecast_possible"])
+
+                            else:
+                                st.warning(UI_TEXT["warning_no_forecast"])
                     else:
                         st.write(
                             UI_TEXT["visualization_not_implemented"].format(

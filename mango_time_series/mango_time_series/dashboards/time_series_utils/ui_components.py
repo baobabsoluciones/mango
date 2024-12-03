@@ -13,6 +13,7 @@ from streamlit_date_picker import date_range_picker, PickerType
 
 from .data_processing import (
     calculate_min_diff_per_window,
+    calculate_horizon,
 )
 from ...time_series.decomposition import SeasonalityDecompose
 from ...time_series.seasonal import SeasonalityDetector
@@ -1013,13 +1014,17 @@ def plot_forecast(forecast: pd.DataFrame, selected_series: List, ui_text: Dict):
 
 
 def plot_error_visualization(
-    forecast: pd.DataFrame, selected_series: List, ui_text: Dict[str, str]
+    forecast: pd.DataFrame,
+    selected_series: List,
+    ui_text: Dict[str, str],
+    freq: str = None,
 ):
     """
     Plot the error visualization for the selected series.
     :param forecast: The DataFrame containing the forecast data.
     :param selected_series: The list of selected series to plot.
     :param ui_text: The dictionary containing the UI text.
+    :param freq: The frequency of the time series.
     """
     st.subheader(ui_text["error_visualization_title"])
 
@@ -1136,7 +1141,7 @@ def plot_error_visualization(
         st.write(
             ui_text["error_message"].format(
                 ui_text["mediana_mean_string_dict"][mean_or_median_error],
-                f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**",
+                f"**{serie['perc_abs_err'].agg(median_or_mean_trans[mean_or_median_error]):.2%}**.",
             )
         )
 
@@ -1164,7 +1169,7 @@ def plot_error_visualization(
                 st.write(
                     ui_text["best_error_message"].format(
                         model=f"**{df_agg_ordered['model'].iloc[0]}**",
-                        err=f"**{df_agg_ordered['perc_abs_err_mean'].iloc[0].round(2)}**",
+                        err=f"**{df_agg_ordered['perc_abs_err_mean'].iloc[0]:.2f}**.",
                     )
                 )
         elif mean_or_median_error == ui_text["median_option"]:
@@ -1178,7 +1183,7 @@ def plot_error_visualization(
                 st.write(
                     ui_text["best_error_message"].format(
                         model=f"**{df_agg_ordered['model'].iloc[0]}**",
-                        err=f"**{df_agg_ordered['perc_abs_err_median'].iloc[0].round(2)}**",
+                        err=f"**{df_agg_ordered['perc_abs_err_median'].iloc[0]:.2f}**.",
                     )
                 )
 
@@ -1201,6 +1206,8 @@ def plot_error_visualization(
                 title = f"Serie: {' - '.join(serie[['uid']].values[0])}"
                 st.write(f"##### {title}")
             # Show how many points for each horizon
+            if "h" not in serie.columns:
+                serie = calculate_horizon(df=serie, freq=freq)
             fig = px.box(serie, x="h", y="perc_abs_err", color="model")
             # Update yaxis to show % values
             fig.update_yaxes(tickformat=".2%")
