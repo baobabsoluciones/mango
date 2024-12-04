@@ -594,17 +594,20 @@ def interface_visualization(project_name: str = None):
                             if "f" in forecast.columns and "err" in forecast.columns:
                                 st.info(UI_TEXT["upload_forecast"])
                                 plot_forecast(
-                                    forecast,
-                                    st.session_state["selected_series"],
-                                    UI_TEXT,
-                                    columns_id_name,
+                                    forecast=forecast,
+                                    selected_series=st.session_state["selected_series"],
+                                    ui_text=UI_TEXT,
+                                    columns_id_name=columns_id_name,
                                 )
 
                                 plot_error_visualization(
-                                    forecast,
-                                    st.session_state["selected_series"],
-                                    UI_TEXT,
+                                    forecast=forecast,
+                                    selected_series=st.session_state["selected_series"],
+                                    ui_text=UI_TEXT,
+                                    freq=final_select_agr_tmp_dict[select_agr_tmp],
+                                    columns_id_name=columns_id_name
                                 )
+
 
                             elif (
                                 "forecast" in st.session_state

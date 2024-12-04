@@ -68,6 +68,7 @@ def plot_time_series(
     :param select_agr_tmp_dict: The dictionary mapping the temporal grouping options to their corresponding frequency.
     :param select_agr_tmp: The selected temporal grouping option.
     :param ui_text: The dictionary containing the UI text.
+    :param columns_id_name: The name of the column containing the series identifiers.
     """
     col1, col2, col3 = st.columns([0.25, 1, 0.25])
 
@@ -88,8 +89,8 @@ def plot_time_series(
 
     if columns_id_name in time_series.columns:
         time_series[columns_id_name] = time_series[columns_id_name].astype(str)
-    # "Original series"
 
+    # "Original series"
     if select_plot is not None:
         if select_plot == ui_text["plot_options"][0]:
             date_range = date_range_picker(
@@ -117,7 +118,8 @@ def plot_time_series(
 
                 filter_cond = filter_cond[:-3]
                 filtered_data = selected_data.query(filter_cond)
-                # Original Series Plot
+
+                # Original series plot
                 st.plotly_chart(
                     px.line(
                         filtered_data,
@@ -146,8 +148,8 @@ def plot_time_series(
 
                         with col1:
                             scale_option = st.selectbox(
-                                ui_text["choose_scale_option"],
-                                ui_text["scale_plot_options"],
+                                label=ui_text["choose_scale_option"],
+                                options=ui_text["scale_plot_options"],
                                 label_visibility="hidden",
                             )
 
@@ -171,7 +173,7 @@ def plot_time_series(
                         combined_data = pd.concat(combined_data)
                         st.plotly_chart(
                             px.line(
-                                combined_data,
+                                data_frame=combined_data,
                                 x="datetime",
                                 y="y",
                                 color="Series",
@@ -191,7 +193,7 @@ def plot_time_series(
                             selected_data = selected_data.query(filter_cond)
                             st.plotly_chart(
                                 px.line(
-                                    selected_data,
+                                    data_frame=selected_data,
                                     x="datetime",
                                     y="y",
                                     title=f"Original series - {'-'.join(serie.values())}",
@@ -220,8 +222,8 @@ def plot_time_series(
                 unsafe_allow_html=True,
             )
             options = st.multiselect(
-                ui_text["choose_years"],
-                sorted(time_series["datetime"].dt.year.unique(), reverse=True),
+                label=ui_text["choose_years"],
+                options=sorted(time_series["datetime"].dt.year.unique(), reverse=True),
             )
             if len(selected_series) == 1:
                 serie = selected_series[0]
@@ -240,7 +242,7 @@ def plot_time_series(
                     )
                     st.plotly_chart(
                         px.line(
-                            selected_data_year,
+                            data_frame=selected_data_year,
                             x="datetime",
                             y="y",
                             title=f" Serie by year {'-'.join(serie.values())} - {year}",
@@ -254,8 +256,8 @@ def plot_time_series(
 
                 with col1:
                     view_option = st.selectbox(
-                        ui_text["choose_view_option"],
-                        ui_text["view_plot_options"],
+                        label=ui_text["choose_view_option"],
+                        options=ui_text["view_plot_options"],
                         key="multi_series_view_option",
                     )
 
@@ -264,8 +266,8 @@ def plot_time_series(
 
                     with col1:
                         scale_option = st.selectbox(
-                            ui_text["choose_scale_option"],
-                            ui_text["scale_plot_options"],
+                            label=ui_text["choose_scale_option"],
+                            options=ui_text["scale_plot_options"],
                             label_visibility="hidden",
                         )
 
@@ -295,7 +297,7 @@ def plot_time_series(
                         )
                         st.plotly_chart(
                             px.line(
-                                selected_data_year,
+                                data_frame=selected_data_year,
                                 x="datetime",
                                 y="y",
                                 color="Series",
@@ -322,7 +324,7 @@ def plot_time_series(
                             )
                             st.plotly_chart(
                                 px.line(
-                                    selected_data_year,
+                                    data_frame=selected_data_year,
                                     x="datetime",
                                     y="y",
                                     title=f" Serie by year - {'-'.join(serie.values())} - {year}",
@@ -365,12 +367,14 @@ def plot_time_series(
                     if len(detected_periods) == 1:
                         # STL decomposition if only one period is detected
                         trend, seasonal, resid = seasonality_decompose.decompose_stl(
-                            selected_data_stl["y"].ffill(), period=detected_periods[0]
+                            series=selected_data_stl["y"].ffill(),
+                            period=detected_periods[0],
                         )
                     elif len(detected_periods) > 1:
                         # MSTL decomposition if multiple periods are detected
                         trend, seasonal, resid = seasonality_decompose.decompose_mstl(
-                            selected_data_stl["y"].ffill(), periods=detected_periods
+                            series=selected_data_stl["y"].ffill(),
+                            periods=detected_periods,
                         )
                     else:
                         st.write(ui_text["stl"]["periods_detected"])
@@ -380,15 +384,18 @@ def plot_time_series(
                     continue
 
                 fig1 = px.line(
-                    selected_data_stl["y"],
+                    data_frame=selected_data_stl["y"],
                     title=ui_text["stl"]["stl_components"]["original"],
                 )
-                fig2 = px.line(trend, title=ui_text["stl"]["stl_components"]["trend"])
+                fig2 = px.line(
+                    data_frame=trend, title=ui_text["stl"]["stl_components"]["trend"]
+                )
                 fig3 = px.line(
-                    seasonal, title=ui_text["stl"]["stl_components"]["seasonal"]
+                    data_frame=seasonal,
+                    title=ui_text["stl"]["stl_components"]["seasonal"],
                 )
                 fig4 = px.line(
-                    resid, title=ui_text["stl"]["stl_components"]["residual"]
+                    data_frame=resid, title=ui_text["stl"]["stl_components"]["residual"]
                 )
                 # Put each plot in a subplot
                 fig = sp.make_subplots(
@@ -402,10 +409,10 @@ def plot_time_series(
                     ],
                     shared_xaxes=True,
                 )
-                fig.add_trace(fig1.data[0], row=1, col=1)
-                fig.add_trace(fig2.data[0], row=2, col=1)
-                fig.add_trace(fig3.data[0], row=3, col=1)
-                fig.add_trace(fig4.data[0], row=4, col=1)
+                fig.add_trace(trace=fig1.data[0], row=1, col=1)
+                fig.add_trace(trace=fig2.data[0], row=2, col=1)
+                fig.add_trace(trace=fig3.data[0], row=3, col=1)
+                fig.add_trace(trace=fig4.data[0], row=4, col=1)
                 fig.update_layout(showlegend=False, title="-".join(serie.values()))
 
                 fig.update_layout(
@@ -414,7 +421,7 @@ def plot_time_series(
                     width=800,
                 )
 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(figure_or_data=fig, use_container_width=True)
         # "Lag analysis"
         elif select_plot == ui_text["plot_options"][3]:
             for serie in selected_series:
@@ -436,10 +443,10 @@ def plot_time_series(
                 )
                 max_lags = int(len(selected_data_lags) / 2) - 1
                 acf_array = acf(
-                    selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
+                    x=selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
                 )
                 pacf_array = pacf(
-                    selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
+                    x=selected_data_lags.dropna(), nlags=min(35, max_lags), alpha=0.05
                 )
 
                 acf_lower_y = acf_array[1][:, 0] - acf_array[0]
@@ -564,7 +571,7 @@ def plot_time_series(
                     width=800,
                 )
 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(figure_or_data=fig, use_container_width=True)
 
         # "Seasonality boxplot"
         elif select_plot == ui_text["plot_options"][4]:
@@ -579,7 +586,9 @@ def plot_time_series(
             else:
                 st.write(ui_text["boxplot_error"])
                 return
-            selected_freq = st.selectbox(ui_text["select_frequency"], freq_options)
+            selected_freq = st.selectbox(
+                label=ui_text["select_frequency"], options=freq_options
+            )
 
             for serie in selected_series:
                 selected_data = time_series.copy()
@@ -594,36 +603,36 @@ def plot_time_series(
 
                 selected_data = selected_data.set_index("datetime")
                 selected_data.index = pd.to_datetime(selected_data.index)
-
+                series_label = "-".join(map(str, serie.values()))
                 if selected_freq == ui_text["frequency_options"][0]:
                     selected_data["day_of_year"] = selected_data.index.dayofyear
                     fig = px.box(
-                        selected_data,
+                        data_frame=selected_data,
                         x="day_of_year",
                         y="y",
-                        title=ui_text["boxplot_titles"]["daily"],
+                        title=f"{ui_text['boxplot_titles']['daily']} - {series_label}",
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(figure_or_data=fig, use_container_width=True)
 
                 elif selected_freq == ui_text["frequency_options"][1]:
                     selected_data["day_of_week"] = selected_data.index.weekday
                     fig = px.box(
-                        selected_data,
+                        data_frame=selected_data,
                         x="day_of_week",
                         y="y",
-                        title=ui_text["boxplot_titles"]["weekly"],
+                        title=f"{ui_text['boxplot_titles']['weekly']} - {series_label}",
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(figure_or_data=fig, use_container_width=True)
 
                 elif selected_freq == ui_text["frequency_options"][2]:
                     selected_data["month"] = selected_data.index.month
                     fig = px.box(
-                        selected_data,
+                        data_frame=selected_data,
                         x="month",
                         y="y",
-                        title=ui_text["boxplot_titles"]["monthly"],
+                        title=f"{ui_text['boxplot_titles']['monthly']} - {series_label}",
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(figure_or_data=fig, use_container_width=True)
 
         # "Periodogram"
         elif select_plot == ui_text["plot_options"][5]:
@@ -714,7 +723,7 @@ def plot_time_series(
                     showlegend=False,
                 )
 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(figure_or_data=fig, use_container_width=True)
     else:
         return
 
@@ -727,6 +736,7 @@ def setup_sidebar(
     :param time_series: The DataFrame containing the time series data.
     :param columns_id: The list of columns to use as identifiers for the series.
     :param ui_text: The dictionary containing the UI text.
+    :param columns_id_name: The name of the column containing the series identifiers.
     :return: The selected temporal grouping option, the selected visualization option, and the list of visualization options.
     """
     st.sidebar.title(ui_text["sidebar_title"])
@@ -749,8 +759,8 @@ def setup_sidebar(
         st.session_state["visualization_options"] = ui_text["visualization_options"]
 
     visualization = st.sidebar.radio(
-        ui_text["select_visualization"],
-        ui_text["visualization_options"],
+        label=ui_text["select_visualization"],
+        options=ui_text["visualization_options"],
     )
 
     st.sidebar.title(ui_text["select_temporal_grouping"])
@@ -790,8 +800,8 @@ def setup_sidebar(
             return
 
         select_agr_tmp = st.sidebar.selectbox(
-            ui_text["select_temporal_grouping"],
-            all_tmp_agr,
+            label=ui_text["select_temporal_grouping"],
+            options=all_tmp_agr,
             label_visibility="collapsed",
         )
     else:
@@ -817,8 +827,8 @@ def setup_sidebar(
             return
 
         select_agr_tmp = st.sidebar.selectbox(
-            ui_text["select_temporal_grouping"],
-            all_tmp_agr,
+            label=ui_text["select_temporal_grouping"],
+            options=all_tmp_agr,
             label_visibility="collapsed",
         )
 
@@ -867,6 +877,7 @@ def plot_forecast(
     :param forecast: The DataFrame containing the forecast data.
     :param selected_series: The list of selected series to plot.
     :param ui_text: The dictionary containing the UI text.
+    :param columns_id_name: The name of the column containing the series identifiers.
     """
     st.subheader(ui_text["forecast_plot_title"])
     if not selected_series:
@@ -896,7 +907,7 @@ def plot_forecast(
     col1, col2, col3 = st.columns([0.25, 1, 0.25])
     with col1:
         selected_date = st.date_input(
-            ui_text["choose_date"],
+            label=ui_text["choose_date"],
             min_value=forecast_restricted["forecast_origin"].min(),
             max_value=forecast_restricted["forecast_origin"].max(),
             value=forecast_restricted["forecast_origin"].min(),
@@ -984,7 +995,7 @@ def plot_forecast(
 
         else:
             fig = px.line(
-                selected_data,
+                data_frame=selected_data,
                 x="datetime",
                 y=["y", "f"],
                 title="-".join(serie.values()),
@@ -1035,13 +1046,14 @@ def plot_error_visualization(
     :param selected_series: The list of selected series to plot.
     :param ui_text: The dictionary containing the UI text.
     :param freq: The frequency of the time series.
+    :param columns_id_name: The name of the column to use as an identifier for the series.
     """
     st.subheader(ui_text["error_visualization_title"])
 
     # Add radio selector for filter type
     filter_type = st.radio(
-        ui_text["select_filter_type"],
-        [
+        label=ui_text["select_filter_type"],
+        options=[
             ui_text["datetime_filter"],
             ui_text["forecast_origin_filter"],
             ui_text["both_filters"],
@@ -1136,8 +1148,8 @@ def plot_error_visualization(
             )
 
     mean_or_median_error = st.radio(
-        ui_text["show_median_or_mean"],
-        ui_text["median_or_mean_options"],
+        label=ui_text["show_median_or_mean"],
+        options=ui_text["median_or_mean_options"],
         index=0,
         key="median_or_mean_pmrs_diarios",
         horizontal=True,
@@ -1178,7 +1190,7 @@ def plot_error_visualization(
             df_agg_ordered = df_agg_filtered.sort_values(
                 by="perc_abs_err_mean"
             ).reset_index(drop=True)
-            st.write(df_agg_ordered)
+            st.dataframe(df_agg_ordered)
             if len(models) > 1:
                 st.write(
                     ui_text["best_error_message"].format(
@@ -1205,8 +1217,8 @@ def plot_error_visualization(
     col1, col2, col3 = st.columns([0.25, 1, 0.25])
     with col1:
         plot_options = st.multiselect(
-            ui_text["select_plots"],
-            ui_text["plot_options_error"],
+            label=ui_text["select_plots"],
+            options=ui_text["plot_options_error"],
             default=[],
             placeholder=ui_text["select_plots"],
             label_visibility="collapsed",
@@ -1222,14 +1234,14 @@ def plot_error_visualization(
             # Show how many points for each horizon
             if "h" not in serie.columns:
                 serie = calculate_horizon(df=serie, freq=freq)
-            fig = px.box(serie, x="h", y="perc_abs_err", color="model")
+            fig = px.box(data_frame=serie, x="h", y="perc_abs_err", color="model")
             # Update yaxis to show % values
             fig.update_yaxes(tickformat=".2%")
             fig.update_layout(
-                xaxis_title="Horizonte",
+                xaxis_title=ui_text["axis_labels"]["horizon"],
                 yaxis_title=ui_text["error_types"]["perc_abs_err"],
             )
-            st.plotly_chart(fig)
+            st.plotly_chart(figure_or_data=fig, use_container_width=True)
             number_by_horizon = serie.groupby("h").size()
             if number_by_horizon.std() > 0:
                 st.warning(ui_text["horizon_warning"])
@@ -1246,19 +1258,14 @@ def plot_error_visualization(
             ui_text["temporal_aggregation_options"][1]: ui_text["month"],
         }
         select_agg = st.selectbox(
-            ui_text["select_temporal_aggregation"],
-            ui_text["temporal_aggregation_options"],
+            label=ui_text["select_temporal_aggregation"],
+            options=ui_text["temporal_aggregation_options"],
             key="select_agg",
         )
 
         for idx, serie in data_dict.items():
             if columns_id_name in serie.columns:
-                title = (
-                    f"Serie: {' - '.join(serie[[columns_id_name, 'model']].values[0])}"
-                )
-                st.write(f"##### {title}")
-            else:
-                title = f"Serie: {' - '.join(serie[['model']].values[0])}"
+                title = f"Serie: {' - '.join(serie[[columns_id_name]].values[0])}"
                 st.write(f"##### {title}")
             # Apply the selected transformation to the datetime column
             transformed_datetime = serie["datetime"].apply(
@@ -1270,7 +1277,7 @@ def plot_error_visualization(
             )
 
             fig = px.box(
-                serie,
+                data_frame=serie,
                 x=transformed_datetime,
                 y="perc_abs_err",
                 color="model",
@@ -1281,4 +1288,26 @@ def plot_error_visualization(
                 },
             )
             fig.update_yaxes(tickformat=".2%")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(figure_or_data=fig, use_container_width=True)
+
+    # "Scatterplot"
+    if ui_text["plot_options_error"][2] in plot_options:
+        st.write(f"### {ui_text['title_scatter_plot']}")
+        # Scatter plot perc_abs_err by datetime
+        for idx, serie in data_dict.items():
+            if columns_id_name in serie.columns:
+                title = f"Serie: {' - '.join(serie[[columns_id_name]].values[0])}"
+                st.write(f"##### {title}")
+
+            fig = px.scatter(
+                data_frame=serie,
+                x="datetime",
+                y="perc_abs_err",
+                color="model",
+                labels={
+                    "datetime": ui_text["axis_labels"]["date"],
+                    "perc_abs_err": ui_text["error_types"]["perc_abs_err"],
+                },
+            )
+            fig.update_yaxes(tickformat=".2%")
+            st.plotly_chart(figure_or_data=fig, use_container_width=True)

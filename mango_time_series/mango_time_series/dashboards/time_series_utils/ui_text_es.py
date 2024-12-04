@@ -237,4 +237,5 @@ UI_TEXT = {
             "pacf": "Partial Autocorrelation Function (PACF)",
         }
     },
+    "title_scatter_plot": "Gráfico de dispersión",
 }
