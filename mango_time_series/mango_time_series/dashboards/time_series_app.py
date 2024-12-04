@@ -193,17 +193,18 @@ def interface_visualization(project_name: str = None):
                         if "previous_length" not in st.session_state:
                             st.session_state["previous_length"] = current_length
 
-                        if current_length != st.session_state["previous_length"]:
-                            # Reset forecast if the number of series selected changes
+                        if current_length < st.session_state["previous_length"]:
+                            # If the number of series selected is less than the previous one, the forecast of the current is maintained
+                            st.session_state["forecast_activated"] = True
+                            st.session_state["selected_series"] = selected_uid
+                            st.session_state["previous_length"] = current_length
+
+                        if current_length > st.session_state["previous_length"]:
+                            # Reset forecast if the number of series selected is greater than the previous one
                             st.session_state["forecast_activated"] = False
                             st.session_state["forecast"] = None
                             st.session_state["selected_series"] = selected_uid
                             st.session_state["previous_length"] = current_length
-                            st.rerun()
-
-                        if current_uid != st.session_state.get("previous_uid", None):
-                            st.session_state["previous_uid"] = current_uid
-                            st.session_state["forecast"] = False
                             st.rerun()
 
                     elif "previous_uid" in st.session_state:
@@ -617,10 +618,21 @@ def interface_visualization(project_name: str = None):
                                         columns_id_multiple = selected_uid[0].get(
                                             columns_id_name
                                         )
-                                        forecast_st[columns_id_name] = (
-                                            columns_id_multiple
-                                        )
-
+                                        if isinstance(columns_id_name, str):
+                                            filtered_forecast_st = [
+                                                df
+                                                for df in forecast_st
+                                                if columns_id_name in df.columns
+                                                and (
+                                                    df[columns_id_name]
+                                                    == columns_id_multiple
+                                                ).any()
+                                            ]
+                                            forecast_st = filtered_forecast_st[0]
+                                        else:
+                                            forecast_st[columns_id_name] = (
+                                                columns_id_multiple
+                                            )
                                     forecast = aggregate_to_input_cache(
                                         forecast_st,
                                         freq=final_select_agr_tmp_dict[select_agr_tmp],

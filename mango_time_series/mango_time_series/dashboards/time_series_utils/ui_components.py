@@ -1227,7 +1227,7 @@ def plot_error_visualization(
             fig.update_yaxes(tickformat=".2%")
             fig.update_layout(
                 xaxis_title="Horizonte",
-                yaxis_title=ui_text["error_types"][0],
+                yaxis_title=ui_text["error_types"]["perc_abs_err"],
             )
             st.plotly_chart(fig)
             number_by_horizon = serie.groupby("h").size()
@@ -1277,7 +1277,7 @@ def plot_error_visualization(
                 title=f"Box plot de {col_name_dict[select_agg]} para {idx}",
                 labels={
                     "x": col_name_dict[select_agg],
-                    "perc_abs_err": ui_text["error_types"][0],
+                    "perc_abs_err": ui_text["error_types"]["perc_abs_err"],
                 },
             )
             fig.update_yaxes(tickformat=".2%")
