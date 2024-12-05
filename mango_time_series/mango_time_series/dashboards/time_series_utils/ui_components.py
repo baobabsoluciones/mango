@@ -9,6 +9,7 @@ import plotly.subplots as sp
 import streamlit as st
 from plotly.subplots import make_subplots
 from statsmodels.tsa.stattools import acf, pacf
+from streamlit import dataframe
 from streamlit_date_picker import date_range_picker, PickerType
 
 from .data_processing import (
@@ -879,11 +880,12 @@ def plot_forecast(
     :param ui_text: The dictionary containing the UI text.
     :param columns_id_name: The name of the column containing the series identifiers.
     """
-    st.subheader(ui_text["forecast_plot_title"])
+
     if not selected_series:
-        st.write(ui_text["select_series_to_plot"])
+        st.warning(ui_text["select_series_to_plot"])
         return
 
+    st.subheader(ui_text["forecast_plot_title"])
     forecast = forecast.copy()
     # Get dates for the selected series
     filter_cond = ""
@@ -1048,8 +1050,10 @@ def plot_error_visualization(
     :param freq: The frequency of the time series.
     :param columns_id_name: The name of the column to use as an identifier for the series.
     """
-    st.subheader(ui_text["error_visualization_title"])
+    if not selected_series:
+        return
 
+    st.subheader(ui_text["error_visualization_title"])
     # Add radio selector for filter type
     filter_type = st.radio(
         label=ui_text["select_filter_type"],
@@ -1159,6 +1163,12 @@ def plot_error_visualization(
         ui_text["mean_option"]: "mean",
     }
 
+    percentile_options = st.multiselect(
+        label=ui_text["select_percentiles"],
+        options=[5, 10, 25, 50, 75, 90, 95],
+        default=[25, 50, 75],
+    )
+
     # Show mean or median overall perc_abs_err
     for idx, serie in data_dict.items():
         if columns_id_name in serie.columns:
@@ -1173,20 +1183,27 @@ def plot_error_visualization(
 
         st.write(ui_text["aggregated_summary_title"] + ":")
 
-        df_agg = serie.groupby("model", as_index=False).agg(
-            y=("y", "mean"),
-            f=("f", "mean"),
-            err=("err", "mean"),
-            abs_err=("abs_err", "mean"),
-            perc_err=("perc_err", "mean"),
-            perc_abs_err_mean=("perc_abs_err", "mean"),
-            perc_abs_err_median=("perc_abs_err", "median"),
-        )
+        agg_operations = {
+            "y": ("y", "mean"),
+            "f": ("f", "mean"),
+            "err": ("err", "mean"),
+            "abs_err": ("abs_err", "mean"),
+            "perc_err": ("perc_err", "mean"),
+            "perc_abs_err_mean": ("perc_abs_err", "mean"),
+            "perc_abs_err_median": ("perc_abs_err", "median"),
+        }
 
+        df_agg = serie.groupby("model", as_index=False).agg(**agg_operations)
+
+        for p in percentile_options:
+            df_agg[f"perc_abs_err_p{p}"] = (
+                serie.groupby("model")["perc_abs_err"].quantile(p / 100).values
+            )
         df_agg = df_agg.round(2)
-
         if mean_or_median_error == ui_text["mean_option"]:
-            df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_mean"]]
+            cols_to_show = ["model", "y", "f", "perc_abs_err_mean"]
+            cols_to_show += [f"perc_abs_err_p{p}" for p in percentile_options]
+            df_agg_filtered = df_agg[cols_to_show]
             df_agg_ordered = df_agg_filtered.sort_values(
                 by="perc_abs_err_mean"
             ).reset_index(drop=True)
@@ -1199,7 +1216,9 @@ def plot_error_visualization(
                     )
                 )
         elif mean_or_median_error == ui_text["median_option"]:
-            df_agg_filtered = df_agg[["model", "y", "f", "perc_abs_err_median"]]
+            cols_to_show = ["model", "y", "f", "perc_abs_err_median"]
+            cols_to_show += [f"perc_abs_err_p{p}" for p in percentile_options]
+            df_agg_filtered = df_agg[cols_to_show]
             df_agg_ordered = df_agg_filtered.sort_values(
                 by="perc_abs_err_median"
             ).reset_index(drop=True)
@@ -1301,13 +1320,25 @@ def plot_error_visualization(
 
             fig = px.scatter(
                 data_frame=serie,
-                x="datetime",
-                y="perc_abs_err",
+                x="y",
+                y="f",
                 color="model",
                 labels={
-                    "datetime": ui_text["axis_labels"]["date"],
-                    "perc_abs_err": ui_text["error_types"]["perc_abs_err"],
+                    "f": ui_text["axis_labels"]["f"],
+                    "y": ui_text["axis_labels"]["y"],
                 },
             )
-            fig.update_yaxes(tickformat=".2%")
+            min_x = min(serie["f"].min(), serie["y"].min())
+            min_y = min(serie["f"].min(), serie["y"].min())
+            max_x = max(serie["f"].max(), serie["y"].max())
+            max_y = max(serie["f"].max(), serie["y"].max())
+            fig.add_trace(
+                go.Scatter(
+                    x=[min_x, max_x],
+                    y=[min_y, max_y],
+                    mode="lines",
+                    name="y = y",
+                    line=dict(color="black", dash="dash"),
+                )
+            )
             st.plotly_chart(figure_or_data=fig, use_container_width=True)

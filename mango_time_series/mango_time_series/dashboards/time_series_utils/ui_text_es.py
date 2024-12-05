@@ -66,6 +66,8 @@ UI_TEXT = {
     "select_temporal_aggregation": "Selecciona la agrupación temporal para el boxplot",
     "temporal_aggregation_options": ["Diario", "Mensual"],
     "axis_labels": {
+        "f": "Forecast",
+        "y": "Real",
         "date": "Fecha",
         "value": "Valor",
         "horizon": "Horizonte",
@@ -238,4 +240,6 @@ UI_TEXT = {
         }
     },
     "title_scatter_plot": "Gráfico de dispersión",
+    "select_percentiles": "Selecciona los percentiles a visualizar",
+
 }

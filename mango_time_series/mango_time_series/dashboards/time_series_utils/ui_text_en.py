@@ -98,6 +98,8 @@ UI_TEXT = {
     "temporal_aggregation_options": ["Daily", "Monthly"],
     # Labels
     "axis_labels": {
+        "f": "Forecast",
+        "y": "Real",
         "date": "Date",
         "value": "Value",
         "horizon": "Horizon",
@@ -245,5 +247,8 @@ UI_TEXT = {
             "pacf": "Partial Autocorrelation Function (PACF)",
         }
     },
-    "title_scatter_plot": "Scatter plot by datetime",
+    "title_scatter_plot": "Scatter plot",
+    "select_percentiles": "Select percentiles to display",
+
+
 }
