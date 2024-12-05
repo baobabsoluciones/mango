@@ -208,7 +208,7 @@ UI_TEXT = {
     "activate_button_train": "Activar previsión",
     "jinja_template": "Descargar script de forecast",
     "downloaded": "Script descargado correctamente.",
-    "experimental_features_warning": "Características experimentales no activadas. Por favor, activa la variable de entorno 'ENABLE_EXPERIMENTAL_FEATURES' para acceder a estas funcionalidades.",
+    "experimental_features_warning": "Características experimentales no activadas. Por favor, activa la variable de entorno 'TS_DASHBOARD_EXPERIMENTAL_FEATURES' para acceder a estas funcionalidades.",
     "experimental_features_info": "Las características experimentales están habilitadas. Las siguientes funcionalidades pueden tener errores o comportamientos inesperados.",
     "two_id_trained": "Mostrando predicciones para dos series seleccionadas.",
     "warning_no_forecast_possible": "No se puede realizar un forecast porque hay más de dos series seleccionadas.",
@@ -241,5 +241,4 @@ UI_TEXT = {
     },
     "title_scatter_plot": "Gráfico de dispersión",
     "select_percentiles": "Selecciona los percentiles a visualizar",
-
 }

@@ -9,10 +9,7 @@ from statsforecast.models import (
     AutoTheta,
 )
 
-PROJECT_NAME = "Project"
-
 ModelType = Union[HistoricAverage, Naive, RandomWalkWithDrift, MSTL]
-
 
 # Constants for time aggregation
 SELECT_AGR_TMP_DICT = {

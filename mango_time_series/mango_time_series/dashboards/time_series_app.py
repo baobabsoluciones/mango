@@ -1,4 +1,9 @@
+import os
+from io import BytesIO
+
+import PIL.Image
 import pandas as pd
+import requests
 import streamlit as st
 from statsforecast import StatsForecast
 
@@ -6,7 +11,6 @@ from mango_time_series.dashboards.time_series_utils.constants import (
     SELECT_AGR_TMP_DICT,
     model_context,
     default_models,
-    PROJECT_NAME,
 )
 from mango_time_series.dashboards.time_series_utils.data_loader import (
     load_data,
@@ -35,14 +39,47 @@ from mango_time_series.dashboards.time_series_utils.ui_text_es import (
 )
 
 
-def interface_visualization(project_name: str = None):
+def interface_visualization(
+    project_name: str = None, logo_url: str = None, experimental_features: bool = False
+):
     """
     Main interface for the time series visualization dashboard.
     :param project_name: str with the name of the project
     """
-    # SETUP web page
+
+    def validate_logo(logo_path):
+        if not logo_path:
+            return None
+
+        # Handle file:/// protocol and normalize path
+        if logo_path.startswith("file:///"):
+            logo_path = logo_path.replace("file:///", "")
+            logo_path = os.path.normpath(logo_path)
+
+        # Check if it's a local file
+        if os.path.exists(logo_path):
+            try:
+                PIL.Image.open(logo_path)
+                return logo_path
+            except Exception:
+                return None
+
+        # If not a local file, try as URL
+        if logo_path.startswith(("http://", "https://")):
+            try:
+                response = requests.get(logo_path, timeout=5)
+                if response.status_code == 200:
+                    image_data = BytesIO(response.content)
+                    PIL.Image.open(image_data)
+                    return logo_path
+            except Exception:
+                return None
+
+        return None
+
     st.set_page_config(
         page_title=project_name,
+        page_icon=validate_logo(logo_url),
         layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
@@ -228,7 +265,8 @@ def interface_visualization(project_name: str = None):
                             final_select_agr_tmp_dict,
                             select_agr_tmp,
                             UI_TEXT,
-                            columns_id_name,
+                            columns_id_name=columns_id_name,
+                            experimental_features=experimental_features,
                         )
                         if len(visualization_options) == 1:
                             if "forecast_activated" not in st.session_state:
@@ -605,9 +643,8 @@ def interface_visualization(project_name: str = None):
                                     selected_series=st.session_state["selected_series"],
                                     ui_text=UI_TEXT,
                                     freq=final_select_agr_tmp_dict[select_agr_tmp],
-                                    columns_id_name=columns_id_name
+                                    columns_id_name=columns_id_name,
                                 )
-
 
                             elif (
                                 "forecast" in st.session_state
@@ -760,4 +797,15 @@ def interface_visualization(project_name: str = None):
 
 
 if __name__ == "__main__":
-    interface_visualization(project_name=PROJECT_NAME)
+    project_name = os.environ.get("TS_DASHBOARD_PROJECT_NAME", "Project")
+    logo_url = os.environ.get("TS_DASHBOARD_LOGO_URL", None)
+    experimental_features = os.environ.get("TS_DASHBOARD_EXPERIMENTAL_FEATURES", False)
+    if experimental_features.lower() in ["true", "t", "1"]:
+        experimental_features = True
+    else:
+        experimental_features = False
+    interface_visualization(
+        project_name=project_name,
+        logo_url=logo_url,
+        experimental_features=experimental_features,
+    )

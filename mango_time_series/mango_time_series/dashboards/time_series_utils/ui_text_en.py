@@ -216,7 +216,7 @@ UI_TEXT = {
     "activate_button_train": "Activate forecast",
     "jinja_template": "Download forecast script",
     "downloaded": "Script downloaded successfully.",
-    "experimental_features_warning": "Experimental features not enabled. Please set the 'ENABLE_EXPERIMENTAL_FEATURES' environment variable to access these functionalities.",
+    "experimental_features_warning": "Experimental features not enabled. Please set the 'TS_DASHBOARD_EXPERIMENTAL_FEATURES' environment variable to access these functionalities.",
     "experimental_features_info": "Experimental features are enabled. The following functionalities might have errors or unexpected behavior.",
     "two_id_trained": "Displaying predictions for two selected series.",
     "warning_no_forecast_possible": "No forecast possible because there are more than two series selected.",
@@ -249,6 +249,4 @@ UI_TEXT = {
     },
     "title_scatter_plot": "Scatter plot",
     "select_percentiles": "Select percentiles to display",
-
-
 }

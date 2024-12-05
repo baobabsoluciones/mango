@@ -9,16 +9,14 @@ import plotly.subplots as sp
 import streamlit as st
 from plotly.subplots import make_subplots
 from statsmodels.tsa.stattools import acf, pacf
-from streamlit import dataframe
 from streamlit_date_picker import date_range_picker, PickerType
 
+from mango_time_series.time_series.decomposition import SeasonalityDecompose
+from mango_time_series.time_series.seasonal import SeasonalityDetector
 from .data_processing import (
     calculate_min_diff_per_window,
     calculate_horizon,
 )
-from ...time_series.decomposition import SeasonalityDecompose
-from ...time_series.seasonal import SeasonalityDetector
-from ...utils.utils import cast_env_to_bool
 
 
 def select_series(data: pd.DataFrame, columns: List, ui_text: Dict):
@@ -55,6 +53,7 @@ def plot_time_series(
     select_agr_tmp: str,
     ui_text: Dict,
     columns_id_name: str,
+    experimental_features: bool,
 ):
     """
     Plot the selected time series data. The user can choose between different types of plots:
@@ -338,7 +337,7 @@ def plot_time_series(
 
         # STL
         elif select_plot == ui_text["plot_options"][2]:
-            if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
+            if not experimental_features:
                 st.warning(ui_text["experimental_features_warning"], icon="⚠️")
                 return
             else:
@@ -637,7 +636,7 @@ def plot_time_series(
 
         # "Periodogram"
         elif select_plot == ui_text["plot_options"][5]:
-            if not cast_env_to_bool("ENABLE_EXPERIMENTAL_FEATURES", default=False):
+            if not experimental_features:
                 st.warning(ui_text["experimental_features_warning"], icon="⚠️")
                 return
             else:
