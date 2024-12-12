@@ -1,8 +1,7 @@
 import warnings
 
+from mango.processing import as_list, flatten
 from pytups import TupList
-
-from mango.processing import as_list, flatten, lag_list, lead_list
 
 
 def is_subset(set_a, set_b):

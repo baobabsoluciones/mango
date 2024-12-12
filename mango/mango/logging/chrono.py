@@ -1,6 +1,5 @@
 import logging
 import time
-from .logger import get_basic_logger
 
 
 class Chrono:

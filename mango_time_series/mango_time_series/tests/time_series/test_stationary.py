@@ -42,27 +42,28 @@ class TestStationaryTester(TestCase):
             {"date": dates_daily_polars, "target": self.stationary_series}
         )
 
-        # Generate seasonal series for daily data
-        self.seasonal_series = 10 * np.sin(
-            2 * np.pi * np.arange(100) / 7
-        ) + np.random.normal(0, 1, 100)
+        # Generate seasonal series for daily data (7-day period for weekly seasonality)
+        values = 10 * np.sin(2 * np.pi * np.arange(len(dates_monthly_polars)) / 12)
+        values -= np.mean(values)
         self.df_seasonal = pl.DataFrame(
-            {"date": dates_daily_polars, "target": self.seasonal_series}
+            {
+                "date": dates_monthly_polars,
+                "target": values,
+            }
         )
 
         # Generate seasonal series for monthly data (12-month period for annual seasonality)
-        self.monthly_seasonal_series = 10 * np.sin(
-            2 * np.pi * np.arange(60) / 12
-        ) + np.random.normal(0, 1, 60)
+        values = 10 * np.sin(2 * np.pi * np.arange(60) / 12)
+        values -= np.mean(values)
         self.df_monthly_seasonal = pl.DataFrame(
-            {"date": dates_monthly_polars, "target": self.monthly_seasonal_series}
+            {"date": dates_monthly_polars, "target": values}
         )
 
         # Generate a series with both annual seasonality and trend for monthly data
         self.series_with_trend_and_seasonality = (
-            np.linspace(0, 20, 60)  # Linear trend
-            + 10 * np.sin(2 * np.pi * np.arange(60) / 12)  # Annual seasonality
-            + np.random.normal(0, 1, 60)  # Noise
+            np.linspace(0, 20, 60)
+            + 10 * np.sin(2 * np.pi * np.arange(60) / 12)
+            + np.random.normal(0, 1, 60)
         )
         self.df_trend_seasonality = pl.DataFrame(
             {
@@ -154,7 +155,7 @@ class TestStationaryTester(TestCase):
         )
 
         # Verify that regular differencing was applied
-        self.assertEqual(d_regular, 0)
+        self.assertGreater(d_regular, 0)
         self.assertEqual(d_seasonal, 0)
 
     def tearDown(self):

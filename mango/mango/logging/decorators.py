@@ -1,6 +1,6 @@
+import logging
 import time
 from functools import wraps
-import logging
 
 
 def log_time(logger: str = "root"):

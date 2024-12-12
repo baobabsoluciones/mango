@@ -1,4 +1,4 @@
-from math import cos, pi
+from math import pi
 
 import numpy as np
 

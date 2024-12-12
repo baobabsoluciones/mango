@@ -1,5 +1,17 @@
-from pytups import TupList, SuperDict
 from typing import Callable
+
+from mango.processing import (
+    load_json,
+    write_json,
+    as_list,
+    flatten,
+    load_excel_light,
+    write_excel_light,
+    load_csv_light,
+    write_csv_light,
+)
+from pytups import TupList, SuperDict
+
 from .pytups_tools import (
     mutate,
     sum_all,
@@ -30,16 +42,6 @@ from .pytups_tools import (
     auto_join,
 )
 from .table_tools import is_subset
-from mango.processing import (
-    load_json,
-    write_json,
-    as_list,
-    flatten,
-    load_excel_light,
-    write_excel_light,
-    load_csv_light,
-    write_csv_light,
-)
 
 
 class Table(TupList):

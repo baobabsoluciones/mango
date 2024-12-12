@@ -3,6 +3,8 @@ import polars as pl
 from datetime import datetime, timedelta
 from typing import Union
 
+import polars as pl
+
 from mango_time_series.features.calendar_features import get_calendar
 
 

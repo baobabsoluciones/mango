@@ -1,8 +1,9 @@
-from pytups import TupList, SuperDict
-from typing import Callable, Iterable
-from mango.table.table_tools import str_key, to_len, invert_dict_list
-from mango.processing import as_list, flatten, reverse_dict, unique
+from typing import Callable
+
 import numpy as np
+from mango.processing import as_list, flatten, reverse_dict
+from mango.table.table_tools import str_key, to_len, invert_dict_list
+from pytups import TupList
 
 
 def mutate(table, **kwargs):

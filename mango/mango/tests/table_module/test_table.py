@@ -3,12 +3,11 @@ import os
 from unittest import TestCase, mock
 
 import numpy as np
-from pytups import TupList, SuperDict
-
 from mango.processing import row_number
 from mango.table.pytups_table import Table
 from mango.table.table_tools import mean
 from mango.tests.const import normalize_path
+from pytups import TupList, SuperDict
 
 
 class TestTable(TestCase):

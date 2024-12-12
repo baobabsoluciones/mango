@@ -2,10 +2,9 @@ from typing import Tuple
 
 import numpy as np
 import statsmodels.api as sm
+from mango.logging.logger import get_basic_logger
 from scipy.stats import boxcox, boxcox_normmax
 from statsmodels.stats.diagnostic import het_breuschpagan
-
-from mango.logging.logger import get_basic_logger
 
 logger = get_basic_logger()
 
@@ -62,6 +61,12 @@ def detect_and_transform_heteroscedasticity(
         raise ValueError(
             "The time series must contain more than one data point for the test"
         )
+
+    if np.any(series <= 0):
+        logger.warning(
+            "Series contains zeros or negative values. Skipping Box-Cox transformation."
+        )
+        return series, None
 
     # Breusch-Pagan test
     trend = np.arange(len(series))

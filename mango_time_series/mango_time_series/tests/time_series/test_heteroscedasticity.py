@@ -1,5 +1,6 @@
-import numpy as np
 from unittest import TestCase
+
+import numpy as np
 
 from mango_time_series.time_series.heteroscedasticity import (
     detect_and_transform_heteroscedasticity,

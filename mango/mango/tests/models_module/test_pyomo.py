@@ -2,10 +2,6 @@ import os
 from copy import deepcopy
 from unittest import TestCase
 
-from pyomo.environ import Binary
-from pyomo.core import AbstractModel, Set, Var
-
-from mango.processing import load_excel_light
 from mango.models.pyomo import (
     var_to_table,
     instance_from_excel,
@@ -22,9 +18,11 @@ from mango.models.pyomo import (
     solver_result_to_json,
     solver_result_from_json,
 )
-
+from mango.processing import load_excel_light
 from mango.table import Table
 from mango.tests.const import normalize_path
+from pyomo.core import AbstractModel, Set, Var
+from pyomo.environ import Binary
 
 
 class TestTools(TestCase):

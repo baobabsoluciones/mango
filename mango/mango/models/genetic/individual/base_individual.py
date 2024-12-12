@@ -1,6 +1,7 @@
 from random import uniform, randint
-from mango.models.genetic.config import GeneticBaseConfig
+
 import numpy as np
+from mango.models.genetic.config import GeneticBaseConfig
 
 
 class Individual:

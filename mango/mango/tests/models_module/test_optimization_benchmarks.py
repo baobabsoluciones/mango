@@ -1,7 +1,7 @@
-import numpy as np
 from random import seed, uniform
 from unittest import TestCase
 
+import numpy as np
 from mango.benchmark import (
     drop_wave,
     inverted_drop_wave,

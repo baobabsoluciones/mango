@@ -1,16 +1,16 @@
 import shutil
 from unittest import TestCase
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier, LGBMRegressor
+
 import pandas as pd
+from lightgbm import LGBMClassifier, LGBMRegressor
+from mango.shap_analysis import ShapAnalyzer
+from mango.tests.const import normalize_path
 from sklearn.datasets import make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-
-from mango.shap_analysis import ShapAnalyzer
-from mango.tests.const import normalize_path
+from xgboost import XGBClassifier
 
 
 class ObjectTests(TestCase):

@@ -1,7 +1,7 @@
 import email
 import imaplib
-import os
 import logging as log
+import os
 
 
 class EmailDownloader:
