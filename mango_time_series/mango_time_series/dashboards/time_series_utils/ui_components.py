@@ -240,6 +240,7 @@ def plot_time_series(
                     selected_data_year = selected_data.query(
                         f"datetime.dt.year == {year}"
                     )
+                    selected_data_year = pad_to_end_of_year(selected_data_year, year)
                     st.plotly_chart(
                         px.line(
                             data_frame=selected_data_year,
@@ -295,6 +296,9 @@ def plot_time_series(
                         selected_data_year = combined_data.query(
                             f"datetime.dt.year == {year}"
                         )
+                        selected_data_year = pad_to_end_of_year(
+                            selected_data_year, year
+                        )
                         st.plotly_chart(
                             px.line(
                                 data_frame=selected_data_year,
@@ -321,6 +325,9 @@ def plot_time_series(
                         for year in reversed(sorted(options)):
                             selected_data_year = filtered_data.query(
                                 f"datetime.dt.year == {year}"
+                            )
+                            selected_data_year = pad_to_end_of_year(
+                                selected_data_year, year
                             )
                             st.plotly_chart(
                                 px.line(
@@ -1341,3 +1348,25 @@ def plot_error_visualization(
                 )
             )
             st.plotly_chart(figure_or_data=fig, use_container_width=True)
+
+
+def pad_to_end_of_year(df, year):
+    """
+    Pad dataframe with nulls until end of year
+    """
+    last_date = df["datetime"].max()
+    year_end = pd.Timestamp(f"{year}-12-31 23:59:59")
+
+    if last_date < year_end:
+        # Create date range from last date to end of year
+        date_range = pd.date_range(start=last_date, end=year_end, freq="D")[1:]
+
+        # Create padding dataframe
+        pad_df = pd.DataFrame({"datetime": date_range})
+        for col in df.columns:
+            if col != "datetime":
+                pad_df[col] = None
+
+        # Concatenate original and padding
+        return pd.concat([df, pad_df], ignore_index=True)
+    return df
