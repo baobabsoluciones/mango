@@ -17,10 +17,13 @@ Mango
 
 This repository contains two libraries developed by the team at Baobab Soluciones: **mango** and **mango_time_series**. These libraries are the result of the team's experience, understanding, and knowledge of the Python language and its ecosystem.
 
-## Libraries Overview
+Libraries Overview
+==================
 
-### Mango
+Mango
+~~~~~
 **Mango** is a general-purpose library that includes a variety of functions, classes, and methods designed to simplify common programming tasks. These tools are organized into modules, ensuring that even though the entire library can be imported, dependencies are installed only for the specific modules that are needed.
 
-### Mango Time Series
+Mango Time Series
+~~~~~~~~~~~~~~~~~
 **Mango Time Series** is a specialized library focused on handling time series data. It includes tools for processing, analyzing, and visualizing time series, tailored to meet the needs of projects requiring advanced temporal data management.
