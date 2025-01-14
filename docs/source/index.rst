@@ -11,7 +11,7 @@ Welcome to mango's documentation!
    :caption: Contents:
 
    readme
-   changelog
+   changelog/index
    genetic/index
    dev/index
    bib
