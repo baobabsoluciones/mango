@@ -35,7 +35,7 @@ html_static_path = ["static"]
 autodoc_member_order = "bysource"
 autodoc_default_options = {"members": True, "inherited-members": True}
 
-import mango
+from mango import mango
 
 version = mango.__version__
 release = mango.__version__
