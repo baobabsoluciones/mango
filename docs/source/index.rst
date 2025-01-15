@@ -13,5 +13,6 @@ Welcome to mango's documentation!
    readme
    changelog/index
    genetic/index
-   dev/index
+   code_mango/index
+   code_mango_time_series/index
    bib

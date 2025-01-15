@@ -1,5 +1,5 @@
-Mango
-------
+Mango repository
+--------------------
 
 .. image:: https://img.shields.io/pypi/v/mango?label=version&logo=python&logoColor=white&style=for-the-badge&color=E58164
    :alt: PyPI

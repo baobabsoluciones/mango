@@ -100,14 +100,14 @@ class ArcGisClient:
 
         :param str mode: the mode to get the matrix. It can be "sync" or "async".
         :param list origins: a list of dictionaries with the origin information. Keys needed: "name", "x", "y".
-        :param list destinations: a list of dictionaries with the destination information.
-        Keys needed: "Name", "x", "y".
+        :param list destinations: a list of dictionaries with the destination information. Keys needed: "Name", "x", "y".
         :param dict travel_mode: a dictionary with the configuration for the travel mode
         :param int sleep_time: the time to wait for the response in asynchronous mode
         :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
         :rtype: list
         :doc-author: baobab soluciones
         """
+
         if mode is None:
             mode = "sync"
         elif mode != "sync" and mode != "async":
