@@ -66,9 +66,7 @@ def process_data(
     :return: tuple with the aggregated time series and forecast data
     """
     data["datetime"] = pd.to_datetime(data["datetime"])
-    if (
-        st.session_state.get("visualization") == ui_text["visualization_options"][0]
-    ):
+    if st.session_state.get("visualization") == ui_text["visualization_options"][0]:
         time_series = data[["datetime", "y"]].drop_duplicates()
         forecast = None
     else:

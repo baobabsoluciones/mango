@@ -244,4 +244,3 @@ def manage_files(files_loaded, ui_text):
     if remaining_files.keys() != files_loaded.keys():
         st.session_state["files_loaded"] = remaining_files
         st.rerun()
-
