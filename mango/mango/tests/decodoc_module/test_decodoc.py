@@ -13,10 +13,7 @@ class DecodocTests(TestCase):
         pass
 
     def test_decodoc(self):
-        input_df = pd.DataFrame({
-            "column1": ["a", "b", "c"],
-            "column2": [1, 2, 3]
-        })
+        input_df = pd.DataFrame({"column1": ["a", "b", "c"], "column2": [1, 2, 3]})
 
         @decodoc(["input_df"], ["output_df"])
         def foo(input_df):

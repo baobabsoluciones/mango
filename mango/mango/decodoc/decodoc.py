@@ -4,9 +4,8 @@ import inspect
 import json
 import os
 import traceback
-from itertools import zip_longest
 import warnings
-
+from itertools import zip_longest
 
 INFO_DICT = {}
 SETUP_DICT = {
@@ -18,7 +17,7 @@ SETUP_DICT = {
     "mermaid": True,
     "prompts": True,
     "confidential": False,
-    "autowrite": True
+    "autowrite": True,
 }
 
 
@@ -71,6 +70,7 @@ def decodoc(inputs, outputs):
     - If a function does not have a docstring, a warning will be issued.
     - If any input or output variable names are missing or invalid, a warning will be generated.
     """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -87,7 +87,9 @@ def decodoc(inputs, outputs):
 
             if docstring is None:
                 docstring = ""
-                warnings.warn(f"Function {func.__name__} does not have a docstring", UserWarning)
+                warnings.warn(
+                    f"Function {func.__name__} does not have a docstring", UserWarning
+                )
 
             INFO_DICT[function_id]["docstring"] = docstring.replace("\n", " ")
             INFO_DICT[function_id]["code"] = inspect.getsource(func).strip()
@@ -100,7 +102,10 @@ def decodoc(inputs, outputs):
                 args_list = list(args)
             for input_name, input_var in zip_longest(inputs, args_list):
                 if input_name is None:
-                    warnings.warn(f"Missing variable argument name for {func.__name__}", UserWarning)
+                    warnings.warn(
+                        f"Missing variable argument name for {func.__name__}",
+                        UserWarning,
+                    )
                 if input_name == 0:
                     continue
                 if input_var is None:
@@ -108,7 +113,7 @@ def decodoc(inputs, outputs):
                 else:
                     inputs_dict[input_name] = {
                         "memory": id(input_var),
-                        "value": str(input_var)
+                        "value": str(input_var),
                     }
             INFO_DICT[function_id]["input"] = inputs_dict
 
@@ -123,7 +128,9 @@ def decodoc(inputs, outputs):
                 result_list = list(result)
             for output_name, output_var in zip_longest(outputs, result_list):
                 if output_name is None:
-                    warnings.warn(f"Missing return variable name for {func.__name__}", UserWarning)
+                    warnings.warn(
+                        f"Missing return variable name for {func.__name__}", UserWarning
+                    )
                 if output_name == 0:
                     continue
                 if output_var is None:
@@ -131,12 +138,14 @@ def decodoc(inputs, outputs):
                 else:
                     outputs_dict[output_name] = {
                         "memory": id(output_var),
-                        "value": str(output_var)
+                        "value": str(output_var),
                     }
             INFO_DICT[function_id]["output"] = outputs_dict
 
             return result
+
         return wrapper
+
     return decorator
 
 
@@ -262,12 +271,7 @@ graph TD
     for func_id, func_info in info_dict.items():
         for name, var in func_info["input"].items():
             if var == "None":
-                label_string = (
-                    str(_generate_id(name))
-                    + "[("
-                    + str(name)
-                    + ")]"
-                )
+                label_string = str(_generate_id(name)) + "[(" + str(name) + ")]"
             else:
                 label_string = (
                     str(var["memory"])
@@ -280,12 +284,7 @@ graph TD
 
         for name, var in func_info["output"].items():
             if var == "None":
-                label_string = (
-                    str(_generate_id(name))
-                    + "[("
-                    + str(name)
-                    + ")]"
-                )
+                label_string = str(_generate_id(name)) + "[(" + str(name) + ")]"
             else:
                 label_string = (
                     str(var["memory"])
@@ -294,7 +293,7 @@ graph TD
                     + str(name)
                     + '"}'
                 )
-            string += f"{func_id}[/{func_info["name"]}/] --> {label_string}\n"
+            string += f"{func_id}[/{func_info['name']}/] --> {label_string}\n"
 
     string += "```"
 
@@ -355,7 +354,11 @@ appears more than once it means it has been used more than one time during run t
             prompt += f"```python\n{name}\n{var["value"]}\n```\n"
     prompt += f"- Code: \n```python\n{caller_func_info["code"]}\n```\n\n"
 
-    info_dict = {key: value for key, value in raw_info_dict.items() if value.get("caller") == caller}
+    info_dict = {
+        key: value
+        for key, value in raw_info_dict.items()
+        if value.get("caller") == caller
+    }
 
     # Iterate over the functions to get only the information needed
     for func_id, func_info in info_dict.items():
@@ -385,6 +388,7 @@ def _write():
 
     :return: None
     """
+
     def create_folder_structure(folder_structure):
         """
         Create a folder structure if it does not exist
@@ -398,20 +402,30 @@ def _write():
     json_dir = SETUP_DICT["json_directory"]
     mermaid_dir = SETUP_DICT["mermaid_directory"]
     prompts_dir = SETUP_DICT["prompts_directory"]
-    create_folder_structure([base_dir, f"{base_dir}/{json_dir}", f"{base_dir}/{mermaid_dir}", f"{base_dir}/{prompts_dir}"])
+    create_folder_structure(
+        [
+            base_dir,
+            f"{base_dir}/{json_dir}",
+            f"{base_dir}/{mermaid_dir}",
+            f"{base_dir}/{prompts_dir}",
+        ]
+    )
 
     # Write the mermaid and json with thr raw dict
     _write_json(INFO_DICT, f"{base_dir}/{json_dir}/raw.json")
     _write_mermaid(INFO_DICT, f"{base_dir}/{mermaid_dir}/raw.md")
 
     # Filter the dictionary to get only the unique callers
-    unique_callers = {value["caller"] for value in INFO_DICT.values() if "caller" in value}
+    unique_callers = {
+        value["caller"] for value in INFO_DICT.values() if "caller" in value
+    }
 
     # Write the mermaid with the filtered dict, which has the complete dict
     filtered_dict = {
         key: value
         for key, value in INFO_DICT.items()
-        if value.get("caller") in unique_callers and value.get("name") not in unique_callers
+        if value.get("caller") in unique_callers
+        and value.get("name") not in unique_callers
     }
     _write_mermaid(filtered_dict, f"{base_dir}/{mermaid_dir}/complete.md")
 
@@ -421,9 +435,15 @@ def _write():
             caller_path = "module"
         else:
             caller_path = caller
-        caller_dict = {key: value for key, value in INFO_DICT.items() if value.get("caller") == caller}
+        caller_dict = {
+            key: value
+            for key, value in INFO_DICT.items()
+            if value.get("caller") == caller
+        }
         _write_mermaid(caller_dict, f"{base_dir}/{mermaid_dir}/{caller_path}.md")
-        _write_caller_prompt(INFO_DICT, f"{base_dir}/{prompts_dir}/{caller_path}.md", caller)
+        _write_caller_prompt(
+            INFO_DICT, f"{base_dir}/{prompts_dir}/{caller_path}.md", caller
+        )
 
     print(f"decodoc process completed. Check './{base_dir}' for details.")
 
