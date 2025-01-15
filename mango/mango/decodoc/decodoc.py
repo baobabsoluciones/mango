@@ -280,7 +280,7 @@ graph TD
                     + str(name)
                     + '"}'
                 )
-            string += f"{label_string} --> {func_id}[/{func_info["name"]}/]\n"
+            string += f"{label_string} --> {func_id}[/{func_info['name']}/]\n"
 
         for name, var in func_info["output"].items():
             if var == "None":
@@ -339,20 +339,20 @@ appears more than once it means it has been used more than one time during run t
     if not caller_func_info:
         return None
     prompt += f"## {caller}\n\n"
-    prompt += f"- Docstring: {caller_func_info["docstring"]}\n"
+    prompt += f"- Docstring: {caller_func_info['docstring']}\n"
     prompt += f"- Input:\n"
     for name, var in caller_func_info["input"].items():
         if var == "None" or SETUP_DICT["confidential"]:
             prompt += f"    - {name}\n"
         else:
-            prompt += f"```python\n{name}\n{var["value"]}\n```\n"
+            prompt += f"```python\n{name}\n{var['value']}\n```\n"
     prompt += f"- Output:\n"
     for name, var in caller_func_info["output"].items():
         if var == "None" or SETUP_DICT["confidential"]:
             prompt += f"    - {name}\n"
         else:
-            prompt += f"```python\n{name}\n{var["value"]}\n```\n"
-    prompt += f"- Code: \n```python\n{caller_func_info["code"]}\n```\n\n"
+            prompt += f"```python\n{name}\n{var['value']}\n```\n"
+    prompt += f"- Code: \n```python\n{caller_func_info['code']}\n```\n\n"
 
     info_dict = {
         key: value
@@ -362,21 +362,21 @@ appears more than once it means it has been used more than one time during run t
 
     # Iterate over the functions to get only the information needed
     for func_id, func_info in info_dict.items():
-        prompt += f"### {func_info["name"]}\n\n"
-        prompt += f"- Docstring: {func_info["docstring"]}\n"
+        prompt += f"### {func_info['name']}\n\n"
+        prompt += f"- Docstring: {func_info['docstring']}\n"
         prompt += f"- Input:\n"
         for name, var in func_info["input"].items():
             if var == "None" or SETUP_DICT["confidential"]:
                 prompt += f"    - {name}\n"
             else:
-                prompt += f"```python\n{name}\n{var["value"]}\n```\n"
+                prompt += f"```python\n{name}\n{var['value']}\n```\n"
         prompt += f"- Output:\n"
         for name, var in func_info["output"].items():
             if var == "None" or SETUP_DICT["confidential"]:
                 prompt += f"    - {name}\n"
             else:
-                prompt += f"```python\n{name}\n{var["value"]}\n```\n"
-        prompt += f"- Code: \n```python\n{func_info["code"]}\n```\n\n"
+                prompt += f"```python\n{name}\n{var['value']}\n```\n"
+        prompt += f"- Code: \n```python\n{func_info['code']}\n```\n\n"
 
     with open(path, "w") as f:
         f.write(prompt)
