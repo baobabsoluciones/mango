@@ -67,15 +67,34 @@ class ForecastModel:
         :param columns_id: str with the id column name.
         :return: DataFrame with the forecast results.
         """
-        time_series, columns_id = self.prepare_data(df, columns_id)
-        fcst = StatsForecast(models=list(self.models.values()), freq=self.freq)
+        if "uid" in df.columns and df["uid"].nunique() > 1:
+            # Caso con múltiples series (uid presente y único)
+            forecasts = []
+            for uid, group_df in df.groupby("uid"):
+                time_series, id_col = self.prepare_data(group_df, "uid")
+                fcst = StatsForecast(models=list(self.models.values()), freq=self.freq)
 
-        crossvalidation_df = fcst.cross_validation(
-            df=time_series,
-            h=self.horizon,
-            step_size=self.step_size,
-            n_windows=self.n_windows,
-            id_col=columns_id,
-        )
+                crossvalidation_df = fcst.cross_validation(
+                    df=time_series,
+                    h=self.horizon,
+                    step_size=self.step_size,
+                    n_windows=self.n_windows,
+                    id_col=id_col,
+                )
+                crossvalidation_df["uid"] = uid
+                forecasts.append(crossvalidation_df)
 
-        return crossvalidation_df
+            return pd.concat(forecasts, ignore_index=True)
+
+        else:
+            time_series, columns_id = self.prepare_data(df, columns_id)
+            fcst = StatsForecast(models=list(self.models.values()), freq=self.freq)
+
+            crossvalidation_df = fcst.cross_validation(
+                df=time_series,
+                h=self.horizon,
+                step_size=self.step_size,
+                n_windows=self.n_windows,
+                id_col=columns_id,
+            )
+            return crossvalidation_df
