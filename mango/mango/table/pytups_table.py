@@ -487,7 +487,7 @@ class Table(TupList):
 
         return Table(self.vfilter(func))
 
-    def get_col_names(self, fast=False) -> "Table":
+    def get_col_names(self, fast=False) -> "list":
         """
         Get the names of the column of the table.
 
@@ -507,8 +507,8 @@ class Table(TupList):
         table = self.replace_empty(None)
         return SuperDict({col: table.take(col) for col in self.get_col_names()})
 
-    @staticmethod
-    def from_columns(dct) -> "Table":
+    @classmethod
+    def from_columns(cls, dct) -> "Table":
         """
         Create a table from a dict of list (columns)
 
@@ -520,7 +520,7 @@ class Table(TupList):
         :param dct: a dict of list
         :return: a Table
         """
-        return Table(to_dictlist(dct))
+        return cls(to_dictlist(dct))
 
     def get_index(self, cond) -> "list":
         """
@@ -739,8 +739,8 @@ class Table(TupList):
             result = result.mutate(**{col: lambda v: func(v[col], **kwargs)})
         return result
 
-    @staticmethod
-    def format_dataset(dataset):
+    @classmethod
+    def format_dataset(cls, dataset):
         """
         Format an entire data instance applying Table() to every table.
         Leave dict as they are.
@@ -749,7 +749,7 @@ class Table(TupList):
         :return: a dict of Tables
         """
         return {
-            k: Table(str_key_tl(v)) if isinstance(v, list) else v
+            k: cls(str_key_tl(v)) if isinstance(v, list) else v
             for k, v in dataset.items()
         }
 
@@ -765,8 +765,8 @@ class Table(TupList):
         return cls.format_dataset(data)
 
     # Save and load functions
-    @staticmethod
-    def from_pandas(df):
+    @classmethod
+    def from_pandas(cls, df):
         """
         Create a table from a pandas dataframe.
 
@@ -779,7 +779,7 @@ class Table(TupList):
             raise ImportError(
                 "Pandas is not present in your system. Try: pip install pandas"
             )
-        return Table(pd.DataFrame(df).to_dict(orient="records"))
+        return cls(pd.DataFrame(df).to_dict(orient="records"))
 
     def to_pandas(self):
         """
@@ -810,8 +810,8 @@ class Table(TupList):
         with open(file, "wb") as handle:
             pk.dump(self, handle)
 
-    @staticmethod
-    def pk_load(file):
+    @classmethod
+    def pk_load(cls, file):
         """
         Load a Table from a pickle file.
 
@@ -824,7 +824,7 @@ class Table(TupList):
             file = file + ".pickle"
         with open(file, "rb") as f:
             data = pk.load(f)
-        return Table(data)
+        return cls(data)
 
     def to_json(self, path):
         """
@@ -836,15 +836,15 @@ class Table(TupList):
         """
         write_json(str_key_tl(self), path)
 
-    @staticmethod
-    def from_json(path, **kwargs):
+    @classmethod
+    def from_json(cls, path, **kwargs):
         """
         Create a table from a json file.
 
         :param path: path to json file
         :return: a Table containing the data.
         """
-        return Table(load_json(path, **kwargs))
+        return cls(load_json(path, **kwargs))
 
     def apply(self, func: Callable, *args, **kwargs):
         """

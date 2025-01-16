@@ -11,7 +11,6 @@ from statsforecast.models import (
 
 ModelType = Union[HistoricAverage, Naive, RandomWalkWithDrift, MSTL]
 
-
 # Constants for time aggregation
 SELECT_AGR_TMP_DICT = {
     "hourly": "h",
