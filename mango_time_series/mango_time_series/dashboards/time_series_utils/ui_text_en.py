@@ -1,6 +1,9 @@
 UI_TEXT = {
     # General
-    "page_title": "Visualization",
+    "page_title_visualization": "Visualization",
+    "page_title_forecast": "Forecast",
+    "select_plot": "Select plot",
+    "select_forecast_origin": "Select forecast origin",
     "sidebar_title": "Visualizations",
     "upload_button_text": "Upload a file",
     "upload_instructions": "Drag and drop a file here or click to upload",
@@ -16,6 +19,8 @@ UI_TEXT = {
     "no_columns_to_filter": "No columns to filter. Only one series detected",
     # Plot Options
     "choose_plot": "Select the plot",
+    "choose_view_option": "Choose the way to visualize the plot",
+    "choose_scale_option": "Choose scale option",
     "plot_options": [
         "Original series",
         "Series by year",
@@ -23,6 +28,14 @@ UI_TEXT = {
         "Lag analysis",
         "Seasonality boxplot",
         "Periodogram",
+    ],
+    "view_plot_options": [
+        "View all series together",
+        "View each series separately",
+    ],
+    "scale_plot_options": [
+        "View same scale",
+        "View logaritmic scale",
     ],
     "choose_years": "Choose years to visualize",
     "select_frequency": "Select frequency",
@@ -65,7 +78,7 @@ UI_TEXT = {
     # Forecast
     "forecast_plot_title": "Forecast plot",
     "select_series_to_plot": "Select at least one series to plot the forecast",
-    "choose_date": "Choose a date",
+    "choose_date": "Choose forecast date:",
     # Error Visualization
     "error_visualization_title": "Error visualization",
     "select_date_range": "Select date range (datetime column) to visualize forecast errors",
@@ -85,6 +98,8 @@ UI_TEXT = {
     "temporal_aggregation_options": ["Daily", "Monthly"],
     # Labels
     "axis_labels": {
+        "f": "Forecast",
+        "y": "Real",
         "date": "Date",
         "value": "Value",
         "horizon": "Horizon",
@@ -181,7 +196,7 @@ UI_TEXT = {
     "add_new_file": "Add new file",
     "aggregated_summary_title": "Error summary",
     "select_top_10": "Select the model to see the top 10 errors:",
-    "best_error_message": "The best model is '{}', with an absolute percentage error of {}",
+    "best_error_message": "The best model is '{model}', with an absolute percentage error of {err}",
     "model_parameters": "Model parameters",
     "message_forecast_baseline": "Forecast obtained from baseline models in this platform.",
     "warning_no_forecast": "No forecast data available. Please train the model first.",
@@ -190,6 +205,9 @@ UI_TEXT = {
     "horizon": "Horizon",
     "step_size": "Step size",
     "n_windows": "Number of windows",
+    "horizon_uid": "Horizon for {uid}",
+    "step_size_uid": "Step Size for {uid}",
+    "n_windows_uid": "Number of Windows for {uid}",
     "explanation": "See explanation",
     "explanation_horizon": f"The **{'horizon'}** is the number of time units ahead of the forecast origin.",
     "explanation_step_size": f"The **{'step size'}** is the number of time units between each forecast.",
@@ -198,8 +216,11 @@ UI_TEXT = {
     "activate_button_train": "Activate forecast",
     "jinja_template": "Download forecast script",
     "downloaded": "Script downloaded successfully.",
-    "experimental_features_warning": "Experimental features not enabled. Please set the 'ENABLE_EXPERIMENTAL_FEATURES' environment variable to access these functionalities.",
+    "experimental_features_warning": "Experimental features not enabled. Please set the 'TS_DASHBOARD_EXPERIMENTAL_FEATURES' environment variable to access these functionalities.",
     "experimental_features_info": "Experimental features are enabled. The following functionalities might have errors or unexpected behavior.",
+    "two_id_trained": "Displaying predictions for two selected series.",
+    "warning_no_forecast_possible": "No forecast possible because there are more than two series selected.",
+    "forecast_completed": "Forecast training completed for both series.",
     "stl": {
         "title": "STL",
         "periods_detected": "Detected periods:",
@@ -226,4 +247,6 @@ UI_TEXT = {
             "pacf": "Partial Autocorrelation Function (PACF)",
         }
     },
+    "title_scatter_plot": "Scatter plot",
+    "select_percentiles": "Select percentiles to display",
 }
