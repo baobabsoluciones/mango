@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mango-time-series"
-version = "0.3.0a1"
+version = "0.3.0a2"
 authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
 ]
@@ -25,7 +25,7 @@ dependencies = [
     "polars>=1.8.2, <2.0.0",
     "scipy>=1.10.1, <2.0.0",
     "statsmodels>=0.14.1, <1.0.0",
-    "mango[data]==0.3.0a1",
+    "mango[data]==0.3.0a2",
     "pyarrow>=17.0.0, <19.0.0",
 ]
 requires-python = ">=3.8"
