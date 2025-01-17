@@ -190,16 +190,16 @@ class Table(TupList):
         Add or modify a column in a table.
 
         Example:
-        mutate(table, a=3, b=[4,5,6], c=lambda v: v["a"]+v["b"], d = mean)
+            mutate(table, a=3, b=[4,5,6], c=lambda v: v["a"]+v["b"], d=mean)
 
-        Note: all changes are applied over the input table and do not take into account the other changes.
+        Note: All changes are applied over the input table and do not take into account the other changes.
 
-        :param kwargs: named arguments with the changes to apply.
-        The values can be:
-         - a single value which will be applied to each row
-         - a list with all the values of the column
-         - a function to apply to the row.
-        :return: a table
+        :param kwargs: Named arguments with the changes to apply.
+            The values can be:
+            - A single value, which will be applied to each row.
+            - A list with all the values of the column.
+            - A function to apply to the row.
+        :return: A table.
         """
         return Table(mutate(self, **kwargs))
 
@@ -208,6 +208,7 @@ class Table(TupList):
         Group the rows of a table by the value fo some columns
 
         :param col: single name of list of columns to use to group the rows
+
         :return a SuperDict
         """
         return group_by(self, col)

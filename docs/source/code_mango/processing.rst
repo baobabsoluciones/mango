@@ -9,4 +9,14 @@ The processing module is a collection of tools aimed at processing data:
 - Processing time series
 
 
-.. automodule:: mango.processing
+Date functions
+~~~~~~~~~~~~~~
+.. automodule:: mango.processing.date_functions
+
+File functions
+~~~~~~~~~~~~~~
+.. automodule:: mango.processing.file_functions
+
+Object functions
+~~~~~~~~~~~~~~
+.. automodule:: mango.processing.object_functions
