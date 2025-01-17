@@ -35,7 +35,7 @@ Decodoc will automatically three types of files:
 
 
 Inner information dictionary and output JSON file
-================================================
+=========
 
 The inner dictionary used for storing the metadata is called INFO_DICT. This dictionary is used to store the metadata collected during the execution of the functions. The INFO_DICT dictionary is structured as follows (with one entry per function call) and the JSON file containing this dictionary is automatically generated at the end of the execution:
 
@@ -64,24 +64,25 @@ The inner dictionary used for storing the metadata is called INFO_DICT. This dic
    }
 
 Mermaid diagram generation
-==========================
+==================
 
 The Mermaid diagram is a visual representation of the function call relationships. It is generated in a markdown file for each caller function and a complete diagram of all functions. The diagram is generated using the Mermaid library, which is a simple markdown-like script language for generating diagrams from text.
 
 The different caller function refer to functions which are called by other functions. One diagram is generated for each caller function, showing the function and its direct children. The complete diagram shows all the functions and their relationships.
 
 Example usage
-=============
+==============
 
 .. code-block:: python
    :linenos:
 
    import pandas as pd
-   from mango.decodoc import decodoc, decodoc_setup
+   from mango.decodoc import decodoc
 
-   @decodoc(["input_df"], ["input_df_copy"])
-   def get_csv(input_df):
-       return input_df.copy()
+   @decodoc(["Start"], ["input_df_copy"])
+   def extract_data():
+       extracted_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+       return extracted_df
 
    @decodoc(["df"], ["df_with_C_column"])
    def add_C_column(df):
@@ -95,29 +96,28 @@ Example usage
 
    @decodoc(["input_df_copy"], ["df_columns"])
    def handle_columns(df):
-       df_with_C_column = add_C_column(df)
-       df_columns = delete_A_column(df_with_C_column)
-       return df_columns
+       df = add_C_column(df)
+       df = delete_A_column(df)
+       return df
 
-   @decodoc(["df_columns"], ["DF saved"])
+   @decodoc(["df_columns"], ["End"])
    def save_csv(input_df):
        pass
 
    @decodoc(["Start"], ["End"])
    def main():
-       input_df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
-       df = get_csv(input_df)
+       df = extract_data()
        df = handle_columns(df)
        save_csv(df)
 
-   if __name__ == "__main__":
+   if __name__ == '__main__':
        main()
 
 In this script we have three different calling functions:
 
 - module: calling the main function.
 
-- main: calling get_csv, handle_columns and save_csv.
+- main: calling extract_data, handle_columns and save_csv.
 
 - handle_columns: calling add_C_column and delete_A_column.
 
@@ -154,7 +154,7 @@ The Mermaid diagram for each of these functions will show the function and its d
 
 
 Memory address issue
-====================
+==================
 
 An issue to take into account is the use of memory addresses in the INFO_DICT dictionary. These are used for identifying the reuse of functions and to keep track of the use of the same variable across different functions.
 
@@ -237,4 +237,10 @@ In this case, the functions add_C_column and delete_A_column will not be logged 
 Code documentation
 ==================
 
-.. automodule:: mango.decodoc.decodoc
+.. automodule:: mango.mango.decodoc.decodoc
+
+
+
+
+
+
