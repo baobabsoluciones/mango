@@ -2,7 +2,7 @@ Decodoc
 -------
 
 .. note::
-    This documentation is still under development. If you find any bug or have any suggestion in the File Explorer App, please, open an issue in the `GitHub repository <https://github.com/baobabsoluciones/mango>`_.
+    This documentation is still under development. If you find any bug or have any suggestion in the decodoc module, please, open an issue in the `GitHub repository <https://github.com/baobabsoluciones/mango>`_.
 
 The decodoc module is a powerful and versatile Python tool designed to facilitate advanced function logging, metadata
 generation, and execution tracking. It automates the collection of detailed information about functions, including their
