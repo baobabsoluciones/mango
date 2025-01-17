@@ -1,4 +1,4 @@
-Code documentation
+Mango code
 --------------------
 
 
@@ -8,6 +8,13 @@ Code documentation
 
     benchmark
     clients
+    config
+    dashboards
+    data
+    decodoc
+    logging
     models
+    plots
     processing
+    shap_analysis
     table

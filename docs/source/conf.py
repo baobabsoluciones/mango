@@ -9,6 +9,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath("../../mango/"))
+sys.path.insert(0, os.path.abspath("../../mango_time_series/"))
 
 
 project = "mango"
@@ -35,7 +37,7 @@ html_static_path = ["static"]
 autodoc_member_order = "bysource"
 autodoc_default_options = {"members": True, "inherited-members": True}
 
-import mango
+from mango import mango
 
 version = mango.__version__
 release = mango.__version__

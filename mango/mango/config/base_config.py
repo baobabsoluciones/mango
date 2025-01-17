@@ -61,7 +61,7 @@ class ConfigParameter:
         It returns the value of the parameter with name `name` from that section.
 
         :param str section: specify the section in the config file
-        :param :class:`ConfigParser` config_parser: the config parser class
+        :param config_parser: the config parser class
         :return: the value of the config parameter
         :rtype: Union[int, float, bool, str, list]
         :doc-author: baobab soluciones
