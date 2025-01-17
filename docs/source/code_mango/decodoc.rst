@@ -155,7 +155,7 @@ The Mermaid diagram for each of these functions will show the function and its d
 
 Memory address issue
 ==================
-.. caution:: Please pay close attention to the following warning to prevent errors in the autodoc decorator implementation.
+.. caution:: Please pay close attention to the following warning to prevent errors in the decodoc implementation.
 
 An issue to take into account is the use of memory addresses in the INFO_DICT dictionary. These are used for identifying the reuse of functions and to keep track of the use of the same variable across different functions.
 
