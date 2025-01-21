@@ -18,6 +18,7 @@ import json
 import logging
 import logging.config
 import os
+import sys
 import warnings
 from datetime import datetime
 from typing import Dict, List, Optional, Union
@@ -474,3 +475,4 @@ if __name__ == "__main__":
         json_fields=["level", "message", "time", "module"],
     )
     json_logger.info("JSON log example")
+    json_logger.info("JSON prueba example")
