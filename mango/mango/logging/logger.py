@@ -137,6 +137,16 @@ class JSONFormatter(logging.Formatter):
             log_record["lineno"] = record.lineno
         if "funcName" in self.fields:
             log_record["funcName"] = record.funcName
+        if "pathname" in self.fields:
+            log_record["pathname"] = record.pathname
+        if "process" in self.fields:
+            log_record["process"] = record.process
+        if "processName" in self.fields:
+            log_record["processName"] = record.processName
+        if "thread" in self.fields:
+            log_record["thread"] = record.thread
+        if "threadName" in self.fields:
+            log_record["threadName"] = record.threadName
 
         # Add the current log entry to the list
         self._log_entries.append(log_record)
