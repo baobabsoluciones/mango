@@ -20,8 +20,7 @@ import logging.config
 import os
 import sys
 import warnings
-from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 
 class ColorFormatter(logging.Formatter):
