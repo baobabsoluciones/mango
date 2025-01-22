@@ -517,3 +517,78 @@ class LoggingTests(TestCase):
         # Clean up
         logger.removeHandler(file_handler)
         file_handler.close()
+
+    def test_log_time_decorator_dynamic_log_level(self):
+        """
+        Test log_time decorator with different log levels
+        """
+        # Prepare a custom logger for testing
+        logger = log.getLogger("test_log_time_levels")
+        logger.setLevel(log.DEBUG)
+
+        # Create a log file for this test
+        log_path = self._get_temp_log_path("log_time_levels_test.log")
+
+        # Create a file handler
+        file_handler = log.FileHandler(log_path, mode="w")
+        file_handler.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s: %(levelname)s - %(message)s")
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+        # Test different log levels
+        log_levels = [
+            ("DEBUG", log.DEBUG),
+            ("INFO", log.INFO),
+            ("WARNING", log.WARNING),
+            ("ERROR", log.ERROR),
+        ]
+
+        for level_name, level_value in log_levels:
+            # Reset the log file
+            open(log_path, "w").close()
+
+            # Define a test function with the log_time decorator using dynamic log level
+            @log_time("test_log_time_levels", level=level_name)
+            def sample_function():
+                """A sample function to test logging with different levels"""
+                time.sleep(0.1)  # Simulate some work
+                return 42
+
+            # Call the decorated function
+            result = sample_function()
+
+            # Verify the function returns the correct result
+            self.assertEqual(result, 42)
+
+            # Force flush and wait
+            file_handler.flush()
+            logger.handlers[0].flush()
+            time.sleep(0.2)
+
+            # Read and verify the log file
+            with open(log_path, "r") as f:
+                lines = f.readlines()
+
+                # Print debug information
+                print(f"Log file contents for {level_name} level: {lines}")
+
+                # Verify log entry
+                self.assertEqual(
+                    len(lines),
+                    1,
+                    f"Unexpected number of log lines for {level_name} level: {lines}",
+                )
+
+                # Check log line content
+                log_line = lines[0]
+
+                # Verify the log contains key information and correct level
+                self.assertIn("sample_function", log_line)
+                self.assertIn("took", log_line)
+                self.assertIn("seconds", log_line)
+                self.assertIn(level_name, log_line)
+
+        # Clean up
+        logger.removeHandler(file_handler)
+        file_handler.close()
