@@ -365,6 +365,14 @@ def get_configured_logger(
     # If no configuration is provided, use default
     logging_config = copy.deepcopy(config_dict or LOGGING_DICT_DEFAULT)
 
+    # Dynamically add logger configuration if not exists
+    if logger_type not in logging_config["loggers"]:
+        logging_config["loggers"][logger_type] = {
+            "handlers": [],
+            "level": logging.INFO,
+            "propagate": False,
+        }
+
     # Remove file handler if not needed
     if not log_file_path and "file" in logging_config["handlers"]:
         if logger_type in logging_config["loggers"] or logger_type == "root":
@@ -453,9 +461,8 @@ def get_configured_logger(
             "formatter": "file_formatter",
         }
 
-        if "file" not in logging_config["loggers"].get(logger_type, {}).get(
-            "handlers", []
-        ):
+        # Add file handler to logger's handlers
+        if "file" not in logging_config["loggers"][logger_type]["handlers"]:
             logging_config["loggers"][logger_type]["handlers"].append("file")
 
     # If not root logger, apply configuration
@@ -480,18 +487,14 @@ def get_basic_logger(
     This function is deprecated and will be removed in a future version.
     Use get_configured_logger instead.
 
-    Args:
-        log_file: Path to the log file
-        console: Enable console output
-        level: Logging level
-        format_str: Log message format
-        datefmt: Date format
-
-    Returns:
-        Configured logger instance
-
-    Deprecated:
-        Version 0.4.0: Use get_configured_logger instead
+    :param log_file: Path to the log file
+    :param console: Enable console output
+    :param level: Logging level
+    :param format_str: Log message format
+    :param datefmt: Date format
+    :return: Configured logger instance
+    :rtype: logging.Logger
+    :deprecated: Version 0.4.0: Use get_configured_logger instead
     """
     warnings.warn(
         "get_basic_logger is deprecated. Use get_configured_logger instead.",
@@ -499,34 +502,22 @@ def get_basic_logger(
         stacklevel=2,
     )
 
-    logger_type = "mango_logging"
-    common_params = {
-        "logger_type": logger_type,
-        "log_console_format": format_str,
-        "log_console_datefmt": datefmt,
-    }
+    # Determine the logger type
+    logger_type = "root" if not console else "mango_logging"
 
-    if console and log_file:
-        return get_configured_logger(
-            **common_params,
-            log_console_level=level,
-            log_file_path=log_file,
-            log_file_level=level,
-            log_file_format=format_str,
-            log_file_datefmt=datefmt,
-        )
-    elif console:
-        return get_configured_logger(**common_params, log_console_level=level)
-    elif log_file:
-        return get_configured_logger(
-            **common_params,
-            log_file_path=log_file,
-            log_file_level=level,
-            log_file_format=format_str,
-            log_file_datefmt=datefmt,
-        )
-    else:
-        return get_configured_logger(**common_params, log_console_level=level)
+    # Configure the logger
+    logger = get_configured_logger(
+        logger_type=logger_type,
+        log_console_level=level if console else None,
+        log_console_format=format_str,
+        log_console_datefmt=datefmt,
+        log_file_path=log_file,
+        log_file_level=level if log_file else None,
+        log_file_format=format_str,
+        log_file_datefmt=datefmt,
+    )
+
+    return logger
 
 
 if __name__ == "__main__":
