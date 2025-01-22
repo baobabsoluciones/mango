@@ -247,6 +247,36 @@ class LoggingTests(TestCase):
         self.assertIsNotNone(logger)
         self.assertEqual(logger.name, "test_custom_format")
 
+    def test_get_configured_logger_root_console_format(self):
+        """
+        Test get_configured_logger with root console format and date format
+        """
+        custom_format = "%(levelname)s - %(message)s"
+        custom_datefmt = "%H:%M:%S"
+        logger = get_configured_logger(
+            logger_type="root",
+            log_console_format=custom_format,
+            log_console_datefmt=custom_datefmt,
+            mango_color=True,
+            log_console_level=log.DEBUG,
+        )
+
+        # Verify logger is created
+        self.assertIsNotNone(logger)
+        self.assertEqual(logger.name, "root")
+
+        custom_format = "%(levelname)s - %(message)s"
+        custom_datefmt = "%H:%M:%S"
+        logger = get_configured_logger(
+            logger_type="root",
+            log_console_format=custom_format,
+            log_console_datefmt=custom_datefmt,
+        )
+
+        # Verify logger is created
+        self.assertIsNotNone(logger)
+        self.assertEqual(logger.name, "root")
+
     def test_get_configured_logger_colored_console(self):
         """
         Test get_configured_logger with colored console output
@@ -258,6 +288,14 @@ class LoggingTests(TestCase):
         # Verify logger is created
         self.assertIsNotNone(logger)
         self.assertEqual(logger.name, "test_color_logger")
+
+        # Assert RaiseValueError when log_file_path is provided
+        with self.assertRaises(ValueError):
+            get_configured_logger(
+                logger_type="test_color_logger",
+                mango_color=True,
+                log_file_path="test.logsssss",
+            )
 
     def test_get_configured_logger_file_logging(self):
         """
