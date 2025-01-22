@@ -25,14 +25,12 @@ from typing import Dict, List, Optional, Union
 
 
 class ColorFormatter(logging.Formatter):
-    """A formatter that adds color to log messages based on their level.
-
-    This formatter enhances log readability by applying different colors to
-    different log levels in console output.
+    """
+    Enhance log readability by applying different colors to console log messages.
 
     Attributes:
-        ESCAPE_CODES (Dict[str, str]): Terminal color escape codes
-        LEVEL_COLORS (Dict[int, str]): Mapping of log levels to colors
+        ESCAPE_CODES (Dict[str, str]): Terminal color escape codes for text formatting.
+        LEVEL_COLORS (Dict[int, str]): Mapping of log levels to their corresponding colors.
     """
 
     ESCAPE_CODES = {
@@ -72,14 +70,36 @@ class ColorFormatter(logging.Formatter):
         logging.CRITICAL: ESCAPE_CODES["bold_red"],
     }
 
+    def __init__(
+        self,
+        fmt: Optional[str] = None,
+        datefmt: Optional[str] = None,
+        style: str = "%",
+        format: Optional[str] = None,  # Added to handle unexpected keyword argument
+    ):
+        """
+        Initialize the ColorFormatter.
+
+        :param fmt: Format string for log messages
+        :param datefmt: Date format string
+        :param style: Format style (default is '%')
+        :param format: Alternative argument for format (for compatibility)
+        """
+        # Prefer 'format' if provided, otherwise use 'fmt'
+        effective_fmt = (
+            format or fmt or "%(asctime)s | %(levelname)s | %(name)s: %(message)s"
+        )
+
+        # Call the parent constructor with the effective format
+        super().__init__(fmt=effective_fmt, datefmt=datefmt, style=style)
+
     def format(self, record: logging.LogRecord) -> str:
-        """Format the log record with appropriate color.
+        """
+        Format the log record with appropriate color.
 
-        Args:
-            record: The log record to format
-
-        Returns:
-            The formatted log message with color codes
+        :param record: The log record to format
+        :return: The formatted log message with color codes
+        :rtype: str
         """
         color = self.LEVEL_COLORS.get(record.levelno, self.ESCAPE_CODES["reset"])
         message = super().format(record)
@@ -281,37 +301,76 @@ def get_configured_logger(
     log_file_datefmt: Optional[str] = None,
     json_fields: Optional[List[str]] = None,
 ) -> logging.Logger:
-    """Configure and return a logger with specified settings.
-
-    This function provides a flexible way to configure logging with support
-    for both console and file output, including JSON formatting.
-
-    Args:
-        logger_type: The type of logger to configure
-        config_dict: Custom configuration dictionary
-        log_console_level: Console logging level
-        log_console_format: Console log message format
-        log_console_datefmt: Console date format
-        mango_color: Enable colored console output
-        log_file_path: Path to log file
-        log_file_mode: File open mode
-        log_file_level: File logging level
-        log_file_format: File log message format
-        log_file_datefmt: File date format
-        json_fields: Fields to include in JSON output
-
-    Returns:
-        Configured logger instance
-
-    Raises:
-        ValueError: If log file extension is invalid or logger type not found
     """
+    Configure and return a logger with flexible logging settings.
+
+    Provides a comprehensive way to configure logging with support for
+    console and file output, including advanced features like JSON formatting
+    and colored console logs.
+
+    :param logger_type: The type of logger to configure
+    :param config_dict: Custom configuration dictionary
+    :param log_console_level: Console logging level
+    :param log_console_format: Console log message format
+    :param log_console_datefmt: Console date format
+    :param mango_color: Enable colored console output
+    :param log_file_path: Path to log file
+    :param log_file_mode: File open mode
+    :param log_file_level: File logging level
+    :param log_file_format: File log message format
+    :param log_file_datefmt: File date format
+    :param json_fields: Fields to include in JSON output
+    :return: Configured logger instance
+    :rtype: logging.Logger
+    :raises ValueError: If log file extension is invalid or logger type not found
+    """
+    # Special handling for root logger
+    if logger_type == "root":
+        logger = logging.getLogger()
+        logger.handlers = []  # Clear existing handlers
+
+        # Ensure the logger is set to the specified level
+        if log_console_level is not None:
+            logger.setLevel(log_console_level)
+
+        # Create a console handler with the specified format
+        console_handler = logging.StreamHandler()
+
+        # Use the specified format or default
+        formatter_format = (
+            log_console_format or "%(asctime)s | %(levelname)s | %(name)s: %(message)s"
+        )
+        formatter_datefmt = log_console_datefmt or "%Y-%m-%d"
+
+        # Apply color formatting if mango_color is True
+        if mango_color:
+            formatter = ColorFormatter(fmt=formatter_format, datefmt=formatter_datefmt)
+        else:
+            formatter = logging.Formatter(
+                fmt=formatter_format, datefmt=formatter_datefmt
+            )
+
+        console_handler.setFormatter(formatter)
+
+        # Set handler level to match logger level
+        console_handler.setLevel(logger.level)
+
+        # Add the handler to the root logger
+        logger.addHandler(console_handler)
+
+        return logger
+    else:
+        logger = logging.getLogger(logger_type)
+
+    # If no configuration is provided, use default
     logging_config = copy.deepcopy(config_dict or LOGGING_DICT_DEFAULT)
 
     # Remove file handler if not needed
     if not log_file_path and "file" in logging_config["handlers"]:
-        if logger_type in logging_config["loggers"]:
-            if "file" not in logging_config["loggers"][logger_type]["handlers"]:
+        if logger_type in logging_config["loggers"] or logger_type == "root":
+            if "file" not in logging_config["loggers"].get(logger_type, {}).get(
+                "handlers", []
+            ):
                 del logging_config["handlers"]["file"]
 
     # Configure console handler
@@ -321,13 +380,32 @@ def get_configured_logger(
 
     if log_console_level is not None:
         console_handler_config["level"] = logging.getLevelName(log_console_level)
-        logging_config["loggers"][logger_type]["level"] = logging.getLevelName(
-            log_console_level
-        )
+
+        # Special handling for root logger
+        if logger_type == "root":
+            logger.setLevel(logging.getLevelName(log_console_level))
+        elif logger_type in logging_config["loggers"]:
+            logging_config["loggers"][logger_type]["level"] = logging.getLevelName(
+                log_console_level
+            )
 
     if mango_color:
         console_handler_config["formatter"] = console_formatter_name
-        logging_config["loggers"][logger_type]["handlers"] = [console_handler_name]
+
+        # Special handling for root logger
+        if logger_type == "root":
+            logger.handlers = []  # Clear existing handlers
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(
+                ColorFormatter(
+                    fmt=log_console_format
+                    or "%(asctime)s | %(levelname)s | %(name)s: %(message)s",
+                    datefmt=log_console_datefmt or "%Y-%m-%d",
+                )
+            )
+            logger.addHandler(console_handler)
+        elif logger_type in logging_config["loggers"]:
+            logging_config["loggers"][logger_type]["handlers"] = [console_handler_name]
 
     # Configure console format
     log_console_format = (
@@ -337,7 +415,7 @@ def get_configured_logger(
 
     logging_config["formatters"][console_formatter_name] = {
         "()": ColorFormatter if mango_color else logging.Formatter,
-        "format": log_console_format,
+        "fmt": log_console_format,
         "datefmt": log_console_datefmt,
     }
 
@@ -375,16 +453,19 @@ def get_configured_logger(
             "formatter": "file_formatter",
         }
 
-        if "file" not in logging_config["loggers"][logger_type]["handlers"]:
+        if "file" not in logging_config["loggers"].get(logger_type, {}).get(
+            "handlers", []
+        ):
             logging_config["loggers"][logger_type]["handlers"].append("file")
 
-    # Apply configuration
-    logging.config.dictConfig(logging_config)
+    # If not root logger, apply configuration
+    if logger_type != "root":
+        logging.config.dictConfig(logging_config)
 
-    if logger_type not in logging_config["loggers"]:
+    if logger_type not in logging_config["loggers"] and logger_type != "root":
         raise ValueError(f"Logger type {logger_type} not found in logging config")
 
-    return logging.getLogger(logger_type)
+    return logger
 
 
 def get_basic_logger(
@@ -476,3 +557,15 @@ if __name__ == "__main__":
     )
     json_logger.info("JSON log example")
     json_logger.info("JSON prueba example")
+
+    # Example with root logger
+    root_logger = get_configured_logger(
+        logger_type="root",
+        log_console_level=logging.INFO,
+        log_console_format="%(asctime)s - [%(levelname)s] %(message)s",
+        log_console_datefmt="%H:%M:%S",
+        mango_color=True,
+    )
+    root_logger.info("Root logger info message")
+    root_logger.debug("This debug message should NOT be printed")
+    root_logger.error("Root logger error message")
