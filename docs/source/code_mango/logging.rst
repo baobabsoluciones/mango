@@ -117,11 +117,11 @@ Import and use the configured logger in other modules:
 Logging Guidelines
 ^^^^^^^^^^^^^^^
 - Use appropriate log levels:
-    - DEBUG: Detailed information for debugging
-    - INFO: General operational events
-    - WARNING: Unexpected but handled situations
-    - ERROR: Errors that prevent normal operation
-    - CRITICAL: Critical issues requiring immediate attention
+    - DEBUG (10): Detailed information for debugging
+    - INFO (20): General operational events
+    - WARNING (30): Unexpected but handled situations
+    - ERROR (40): Errors that prevent normal operation
+    - CRITICAL (50): Critical issues requiring immediate attention
 
 - Include contextual information in log messages
 - Use structured logging (JSON) for machine parsing
