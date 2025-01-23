@@ -326,11 +326,13 @@ def get_configured_logger(
     # Special handling for root logger
     if logger_type == "root":
         logger = logging.getLogger()
-        logger.handlers = []  # Clear existing handlers
+        logger.handlers = []
 
-        # Ensure the logger is set to the specified level
-        if log_console_level is not None:
-            logger.setLevel(log_console_level)
+        # Check if log_file_path is provided
+        if log_file_path:
+            if log_console_level or log_file_level:
+                # Set the minimum level for the logger or 30 - WARNING (root logger default)
+                logger.setLevel(min(log_console_level or 30, log_file_level or 30))
 
         # Create a console handler with the specified format
         console_handler = logging.StreamHandler()
@@ -351,11 +353,46 @@ def get_configured_logger(
 
         console_handler.setFormatter(formatter)
 
-        # Set handler level to match logger level
-        console_handler.setLevel(logger.level)
+        # Set handler level to match logger level or specified console level
+        if log_console_level is not None:
+            console_handler.setLevel(log_console_level)
+        else:
+            console_handler.setLevel(logger.level)
 
         # Add the handler to the root logger
         logger.addHandler(console_handler)
+
+        # Add file handler if specified
+        if log_file_path:
+            file_extension = os.path.splitext(log_file_path)[1].lower()
+            if file_extension not in {".txt", ".json", ".log"}:
+                raise ValueError("Log file extension must be .txt, .json, or .log")
+
+            log_file_path = ensure_log_directory(log_file_path)
+            is_json_log = file_extension == ".json"
+
+            if is_json_log:
+                file_formatter = JSONFormatter(
+                    fields=json_fields, datefmt=log_file_datefmt
+                )
+                file_handler = JSONFileHandler(log_file_path, mode="w")
+            else:
+                file_format = (
+                    log_file_format
+                    or "%(asctime)s | %(levelname)s | %(name)s: %(message)s"
+                )
+                file_formatter = logging.Formatter(
+                    fmt=file_format, datefmt=log_file_datefmt or "%Y-%m-%d"
+                )
+                file_handler = logging.FileHandler(log_file_path, mode=log_file_mode)
+
+            file_handler.setFormatter(file_formatter)
+            if log_file_level is not None:
+                file_handler.setLevel(log_file_level)
+            else:
+                file_handler.setLevel(logger.level)
+
+            logger.addHandler(file_handler)
 
         return logger
     else:
