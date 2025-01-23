@@ -16,103 +16,52 @@ Best Practices
 
 Centralized Logger Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The recommended approach is to configure the logger once in your main script (e.g., ``main.py``) and then import and use it across other modules. This ensures consistent logging behavior throughout your application.
+The recommended approach is to create a dedicated script for logger configuration (e.g., ``logger.py``) and import it across other modules. This ensures consistent logging behavior throughout your application by having a single source of truth for logger setup.
 
-JSON Logging Best Practices
-^^^^^^^^^^^^^^^^^^^^^^^
-Since JSON log files are not configured in append mode (they are overwritten each time), it's recommended to use dynamic filenames that include timestamps. This ensures each execution creates a new log file and preserves historical logs:
+Creating the Logger Script
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Create a script named ``logger.py`` in your source directory to configure and return the application's central logger:
 
 .. code-block:: python
 
-    # main.py
+    # Configuration for the application logger
     from mango.logging import get_configured_logger
-    import logging
-    from datetime import datetime
 
-    def setup_logger():
-        """Configure and return the application's central logger."""
-        # Generate timestamp for unique log file
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        json_log_path = f"logs/app_{timestamp}.json"
-        
-        return get_configured_logger(
-            logger_type="my_app",
-            log_console_level=logging.INFO,
-            mango_color=True,
-            # Regular log file in append mode
-            log_file_path="logs/app.log",
-            log_file_level=logging.DEBUG,
-            # JSON log file with timestamp
-            json_file_path=json_log_path,
-            json_fields=["level", "message", "time", "module", "lineno"]
-        )
+    # Define log paths and create logger instance
+    logger = get_configured_logger(
+        logger_type="my_app",
+        log_console_level=logging.INFO,
+        mango_color=True,
+        log_file_path="logs/app.log",
+        log_file_level=logging.DEBUG,
+    )
 
-Executing Secondary Scripts
-^^^^^^^^^^^^^^^^^^^^^^^
-When you need to run scripts other than ``main.py`` directly, you can use a simple try-except pattern to handle the logger configuration:
+Using the Logger in Scripts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+In any script where you need logging, simply import the logger from ``logger.py``:
 
 .. code-block:: python
 
-    # secondary_script.py
-    from logging import getLogger
-    
-    try:
-        # Try to get the existing logger from main
-        logger = getLogger("my_app")
-        # Test if the logger is configured by attempting to log
-        logger.debug("Testing logger")
-    except Exception:
-        # If logger not configured, create a new one
-        from mango.logging import get_configured_logger
-        import logging
-        from datetime import datetime
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        logger = get_configured_logger(
-            logger_type="my_app",
-            log_console_level=logging.INFO,
-            mango_color=True,
-            log_file_path="logs/app.log",
-            log_file_level=logging.DEBUG,
-            # JSON log file with timestamp
-            json_file_path=f"logs/app_{timestamp}.json",
-            json_fields=["level", "message", "time", "module", "lineno"]
-        )
-    
+    # Import the configured logger from the central configuration
+    from logger import logger
+
     def main():
-        logger.info("Secondary script started")
+        # Log the start of script execution
+        logger.info("Script started")
+        value = 42
+        # Example using f-string for logging
+        logger.debug(f"Processing value: {value}")
         # Your code here
-    
+
     if __name__ == "__main__":
         main()
 
 This approach:
-- Attempts to use the existing logger from main.py
-- Falls back to creating a new logger if main.py's logger is not available
-- Maintains consistent logger configuration
-- Requires no additional files or wrappers
-- Works whether the script is run directly or imported
+- Centralizes logger configuration in a single script
+- Ensures consistent logger setup across all modules
+- Simplifies logger usage by importing from ``logger.py``
+- Avoids redundant logger configuration code
 
-Using the Logger in Other Modules
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Import and use the configured logger in other modules:
-
-.. code-block:: python
-
-    # other_module.py
-    from logging import getLogger
-
-    # Get the same logger instance configured in main.py
-    logger = getLogger("my_app")
-
-    def some_function():
-        logger.debug("Entering some_function")
-        try:
-            # Your code here
-            logger.info("Operation successful")
-        except Exception as e:
-            logger.error(f"Error occurred: {e}")
-            raise
 
 Logging Guidelines
 ^^^^^^^^^^^^^^^
@@ -192,22 +141,21 @@ ColorFormatter
 .. autoclass:: mango.logging.logger.ColorFormatter
     :members:
     :undoc-members:
-    :show-inheritance:
+    :no-inherited-members:
 
 JSONFormatter
 ^^^^^^^^^^^^
 .. autoclass:: mango.logging.logger.JSONFormatter
     :members:
     :undoc-members:
-    :show-inheritance:
+    :no-inherited-members:
 
 JSONFileHandler
 ^^^^^^^^^^^^^^
 .. autoclass:: mango.logging.logger.JSONFileHandler
     :members:
     :undoc-members:
-    :show-inheritance:
-
+    :no-inherited-members:
 Deprecated Functions
 ~~~~~~~~~~~~~~~~~~
 

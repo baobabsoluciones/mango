@@ -27,12 +27,11 @@ class ColorFormatter(logging.Formatter):
     """
     Enhance log readability by applying different colors to console log messages.
 
-    Attributes:
-        ESCAPE_CODES (Dict[str, str]): Terminal color escape codes for text formatting.
-        LEVEL_COLORS (Dict[int, str]): Mapping of log levels to their corresponding colors.
+    :ivar Dict[str, str] _ESCAPE_CODES: Terminal color escape codes for text formatting
+    :ivar Dict[int, str] _LEVEL_COLORS: Mapping of log levels to their corresponding colors
     """
 
-    ESCAPE_CODES = {
+    _ESCAPE_CODES = {
         "reset": "\033[39;49;0m",
         "bold": "\033[01m",
         "black": "\033[30m",
@@ -61,12 +60,12 @@ class ColorFormatter(logging.Formatter):
         "bold_white": "\033[37;01m",
     }
 
-    LEVEL_COLORS = {
-        logging.DEBUG: ESCAPE_CODES["blue"],
-        logging.INFO: ESCAPE_CODES["green"],
-        logging.WARNING: ESCAPE_CODES["yellow"],
-        logging.ERROR: ESCAPE_CODES["red"],
-        logging.CRITICAL: ESCAPE_CODES["bold_red"],
+    _LEVEL_COLORS = {
+        logging.DEBUG: _ESCAPE_CODES["blue"],
+        logging.INFO: _ESCAPE_CODES["green"],
+        logging.WARNING: _ESCAPE_CODES["yellow"],
+        logging.ERROR: _ESCAPE_CODES["red"],
+        logging.CRITICAL: _ESCAPE_CODES["bold_red"],
     }
 
     def __init__(
@@ -74,15 +73,15 @@ class ColorFormatter(logging.Formatter):
         fmt: Optional[str] = None,
         datefmt: Optional[str] = None,
         style: str = "%",
-        format: Optional[str] = None,  # Added to handle unexpected keyword argument
+        format: Optional[str] = None,
     ):
         """
         Initialize the ColorFormatter.
 
-        :param fmt: Format string for log messages
-        :param datefmt: Date format string
-        :param style: Format style (default is '%')
-        :param format: Alternative argument for format (for compatibility)
+        :param Optional[str] fmt: Format string for log messages
+        :param Optional[str] datefmt: Date format string
+        :param str style: Format style (default is '%')
+        :param Optional[str] format: Alternative argument for format (for compatibility)
         """
         # Prefer 'format' if provided, otherwise use 'fmt'
         effective_fmt = (
@@ -96,36 +95,51 @@ class ColorFormatter(logging.Formatter):
         """
         Format the log record with appropriate color.
 
-        :param record: The log record to format
+        :param logging.LogRecord record: The log record to format
         :return: The formatted log message with color codes
         :rtype: str
         """
-        color = self.LEVEL_COLORS.get(record.levelno, self.ESCAPE_CODES["reset"])
+        color = self._LEVEL_COLORS.get(record.levelno, self._ESCAPE_CODES["reset"])
         message = super().format(record)
-        return f"{color}{message}{self.ESCAPE_CODES['reset']}"
+        return f"{color}{message}{self._ESCAPE_CODES['reset']}"
 
 
 class JSONFormatter(logging.Formatter):
-    """A formatter that outputs log records as JSON.
+    """
+    A formatter that outputs log records as JSON.
 
     This formatter creates structured log output in JSON format with
     customizable fields. It maintains a list of log entries that can be
     serialized as a JSON array.
 
-    Attributes:
-        fields (List[str]): List of fields to include in JSON output
-        datefmt (str): Date format string for timestamp formatting
-        _log_entries (List[Dict]): Internal list of formatted log entries
+    :ivar List[str] fields: List of fields to include in JSON output
+    :ivar str datefmt: Date format string for timestamp formatting
+    :ivar List[Dict] _log_entries: Internal list of formatted log entries
+
+    Available fields:
+        * level: Log level name (e.g., INFO, DEBUG) (default)
+        * message: Log message (default)
+        * time: Timestamp of the log record (default)
+        * name: Name of the logger (default)
+        * module: Module name where the log was generated (default)
+        * filename: Filename where the log was generated (default)
+        * lineno: Line number in the source code where the log was generated (default)
+        * funcName: Function name where the log was generated
+        * pathname: Full pathname of the source file where the log was generated
+        * process: Process ID of the process where the log was generated
+        * processName: Process name where the log was generated
+        * thread: Thread ID of the thread where the log was generated
+        * threadName: Thread name where the log was generated
     """
 
     def __init__(
         self, fields: Optional[List[str]] = None, datefmt: Optional[str] = None
     ):
-        """Initialize the JSONFormatter.
+        """
+        Initialize the JSONFormatter.
 
-        Args:
-            fields: List of fields to include in JSON output
-            datefmt: Date format string for timestamp formatting
+        :param Optional[List[str]] fields: List of fields to include in JSON output
+        :param Optional[str] datefmt: Date format string for timestamp formatting
         """
         super().__init__()
         self.fields = fields or [
@@ -318,7 +332,20 @@ def get_configured_logger(
     :param log_file_level: File logging level
     :param log_file_format: File log message format
     :param log_file_datefmt: File date format
-    :param json_fields: Fields to include in JSON output
+    :param json_fields: Fields to include in JSON output. Options are:
+        - level: Log level name (e.g., INFO, DEBUG) (default)
+        - message: Log message (default)
+        - time: Timestamp of the log record (default)
+        - name: Name of the logger (default)
+        - module: Module name where the log was generated (default)
+        - filename: Filename where the log was generated (default)
+        - lineno: Line number in the source code where the log was generated (default)
+        - funcName: Function name where the log was generated
+        - pathname: Full pathname of the source file where the log was generated
+        - process: Process ID of the process where the log was generated
+        - processName: Process name where the log was generated
+        - thread: Thread ID of the thread where the log was generated
+        - threadName: Thread name where the log was generated
     :return: Configured logger instance
     :rtype: logging.Logger
     :raises ValueError: If log file extension is invalid or logger type not found
