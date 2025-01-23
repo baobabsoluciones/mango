@@ -283,6 +283,7 @@ class LoggingTests(TestCase):
         # Give some time for file writing
         time.sleep(0.1)
 
+        # Verify log file exists and has correct content
         self.assertTrue(os.path.exists(log_path), f"Log file {log_path} not created")
 
         with open(log_path, "r") as f:
@@ -291,20 +292,24 @@ class LoggingTests(TestCase):
                 len(lines), 2, f"Not enough log lines: {len(lines)}"
             )
 
+            # Check first line
             first_line = lines[0]
             self.assertIn("first test", first_line)
             self.assertIn("INFO", first_line)
             self.assertIn("elapsed", first_line)
             self.assertIn("custom message", first_line)
 
+            # Check second line
             second_line = lines[1]
             self.assertIn("first test", second_line)
             self.assertIn("INFO", second_line)
             self.assertIn("took", second_line)
 
+        # Clean up
         logger.removeHandler(file_handler)
         file_handler.close()
 
+        # Remove the log file
         os.remove(log_path)
 
     def test_get_configured_logger_custom_console_format(self):
@@ -324,6 +329,7 @@ class LoggingTests(TestCase):
             log_console_datefmt=custom_datefmt,
         )
 
+        # Verify logger is created
         self.assertIsNotNone(logger)
         self.assertEqual(logger.name, "test_custom_format")
 
@@ -346,6 +352,7 @@ class LoggingTests(TestCase):
             log_console_level=log.DEBUG,
         )
 
+        # Verify logger is created
         self.assertIsNotNone(logger)
         self.assertEqual(logger.name, "root")
 
@@ -357,6 +364,7 @@ class LoggingTests(TestCase):
             log_console_datefmt=custom_datefmt,
         )
 
+        # Verify logger is created
         self.assertIsNotNone(logger)
         self.assertEqual(logger.name, "root")
 
@@ -373,9 +381,11 @@ class LoggingTests(TestCase):
             logger_type="test_color_logger", mango_color=True
         )
 
+        # Verify logger is created
         self.assertIsNotNone(logger)
         self.assertEqual(logger.name, "test_color_logger")
 
+        # Assert RaiseValueError when log_file_path is provided
         with self.assertRaises(ValueError):
             get_configured_logger(
                 logger_type="test_color_logger",
@@ -401,9 +411,11 @@ class LoggingTests(TestCase):
             log_file_format="%(asctime)s | %(levelname)s: %(message)s",
         )
 
+        # Log some messages
         logger.info("Test file logging")
         logger.warning("Warning message")
 
+        # Verify log file was created and contains messages
         self.assertTrue(os.path.exists(log_path), f"Log file {log_path} not created")
 
         with open(log_path, "r") as f:
@@ -412,6 +424,7 @@ class LoggingTests(TestCase):
                 len(lines), 2, f"Not enough log lines: {len(lines)}"
             )
 
+            # Check log messages
             self.assertIn("Test file logging", lines[0])
             self.assertIn("Warning message", lines[1])
 
@@ -432,20 +445,26 @@ class LoggingTests(TestCase):
             json_fields=["level", "message", "time"],
         )
 
+        # Log some messages
         logger.info("JSON log test")
         logger.error("Error log test")
 
+        # Verify log file was created
         self.assertTrue(
             os.path.exists(log_path), f"JSON log file {log_path} not created"
         )
 
+        # Read and parse JSON log file
         with open(log_path, "r") as f:
+            # Read the entire content
             content = f.read()
             print(f"JSON Log File Content: {content}")
 
+            # If the content is a JSON array, parse it directly
             try:
                 json_logs = json.loads(content)
 
+                # Verify the logs
                 self.assertEqual(
                     len(json_logs), 2, f"Unexpected number of JSON logs: {json_logs}"
                 )
@@ -455,14 +474,17 @@ class LoggingTests(TestCase):
                     self.assertIn("message", json_log)
                     self.assertIn("time", json_log)
             except json.JSONDecodeError:
+                # If not a valid JSON array, fall back to line-by-line parsing
                 lines = [line.strip() for line in content.split("\n") if line.strip()]
 
                 self.assertGreaterEqual(
                     len(lines), 2, f"Not enough JSON log lines: {lines}"
                 )
 
+                # Verify each line is a valid JSON
                 for line in lines:
                     try:
+                        # Remove leading/trailing brackets if present
                         line = line.strip("[]")
                         json_log = json.loads(line)
                         self.assertIn("level", json_log)
@@ -511,6 +533,7 @@ class LoggingTests(TestCase):
             logger_type="custom_config_logger", config_dict=custom_config
         )
 
+        # Verify logger is created
         self.assertIsNotNone(logger)
         self.assertEqual(logger.name, "custom_config_logger")
         self.assertEqual(logger.level, log.DEBUG)
@@ -525,44 +548,57 @@ class LoggingTests(TestCase):
         * Return value preservation
         * Log message format
         """
+        # Prepare a custom logger for testing
         logger = log.getLogger("test_log_time")
         logger.setLevel(log.DEBUG)
 
+        # Create a log file for this test
         log_path = self._get_temp_log_path("log_time_test.log")
 
+        # Create a file handler
         file_handler = log.FileHandler(log_path, mode="w")
         file_handler.setLevel(log.DEBUG)
         formatter = log.Formatter("%(asctime)s: %(levelname)s - %(message)s")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
+        # Define a test function with the log_time decorator
         @log_time("test_log_time")
         def sample_function(x, y):
             """A sample function to test logging"""
             time.sleep(0.1)
             return x + y
 
+        # Call the decorated function
         result = sample_function(3, 4)
 
+        # Verify the function returns the correct result
         self.assertEqual(result, 7)
 
+        # Force flush and wait
         file_handler.flush()
         logger.handlers[0].flush()
         time.sleep(0.2)
 
+        # Read and verify the log file
         with open(log_path, "r") as f:
             lines = f.readlines()
 
+            # Print debug information
             print(f"Log file contents: {lines}")
 
+            # Verify log entry
             self.assertEqual(len(lines), 1, f"Unexpected number of log lines: {lines}")
 
+            # Check log line content
             log_line = lines[0]
 
+            # Verify the log contains key information
             self.assertIn("sample_function", log_line)
             self.assertIn("took", log_line)
             self.assertIn("seconds", log_line)
 
+        # Clean up
         logger.removeHandler(file_handler)
         file_handler.close()
 
@@ -576,47 +612,59 @@ class LoggingTests(TestCase):
         * Correct return values
         * Log message format consistency
         """
+        # Prepare a custom logger for testing
         logger = log.getLogger("test_log_time_multiple")
         logger.setLevel(log.DEBUG)
 
+        # Create a log file for this test
         log_path = self._get_temp_log_path("log_time_multiple_test.log")
 
+        # Create a file handler
         file_handler = log.FileHandler(log_path, mode="w")
         file_handler.setLevel(log.DEBUG)
         formatter = log.Formatter("%(asctime)s: %(levelname)s - %(message)s")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
+        # Define a test function with the log_time decorator
         @log_time("test_log_time_multiple")
         def multiply_numbers(x, y):
             """A sample function to test logging with multiple calls"""
             time.sleep(0.05)
             return x * y
 
+        # Call the decorated function multiple times with different inputs
         results = [
             multiply_numbers(2, 3),
             multiply_numbers(4, 5),
             multiply_numbers(6, 7),
         ]
 
+        # Verify the function returns correct results
         self.assertEqual(results, [6, 20, 42])
 
+        # Force flush and wait
         file_handler.flush()
         logger.handlers[0].flush()
         time.sleep(0.3)
 
+        # Read and verify the log file
         with open(log_path, "r") as f:
             lines = f.readlines()
 
+            # Print debug information
             print(f"Log file contents: {lines}")
 
+            # Verify log entries
             self.assertEqual(len(lines), 3, f"Unexpected number of log lines: {lines}")
 
+            # Check each log line
             for line in lines:
                 self.assertIn("multiply_numbers", line)
                 self.assertIn("took", line)
                 self.assertIn("seconds", line)
 
+        # Clean up
         logger.removeHandler(file_handler)
         file_handler.close()
 
@@ -630,17 +678,21 @@ class LoggingTests(TestCase):
         * Function execution with each level
         * Log file content verification
         """
+        # Prepare a custom logger for testing
         logger = log.getLogger("test_log_time_levels")
         logger.setLevel(log.DEBUG)
 
+        # Create a log file for this test
         log_path = self._get_temp_log_path("log_time_levels_test.log")
 
+        # Create a file handler
         file_handler = log.FileHandler(log_path, mode="w")
         file_handler.setLevel(log.DEBUG)
         formatter = log.Formatter("%(asctime)s: %(levelname)s - %(message)s")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
+        # Test different log levels
         log_levels = [
             ("DEBUG", log.DEBUG),
             ("INFO", log.INFO),
@@ -649,39 +701,50 @@ class LoggingTests(TestCase):
         ]
 
         for level_name, level_value in log_levels:
+            # Reset the log file
             open(log_path, "w").close()
 
+            # Define a test function with the log_time decorator using dynamic log level
             @log_time("test_log_time_levels", level=level_name)
             def sample_function():
                 """A sample function to test logging with different levels"""
                 time.sleep(0.1)
                 return 42
 
+            # Call the decorated function
             result = sample_function()
 
+            # Verify the function returns the correct result
             self.assertEqual(result, 42)
 
+            # Force flush and wait
             file_handler.flush()
             logger.handlers[0].flush()
             time.sleep(0.2)
 
+            # Read and verify the log file
             with open(log_path, "r") as f:
                 lines = f.readlines()
 
+                # Print debug information
                 print(f"Log file contents for {level_name} level: {lines}")
 
+                # Verify log entry
                 self.assertEqual(
                     len(lines),
                     1,
                     f"Unexpected number of log lines for {level_name} level: {lines}",
                 )
 
+                # Check log line content
                 log_line = lines[0]
 
+                # Verify the log contains key information and correct level
                 self.assertIn("sample_function", log_line)
                 self.assertIn("took", log_line)
                 self.assertIn("seconds", log_line)
                 self.assertIn(level_name, log_line)
 
+        # Clean up
         logger.removeHandler(file_handler)
         file_handler.close()

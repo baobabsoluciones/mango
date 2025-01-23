@@ -27,8 +27,8 @@ class ColorFormatter(logging.Formatter):
     """
     Enhance log readability by applying different colors to console log messages.
 
-    :ivar Dict[str, str] _ESCAPE_CODES: Terminal color escape codes for text formatting
-    :ivar Dict[int, str] _LEVEL_COLORS: Mapping of log levels to their corresponding colors
+    :cvar Dict[str, str] _ESCAPE_CODES: Terminal color escape codes for text formatting
+    :cvar Dict[int, str] _LEVEL_COLORS: Mapping of log levels to their corresponding colors
     """
 
     _ESCAPE_CODES = {
@@ -155,13 +155,14 @@ class JSONFormatter(logging.Formatter):
         self._log_entries = []
 
     def format(self, record: logging.LogRecord) -> str:
-        """Format the log record as a JSON object.
+        """
+        Format the log record as a JSON object.
 
-        Args:
-            record: The log record to format
+        :param record: The log record to format
+        :type record: logging.LogRecord
 
-        Returns:
-            JSON string containing the formatted log entries
+        :returns: JSON string containing the formatted log entries
+        :rtype: str
         """
         log_record = {}
         field_mapping = {
@@ -205,11 +206,10 @@ class JSONFileHandler(logging.FileHandler):
     ):
         """Initialize the JSONFileHandler.
 
-        Args:
-            filename: Path to the log file
-            mode: File open mode (always 'w' for this handler)
-            encoding: File encoding
-            delay: Whether to delay file opening
+        :param str filename: Path to the log file
+        :param str mode: File open mode (always 'w' for this handler)
+        :param Optional[str] encoding: File encoding
+        :param bool delay: Whether to delay file opening
         """
         super().__init__(filename, "w", encoding, delay)
         self.terminator = ""
@@ -217,8 +217,7 @@ class JSONFileHandler(logging.FileHandler):
     def emit(self, record: logging.LogRecord) -> None:
         """Write the log record to file.
 
-        Args:
-            record: The log record to write
+        :param logging.LogRecord record: The log record to write
         """
         try:
             msg = self.format(record)
@@ -282,13 +281,12 @@ LOGGING_DICT_DEFAULT = {
 
 
 def ensure_log_directory(log_file_path: str) -> str:
-    """Ensure the log directory exists and return the absolute path.
+    """
+    Ensure the log directory exists and return the absolute path.
 
-    Args:
-        log_file_path: Relative or absolute path to the log file
-
-    Returns:
-        Absolute path to the log file
+    :param str log_file_path: Relative or absolute path to the log file
+    :return: Absolute path to the log file
+    :rtype: str
     """
     script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
     if not os.path.isabs(log_file_path):
