@@ -4,7 +4,7 @@ from keras import Sequential
 from keras.src.optimizers import Adam
 
 from mango_time_series.models.losses import mean_squared_error
-from mango_time_series.models.modules.autoencoder import (
+from mango_time_series.models.modules import (
     encoder_embedder,
     encoder,
     decoder,
@@ -55,10 +55,28 @@ class AutoEncoder:
 
         model = Sequential(
             [
-                encoder_embedder(timesteps, features, hidden_dim, num_layers=1),
-                encoder(timesteps, hidden_dim, num_layers - 1),
+                encoder_embedder(
+                    context_window=timesteps,
+                    features=features,
+                    hidden_dim=hidden_dim,
+                    num_layers=1,
+                    verbose=True,
+                ),
+                encoder(
+                    type="lstm",
+                    context_window=timesteps,
+                    features=features,
+                    hidden_dim=hidden_dim,
+                    num_layers=num_layers - 1,
+                    verbose=True,
+                ),
                 decoder(
-                    timesteps, features, hidden_dim, num_layers, timesteps_to_check
+                    type="lstm",
+                    context_window=timesteps,
+                    features=features,
+                    hidden_dim=hidden_dim,
+                    num_layers=num_layers,
+                    verbose=True,
                 ),
             ],
             name="autoencoder",
