@@ -2,31 +2,35 @@ import logging as log
 from typing import Union, List
 
 from keras import Input, Model
-from keras.src.layers import LSTM, Dense, Flatten
+from keras.src.layers import LSTM, Dense, Flatten, SimpleRNN, GRU
 
 
 logger = log.getLogger(__name__)
 
 
-def decoder(type: str, **kwargs):
+def decoder(form: str, **kwargs):
     """
     Decoder module for different models.
-    It can be of different types: currently only Dense and LSTM decoders are implemented.
+    It can be of different types: Dense, RNN, GRU and LSTM decoders.
 
-    :param type: type of decoder, currently only "dense" and "lstm" are supported
-    :type type: str
+    :param form: type of decoder, one of "dense", "rnn", "gru" or "lstm"
+    :type form: str
     :param kwargs: keyword arguments for the decoder.
       This can vary depending on the underlying type of decoder.
       Go to specific documentation for more details
     :return: decoder model
     :rtype: keras.Model
     """
-    if type == "dense":
+    if form == "dense":
         return _decoder_dense(**kwargs)
-    elif type == "lstm":
+    elif form == "lstm":
         return _decoder_lstm(**kwargs)
+    elif form == "rnn":
+        return _decoder_rnn(**kwargs)
+    elif form == "gru":
+        return _decoder_gru(**kwargs)
     else:
-        raise ValueError(f"Invalid decoder type: {type}")
+        raise ValueError(f"Invalid decoder type: {form}")
 
 
 def _decoder_dense(
@@ -64,7 +68,7 @@ def _decoder_dense(
         layer = Dense(hidden_dim[i])(input_layer if i == 0 else layer)
 
     output_layer = Dense(features)(layer)
-    model = Model(input_layer, output_layer, name="decoder")
+    model = Model(input_layer, output_layer, name="dense_decoder")
 
     if verbose:
         logger.info(model.summary())
@@ -86,7 +90,7 @@ def _decoder_lstm(
     :type context_window: int
     :param features: number of features in the output
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the LSTM. It can be a single integer (same for all layers)
+    :param hidden_dim: number of hidden dimensions in the LSTM layer. It can be a single integer (same for all layers)
       or a list of dimensions for each layer.
     :type hidden_dim: Union[int, List[int]]
     :param num_layers: number of LSTM layers
@@ -114,7 +118,107 @@ def _decoder_lstm(
 
     flatten = Flatten()(layer)
     output_layer = Dense(features)(flatten)
-    model = Model(input_layer, output_layer, name="decoder")
+    model = Model(input_layer, output_layer, name="lstm_decoder")
+
+    if verbose:
+        logger.info(model.summary())
+
+    return model
+
+
+def _decoder_gru(
+    context_window: int,
+    features: int,
+    hidden_dim: Union[int, List[int]],
+    num_layers: int,
+    verbose: bool = False,
+) -> Model:
+    """
+    GRU decoder
+
+    :param context_window: number of timesteps in the input
+    :type context_window: int
+    :param features: number of features in the output
+    :type features: int
+    :param hidden_dim: number of hidden dimensions in the GRU layer. It can be a single integer (same for all layers)
+      or a list of dimensions for each layer.
+    :type hidden_dim: Union[int, List[int]]
+    :param num_layers: number of GRU layers
+    :type num_layers: int
+    :param verbose: whether to print the model summary
+    :type verbose: bool
+    :return: GRU decoder model
+    :rtype: keras.Model
+    """
+    if isinstance(hidden_dim, int):
+        hidden_dim = [hidden_dim] * num_layers
+    elif isinstance(hidden_dim, list):
+        if len(hidden_dim) != num_layers:
+            raise ValueError("The length of hidden_dim must match the number of layers")
+    else:
+        raise ValueError("hidden_dim must be an integer or a list of integers")
+
+    input_layer = Input((context_window, hidden_dim[0]))
+
+    for i in range(num_layers):
+        layer = GRU(
+            hidden_dim[i],
+            return_sequences=True,
+        )(input_layer if i == 0 else layer)
+
+    flatten = Flatten()(layer)
+    output_layer = Dense(features)(flatten)
+    model = Model(input_layer, output_layer, name="gru_decoder")
+
+    if verbose:
+        logger.info(model.summary())
+
+    return model
+
+
+def _decoder_rnn(
+    context_window: int,
+    features: int,
+    hidden_dim: Union[int, List[int]],
+    num_layers: int,
+    verbose: bool = False,
+) -> Model:
+    """
+    RNN decoder
+
+    :param context_window: number of timesteps in the input
+    :type context_window: int
+    :param features: number of features in the output
+    :type features: int
+    :param hidden_dim: number of hidden dimensions in the RNN layer. It can be a single integer (same for all layers)
+      or a list of dimensions for each layer.
+    :type hidden_dim: Union[int, List[int]]
+    :param num_layers: number of RNN layers
+    :type num_layers: int
+    :param verbose: whether to print the model summary
+    :type verbose: bool
+    :return: RNN decoder model
+    :rtype: keras.Model
+    """
+    if isinstance(hidden_dim, int):
+        hidden_dim = [hidden_dim] * num_layers
+    elif isinstance(hidden_dim, list):
+        if len(hidden_dim) != num_layers:
+            raise ValueError("The length of hidden_dim must match the number of layers")
+    else:
+        raise ValueError("hidden_dim must be an integer or a list of integers")
+
+    input_layer = Input((context_window, hidden_dim[0]))
+
+    for i in range(num_layers):
+        layer = SimpleRNN(
+            hidden_dim[i],
+            return_sequences=True,
+        )(input_layer if i == 0 else layer)
+
+    flatten = Flatten()(layer)
+    output_layer = Dense(features)(flatten)
+    model = Model(input_layer, output_layer, name="rnn_decoder")
 
     if verbose:
         logger.info(model.summary())

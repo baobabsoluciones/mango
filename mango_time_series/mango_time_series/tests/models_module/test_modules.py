@@ -1,9 +1,7 @@
 import unittest
 import tensorflow as tf
 
-from mango_time_series.models.modules.decoder import decoder
-from mango_time_series.models.modules.encoder import encoder
-from mango_time_series.models.modules.encoder_embedder import encoder_embedder
+from mango_time_series.models.modules import encoder, decoder
 
 
 class TestEncoder(unittest.TestCase):
@@ -12,7 +10,7 @@ class TestEncoder(unittest.TestCase):
         Test LSTM encoder creation and output shape
         """
         model = encoder(
-            type="lstm",
+            form="lstm",
             context_window=10,
             features=5,
             hidden_dim=32,
@@ -22,7 +20,59 @@ class TestEncoder(unittest.TestCase):
         # Check model type and layers
         # Input + 2 LSTM + Dense
         self.assertEqual(len(model.layers), 4)
-        self.assertEqual(model.name, "encoder")
+        self.assertEqual(model.name, "lstm_encoder")
+
+        # Test output shape
+        batch_size = 16
+        # (batch, context_window, features)
+        input_shape = (batch_size, 10, 5)
+        test_input = tf.random.normal(input_shape)
+        output = model(test_input)
+        # (batch, context_window, hidden_dim)
+        self.assertEqual(output.shape, (batch_size, 10, 32))
+
+    def test_gru(self):
+        """
+        Test GRU encoder creation and output shape
+        """
+        model = encoder(
+            form="gru",
+            context_window=10,
+            features=5,
+            hidden_dim=32,
+            num_layers=2,
+        )
+
+        # Check model type and layers
+        # Input + 2 GRU + Dense
+        self.assertEqual(len(model.layers), 4)
+        self.assertEqual(model.name, "gru_encoder")
+
+        # Test output shape
+        batch_size = 16
+        # (batch, context_window, features)
+        input_shape = (batch_size, 10, 5)
+        test_input = tf.random.normal(input_shape)
+        output = model(test_input)
+        # (batch, context_window, hidden_dim)
+        self.assertEqual(output.shape, (batch_size, 10, 32))
+
+    def test_rnn(self):
+        """
+        Test RNN encoder creation and output shape
+        """
+        model = encoder(
+            form="rnn",
+            context_window=10,
+            features=5,
+            hidden_dim=32,
+            num_layers=2,
+        )
+
+        # Check model type and layers
+        # Input + 2 RNN + Dense
+        self.assertEqual(len(model.layers), 4)
+        self.assertEqual(model.name, "rnn_encoder")
 
         # Test output shape
         batch_size = 16
@@ -38,7 +88,7 @@ class TestEncoder(unittest.TestCase):
         Test Dense encoder creation and output shape
         """
         model = encoder(
-            type="dense",
+            form="dense",
             features=5,
             hidden_dim=32,
             num_layers=2,
@@ -46,7 +96,7 @@ class TestEncoder(unittest.TestCase):
 
         # Check model type and layers
         self.assertEqual(len(model.layers), 3)  # Input + 2 Dense
-        self.assertEqual(model.name, "encoder")
+        self.assertEqual(model.name, "dense_encoder")
 
         # Test output shape
         batch_size = 16
@@ -62,7 +112,7 @@ class TestEncoder(unittest.TestCase):
         Test encoder with invalid type
         """
         with self.assertRaisesRegex(ValueError, "Invalid encoder type: invalid"):
-            encoder(type="invalid", features=5, hidden_dim=32, num_layers=2)
+            encoder(form="invalid", features=5, hidden_dim=32, num_layers=2)
 
     def test_lstm_variable_hidden_dims(self):
         """
@@ -70,7 +120,7 @@ class TestEncoder(unittest.TestCase):
         """
         hidden_dims = [32, 16]
         model = encoder(
-            type="lstm",
+            form="lstm",
             context_window=10,
             features=5,
             hidden_dim=hidden_dims,
@@ -85,67 +135,13 @@ class TestEncoder(unittest.TestCase):
         self.assertEqual(output.shape, (batch_size, 10, 16))
 
 
-class TestEncoderEmbedder(unittest.TestCase):
-    def test_basic(self):
-        """
-        Test basic encoder embedder creation and output shape
-        """
-        model = encoder_embedder(
-            context_window=10,
-            features=5,
-            hidden_dim=32,
-            num_layers=2,
-        )
-
-        # Check model type and layers
-        # Input + 2 LSTM
-        self.assertEqual(len(model.layers), 3)
-        self.assertEqual(model.name, "encoder_embedder")
-
-        # Test output shape
-        batch_size = 16
-        input_shape = (batch_size, 10, 5)
-        test_input = tf.random.normal(input_shape)
-        output = model(test_input)
-        self.assertEqual(output.shape, (batch_size, 10, 32))
-
-    def test_single_layer(self):
-        """
-        Test encoder embedder with single layer
-        """
-        model = encoder_embedder(
-            context_window=10,
-            features=5,
-            hidden_dim=32,
-            num_layers=1,
-        )
-
-        # Input + 1 LSTM
-        self.assertEqual(len(model.layers), 2)
-
-        batch_size = 16
-        input_shape = (batch_size, 10, 5)
-        test_input = tf.random.normal(input_shape)
-        output = model(test_input)
-        self.assertEqual(output.shape, (batch_size, 10, 32))
-
-    def test_invalid_layers(self):
-        """
-        Test encoder embedder with invalid number of layers
-        """
-        with self.assertRaisesRegex(
-            ValueError, "Number of layers must be greater than 0"
-        ):
-            encoder_embedder(context_window=10, features=5, hidden_dim=32, num_layers=0)
-
-
 class TestDecoder(unittest.TestCase):
     def test_lstm(self):
         """
         Test LSTM decoder creation and output shape
         """
         model = decoder(
-            type="lstm",
+            form="lstm",
             context_window=10,
             features=5,
             hidden_dim=32,
@@ -153,9 +149,61 @@ class TestDecoder(unittest.TestCase):
         )
 
         # Check model type and layers
-        # Input + 2 LSTM + Flatten + Dense
+        # Input + 2 LSTM + Dense + Dense
         self.assertEqual(len(model.layers), 5)
-        self.assertEqual(model.name, "decoder")
+        self.assertEqual(model.name, "lstm_decoder")
+
+        # Test output shape
+        batch_size = 16
+        # (batch, context_window, hidden_dim)
+        input_shape = (batch_size, 10, 32)
+        test_input = tf.random.normal(input_shape)
+        output = model(test_input)
+        # (batch, features)
+        self.assertEqual(output.shape, (batch_size, 5))
+
+    def test_gru(self):
+        """
+        Test GRU decoder creation and output shape
+        """
+        model = decoder(
+            form="gru",
+            context_window=10,
+            features=5,
+            hidden_dim=32,
+            num_layers=2,
+        )
+
+        # Check model type and layers
+        # Input + 2 GRU + Dense + Dense
+        self.assertEqual(len(model.layers), 5)
+        self.assertEqual(model.name, "gru_decoder")
+
+        # Test output shape
+        batch_size = 16
+        # (batch, context_window, hidden_dim)
+        input_shape = (batch_size, 10, 32)
+        test_input = tf.random.normal(input_shape)
+        output = model(test_input)
+        # (batch, features)
+        self.assertEqual(output.shape, (batch_size, 5))
+
+    def test_rnn(self):
+        """
+        Test RNN decoder creation and output shape
+        """
+        model = decoder(
+            form="rnn",
+            context_window=10,
+            features=5,
+            hidden_dim=32,
+            num_layers=2,
+        )
+
+        # Check model type and layers
+        # Input + 2 RNN + Dense + Dense
+        self.assertEqual(len(model.layers), 5)
+        self.assertEqual(model.name, "rnn_decoder")
 
         # Test output shape
         batch_size = 16
@@ -171,7 +219,7 @@ class TestDecoder(unittest.TestCase):
         Test Dense decoder creation and output shape
         """
         model = decoder(
-            type="dense",
+            form="dense",
             features=5,
             hidden_dim=32,
             num_layers=2,
@@ -180,7 +228,7 @@ class TestDecoder(unittest.TestCase):
         # Check model type and layers
         # Input + 2 Dense + Output Dense
         self.assertEqual(len(model.layers), 4)
-        self.assertEqual(model.name, "decoder")
+        self.assertEqual(model.name, "dense_decoder")
 
         # Test output shape
         batch_size = 16
@@ -196,7 +244,7 @@ class TestDecoder(unittest.TestCase):
         Test decoder with invalid type
         """
         with self.assertRaisesRegex(ValueError, "Invalid decoder type: invalid"):
-            decoder(type="invalid", features=5, hidden_dim=32, num_layers=2)
+            decoder(form="invalid", features=5, hidden_dim=32, num_layers=2)
 
     def test_lstm_variable_hidden_dims(self):
         """
@@ -204,7 +252,7 @@ class TestDecoder(unittest.TestCase):
         """
         hidden_dims = [32, 16]
         model = decoder(
-            type="lstm",
+            form="lstm",
             context_window=10,
             features=5,
             hidden_dim=hidden_dims,

@@ -1,14 +1,11 @@
 import numpy as np
 import tensorflow as tf
+from typing import Union, List
 from keras import Sequential
 from keras.src.optimizers import Adam
 
 from mango_time_series.models.losses import mean_squared_error
-from mango_time_series.models.modules import (
-    encoder_embedder,
-    encoder,
-    decoder,
-)
+from mango_time_series.models.modules import encoder, decoder
 from mango_time_series.models.utils.plots import (
     plot_actual_and_reconstructed,
     plot_actual_and_multiple_reconstructed,
@@ -22,18 +19,19 @@ from mango_time_series.models.utils.sequences import (
 class AutoEncoder:
     def __init__(
         self,
-        data,
-        timesteps,
-        timesteps_to_check,
-        hidden_dim,
-        num_layers,
-        batch_size=32,
-        split_size=0.7,
-        epochs=100,
+        form: str = "dense",
+        data: np.array = None,
+        context_window: int = None,
+        timesteps_to_check: int = 1,
+        hidden_dim: Union[int, List[int]] = None,
+        num_layers: int = None,
+        batch_size: int = 32,
+        split_size: float = 0.7,
+        epochs: int = 100,
     ):
         # First we make a copy to avoid problems
         x = np.copy(data)
-        samples = x.shape[0] - timesteps + 1
+        samples = x.shape[0] - context_window + 1
         features = x.shape[1]
         split = split_size
 
@@ -41,7 +39,7 @@ class AutoEncoder:
         min_x = np.min(x[:, 0], axis=0)
         x[:, 0] = (x[:, 0] - min_x) / (max_x - min_x)
 
-        x = time_series_to_sequence(x, timesteps)
+        x = time_series_to_sequence(x, context_window)
 
         split_point = round(split * samples)
         x_train = x[:split_point, :, :]
@@ -55,24 +53,17 @@ class AutoEncoder:
 
         model = Sequential(
             [
-                encoder_embedder(
-                    context_window=timesteps,
-                    features=features,
-                    hidden_dim=hidden_dim,
-                    num_layers=1,
-                    verbose=True,
-                ),
                 encoder(
-                    type="lstm",
-                    context_window=timesteps,
+                    form=form,
+                    context_window=context_window,
                     features=features,
                     hidden_dim=hidden_dim,
-                    num_layers=num_layers - 1,
+                    num_layers=num_layers,
                     verbose=True,
                 ),
                 decoder(
-                    type="lstm",
-                    context_window=timesteps,
+                    form=form,
+                    context_window=context_window,
                     features=features,
                     hidden_dim=hidden_dim,
                     num_layers=num_layers,
@@ -93,7 +84,7 @@ class AutoEncoder:
         self.max_x = max_x
         self.samples = samples
         self.features = features
-        self.timesteps = timesteps
+        self.context_window = context_window
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.x = x
