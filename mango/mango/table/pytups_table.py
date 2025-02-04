@@ -63,40 +63,94 @@ class Table(TupList):
         return Table(super().__add__(*args, **kwargs))
 
     def vapply(self, func: Callable, *args, **kwargs) -> "Table":
+        """
+        maps function into each element of TupList
+
+        :param callable func: function to apply
+        :return: new :py:class:`Table`
+        """
         return Table(super().vapply(func, *args, **kwargs))
 
     def kapply(self, func, *args, **kwargs) -> "Table":
+        """
+        maps function into each key of TupList
+
+        :param callable func: function to apply
+        :return: new :py:class:`Table`
+        """
         return Table(super().kapply(func, *args, **kwargs))
 
     def kvapply(self, func, *args, **kwargs) -> "Table":
+        """
+        maps function into each element of TupList with indexes
+
+        :param callable func: function to apply
+        :return: new :py:class:`Table`
+        """
         return Table(super().kvapply(func, *args, **kwargs))
 
     def copy_shallow(self) -> "Table":
+        """
+        Copies the list only. Not it's contents
+
+        :return: new :py:class:`Table`
+        """
         return Table(super().copy_shallow())
 
     def copy_deep(self) -> "Table":
         return Table(super().copy_deep())
 
     def vfilter(self, function: Callable) -> "Table":
+        """
+        Filter a table. Keeps the rows for which the function returns True.
+
+        :param func: function to use to filter
+        :return: new :py:class:`Table`
+        """
         return Table(super().vfilter(function))
 
     def unique(self) -> "Table":
+        """
+        Eliminates duplicated rows.
+        When there are rows with duplicated values, the first one is kept.
+
+        :return: new :py:class:`Table`
+        """
         try:
-            return Table(super().unique())
+            columns = self.get_col_names()
+            return self.distinct(columns)
         except:
             raise NotImplementedError(
                 "Cannot apply unique to a list of dict. Use distinct instead"
             )
 
     def unique2(self) -> "Table":
+        """
+        Eliminates duplicated rows.
+        When there are rows with duplicated values, the first one is kept.
+
+        :return: new :py:class:`Table`
+        """
         try:
-            return Table(super().unique2())
+            columns = self.get_col_names()
+            return self.distinct(columns)
         except:
             raise NotImplementedError(
                 "Cannot apply unique2 to a list of dict. Use distinct instead"
             )
 
     def sorted(self, **kwargs) -> "Table":
+        """
+        Sorts the table according to the given function (key argument)
+
+        :param kwargs: arguments for sorted function
+            main arguments for sorted are:
+            - key
+            - reverse
+
+        :example: my_table.sorted(key= lambda x : (x['Distance']-30)**2, reverse=True)
+        :return: new :py:class:`Table`
+        """
         try:
             return Table(super().sorted(**kwargs))
         except:
@@ -133,37 +187,37 @@ class Table(TupList):
         else:
             return "Empty table"
 
-    def show_rows(self, n1, n2=None):
+    def show_rows(self, n1, n2=None) -> str:
         """
         Show the n1 th row of the table or rows between n1 and n2.
 
         :param n1: row number to start
         :param n2: row number to end (if None, only show row n1)
-        :return: a string
+        :return: `string`
         """
         if n2 is None:
             n2 = n1 + 1
         return "".join(f"{i} {self[i]}\n" for i in range(n1, n2))
 
-    def head(self, n=10):
+    def head(self, n=10) -> "Table":
         """
         Return the first n rows of a table.
 
         :param n: Number of rows to show (default:10).
-        :return: set_a table with n rows or less.
+        :return: new :py:class:`Table`
         """
         if self.len() < n:
             return self
         else:
             return self[:n]
 
-    def peek(self, n=3, name=None):
+    def peek(self, n=3, name=None) -> "Table":
         """
         Show the first, middle and last n rows of the table.
 
         :param n: number of rows to show in each part.
         :param name: name or message to print with the table
-        :return: the printed string
+        :return: new :py:class:`Table`
         """
         if name is None:
             name = ""
@@ -189,8 +243,8 @@ class Table(TupList):
         """
         Add or modify a column in a table.
 
-        Example:
-            mutate(table, a=3, b=[4,5,6], c=lambda v: v["a"]+v["b"], d=mean)
+        Example: creates or overwrites the columns a,b and c
+            mutate(table, a=3, b=[4,5,6], c=lambda v: v["a"]+v["b"])
 
         Note: All changes are applied over the input table and do not take into account the other changes.
 
@@ -199,7 +253,7 @@ class Table(TupList):
             - A single value, which will be applied to each row.
             - A list with all the values of the column.
             - A function to apply to the row.
-        :return: A table.
+        :return: new :py:class:`Table`
         """
         return Table(mutate(self, **kwargs))
 
@@ -209,7 +263,7 @@ class Table(TupList):
 
         :param col: single name of list of columns to use to group the rows
 
-        :return a SuperDict
+        :return: `SuperDict`
         """
         return group_by(self, col)
 
@@ -219,7 +273,7 @@ class Table(TupList):
 
         :param group_by: name of the columns to group.
         :param func: function to apply to the named column. ex: a = first, b = mean
-        :return: a table (Tuplist of dict).
+        :return: new :py:class:`Table`
         """
         return Table(group_mutate(self, group_by, **func))
 
@@ -228,7 +282,7 @@ class Table(TupList):
         Group by the given columns and sum the others.
 
         :param group_by: name of the columns to group.
-        :return: a table (Tuplist of dict)
+        :return: new :py:class:`Table`
         """
         return Table(sum_all(self, group_by))
 
@@ -239,7 +293,7 @@ class Table(TupList):
         :param group_by: name of the columns to group.
         :param default: default function to apply to non-grouped columns.
         :param func: function to apply to the named column. ex: a = first, b = mean
-        :return: a table (Tuplist of dict).
+        :return: new :py:class:`Table`
         """
         return Table(summarise(self, group_by, default=default, **func))
 
@@ -269,7 +323,7 @@ class Table(TupList):
         :param empty: values to give to empty cells created by the join.
         :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
         :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-        :return: a Table
+        :return: new :py:class:`Table`
         """
         return Table(
             join(
@@ -307,7 +361,7 @@ class Table(TupList):
         :param empty: values to give to empty cells created by the join.
         :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
         :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-        :return: a Table
+        :return: new :py:class:`Table`
         """
         return Table(
             left_join(
@@ -344,7 +398,7 @@ class Table(TupList):
         :param empty: values to give to empty cells created by the join.
         :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
         :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-        :return: a Table
+        :return: new :py:class:`Table`
         """
         return Table(
             right_join(
@@ -381,7 +435,7 @@ class Table(TupList):
         :param empty: values to give to empty cells created by the join.
         :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
         :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-        :return: a Table
+        :return: new :py:class:`Table`
         """
         return Table(
             full_join(
@@ -418,7 +472,7 @@ class Table(TupList):
         :param empty: values to give to empty cells created by the join.
         :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
         :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-        :return: a Table
+        :return: new :py:class:`Table`
         """
         return Table(
             inner_join(
@@ -444,7 +498,7 @@ class Table(TupList):
         :param suffix: suffix to add to column to create different names.
             Default is ("", "_2"). With default suffix, column id will appear as id and id_2.
         :param empty: values to give to empty cells created by the join.
-        :return: a tuplist
+        :return: new :py:class:`Table`
         """
         return Table(auto_join(self, by=by, suffix=suffix, empty=empty))
 
@@ -453,7 +507,7 @@ class Table(TupList):
         Select columns from a table
 
         :param args: names of the columns to select
-        :return: Table with the selected columns.
+        :return: new :py:class:`Table`
         """
         return Table(select(self, *args))
 
@@ -462,7 +516,7 @@ class Table(TupList):
         Drop columns from a table
 
         :param args: names of the columns to drop
-        :return: a table without the selected columns.
+        :return: new :py:class:`Table`
         """
         return Table(drop(self, *args))
 
@@ -470,17 +524,17 @@ class Table(TupList):
         """
         Rename columns from a table
 
-        :param kwargs: names of the columns to rename and new names old_name=new_name
-        :return: a table without the selected columns.
+        :param kwargs: names of the columns to rename and new names old_name="new_name"
+        :return: new :py:class:`Table`
         """
         return Table(rename(self, **kwargs))
 
     def filter(self, func) -> "Table":
         """
-        Filter a table.
+        Filter a table. Keeps the rows for which the function returns True.
 
         :param func: function to use to filter
-        :return: the filtered table.
+        :return: new :py:class:`Table`
         """
         if not self.len():
             return self
@@ -492,7 +546,7 @@ class Table(TupList):
         Get the names of the column of the table.
 
         :param fast: assume that the first row has all the columns.
-        :return: a list of keys
+        :return: :py:class:`list`
         """
         return get_col_names(self, fast)
 
@@ -500,7 +554,7 @@ class Table(TupList):
         """
         Create a dict with a list of values for each column of the table.
 
-        :return: a dict
+        :return: a SuperDict
         """
         if self.len() == 0:
             return SuperDict()
@@ -518,7 +572,7 @@ class Table(TupList):
         result: [{'a': 1, 'b': 4}, {'a': 2, 'b': 5}, {'a': 3, 'b': 6}]
 
         :param dct: a dict of list
-        :return: a Table
+        :return: new :py:class:`Table`
         """
         return cls(to_dictlist(dct))
 
@@ -526,8 +580,8 @@ class Table(TupList):
         """
         Get row number for rows which respect a condition.
 
-        :param cond: condition/filter to apply to the rows
-        :return: a list of row numbers
+        :param cond: condition/filter (function) to apply to the rows
+        :return: :py:class:`list`
         """
         return [i for i, v in enumerate(self) if cond(v)]
 
@@ -539,26 +593,29 @@ class Table(TupList):
         :param to_replace: a single value or a dict of columns and values to replace.
         :param fast: assume that the first row has all the columns.
 
-        :return: the table with missing values filled.
+        :Example: replacing the value 25 in the column Edad by 35 and "Madrid" in the column Ciudad by "Paris"
+        my_table.replace({"Edad":35,"Ciudad":"Paris"},{"Edad":25,"Ciudad":"Madrid"})
+
+        :return: new :py:class:`Table`
         """
         return Table(replace(self, replacement, to_replace, fast))
 
     def replace_empty(self, replacement=None, fast=False) -> "Table":
         """
-        Fill empty values of a tuplist.
+        Fill empty values.
 
         :param replacement: a single value or a dict of columns and values to use as replacement.
         :param fast: assume that the first row has all the columns.
-        :return: the table with empty values filled.
+        :return: new :py:class:`Table`
         """
         return Table(replace_empty(self, replacement, fast))
 
     def replace_nan(self, replacement=None) -> "Table":
         """
-        Fill nan values of a tuplist.
+        Fill nan values.
 
         :param replacement: a single value or a dict of columns and values to use as replacement.
-        :return: the table with nan values filled.
+        :return: new :py:class:`Table`
         """
         return Table(replace_nan(self, replacement))
 
@@ -570,7 +627,7 @@ class Table(TupList):
         :param cols: a list of columns to pivot
         :param names_to: the name of the new names column
         :param value_to: the name of the new value column
-        :return: the table with the new columns
+        :return: new :py:class:`Table`
         """
         return Table(pivot_longer(self, cols, names_to, value_to))
 
@@ -587,17 +644,17 @@ class Table(TupList):
          If None, use all columns except names_from and value_from.
         :param values_fill: set_a value or dict of values to fill in the missing values.
 
-        :return: the table with the new columns
+        :return: new :py:class:`Table`
         """
         return Table(pivot_wider(self, names_from, value_from, id_cols, values_fill))
 
     def drop_empty(self, cols=None, fast=False) -> "Table":
         """
-        Drop rows with empty values of a tuplist.
+        Drop rows whose value in the specified columns is empty.
 
         :param cols: list of column names or single name.
         :param fast: assume that the first row has all the columns.
-        :return: the table with empty values dropped.
+        :return: new :py:class:`Table`
         """
         return Table(drop_empty(self, cols, fast))
 
@@ -608,7 +665,7 @@ class Table(TupList):
         :param col: the name of the column to lag
         :param i: the number of steps to lag
         :param replace: replace the former value of the column. If not, create a new column lag_{col}_i
-        :return: the table with the new column
+        :return: new :py:class:`Table`
         """
         return Table(lag_col(self, col, i, replace))
 
@@ -618,7 +675,7 @@ class Table(TupList):
         When there are rows with duplicated values, the first one is kept.
 
         :param columns: names of the columns.
-        :return: a Table (list of dict) with unique data.
+        :return: new :py:class:`Table`
         """
         return Table(distinct(self, columns))
 
@@ -628,23 +685,36 @@ class Table(TupList):
 
         :param columns: names of the columns to use to sort the table.
         :param reverse:  if True, the sorted list is sorted in descending order.
-        :return: the sorted Table
+        :return: new :py:class:`Table`
         """
         return Table(order_by(self, columns=columns, reverse=reverse))
 
     def drop_nested(self) -> "Table":
         """
         Drop any nested column from a table.
-        Nested value are dict or lists nested as dict values in the table.
-        This function assume df structure is homogenous and only look at the first row to find nested values.
+        Nested value are dict, lists or tuples.
+        This function assume the table structure is homogenous and only look at the first row to find nested values.
 
-        :return: the table without nested values.
+        :return: new :py:class:`Table`
         """
-        return Table(drop_nested(self))
+
+        def drop_nested_temp(df):
+            for col in df[0]:
+                print(type(df[0][col]))
+                if (
+                    isinstance(df[0][col], list)
+                    or isinstance(df[0][col], dict)
+                    or isinstance(df[0][col], tuple)
+                ):
+                    df = drop(df, col)
+            return df
+
+        return Table(drop_nested_temp(self))
 
     def check_type(self):
         """
-        Check that the table is a list of dict.
+        Check that the table is a list of dict. Raises an error if not.
+        :return: `None`
         """
         if not isinstance(self, list):
             raise TypeError("set_a Table must be a list of dict, not %s" % type(self))
@@ -654,17 +724,27 @@ class Table(TupList):
                     "set_a Table must be a list of dict, not list of %s" % type(self[0])
                 )
 
-    def _row_is_dict(self, i=0):
+    def _row_is_dict(self, i=0) -> bool:
+        """
+        Checks if the row i is a dict
+
+        :return: :py:class:`bool`
+        """
         return isinstance(self[i], dict)
 
     def _all_rows_are_dict(self):
+        """
+        Checks if all the rows are dicts
+
+        :return: :py:class:`bool`
+        """
         return all(self._row_is_dict(i) for i in range(len(self)))
 
     def to_set2(self, columns) -> "TupList":
         """
-        Create a list of unique value from some columns of the table
+        Create a list of unique conmbinations of the specified columns
 
-        :param columns: Columns to select to create the set.
+        :param columns: Columns to select to create the set. (string or list of strings)
         :return: a tuplist with unique values
         """
         if len(self) == 0:
@@ -701,20 +781,23 @@ class Table(TupList):
         Check if the combination of values of given columns is unique.
 
         :param columns: combination of columns to check.
-        :return: True if the combination of values of the columns is unique.
+        :return: `bool`
         """
         len_unique = self.distinct(columns).len()
         return len_unique == self.len()
 
-    def add_row(self, **kwargs) -> "Table":
+    def add_row(self, columns) -> "Table":
         """
         Add a row to the table.
         Missing columns are filled with value None.
 
-        :param kwargs: values of the column in the format column_name=value
-        :return: the table with added row.
+        :param : dict with the values of the columns in the format column_name:value
+        :return: new :py:class:`Table`
         """
-        result = self + [{**kwargs}]
+        if not isinstance(columns, dict):
+            raise TypeError("columns must be a dict, not %s" % type(columns))
+
+        result = self + [columns]
         return result.replace(replacement=None, to_replace=None)
 
     def rbind(self, table: list) -> "Table":
@@ -722,17 +805,17 @@ class Table(TupList):
         Bind two tables by rows.
 
         :param table: another table
-        :return: the complete table.
+        :return: new :py:class:`Table`
         """
         return (self + Table(table)).replace(replacement=None, to_replace=None)
 
     def col_apply(self, columns, func: Callable, **kwargs) -> "Table":
         """
-        Apply a function to a column or a list of columns.
+        Apply a function to the specfied columns
 
         :param columns: column or list of columns.
         :param func: function to apply.
-        :return: the table
+        :return: new :py:class:`Table`
         """
         result = self
         for col in as_list(columns):
@@ -740,13 +823,12 @@ class Table(TupList):
         return result
 
     @classmethod
-    def format_dataset(cls, dataset):
+    def format_dataset(cls, dataset) -> dict:
         """
-        Format an entire data instance applying Table() to every table.
-        Leave dict as they are.
+        For each key/value pair in the dataset, cast the value into Table if it is a list.
 
         :param dataset: a data instance in dict/json format.
-        :return: a dict of Tables
+        :return: a dict
         """
         return {
             k: cls(str_key_tl(v)) if isinstance(v, list) else v
@@ -754,24 +836,25 @@ class Table(TupList):
         }
 
     @classmethod
-    def dataset_from_json(cls, path, **kwargs):
+    def dataset_from_json(cls, path, **kwargs) -> dict:
         """
-        Load a json file and format it applying Table() to every table.
+        Load a json file and For each key/value pair in the dataset, cast the value into Table if it is a list.
 
         :param path: path of the json file
-        :return: a dict of Tables
+        :return: new :py:class:`dict`
+
         """
         data = load_json(path, **kwargs)
         return cls.format_dataset(data)
 
     # Save and load functions
     @classmethod
-    def from_pandas(cls, df):
+    def from_pandas(cls, df) -> "Table":
         """
         Create a table from a pandas dataframe.
 
         :param df: a pandas dataframe
-        :return: a Table
+        :return: :py:class:`Table`
         """
         try:
             import pandas as pd
@@ -781,11 +864,11 @@ class Table(TupList):
             )
         return cls(pd.DataFrame(df).to_dict(orient="records"))
 
-    def to_pandas(self):
+    def to_pandas(self) -> "pandas.DataFrame":
         """
         Create a pandas dataframe from a table.
 
-        :return: a pandas dataframe.
+        :return: new :py:class:`pandas.DataFrame`
         """
         try:
             import pandas as pd
@@ -811,12 +894,12 @@ class Table(TupList):
             pk.dump(self, handle)
 
     @classmethod
-    def pk_load(cls, file):
+    def pk_load(cls, file) -> "Table":
         """
         Load a Table from a pickle file.
 
         :param file: path of the file
-        :return: The table
+        :return: :py:class:`Table`
         """
         import pickle as pk
 
@@ -837,12 +920,12 @@ class Table(TupList):
         write_json(str_key_tl(self), path)
 
     @classmethod
-    def from_json(cls, path, **kwargs):
+    def from_json(cls, path, **kwargs) -> "Table":
         """
         Create a table from a json file.
 
         :param path: path to json file
-        :return: a Table containing the data.
+        :return: :py:class:`Table`
         """
         return cls(load_json(path, **kwargs))
 
@@ -865,7 +948,7 @@ class Table(TupList):
 
         :param path: path fo the Excel file.
         :param sheets: list of sheets to read (all the sheets are read if None)
-        :return: a dict of Table objects.
+        :return: :py:class:`dict`
         """
         data = load_excel_light(path, sheets)
         return cls.format_dataset(data)
@@ -887,10 +970,10 @@ class Table(TupList):
         """
         Load the table from a csv file.
 
-        :param path: path fo the Excel file.
+        :param path: path fo the csv file.
         :param sep: column separator in the csv file. (detected automatically if None).
         :param encoding: encoding.
-        :return: a dict of Table objects.
+        :return: :py:class:`Table`
         """
         data = load_csv_light(path, sep, encoding)
         return Table(data)
