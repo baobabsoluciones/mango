@@ -4,7 +4,6 @@ from typing import Union, List
 from keras import Input, Model
 from keras.src.layers import LSTM, Dense, Flatten, SimpleRNN, GRU
 
-
 logger = log.getLogger(__name__)
 
 
@@ -62,6 +61,8 @@ def _decoder_dense(
     else:
         raise ValueError("hidden_dim must be an integer or a list of integers")
 
+    hidden_dim = hidden_dim[::-1]
+
     input_layer = Input((hidden_dim[0],))
 
     for i in range(num_layers):
@@ -107,6 +108,8 @@ def _decoder_lstm(
             raise ValueError("The length of hidden_dim must match the number of layers")
     else:
         raise ValueError("hidden_dim must be an integer or a list of integers")
+
+    hidden_dim = hidden_dim[::-1]
 
     input_layer = Input((context_window, hidden_dim[0]))
 
@@ -158,6 +161,8 @@ def _decoder_gru(
     else:
         raise ValueError("hidden_dim must be an integer or a list of integers")
 
+    hidden_dim = hidden_dim[::-1]
+
     input_layer = Input((context_window, hidden_dim[0]))
 
     for i in range(num_layers):
@@ -207,6 +212,8 @@ def _decoder_rnn(
             raise ValueError("The length of hidden_dim must match the number of layers")
     else:
         raise ValueError("hidden_dim must be an integer or a list of integers")
+
+    hidden_dim = hidden_dim[::-1]
 
     input_layer = Input((context_window, hidden_dim[0]))
 

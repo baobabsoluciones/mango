@@ -2,6 +2,8 @@ import os
 
 import pandas as pd
 
+from typing import List
+
 
 def get_ts_dataset():
     """
@@ -16,7 +18,7 @@ def get_ts_dataset():
 
 def load_energy_prices_dataset(
     frequency="hourly",
-    add_features=None,
+    add_features: List[str] = None,
     dummy_features: bool = False,
     start_date=None,
     end_date=None,
@@ -26,13 +28,16 @@ def load_energy_prices_dataset(
     Load energy prices dataset.
     This dataset contains the hourly energy prices for Spain between 2015 and 2020.
 
-    :param frequency: type of dataset to load. It can be hourly, daily, weekly or monthly averages.
+    :param frequency: type of dataset to load. It can be hourly, daily,
+      weekly or monthly averages.
     :type frequency: str
     :param add_features: additional features to add to the dataset.
       Some of the features are incompatible with the frequency.
-      The possible features to have are: hour, week (isocalendar), month, quarter, day of week or year.
+      The possible features to have are: hour, week (isocalendar), month,
+      quarter, day of week or year.
     :type add_features: list
-    :param dummy_features: if True, the function will transform the features added to a dummy (one hot) encoding. This is not implemented yet.
+    :param dummy_features: if True, the function will transform the features
+      added to a dummy (one hot) encoding.
     :type dummy_features: bool
     :param start_date: start date to load the dataset
     :type start_date: str
@@ -51,6 +56,9 @@ def load_energy_prices_dataset(
     # load the dataset from the csv file
     this_dir, file = os.path.split(__file__)
     data = pd.read_csv(f"{this_dir}/energy_prices.csv")
+
+    # convert datetime to datetime type
+    data["datetime"] = pd.to_datetime(data["datetime"])
 
     if start_date is not None:
         data = data[data["datetime"] >= start_date]
@@ -113,9 +121,21 @@ def load_energy_prices_dataset(
     else:
         raise ValueError("Invalid type of dataset")
 
+    # Change the added features to be one-hot encoding
+    if dummy_features:
+        data = pd.get_dummies(data, columns=add_features)
+        data = data.replace({True: 1, False: 0})
+
     if output_format == "pandas":
         return data
     elif output_format == "numpy":
+        # drop datetime column
+        data = data.drop(columns=["datetime"])
+
+        # place the price column at the end
+        price_column = data.pop("price")
+        data["price"] = price_column
+
         return data.to_numpy()
     else:
         raise ValueError("Invalid output format for the dataset")
