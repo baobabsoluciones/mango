@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 
+from datetime import datetime
 from typing import List
 
 
@@ -61,9 +62,11 @@ def load_energy_prices_dataset(
     data["datetime"] = pd.to_datetime(data["datetime"])
 
     if start_date is not None:
+        start_date = pd.to_datetime(start_date).tz_localize("UTC")
         data = data[data["datetime"] >= start_date]
 
     if end_date is not None:
+        end_date = pd.to_datetime(end_date).tz_localize("UTC")
         data = data[data["datetime"] <= end_date]
 
     if add_features is not None:
