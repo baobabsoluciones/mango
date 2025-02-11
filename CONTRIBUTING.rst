@@ -338,6 +338,133 @@ Write bug reports with detail, background, and sample code:
 - What actually happens
 - Notes (possibly including why you think this might be happening)
 
+Development Best Practices
+------------------------
+
+Project Structure
+~~~~~~~~~~~~~~~
+
+The repository contains two separate libraries:
+
+.. code-block:: text
+
+    mango/
+    ├── mango/                 # Main Mango library
+    │   ├── setup.py
+    │   ├── requirements.txt
+    │   └── mango/
+    │       └── ...
+    └── mango_time_series/    # Time Series library
+        ├── setup.py
+        ├── requirements.txt
+        └── mango_time_series/
+            └── ...
+
+IDE Setup
+~~~~~~~~
+
+For better development experience, we recommend opening each library separately in your IDE:
+
+1. For Mango library development:
+
+   .. code-block:: bash
+
+       # Clone the repository
+       git clone https://github.com/baobabsoluciones/mango.git
+       cd mango
+
+       # Create and activate virtual environment
+       python -m venv venv
+       source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+
+       # Open mango directory in your IDE
+       code mango/  # For VS Code
+       # or
+       pycharm mango/  # For PyCharm
+
+       # Install in development mode
+       pip install -e .
+       pip install -r requirements-dev.txt
+
+2. For Mango Time Series development:
+
+   .. code-block:: bash
+
+       # From repository root
+       cd mango_time_series
+
+       # Create and activate virtual environment
+       python -m venv venv
+       source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+
+       # Open mango_time_series directory in your IDE
+       code .  # For VS Code
+       # or
+       pycharm .  # For PyCharm
+
+       # Install in development mode
+       pip install -e .
+       pip install -r requirements-dev.txt
+
+Development Environment
+~~~~~~~~~~~~~~~~~~~~
+
+1. Configure your IDE:
+
+   - Enable Black formatter on save
+   - Set line length to 88 characters (Black default)
+   - Enable reST docstring format
+   - Configure pytest as test runner
+
+2. Recommended VS Code settings (`.vscode/settings.json`):
+
+   .. code-block:: json
+
+       {
+           "python.formatting.provider": "black",
+           "editor.formatOnSave": true,
+           "editor.rulers": [88],
+           "python.linting.enabled": true,
+           "python.testing.pytestEnabled": true,
+           "autoDocstring.docstringFormat": "sphinx"
+       }
+
+3. Pre-commit hooks:
+
+   Install pre-commit hooks to ensure code quality before committing:
+
+   .. code-block:: bash
+
+       pip install pre-commit
+       pre-commit install
+
+Development Workflow
+~~~~~~~~~~~~~~~~~
+
+1. Create a feature branch:
+
+   .. code-block:: bash
+
+       git checkout -b feature/your-feature-name
+
+2. Develop with TDD approach:
+   - Write tests first
+   - Implement feature
+   - Run tests locally
+   - Format code with Black
+   - Update documentation
+
+3. Regular commits:
+   - Make small, focused commits
+   - Use meaningful commit messages
+   - Follow conventional commits format
+
+4. Before pushing:
+   - Run complete test suite
+   - Check coverage
+   - Update changelog
+   - Verify documentation builds
+
 License
 -------
 
