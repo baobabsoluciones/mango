@@ -27,3 +27,33 @@ Mango
 Mango Time Series
 ~~~~~~~~~~~~~~~~~
 **Mango Time Series** is a specialized library focused on handling time series data. It includes tools for processing, analyzing, and visualizing time series, tailored to meet the needs of projects requiring advanced temporal data management.
+
+Installation
+============
+
+To install the libraries, use the following command:
+
+.. code-block:: bash
+
+   pip install mango
+   pip install mango-time-series
+
+Contributing
+============
+
+We welcome contributions! Please see our `contributing guidelines <https://github.com/baobabsoluciones/mango/blob/master/CONTRIBUTING.rst>`_ for more details.
+
+Discussion and Development
+=========================
+
+We encourage open discussion and collaboration on development via GitHub issues. If you have ideas, suggestions, or encounter any issues, please feel free to open an issue on our `GitHub repository <https://github.com/baobabsoluciones/mango/issues>`_.
+
+License
+=======
+
+This project is licensed under the MIT License - see the `LICENSE <https://github.com/baobabsoluciones/mango/blob/master/LICENSE>`_ file for details.
+
+Contact
+=======
+
+For questions or support, please contact us at support@baobabsoluciones.com.
