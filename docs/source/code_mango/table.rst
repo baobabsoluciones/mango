@@ -36,7 +36,7 @@ Common Operations
 ===============
 
 Data Manipulation
----------------
+~~~~~~~~~~~~~~~~
 
 The Table class provides various methods for data manipulation:
 
@@ -57,7 +57,7 @@ The Table class provides various methods for data manipulation:
     # Result: [{"a": 1, "b": 2, "c": 3}, {"a": 3, "b": 4, "c": 7}]
 
 Join Operations
--------------
+~~~~~~~~~~~~~~~
 
 The class supports various types of joins similar to SQL:
 
@@ -77,7 +77,7 @@ The class supports various types of joins similar to SQL:
     # Result: [{"id": 1, "value": "A", "data": 100}, {"id": 2, "value": "B", "data": None}]
 
 Data Reshaping
-------------
+~~~~~~~~~~~~~~~
 
 Support for reshaping data between wide and long formats:
 
@@ -94,7 +94,7 @@ Support for reshaping data between wide and long formats:
     #          {"id": 2, "variable": "x", "value": 30}, {"id": 2, "variable": "y", "value": 40}]
 
 Import/Export
------------
+~~~~~~~~~~~~~~~
 
 The Table class supports various formats:
 
