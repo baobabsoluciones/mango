@@ -231,12 +231,12 @@ class JSONFileHandler(logging.FileHandler):
 FORMATTERS = {
     "standard": {
         "format": "%(asctime)s | %(levelname)s | %(name)s: %(message)s",
-        "datefmt": "%Y-%m-%d",
+        "datefmt": "%Y-%m-%d %H:%M:%S",
     },
     "standard_color": {
         "()": ColorFormatter,
         "format": "%(asctime)s | %(levelname)s | %(name)s: %(message)s",
-        "datefmt": "%Y-%m-%d",
+        "datefmt": "%Y-%m-%d %H:%M:%S",
     },
     "json": {"()": JSONFormatter},
 }
