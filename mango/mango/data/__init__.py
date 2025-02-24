@@ -46,14 +46,15 @@ def load_energy_prices_dataset(
     :type end_date: str
     :param output_format: format of the dataset. It can be pandas or numpy
     :type output_format: str
+
+    .. note::
+        Future improvements planned:
+        * Extend dataset coverage up to 2024 and earlier years
+        * Add Spanish holiday indicators from this library
+        * Add COVID-19 period indicators
+        * Add Ukraine war period indicators (impacts European energy prices)
+        * Implement one-hot encoding conversion
     """
-
-    # TODO: extend this dataset with data up to the year 2024 or even previous years.
-    # TODO: add dummy variables such as holidays (Spain, from this same library)
-    # TODO: add dummy variables for COVID.
-    # TODO: add dummy variables for Ukraine war (great effect on energy prices on european countries )
-    # TODO: missing conversion to one-hot encoding.
-
     # load the dataset from the csv file
     this_dir, file = os.path.split(__file__)
     data = pd.read_csv(f"{this_dir}/energy_prices.csv")
