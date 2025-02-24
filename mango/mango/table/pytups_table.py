@@ -786,18 +786,15 @@ class Table(TupList):
         len_unique = self.distinct(columns).len()
         return len_unique == self.len()
 
-    def add_row(self, columns) -> "Table":
+    def add_row(self, **kwargs) -> "Table":
         """
         Add a row to the table.
         Missing columns are filled with value None.
 
-        :param : dict with the values of the columns in the format column_name:value
+        :param kwargs: values of the column in the format column_name=value
         :return: new :py:class:`Table`
         """
-        if not isinstance(columns, dict):
-            raise TypeError("columns must be a dict, not %s" % type(columns))
-
-        result = self + [columns]
+        result = self + [{**kwargs}]
         return result.replace(replacement=None, to_replace=None)
 
     def rbind(self, table: list) -> "Table":
