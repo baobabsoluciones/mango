@@ -129,3 +129,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Model weights
+*.keras
+
+# Plots
+*.html
