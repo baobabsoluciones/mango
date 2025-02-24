@@ -261,7 +261,7 @@ class TestDecoder(unittest.TestCase):
 
         batch_size = 16
         # First hidden dim must match input
-        input_shape = (batch_size, 10, 32)
+        input_shape = (batch_size, 10, 5)
         test_input = tf.random.normal(input_shape)
         output = model(test_input)
         self.assertEqual(output.shape, (batch_size, 5))
