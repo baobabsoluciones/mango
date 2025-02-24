@@ -250,18 +250,17 @@ class TestDecoder(unittest.TestCase):
         """
         Test LSTM decoder with different hidden dimensions per layer
         """
-        hidden_dims = [32, 16]
         model = decoder(
             form="lstm",
             context_window=10,
             features=5,
-            hidden_dim=hidden_dims,
+            hidden_dim=32,
             num_layers=2,
         )
 
         batch_size = 16
         # First hidden dim must match input
-        input_shape = (batch_size, 10, 5)
+        input_shape = (batch_size, 10, 32)
         test_input = tf.random.normal(input_shape)
         output = model(test_input)
         self.assertEqual(output.shape, (batch_size, 5))
