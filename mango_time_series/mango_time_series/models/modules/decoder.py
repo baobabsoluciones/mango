@@ -36,6 +36,7 @@ def _decoder_dense(
     features: int,
     hidden_dim: Union[int, List[int]],
     num_layers: int,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -48,6 +49,8 @@ def _decoder_dense(
     :type hidden_dim: Union[int, List[int]]
     :param num_layers: number of dense layers
     :type num_layers: int
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: dense decoder model
@@ -66,9 +69,11 @@ def _decoder_dense(
     input_layer = Input((hidden_dim[0],))
 
     for i in range(num_layers):
-        layer = Dense(hidden_dim[i])(input_layer if i == 0 else layer)
+        layer = Dense(hidden_dim[i], activation=activation)(
+            input_layer if i == 0 else layer
+        )
 
-    output_layer = Dense(features)(layer)
+    output_layer = Dense(features, activation=activation)(layer)
     model = Model(input_layer, output_layer, name="dense_decoder")
 
     if verbose:
@@ -83,6 +88,7 @@ def _decoder_lstm(
     hidden_dim: Union[int, List[int]],
     num_layers: int,
     use_bidirectional: bool = False,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -99,6 +105,8 @@ def _decoder_lstm(
     :type num_layers: int
     :param use_bidirectional: whether to use bidirectional LSTM
     :type use_bidirectional: bool
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: LSTM decoder model
@@ -128,7 +136,7 @@ def _decoder_lstm(
             layer = lstm_layer(input_layer if i == 0 else layer)
 
     flatten = Flatten()(layer)
-    output_layer = Dense(features)(flatten)
+    output_layer = Dense(features, activation=activation)(flatten)
     model = Model(input_layer, output_layer, name="lstm_decoder")
 
     if verbose:
@@ -143,6 +151,7 @@ def _decoder_gru(
     hidden_dim: Union[int, List[int]],
     num_layers: int,
     use_bidirectional: bool = False,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -159,6 +168,8 @@ def _decoder_gru(
     :type num_layers: int
     :param use_bidirectional: whether to use bidirectional GRU
     :type use_bidirectional: bool
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: GRU decoder model
@@ -187,7 +198,7 @@ def _decoder_gru(
             layer = gru_layer(input_layer if i == 0 else layer)
 
     flatten = Flatten()(layer)
-    output_layer = Dense(features)(flatten)
+    output_layer = Dense(features, activation=activation)(flatten)
     model = Model(input_layer, output_layer, name="gru_decoder")
 
     if verbose:
@@ -202,6 +213,7 @@ def _decoder_rnn(
     hidden_dim: Union[int, List[int]],
     num_layers: int,
     use_bidirectional: bool = False,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -218,6 +230,8 @@ def _decoder_rnn(
     :type num_layers: int
     :param use_bidirectional: whether to use bidirectional RNN
     :type use_bidirectional: bool
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: RNN decoder model
@@ -246,7 +260,7 @@ def _decoder_rnn(
             layer = rnn_layer(input_layer if i == 0 else layer)
 
     flatten = Flatten()(layer)
-    output_layer = Dense(features)(flatten)
+    output_layer = Dense(features, activation=activation)(flatten)
     model = Model(input_layer, output_layer, name="rnn_decoder")
 
     if verbose:

@@ -456,6 +456,30 @@ class TestAutoEncoder(unittest.TestCase):
             str(context.exception),
         )
 
+    def test_early_stopping(self):
+        """
+        Test that EarlyStopping stops training early when validation loss does not improve.
+        """
+        np.random.seed(42)
+        tf.random.set_seed(42)
+
+        # 200 samples, 10 timesteps, 5 features
+        X = np.random.rand(200, 10, 5)
+
+        autoencoder = AutoEncoder(
+            form="lstm",
+            data=X,
+            context_window=10,
+            num_layers=2,
+            hidden_dim=16,
+            patience=3,
+            epochs=50,
+            batch_size=16,
+        )
+
+        autoencoder.train()
+        self.assertLess(autoencoder.last_epoch, 50, "EarlyStopping did not trigger as expected.")
+
 
 if __name__ == "__main__":
     unittest.main()
