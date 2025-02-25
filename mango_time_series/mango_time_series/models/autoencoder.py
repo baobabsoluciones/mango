@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import Adam
-from tensorflow.python.keras.models import load_model
+from tensorflow.keras.models import load_model
 
 from mango_time_series.models.losses import mean_squared_error
 from mango_time_series.models.modules import encoder, decoder
