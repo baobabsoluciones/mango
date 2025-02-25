@@ -114,6 +114,15 @@ class AutoEncoder:
         :param verbose: whether to log model summary and model training.
         :type verbose: bool
         """
+
+        root_dir = os.path.abspath(os.getcwd())
+        self.save_path = save_path if save_path else os.path.join(root_dir, "autoencoder")
+
+        self.create_folder_structure([
+            os.path.join(self.save_path, "models"),
+            os.path.join(self.save_path, "plots")
+        ])
+
         # First we check if hidden dim is a list it has a number of elements
         # equal to num_layers
         if isinstance(hidden_dim, list):
@@ -253,6 +262,18 @@ class AutoEncoder:
 
         self.patience = patience
 
+    @staticmethod
+    def create_folder_structure(folder_structure: List[str]):
+        """
+        Create a folder structure if it does not exist.
+
+        :param folder_structure: List of folders to create
+        :type folder_structure: List[str]
+        :return: None
+        """
+        for path in folder_structure:
+            os.makedirs(path, exist_ok=True)
+
     def prepare_datasets(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
@@ -260,6 +281,19 @@ class AutoEncoder:
         normalize: bool,
         split_size: float,
     ):
+        """
+        Prepare the datasets for the model training and testing.
+        :param data: data to train the model. it can be a single numpy array
+            with the whole dataset from which a train, validation and test split
+        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :param split_size: size of the split for the train, validation and test datasets
+        :type split_size: float
+        :return: True if the datasets are prepared successfully
+        """
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
@@ -295,7 +329,6 @@ class AutoEncoder:
         # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
         # Normalization can be done using minmax or zscore methods.
         # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
-        # zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the mean and standard deviation of the data for later use.
         if normalize:
             if self.normalization_method == "minmax":
                 self.max_x = np.max(data, axis=0)
@@ -375,8 +408,15 @@ class AutoEncoder:
         return True
 
     def train(self):
+        """
+        Train the model using the train and validation datasets and save the best model.
+        """
         @tf.function
         def train_step(x):
+            """
+            Training step for the model.
+            :param x: input data
+            """
             with tf.GradientTape() as autoencoder_tape:
                 x = tf.cast(x, tf.float32)
 
@@ -404,6 +444,10 @@ class AutoEncoder:
 
         @tf.function
         def validation_step(x):
+            """
+            Validation step for the model.
+            :param x: input data
+            """
             x = tf.cast(x, tf.float32)
 
             hx = self.model.get_layer(f"{self.form}_encoder")(x)
@@ -452,7 +496,7 @@ class AutoEncoder:
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
                 patience_counter = 0
-                self.save()
+                self.save(filename="best_model.keras")
             else:
                 patience_counter += 1
 
@@ -470,9 +514,9 @@ class AutoEncoder:
                         f"Validation Loss: {avg_val_loss:.6f}"
                     )
 
-                self.save()
+                self.save(filename=f"{epoch}.keras")
 
-        # Store the loss history in the model instance
+                # Store the loss history in the model instance
         self.train_loss_history = train_loss_history
         self.val_loss_history = val_loss_history
 
@@ -486,6 +530,9 @@ class AutoEncoder:
         self.save()
 
     def reconstruct(self):
+        """
+        Reconstruct the data using the trained model and plot the actual and reconstructed values.
+        """
         # Calculate fitted values for each dataset
         x_hat_train = self.model(self.x_train)
         x_hat_val = self.model(self.x_val)
@@ -521,10 +568,14 @@ class AutoEncoder:
             self.x_test[:, self.time_step_to_check, self.feature_to_check]
         )
 
-        x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
-        x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-        x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
-
+        if self.normalization_method == "minmax":
+            x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
+            x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
+            x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
+        elif self.normalization_method == "zscore":
+            x_train_converted = x_train_converted * scale_std + scale_mean
+            x_val_converted = x_val_converted * scale_std + scale_mean
+            x_test_converted = x_test_converted * scale_std + scale_mean
 
         x_converted = np.concatenate(
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
@@ -539,11 +590,26 @@ class AutoEncoder:
 
         return True
 
-    def save(self, save_path: str = None):
+    def save(self, save_path: str = None, filename: str = None):
+        """
+        Save the model to the specified path.
+        :param save_path: path to save the model
+        :type save_path: str
+        :param filename: name of the file to save the model
+        :type filename: str
+        """
         if save_path is None:
             save_path = self.save_path
 
-        self.model.save(os.path.join(save_path, f"{self.last_epoch}.keras"))
+        if filename is None:
+            filename = f"{self.last_epoch}.keras"
+
+        self.model.save(os.path.join(save_path, "models", filename))
 
     def load(self, model_path: str):
+        """
+        Load the model from the specified path.
+        :param model_path: path to load the model
+        :type model_path: str
+        """
         self.model = load_model(model_path)
