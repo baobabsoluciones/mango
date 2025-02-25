@@ -19,20 +19,6 @@ from mango_time_series.models.utils.sequences import time_series_to_sequence
 logger = logging.getLogger(__name__)
 
 
-# TODO: Current implementation checks one input variable for reconstruction error.
-#   Change to pass a list of indexes.
-# TODO: Current implementation gives the same weight to all input variables for
-#  the reconstruction error. Maybe we want to be able to set up different
-#  weights for each input variable.
-# TODO: Current implementation just can check one timestep for reconstruction
-#   error. Maybe we want to check the last n or something like that
-# TODO: implement backwards pass for RNN, LSTM and GRU.
-# TODO: implement early stopping criteria
-# TODO: min and max values should be stored with model weights somehow. We should
-#  have a class method to load the model before doing inference.
-# TODO: maybe add some dense layer after the decoder in order to have the final compression go more smoothly
-
-
 class AutoEncoder:
     """
     Autoencoder model
@@ -50,6 +36,8 @@ class AutoEncoder:
         feature_to_check: Union[int, List[int]] = 0,
         num_layers: int = None,
         hidden_dim: Union[int, List[int]] = None,
+        bidirectional_encoder: bool = False,
+        bidirectional_decoder: bool = False,
         normalize: bool = True,
         batch_size: int = 32,
         split_size: float = 0.7,
@@ -79,7 +67,7 @@ class AutoEncoder:
           of the context window to check. In the future this could be a list of
           indices to check. For taking only the last timestep of the context
           window this should be set to -1.
-        :type timesteps_to_check: Union[int, List[int]]
+        :type time_step_to_check: Union[int, List[int]]
         :param num_layers: number of internal layers. This number is used to
           know the number of encoding layers after the input (the result of
           the last layer is going to be the embedding of the autoencoder) and
@@ -90,6 +78,12 @@ class AutoEncoder:
           It can be a single integer (same for all layers) or a list of
           dimensions for each layer.
         :type hidden_dim: Union[int, List[int]]
+        :param bidirectional_encoder: whether to use bidirectional LSTM in the
+            encoder part of the model.
+        :type bidirectional_encoder: bool
+        :param bidirectional_decoder: whether to use bidirectional LSTM in the
+            decoder part of the model.
+        :type bidirectional_decoder: bool
         :param normalize: whether to normalize the data or not.
         :type normalize: bool
         :param batch_size: batch size for the model
@@ -139,6 +133,22 @@ class AutoEncoder:
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
 
+        bidirectional_allowed = {"lstm", "gru", "rnn"}
+
+        if form not in bidirectional_allowed:
+            if bidirectional_encoder and bidirectional_decoder:
+                raise ValueError(
+                    f"Bidirectional is not supported for encoder and decoder type '{form}'."
+                )
+            elif bidirectional_encoder:
+                raise ValueError(
+                    f"Bidirectional is not supported for encoder type '{form}'."
+                )
+            elif bidirectional_decoder:
+                raise ValueError(
+                    f"Bidirectional is not supported for decoder type '{form}'."
+                )
+
         self.prepare_datasets(data, context_window, normalize, split_size)
 
         if isinstance(feature_to_check, int):
@@ -157,6 +167,9 @@ class AutoEncoder:
         test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
         test_dataset = test_dataset.cache().batch(batch_size)
 
+        self.bidirectional_encoder = bidirectional_encoder
+        self.bidirectional_decoder = bidirectional_decoder
+
         model = Sequential(
             [
                 encoder(
@@ -165,6 +178,7 @@ class AutoEncoder:
                     features=self.input_features,
                     hidden_dim=hidden_dim,
                     num_layers=num_layers,
+                    use_bidirectional=self.bidirectional_encoder,
                     verbose=verbose,
                 ),
                 decoder(
@@ -173,6 +187,7 @@ class AutoEncoder:
                     features=self.output_features,
                     hidden_dim=hidden_dim,
                     num_layers=num_layers,
+                    use_bidirectional=self.bidirectional_decoder,
                     verbose=verbose,
                 ),
             ],

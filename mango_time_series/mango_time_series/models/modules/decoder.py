@@ -2,7 +2,7 @@ import logging as log
 from typing import Union, List
 
 from keras import Input, Model
-from keras.src.layers import LSTM, Dense, Flatten, SimpleRNN, GRU
+from keras.src.layers import LSTM, Dense, Flatten, SimpleRNN, GRU, Bidirectional
 
 logger = log.getLogger(__name__)
 
@@ -82,6 +82,7 @@ def _decoder_lstm(
     features: int,
     hidden_dim: Union[int, List[int]],
     num_layers: int,
+    use_bidirectional: bool = False,
     verbose: bool = False,
 ) -> Model:
     """
@@ -96,6 +97,8 @@ def _decoder_lstm(
     :type hidden_dim: Union[int, List[int]]
     :param num_layers: number of LSTM layers
     :type num_layers: int
+    :param use_bidirectional: whether to use bidirectional LSTM
+    :type use_bidirectional: bool
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: LSTM decoder model
@@ -114,10 +117,15 @@ def _decoder_lstm(
     input_layer = Input((context_window, hidden_dim[0]))
 
     for i in range(num_layers):
-        layer = LSTM(
+        lstm_layer = LSTM(
             hidden_dim[i],
             return_sequences=True,
-        )(input_layer if i == 0 else layer)
+        )
+
+        if use_bidirectional:
+            layer = Bidirectional(lstm_layer)(input_layer if i == 0 else layer)
+        else:
+            layer = lstm_layer(input_layer if i == 0 else layer)
 
     flatten = Flatten()(layer)
     output_layer = Dense(features)(flatten)
@@ -134,6 +142,7 @@ def _decoder_gru(
     features: int,
     hidden_dim: Union[int, List[int]],
     num_layers: int,
+    use_bidirectional: bool = False,
     verbose: bool = False,
 ) -> Model:
     """
@@ -148,6 +157,8 @@ def _decoder_gru(
     :type hidden_dim: Union[int, List[int]]
     :param num_layers: number of GRU layers
     :type num_layers: int
+    :param use_bidirectional: whether to use bidirectional GRU
+    :type use_bidirectional: bool
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: GRU decoder model
@@ -166,10 +177,14 @@ def _decoder_gru(
     input_layer = Input((context_window, hidden_dim[0]))
 
     for i in range(num_layers):
-        layer = GRU(
+        gru_layer = GRU(
             hidden_dim[i],
             return_sequences=True,
-        )(input_layer if i == 0 else layer)
+        )
+        if use_bidirectional:
+            layer = Bidirectional(gru_layer)(input_layer if i == 0 else layer)
+        else:
+            layer = gru_layer(input_layer if i == 0 else layer)
 
     flatten = Flatten()(layer)
     output_layer = Dense(features)(flatten)
@@ -186,6 +201,7 @@ def _decoder_rnn(
     features: int,
     hidden_dim: Union[int, List[int]],
     num_layers: int,
+    use_bidirectional: bool = False,
     verbose: bool = False,
 ) -> Model:
     """
@@ -200,6 +216,8 @@ def _decoder_rnn(
     :type hidden_dim: Union[int, List[int]]
     :param num_layers: number of RNN layers
     :type num_layers: int
+    :param use_bidirectional: whether to use bidirectional RNN
+    :type use_bidirectional: bool
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: RNN decoder model
@@ -218,10 +236,14 @@ def _decoder_rnn(
     input_layer = Input((context_window, hidden_dim[0]))
 
     for i in range(num_layers):
-        layer = SimpleRNN(
+        rnn_layer = SimpleRNN(
             hidden_dim[i],
             return_sequences=True,
-        )(input_layer if i == 0 else layer)
+        )
+        if use_bidirectional:
+            layer = Bidirectional(rnn_layer)(input_layer if i == 0 else layer)
+        else:
+            layer = rnn_layer(input_layer if i == 0 else layer)
 
     flatten = Flatten()(layer)
     output_layer = Dense(features)(flatten)
