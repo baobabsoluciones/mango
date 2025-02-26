@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Any
 
 import numpy as np
 import tensorflow as tf
@@ -30,7 +30,7 @@ class AutoEncoder:
     def __init__(
         self,
         form: str = "dense",
-        data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]] = None,
+        data: Any = None,
         context_window: int = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
@@ -51,6 +51,7 @@ class AutoEncoder:
         use_early_stopping: bool = True,
         patience: int = 10,
         verbose: bool = False,
+        feature_names: List[str] = None,
     ):
         """
         Initialize the Autoencoder model
@@ -59,11 +60,12 @@ class AutoEncoder:
           Currently, these types of cells are both used on the encoder and
           decoder. In the future each part could have a different structure?
         :type form: str
-        :param data: data to train the model. it can be a single numpy array
-          with the whole dataset from which a train, validation and test split
-          is going to be set up, or a tuple with three numpy arrays, one for
-          the train, one for the validation and one for the test.
-        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param data: data to train the model. It can be:
+          - A single numpy array, pandas DataFrame, or polars DataFrame
+            from which train, validation and test splits are created
+          - A tuple with three numpy arrays, pandas DataFrames, or polars DataFrames
+            for train, validation, and test sets respectively
+        :type data: Any
         :param context_window: context window for the model. This is used
           to transform the tabular data into a sequence of data
           (from 2D tensor to 3D tensor)
@@ -115,15 +117,22 @@ class AutoEncoder:
         :type patience: int
         :param verbose: whether to log model summary and model training.
         :type verbose: bool
+        :param feature_names: optional list of feature names to use for the model.
+            If provided, these names will be used instead of automatically extracted ones.
+        :type feature_names: List[str]
         """
 
         root_dir = os.path.abspath(os.getcwd())
-        self.save_path = save_path if save_path else os.path.join(root_dir, "autoencoder")
+        self.save_path = (
+            save_path if save_path else os.path.join(root_dir, "autoencoder")
+        )
 
-        self.create_folder_structure([
-            os.path.join(self.save_path, "models"),
-            os.path.join(self.save_path, "plots")
-        ])
+        self.create_folder_structure(
+            [
+                os.path.join(self.save_path, "models"),
+                os.path.join(self.save_path, "plots"),
+            ]
+        )
 
         # First we check if hidden dim is a list it has a number of elements
         # equal to num_layers
@@ -145,8 +154,33 @@ class AutoEncoder:
         else:
             raise ValueError("hidden_dim must be a list of integers or an integer")
 
-        # Now we check if data is a single numpy array or a tuple with three numpy
-        # arrays
+        # Convert data to numpy arrays if it's a pandas or polars DataFrame
+        # and extract feature names if available
+        data, extracted_feature_names = self._convert_data_to_numpy(data)
+
+        # Store feature names or generate default names
+        if feature_names:
+            # Use user-provided feature names
+            self.features_name = feature_names
+        elif extracted_feature_names and len(extracted_feature_names) > 0:
+            # Use extracted feature names from DataFrame
+            self.features_name = extracted_feature_names
+        else:
+            # If data is provided, create generic feature names based on the number of features
+            if isinstance(data, np.ndarray) and data.ndim >= 2:
+                num_features = data.shape[1]
+                self.features_name = [f"feature_{i}" for i in range(num_features)]
+            elif (
+                isinstance(data, tuple)
+                and all(isinstance(d, np.ndarray) for d in data)
+                and data[0].ndim >= 2
+            ):
+                num_features = data[0].shape[1]
+                self.features_name = [f"feature_{i}" for i in range(num_features)]
+            else:
+                self.features_name = []
+
+        # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
             if len(data) != 3:
                 raise ValueError("Data must be a tuple with three numpy arrays")
@@ -174,7 +208,9 @@ class AutoEncoder:
                 )
 
         if normalization_method not in ["minmax", "zscore"]:
-            raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
+            raise ValueError(
+                "Invalid normalization method. Choose 'minmax' or 'zscore'."
+            )
 
         self.normalization_method = normalization_method
         self.prepare_datasets(data, context_window, normalize, split_size)
@@ -277,6 +313,92 @@ class AutoEncoder:
         for path in folder_structure:
             os.makedirs(path, exist_ok=True)
 
+    @staticmethod
+    def _convert_data_to_numpy(data):
+        """
+        Convert data to numpy array format.
+
+        Handles pandas and polars DataFrames, converting them to numpy arrays.
+        If data is a tuple, converts each element in the tuple.
+
+        :param data: Input data that can be pandas DataFrame, polars DataFrame,
+            numpy array, or tuple of these types
+        :type data: Any
+        :return: Data converted to numpy array(s) and feature names if available
+        :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
+        """
+        try:
+            import pandas as pd
+
+            has_pandas = True
+        except ImportError:
+            has_pandas = False
+
+        try:
+            import polars as pl
+
+            has_polars = True
+        except ImportError:
+            has_polars = False
+
+        if data is None:
+            return data, []
+
+        feature_names = []
+
+        # Extract column names from DataFrame if possible
+        if has_pandas and hasattr(data, "columns"):  # Single pandas DataFrame
+            feature_names = data.columns.tolist()
+        elif has_polars and hasattr(data, "columns"):  # Single polars DataFrame
+            feature_names = data.columns
+        elif isinstance(data, tuple) and len(data) > 0:
+            # For tuple, try to get column names from first element
+            first_item = data[0]
+            if has_pandas and hasattr(first_item, "columns"):
+                feature_names = first_item.columns.tolist()
+            elif has_polars and hasattr(first_item, "columns"):
+                feature_names = first_item.columns
+
+        if isinstance(data, tuple):
+            converted_data = tuple(
+                AutoEncoder._convert_single_data_to_numpy(item, has_pandas, has_polars)
+                for item in data
+            )
+            return converted_data, feature_names
+        else:
+            converted_data = AutoEncoder._convert_single_data_to_numpy(
+                data, has_pandas, has_polars
+            )
+            return converted_data, feature_names
+
+    @staticmethod
+    def _convert_single_data_to_numpy(data_item, has_pandas, has_polars):
+        """
+        Convert a single data item to numpy array.
+
+        :param data_item: Single data item to convert
+        :type data_item: Any
+        :param has_pandas: Whether pandas is available
+        :type has_pandas: bool
+        :param has_polars: Whether polars is available
+        :type has_polars: bool
+        :return: Data converted to numpy array
+        :rtype: np.ndarray
+        """
+        if has_pandas and hasattr(data_item, "to_numpy"):  # pandas DataFrame detection
+            return data_item.to_numpy()
+        elif has_polars and hasattr(
+            data_item, "to_numpy"
+        ):  # polars DataFrame detection
+            return data_item.to_numpy()
+        elif isinstance(data_item, np.ndarray):
+            return data_item
+        else:
+            raise ValueError(
+                f"Unsupported data type: {type(data_item)}. "
+                f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
+            )
+
     def prepare_datasets(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
@@ -286,8 +408,10 @@ class AutoEncoder:
     ):
         """
         Prepare the datasets for the model training and testing.
-        :param data: data to train the model. it can be a single numpy array
+        :param data: data to train the model. It can be a single numpy array
             with the whole dataset from which a train, validation and test split
+            is created, or a tuple with three numpy arrays, one for
+            the train, one for the validation and one for the test.
         :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
         :param context_window: context window for the model
         :type context_window: int
@@ -437,6 +561,7 @@ class AutoEncoder:
         """
         Train the model using the train and validation datasets and save the best model.
         """
+
         @tf.function
         def train_step(x):
             """
@@ -608,10 +733,18 @@ class AutoEncoder:
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
         )
 
+        # Get feature labels for the selected features
+        if hasattr(self, "features_name") and self.features_name:
+            # If we have feature names, extract only those that correspond to feature_to_check
+            feature_labels = [self.features_name[i] for i in self.feature_to_check]
+        else:
+            feature_labels = None
+
         plot_actual_and_reconstructed(
             actual=x_converted,
             reconstructed=x_hat,
             save_path=os.path.join(self.save_path, "plots"),
+            feature_labels=feature_labels,
             split_size=self.split_size,
         )
 
