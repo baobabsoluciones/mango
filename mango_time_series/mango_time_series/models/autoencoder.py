@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Union, List, Tuple, Any
+from typing import Union, List, Tuple, Any, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -51,7 +51,7 @@ class AutoEncoder:
         use_early_stopping: bool = True,
         patience: int = 10,
         verbose: bool = False,
-        feature_names: List[str] = None,
+        feature_names: Optional[List[str]] = None,
     ):
         """
         Initialize the Autoencoder model
@@ -119,7 +119,7 @@ class AutoEncoder:
         :type verbose: bool
         :param feature_names: optional list of feature names to use for the model.
             If provided, these names will be used instead of automatically extracted ones.
-        :type feature_names: List[str]
+        :type feature_names: Optional[List[str]]
         """
 
         root_dir = os.path.abspath(os.getcwd())
