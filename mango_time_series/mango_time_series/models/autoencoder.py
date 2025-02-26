@@ -625,13 +625,13 @@ class AutoEncoder:
         :param filename: name of the file to save the model
         :type filename: str
         """
-        if save_path is None:
-            save_path = self.save_path
-
-        if filename is None:
-            filename = f"{self.last_epoch}.keras"
-
-        self.model.save(os.path.join(save_path, "models", filename))
+        try:
+            save_path = save_path or self.save_path
+            filename = filename or f"{self.last_epoch}.keras"
+            self.model.save(os.path.join(save_path, "models", filename))
+        except Exception as e:
+            logger.error(f"Error saving the model: {e}")
+            raise
 
     def load(self, model_path: str):
         """
