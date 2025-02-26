@@ -346,10 +346,9 @@ class AutoEncoder:
 
         feature_names = []
 
-        # Extract column names from DataFrame if possible
-        if has_pandas and hasattr(data, "columns"):  # Single pandas DataFrame
+        if has_pandas and hasattr(data, "columns"):
             feature_names = data.columns.tolist()
-        elif has_polars and hasattr(data, "columns"):  # Single polars DataFrame
+        elif has_polars and hasattr(data, "columns"):
             feature_names = data.columns
         elif isinstance(data, tuple) and len(data) > 0:
             # For tuple, try to get column names from first element
@@ -385,11 +384,9 @@ class AutoEncoder:
         :return: Data converted to numpy array
         :rtype: np.ndarray
         """
-        if has_pandas and hasattr(data_item, "to_numpy"):  # pandas DataFrame detection
+        if has_pandas and hasattr(data_item, "to_numpy"):
             return data_item.to_numpy()
-        elif has_polars and hasattr(
-            data_item, "to_numpy"
-        ):  # polars DataFrame detection
+        elif has_polars and hasattr(data_item, "to_numpy"):
             return data_item.to_numpy()
         elif isinstance(data_item, np.ndarray):
             return data_item
