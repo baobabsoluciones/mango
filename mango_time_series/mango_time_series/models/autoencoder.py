@@ -5,7 +5,7 @@ from typing import Union, List, Tuple
 import numpy as np
 import tensorflow as tf
 from keras import Sequential
-from keras.src.optimizers import Adam
+from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
 from tensorflow.keras.models import load_model
 
 from mango_time_series.models.losses import mean_squared_error
@@ -38,12 +38,18 @@ class AutoEncoder:
         hidden_dim: Union[int, List[int]] = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
+        activation_encoder: str = None,
+        activation_decoder: str = None,
         normalize: bool = True,
+        normalization_method: str = "minmax",
+        optimizer: str = "adam",
         batch_size: int = 32,
         split_size: float = 0.7,
         epochs: int = 100,
         save_path: str = None,
         checkpoint: int = 10,
+        use_early_stopping: bool = True,
+        patience: int = 10,
         verbose: bool = False,
     ):
         """
@@ -84,8 +90,15 @@ class AutoEncoder:
         :param bidirectional_decoder: whether to use bidirectional LSTM in the
             decoder part of the model.
         :type bidirectional_decoder: bool
+        :param activation_encoder: activation function for the encoder layers.
+        :type activation_encoder: str
+        :param activation_decoder: activation function for the decoder layers.
+        :type activation_decoder: str
         :param normalize: whether to normalize the data or not.
         :type normalize: bool
+        :param normalization_method: method to normalize the data. It can be
+            "minmax" or "zscore".
+        :type normalization_method: str
         :param batch_size: batch size for the model
         :type batch_size: int
         :param split_size: size of the split for the train (train + validation,
@@ -98,9 +111,20 @@ class AutoEncoder:
         :type save_path: str
         :param checkpoint: number of epochs to save the model checkpoints.
         :type checkpoint: int
+        :param patience: number of epochs to wait before early stopping
+        :type patience: int
         :param verbose: whether to log model summary and model training.
         :type verbose: bool
         """
+
+        root_dir = os.path.abspath(os.getcwd())
+        self.save_path = save_path if save_path else os.path.join(root_dir, "autoencoder")
+
+        self.create_folder_structure([
+            os.path.join(self.save_path, "models"),
+            os.path.join(self.save_path, "plots")
+        ])
+
         # First we check if hidden dim is a list it has a number of elements
         # equal to num_layers
         if isinstance(hidden_dim, list):
@@ -149,6 +173,10 @@ class AutoEncoder:
                     f"Bidirectional is not supported for decoder type '{form}'."
                 )
 
+        if normalization_method not in ["minmax", "zscore"]:
+            raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
+
+        self.normalization_method = normalization_method
         self.prepare_datasets(data, context_window, normalize, split_size)
 
         if isinstance(feature_to_check, int):
@@ -170,6 +198,9 @@ class AutoEncoder:
         self.bidirectional_encoder = bidirectional_encoder
         self.bidirectional_decoder = bidirectional_decoder
 
+        self.activation_encoder = activation_encoder
+        self.activation_decoder = activation_decoder
+
         model = Sequential(
             [
                 encoder(
@@ -179,6 +210,7 @@ class AutoEncoder:
                     hidden_dim=hidden_dim,
                     num_layers=num_layers,
                     use_bidirectional=self.bidirectional_encoder,
+                    activation=self.activation_encoder,
                     verbose=verbose,
                 ),
                 decoder(
@@ -188,6 +220,7 @@ class AutoEncoder:
                     hidden_dim=hidden_dim,
                     num_layers=num_layers,
                     use_bidirectional=self.bidirectional_decoder,
+                    activation=self.activation_decoder,
                     verbose=verbose,
                 ),
             ],
@@ -198,11 +231,11 @@ class AutoEncoder:
         if verbose:
             logger.info(f"The model has the following structure: {model.summary()}")
 
-        model_optimizer = Adam()
-
         self.form = form
         self.model = model
-        self.model_optimizer = model_optimizer
+
+        self.optimizer_name = optimizer
+        self.model_optimizer = self._get_optimizer(optimizer)
 
         self.context_window = context_window
         if isinstance(time_step_to_check, int):
@@ -229,6 +262,21 @@ class AutoEncoder:
         self.train_loss_history = None
         self.val_loss_history = None
 
+        self.use_early_stopping = use_early_stopping
+        self.patience = patience
+
+    @staticmethod
+    def create_folder_structure(folder_structure: List[str]):
+        """
+        Create a folder structure if it does not exist.
+
+        :param folder_structure: List of folders to create
+        :type folder_structure: List[str]
+        :return: None
+        """
+        for path in folder_structure:
+            os.makedirs(path, exist_ok=True)
+
     def prepare_datasets(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
@@ -236,6 +284,19 @@ class AutoEncoder:
         normalize: bool,
         split_size: float,
     ):
+        """
+        Prepare the datasets for the model training and testing.
+        :param data: data to train the model. it can be a single numpy array
+            with the whole dataset from which a train, validation and test split
+        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :param split_size: size of the split for the train, validation and test datasets
+        :type split_size: float
+        :return: True if the datasets are prepared successfully
+        """
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
@@ -256,13 +317,32 @@ class AutoEncoder:
     def _prepare_numpy_dataset(
         self, data: np.array, context_window: int, normalize: bool, split_size: float
     ):
-        # If normalize is True, we need to normalize the data with min and max values
-        # so all data lays between 0 and 1.
-        # We need to normalize all the data, not only the fist column
+        """
+        Prepare the dataset for the model training and testing when the data is a single numpy array.
+        :param data: numpy array with the data
+        :type data: np.array
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :param split_size: size of the split for the train, validation and test datasets
+        :type split_size: float
+        :return: True if the dataset is prepared successfully
+        """
+        # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
+        # Normalization can be done using minmax or zscore methods.
+        # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
         if normalize:
-            self.max_x = np.max(data, axis=0)
-            self.min_x = np.min(data, axis=0)
-            data = (data - self.min_x) / (self.max_x - self.min_x)
+            if self.normalization_method == "minmax":
+                self.max_x = np.max(data, axis=0)
+                self.min_x = np.min(data, axis=0)
+                data = (data - self.min_x) / (self.max_x - self.min_x)
+
+            elif self.normalization_method == "zscore":
+                self.mean_ = np.mean(data, axis=0)
+                # Avoid division by zero
+                self.std_ = np.std(data, axis=0) + 1e-8
+                data = (data - self.mean_) / self.std_
 
         # We need to transform the data into a sequence of data.
         self.data = np.copy(data)
@@ -288,15 +368,30 @@ class AutoEncoder:
         context_window: int,
         normalize: bool,
     ):
+        """
+        Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
+        :param data: tuple with three numpy arrays for the train, validation and test datasets
+        :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :return: True if the dataset is prepared successfully
+        """
         if normalize:
             train = data[0].shape[0]
             val = data[1].shape[0]
 
             data = np.concatenate((data[0], data[1], data[2]), axis=0)
 
-            self.max_x = np.max(data, axis=0)
-            self.min_x = np.min(data, axis=0)
-            data = (data - self.min_x) / (self.max_x - self.min_x)
+            if self.normalization_method == "minmax":
+                self.max_x = np.max(data, axis=0)
+                self.min_x = np.min(data, axis=0)
+                data = (data - self.min_x) / (self.max_x - self.min_x)
+            elif self.normalization_method == "zscore":
+                self.mean_ = np.mean(data, axis=0)
+                self.std_ = np.std(data, axis=0) + 1e-8
+                data = (data - self.mean_) / self.std_
 
             data_train = data[:train, :]
             data_val = data[train : train + val, :]
@@ -316,9 +411,38 @@ class AutoEncoder:
 
         return True
 
+    @staticmethod
+    def _get_optimizer(optimizer_name: str):
+        """
+        Returns the optimizer based on the given name.
+        """
+        optimizers = {
+            "adam": Adam(),
+            "sgd": SGD(),
+            "rmsprop": RMSprop(),
+            "adagrad": Adagrad(),
+            "adadelta": Adadelta(),
+            "adamax": Adamax(),
+            "nadam": Nadam(),
+        }
+
+        if optimizer_name.lower() not in optimizers:
+            raise ValueError(
+                f"Invalid optimizer '{optimizer_name}'. Choose from {list(optimizers.keys())}."
+            )
+
+        return optimizers[optimizer_name.lower()]
+
     def train(self):
+        """
+        Train the model using the train and validation datasets and save the best model.
+        """
         @tf.function
         def train_step(x):
+            """
+            Training step for the model.
+            :param x: input data
+            """
             with tf.GradientTape() as autoencoder_tape:
                 x = tf.cast(x, tf.float32)
 
@@ -346,6 +470,10 @@ class AutoEncoder:
 
         @tf.function
         def validation_step(x):
+            """
+            Validation step for the model.
+            :param x: input data
+            """
             x = tf.cast(x, tf.float32)
 
             hx = self.model.get_layer(f"{self.form}_encoder")(x)
@@ -364,6 +492,8 @@ class AutoEncoder:
         # Lists to store loss history
         train_loss_history = []
         val_loss_history = []
+        best_val_loss = float("inf")
+        patience_counter = 0
 
         for epoch in range(1, self.epochs + 1):
             # Training loop
@@ -388,6 +518,21 @@ class AutoEncoder:
 
             self.last_epoch = epoch
 
+            # Early stopping logic
+            if self.use_early_stopping:
+                if avg_val_loss < best_val_loss:
+                    best_val_loss = avg_val_loss
+                    patience_counter = 0
+                    self.save(filename="best_model.keras")
+                else:
+                    patience_counter += 1
+
+                if patience_counter >= self.patience:
+                    logger.info(
+                        f"Early stopping at epoch {epoch} | Best Validation Loss: {best_val_loss:.6f}"
+                    )
+                    break
+
             if epoch % self.checkpoint == 0:
                 if self.verbose:
                     logger.info(
@@ -396,9 +541,9 @@ class AutoEncoder:
                         f"Validation Loss: {avg_val_loss:.6f}"
                     )
 
-                self.save()
+                self.save(filename=f"{epoch}.keras")
 
-        # Store the loss history in the model instance
+                # Store the loss history in the model instance
         self.train_loss_history = train_loss_history
         self.val_loss_history = val_loss_history
 
@@ -412,6 +557,9 @@ class AutoEncoder:
         self.save()
 
     def reconstruct(self):
+        """
+        Reconstruct the data using the trained model and plot the actual and reconstructed values.
+        """
         # Calculate fitted values for each dataset
         x_hat_train = self.model(self.x_train)
         x_hat_val = self.model(self.x_val)
@@ -422,20 +570,20 @@ class AutoEncoder:
         x_hat_val = x_hat_val.numpy()
         x_hat_test = x_hat_test.numpy()
 
-        scale_max = self.max_x[self.feature_to_check]
-        scale_min = self.min_x[self.feature_to_check]
+        if self.normalization_method == "minmax":
+            scale_max = self.max_x[self.feature_to_check]
+            scale_min = self.min_x[self.feature_to_check]
+            x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
+            x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
+            x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
+        elif self.normalization_method == "zscore":
+            scale_mean = self.mean_[self.feature_to_check]
+            scale_std = self.std_[self.feature_to_check]
+            x_hat_train = x_hat_train * scale_std + scale_mean
+            x_hat_val = x_hat_val * scale_std + scale_mean
+            x_hat_test = x_hat_test * scale_std + scale_mean
 
-        # Resize based on min and max
-        x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-        x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-        x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
-
-        # Transpose
-        x_hat_train = x_hat_train.T
-        x_hat_val = x_hat_val.T
-        x_hat_test = x_hat_test.T
-
-        x_hat = np.concatenate((x_hat_train, x_hat_val, x_hat_test), axis=1)
+        x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
 
         x_train_converted = np.copy(
             self.x_train[:, self.time_step_to_check, self.feature_to_check]
@@ -447,16 +595,17 @@ class AutoEncoder:
             self.x_test[:, self.time_step_to_check, self.feature_to_check]
         )
 
-        x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
-        x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-        x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
-
-        x_train_converted = x_train_converted.T
-        x_val_converted = x_val_converted.T
-        x_test_converted = x_test_converted.T
+        if self.normalization_method == "minmax":
+            x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
+            x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
+            x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
+        elif self.normalization_method == "zscore":
+            x_train_converted = x_train_converted * scale_std + scale_mean
+            x_val_converted = x_val_converted * scale_std + scale_mean
+            x_test_converted = x_test_converted * scale_std + scale_mean
 
         x_converted = np.concatenate(
-            (x_train_converted, x_val_converted, x_test_converted), axis=1
+            (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
         )
 
         plot_actual_and_reconstructed(
@@ -468,11 +617,26 @@ class AutoEncoder:
 
         return True
 
-    def save(self, save_path: str = None):
-        if save_path is None:
-            save_path = self.save_path
-
-        self.model.save(os.path.join(save_path, f"{self.last_epoch}.keras"))
+    def save(self, save_path: str = None, filename: str = None):
+        """
+        Save the model to the specified path.
+        :param save_path: path to save the model
+        :type save_path: str
+        :param filename: name of the file to save the model
+        :type filename: str
+        """
+        try:
+            save_path = save_path or self.save_path
+            filename = filename or f"{self.last_epoch}.keras"
+            self.model.save(os.path.join(save_path, "models", filename))
+        except Exception as e:
+            logger.error(f"Error saving the model: {e}")
+            raise
 
     def load(self, model_path: str):
+        """
+        Load the model from the specified path.
+        :param model_path: path to load the model
+        :type model_path: str
+        """
         self.model = load_model(model_path)

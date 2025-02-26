@@ -36,6 +36,7 @@ def _encoder_dense(
     features: int,
     hidden_dim: Union[int, List[int]],
     num_layers: int,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -48,6 +49,8 @@ def _encoder_dense(
     :type hidden_dim: Union[int, List[int]]
     :param num_layers: number of dense layers
     :type num_layers: int
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: dense encoder model
@@ -64,7 +67,9 @@ def _encoder_dense(
     input_layer = Input((features,))
 
     for i in range(num_layers):
-        layer = Dense(hidden_dim[i])(input_layer if i == 0 else layer)
+        layer = Dense(hidden_dim[i], activation=activation)(
+            input_layer if i == 0 else layer
+        )
 
     model = Model(input_layer, layer, name="dense_encoder")
 
@@ -80,6 +85,7 @@ def _encoder_lstm(
     hidden_dim: Union[int, List[int]],
     num_layers: int,
     use_bidirectional: bool = False,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -96,6 +102,8 @@ def _encoder_lstm(
     :type num_layers: int
     :param use_bidirectional: whether to use bidirectional LSTM
     :type use_bidirectional: bool
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: LSTM encoder model
@@ -119,7 +127,7 @@ def _encoder_lstm(
         else:
             layer = lstm_layer(input_layer if i == 0 else layer)
 
-    dense = Dense(hidden_dim[-1])(layer)
+    dense = Dense(hidden_dim[-1], activation=activation)(layer)
     model = Model(input_layer, dense, name="lstm_encoder")
 
     if verbose:
@@ -134,6 +142,7 @@ def _encoder_gru(
     hidden_dim: Union[int, List[int]],
     num_layers: int,
     use_bidirectional: bool = False,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -150,6 +159,8 @@ def _encoder_gru(
     :type num_layers: int
     :param use_bidirectional: whether to use bidirectional GRU
     :type use_bidirectional: bool
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: GRU encoder model
@@ -176,7 +187,7 @@ def _encoder_gru(
         else:
             layer = gru_layer(input_layer if i == 0 else layer)
 
-    dense = Dense(hidden_dim[-1])(layer)
+    dense = Dense(hidden_dim[-1], activation=activation)(layer)
     model = Model(input_layer, dense, name="gru_encoder")
 
     if verbose:
@@ -191,6 +202,7 @@ def _encoder_rnn(
     hidden_dim: Union[int, List[int]],
     num_layers: int,
     use_bidirectional: bool = False,
+    activation: str = None,
     verbose: bool = False,
 ) -> Model:
     """
@@ -207,6 +219,8 @@ def _encoder_rnn(
     :type num_layers: int
     :param use_bidirectional: whether to use bidirectional RNN
     :type use_bidirectional: bool
+    :param activation: activation function for the dense layer
+    :type activation: str
     :param verbose: whether to print the model summary
     :type verbose: bool
     :return: RNN encoder model
@@ -232,7 +246,7 @@ def _encoder_rnn(
         else:
             layer = rnn_layer(input_layer if i == 0 else layer)
 
-    dense = Dense(hidden_dim[-1])(layer)
+    dense = Dense(hidden_dim[-1], activation=activation)(layer)
     model = Model(input_layer, dense, name="rnn_encoder")
 
     if verbose:
