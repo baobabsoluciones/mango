@@ -5,7 +5,7 @@ from typing import Union, List, Tuple
 import numpy as np
 import tensorflow as tf
 from keras import Sequential
-from keras.src.optimizers import Adam
+from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
 from tensorflow.keras.models import load_model
 
 from mango_time_series.models.losses import mean_squared_error
@@ -42,11 +42,13 @@ class AutoEncoder:
         activation_decoder: str = None,
         normalize: bool = True,
         normalization_method: str = "minmax",
+        optimizer: str = "adam",
         batch_size: int = 32,
         split_size: float = 0.7,
         epochs: int = 100,
         save_path: str = None,
         checkpoint: int = 10,
+        use_early_stopping: bool = True,
         patience: int = 10,
         verbose: bool = False,
     ):
@@ -229,11 +231,11 @@ class AutoEncoder:
         if verbose:
             logger.info(f"The model has the following structure: {model.summary()}")
 
-        model_optimizer = Adam()
-
         self.form = form
         self.model = model
-        self.model_optimizer = model_optimizer
+
+        self.optimizer_name = optimizer
+        self.model_optimizer = self._get_optimizer(optimizer)
 
         self.context_window = context_window
         if isinstance(time_step_to_check, int):
@@ -260,6 +262,7 @@ class AutoEncoder:
         self.train_loss_history = None
         self.val_loss_history = None
 
+        self.use_early_stopping = use_early_stopping
         self.patience = patience
 
     @staticmethod
@@ -334,6 +337,7 @@ class AutoEncoder:
                 self.max_x = np.max(data, axis=0)
                 self.min_x = np.min(data, axis=0)
                 data = (data - self.min_x) / (self.max_x - self.min_x)
+
             elif self.normalization_method == "zscore":
                 self.mean_ = np.mean(data, axis=0)
                 # Avoid division by zero
@@ -406,6 +410,28 @@ class AutoEncoder:
         )
 
         return True
+
+    @staticmethod
+    def _get_optimizer(optimizer_name: str):
+        """
+        Returns the optimizer based on the given name.
+        """
+        optimizers = {
+            "adam": Adam(),
+            "sgd": SGD(),
+            "rmsprop": RMSprop(),
+            "adagrad": Adagrad(),
+            "adadelta": Adadelta(),
+            "adamax": Adamax(),
+            "nadam": Nadam(),
+        }
+
+        if optimizer_name.lower() not in optimizers:
+            raise ValueError(
+                f"Invalid optimizer '{optimizer_name}'. Choose from {list(optimizers.keys())}."
+            )
+
+        return optimizers[optimizer_name.lower()]
 
     def train(self):
         """
@@ -493,18 +519,19 @@ class AutoEncoder:
             self.last_epoch = epoch
 
             # Early stopping logic
-            if avg_val_loss < best_val_loss:
-                best_val_loss = avg_val_loss
-                patience_counter = 0
-                self.save(filename="best_model.keras")
-            else:
-                patience_counter += 1
+            if self.use_early_stopping:
+                if avg_val_loss < best_val_loss:
+                    best_val_loss = avg_val_loss
+                    patience_counter = 0
+                    self.save(filename="best_model.keras")
+                else:
+                    patience_counter += 1
 
-            if patience_counter >= self.patience:
-                logger.info(
-                    f"Early stopping at epoch {epoch} | Best Validation Loss: {best_val_loss:.6f}"
-                )
-                break
+                if patience_counter >= self.patience:
+                    logger.info(
+                        f"Early stopping at epoch {epoch} | Best Validation Loss: {best_val_loss:.6f}"
+                    )
+                    break
 
             if epoch % self.checkpoint == 0:
                 if self.verbose:
