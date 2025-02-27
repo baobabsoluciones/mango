@@ -26,23 +26,35 @@ class DataImputer:
     ):
         """
         Imputer class to fill missing values in a dataset.
-        :param strategy: strategy to fill missing values. It can be one of "mean", "median", "mode" or "arbitrary".
+
+        This class offers various imputation strategies through different libraries:
+
+        - Statistical imputation (mean, median, mode): Uses ``sklearn.impute.SimpleImputer`` and pandas
+        - KNN imputation: Uses ``sklearn.impute.KNNImputer``
+        - MICE imputation: Uses ``sklearn.impute.IterativeImputer``
+        - Regression imputation: Uses ``sklearn.linear_model`` (Ridge, Lasso, LinearRegression)
+        - Time series imputation (forward fill, backward fill, interpolation): Uses pandas methods
+        - Arbitrary value imputation: Uses ``sklearn.impute.SimpleImputer`` with constant strategy
+
+        :param strategy: strategy to fill missing values. It can be one of "mean", "median", "mode" or "arbitrary"
         :type strategy: str
-        :param k_neighbors: number of neighbors to use for KNN imputation. Required if strategy is "knn".
+        :param k_neighbors: number of neighbors to use for KNN imputation. Required if strategy is "knn"
         :type k_neighbors: Optional[int]
         :param arbitrary_value: value to fill missing values if strategy is "arbitrary"
         :type arbitrary_value: Optional[float]
-        :param column_strategies: dictionary containing column names and their respective strategies. If None, global strategy will be used.
+        :param column_strategies: dictionary containing column names and their respective strategies. If None, global strategy will be used
         :type column_strategies: Optional[Dict[str,str]]
-        :param regression_model: regression model to use for regression imputation. It can be "ridge" or "linear".
+        :param regression_model: regression model to use for regression imputation. It can be "ridge" or "linear"
         :type regression_model: Optional[str]
-        :param regression_params: parameters for the regression model.
+        :param regression_params: parameters for the regression model
         :type regression_params: Optional[Dict]
-        :param knn_params: parameters for the KNN imputer.
+        :param knn_params: parameters for the KNN imputer
         :type knn_params: Optional[Dict]
-        :param simple_params: parameters for the SimpleImputer.
+        :param simple_params: parameters for the SimpleImputer
         :type simple_params: Optional[Dict]
-        :param time_series_strategy: strategy to use for time series interpolation. It can be "linear" or "polynomial".
+        :param iterative_params: parameters for the IterativeImputer
+        :type iterative_params: Optional[Dict]
+        :param time_series_strategy: strategy to use for time series interpolation. It can be "linear" or "polynomial"
         :type time_series_strategy: Optional[InterpolateOptions]
         """
 
@@ -76,8 +88,12 @@ class DataImputer:
         """
         Convert pandas or polars DataFrame to numpy array and detect data type.
 
+        Uses ``pandas`` or ``polars`` depending on input type, and converts to ``numpy`` array.
+
         :param data: Input data (pandas or polars DataFrame)
+        :type data: Union[pd.DataFrame, pl.DataFrame]
         :return: Tuple containing (numpy array, data type as string, column names)
+        :rtype: tuple
         """
         if isinstance(data, pd.DataFrame):
             return data.to_numpy(), "pandas", data.columns
@@ -90,6 +106,9 @@ class DataImputer:
     def _convert_back(data, data_type, columns):
         """
         Convert numpy array back to pandas or polars DataFrame.
+
+        Uses ``pandas.DataFrame`` or ``polars.DataFrame`` depending on the original data type.
+
         :param data: Input data
         :type data: np.ndarray
         :param data_type: Data type as string
@@ -97,6 +116,7 @@ class DataImputer:
         :param columns: Column names
         :type columns: list
         :return: pandas or polars DataFrame
+        :rtype: Union[pd.DataFrame, pl.DataFrame]
         """
         columns = list(columns)
 
@@ -109,9 +129,13 @@ class DataImputer:
         """
         Fit and transform the data to fill missing values.
 
+        This is the main method to apply imputation to a dataset, supporting both pandas and polars
+        DataFrames as input and output.
+
         :param data: Input data
         :type data: Union[pd.DataFrame, pl.DataFrame]
         :return: Imputed data
+        :rtype: Union[pd.DataFrame, pl.DataFrame]
         """
         if self.column_strategies:
             return self._apply_column_wise_imputation(data)
@@ -121,9 +145,13 @@ class DataImputer:
     def _apply_global_imputation(self, data: Union[pd.DataFrame, pl.DataFrame]):
         """
         Apply a global imputation strategy to the entire dataset.
+
+        Handles conversion between pandas/polars and numpy formats.
+
         :param data: Input data
         :type data: Union[pd.DataFrame, pl.DataFrame]
         :return: Imputed data
+        :rtype: Union[pd.DataFrame, pl.DataFrame]
         """
         data_array, data_type, columns = self._convert_to_numpy(data)
 
@@ -137,16 +165,20 @@ class DataImputer:
     def _apply_column_wise_imputation(self, data: Union[pd.DataFrame, pl.DataFrame]):
         """
         Apply different imputation strategies to different columns.
+
+        This method allows for fine-grained control of imputation by column.
+        Converts polars DataFrame to pandas for processing if needed.
+
         :param data: Input data
         :type data: Union[pd.DataFrame, pl.DataFrame]
         :return: Imputed data
+        :rtype: Union[pd.DataFrame, pl.DataFrame]
         """
         data_type = "pandas" if isinstance(data, pd.DataFrame) else "polars"
 
         if data_type == "pandas":
             df = data.copy()
         else:
-            # Convert polars to pandas for processing
             df = data.to_pandas().copy()
 
         for column, strategy in self.column_strategies.items():
@@ -166,9 +198,12 @@ class DataImputer:
         """
         Impute missing values using SimpleImputer.
 
+        Uses ``sklearn.impute.SimpleImputer`` with the specified strategy (mean, median, or most_frequent).
+
         :param data_array: Input data
         :type data_array: np.ndarray
         :return: Imputed data
+        :rtype: np.ndarray
         """
         imputer = SimpleImputer(strategy=self.strategy, **self.simple_params)
         return imputer.fit_transform(data_array)
@@ -177,9 +212,12 @@ class DataImputer:
         """
         Impute missing values using KNN.
 
+        Uses ``sklearn.impute.KNNImputer`` to impute missing values based on k-nearest neighbors.
+
         :param data_array: Input data
         :type data_array: np.ndarray
         :return: Imputed data
+        :rtype: np.ndarray
         """
         if self.k_neighbors is None or self.k_neighbors <= 0:
             raise ValueError("k_neighbors must be specified for KNN imputation.")
@@ -191,9 +229,13 @@ class DataImputer:
         """
         Impute missing values using MICE (IterativeImputer).
 
+        Uses ``sklearn.impute.IterativeImputer`` which requires importing
+        ``sklearn.experimental.enable_iterative_imputer`` first.
+
         :param data_array: Input data
         :type data_array: np.ndarray
         :return: Imputed data
+        :rtype: np.ndarray
         """
         imputer = IterativeImputer(**self.iterative_params)
         return imputer.fit_transform(data_array)
@@ -202,9 +244,12 @@ class DataImputer:
         """
         Impute missing values with an arbitrary value.
 
+        Uses ``sklearn.impute.SimpleImputer`` with strategy='constant' and the specified fill_value.
+
         :param data_array: Input data
         :type data_array: np.ndarray
         :return: Imputed data
+        :rtype: np.ndarray
         """
         if self.arbitrary_value is None:
             raise ValueError(
@@ -220,9 +265,12 @@ class DataImputer:
         """
         Fill missing values using forward or backward fill.
 
+        Uses ``pandas.DataFrame.ffill()`` or ``pandas.DataFrame.bfill()`` methods.
+
         :param data_array: Input data
         :type data_array: np.ndarray
         :return: Imputed data
+        :rtype: np.ndarray
         """
         df = pd.DataFrame(data_array)
         if self.strategy == "forward":
@@ -231,6 +279,19 @@ class DataImputer:
             return df.bfill().to_numpy()
 
     def _regression_impute(self, data_array: np.ndarray):
+        """
+        Impute missing values using regression models.
+
+        Uses models from ``sklearn.linear_model``:
+        - ``Ridge`` for ridge regression
+        - ``Lasso`` for lasso regression
+        - ``LinearRegression`` for standard linear regression
+
+        :param data_array: Input data
+        :type data_array: np.ndarray
+        :return: Imputed data
+        :rtype: np.ndarray
+        """
         df = pd.DataFrame(data_array)
         for column in df.columns:
             if df[column].isnull().sum() == 0:
@@ -259,10 +320,30 @@ class DataImputer:
         return df.to_numpy()
 
     def _interpolate_impute(self, data_array: np.ndarray):
+        """
+        Impute missing values using interpolation methods.
+
+        Uses ``pandas.DataFrame.interpolate()`` method with the specified method (linear, polynomial, etc.).
+
+        :param data_array: Input data
+        :type data_array: np.ndarray
+        :return: Imputed data
+        :rtype: np.ndarray
+        """
         df = pd.DataFrame(data_array)
         return df.interpolate(method=self.time_series_strategy).to_numpy()
 
     @staticmethod
     def _mode_impute(data_array):
+        """
+        Impute missing values using mode (most frequent value).
+
+        Uses pandas methods ``mode()`` and ``fillna()`` to replace missing values with the most common value.
+
+        :param data_array: Input data
+        :type data_array: np.ndarray
+        :return: Imputed data
+        :rtype: np.ndarray
+        """
         df = pd.DataFrame(data_array)
         return df.fillna(df.mode().iloc[0]).to_numpy()
