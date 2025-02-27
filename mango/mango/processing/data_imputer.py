@@ -10,7 +10,7 @@ from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.linear_model import Ridge, Lasso, LinearRegression
 
 
-class MangoImputer:
+class DataImputer:
     def __init__(
         self,
         strategy="mean",
@@ -45,6 +45,7 @@ class MangoImputer:
         :param time_series_strategy: strategy to use for time series interpolation. It can be "linear" or "polynomial".
         :type time_series_strategy: Optional[InterpolateOptions]
         """
+
         self.strategy = strategy
         self.k_neighbors = k_neighbors
         self.arbitrary_value = arbitrary_value
@@ -56,7 +57,7 @@ class MangoImputer:
         self.iterative_params = iterative_params or {}
         self.time_series_strategy = time_series_strategy
 
-        strategy_methods = {
+        self.strategy_methods = {
             "mean": self._simple_impute,
             "median": self._simple_impute,
             "mode": self._mode_impute,
@@ -69,8 +70,6 @@ class MangoImputer:
             "regression": self._regression_impute,
             "interpolate": self._interpolate_impute,
         }
-
-        self.strategy_methods = strategy_methods
 
     @staticmethod
     def _convert_to_numpy(data: Union[pd.DataFrame, pl.DataFrame]):
@@ -99,6 +98,8 @@ class MangoImputer:
         :type columns: list
         :return: pandas or polars DataFrame
         """
+        columns = list(columns)
+
         if data_type == "pandas":
             return pd.DataFrame(data, columns=columns)
         elif data_type == "polars":
@@ -145,7 +146,8 @@ class MangoImputer:
         if data_type == "pandas":
             df = data.copy()
         else:
-            df = data.to_pandas().copy()  # Convert polars to pandas for processing
+            # Convert polars to pandas for processing
+            df = data.to_pandas().copy()
 
         for column, strategy in self.column_strategies.items():
             if column not in df.columns:
@@ -158,7 +160,7 @@ class MangoImputer:
             self.strategy = strategy
             df[[column]] = self.strategy_methods[self.strategy](df[[column]].to_numpy())
 
-        return df if data_type == "pandas" else pl.from_pandas(df)
+        return self._convert_back(df.to_numpy(), data_type, df.columns)
 
     def _simple_impute(self, data_array: np.ndarray):
         """
@@ -179,7 +181,7 @@ class MangoImputer:
         :type data_array: np.ndarray
         :return: Imputed data
         """
-        if self.k_neighbors is None:
+        if self.k_neighbors is None or self.k_neighbors <= 0:
             raise ValueError("k_neighbors must be specified for KNN imputation.")
 
         imputer = KNNImputer(n_neighbors=self.k_neighbors, **self.knn_params)
@@ -227,8 +229,6 @@ class MangoImputer:
             return df.ffill().to_numpy()
         elif self.strategy == "backward":
             return df.bfill().to_numpy()
-        else:
-            raise ValueError("Invalid fill strategy. Use 'forward' or 'backward'.")
 
     def _regression_impute(self, data_array: np.ndarray):
         df = pd.DataFrame(data_array)
@@ -240,7 +240,7 @@ class MangoImputer:
             test_data = df[df[column].isnull()].drop(columns=[column])
 
             if train_data.empty or test_data.empty:
-                continue
+                raise ValueError("Insufficient data for regression imputation.")
 
             X_train = train_data.drop(columns=[column])
             y_train = train_data[column]
