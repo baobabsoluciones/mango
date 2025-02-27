@@ -132,6 +132,10 @@ class AutoEncoder:
             save_path if save_path else os.path.join(root_dir, "autoencoder")
         )
 
+        # Store normalize as instance attribute
+        self.normalize = normalize
+        self.normalization_method = normalization_method
+
         self.create_folder_structure(
             [
                 os.path.join(self.save_path, "models"),
@@ -272,7 +276,6 @@ class AutoEncoder:
                 "Invalid normalization method. Choose 'minmax' or 'zscore'."
             )
 
-        self.normalization_method = normalization_method
         self.prepare_datasets(data, context_window, normalize, split_size)
 
         if isinstance(feature_to_check, int):
@@ -603,10 +606,9 @@ class AutoEncoder:
         id_data = data[:, self.id_column_indices]
 
         # Get all unique combinations of ID values
-        unique_ids = np.unique(id_data, axis=0)
+        unique_ids = np.unique(id_data)
 
-        if self.verbose:
-            logger.info(f"Found {len(unique_ids)} unique ID groups")
+        logger.info(f"Found {len(unique_ids)} unique ID groups")
 
         # Normalize the entire dataset to compute normalization parameters
         if normalize:
