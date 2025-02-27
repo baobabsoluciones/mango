@@ -52,6 +52,7 @@ class AutoEncoder:
         patience: int = 10,
         verbose: bool = False,
         feature_names: Optional[List[str]] = None,
+        id_columns: Optional[Union[int, List[int], str, List[str]]] = None,
     ):
         """
         Initialize the Autoencoder model
@@ -120,6 +121,10 @@ class AutoEncoder:
         :param feature_names: optional list of feature names to use for the model.
             If provided, these names will be used instead of automatically extracted ones.
         :type feature_names: Optional[List[str]]
+        :param id_columns: columns that identify different groups in the data.
+            Can be column indices (for numpy arrays) or column names (for DataFrames).
+            If provided, sequences will be created separately for each unique group.
+        :type id_columns: Optional[Union[int, List[int], str, List[str]]]
         """
 
         root_dir = os.path.abspath(os.getcwd())
@@ -179,6 +184,61 @@ class AutoEncoder:
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
             else:
                 self.features_name = []
+
+        # Store id columns
+        self.id_columns = id_columns
+        self.id_column_indices = []
+
+        # Convert id_columns from names to indices if they're strings
+        if id_columns is not None:
+            if isinstance(id_columns, (str, int)):
+                id_cols = [id_columns]
+            else:
+                id_cols = id_columns
+
+            # Convert column names to indices if needed
+            if any(isinstance(col, str) for col in id_cols):
+                if not self.features_name:
+                    raise ValueError(
+                        "Feature names are required when using string column identifiers"
+                    )
+
+                self.id_column_indices = []
+                for col in id_cols:
+                    if isinstance(col, str):
+                        if col in self.features_name:
+                            self.id_column_indices.append(self.features_name.index(col))
+                        else:
+                            raise ValueError(
+                                f"ID column '{col}' not found in feature names"
+                            )
+                    else:
+                        self.id_column_indices.append(col)
+            else:
+                self.id_column_indices = id_cols
+
+            if verbose:
+                logger.info(f"Using ID columns: {self.id_column_indices}")
+
+            # Make sure ID columns aren't included in feature_to_check
+            if isinstance(feature_to_check, int):
+                feature_to_check = [feature_to_check]
+
+            # Create a set of feature_to_check for faster lookups
+            feature_to_check_set = set(feature_to_check)
+
+            # Check if any ID column is also in feature_to_check
+            common_columns = set(self.id_column_indices).intersection(
+                feature_to_check_set
+            )
+            if common_columns:
+                logger.warning(
+                    f"ID columns {common_columns} are also in feature_to_check. "
+                    "These will be removed from feature_to_check."
+                )
+                feature_to_check = [
+                    f for f in feature_to_check if f not in self.id_column_indices
+                ]
 
         # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
@@ -435,11 +495,97 @@ class AutoEncoder:
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
 
-    def _prepare_numpy_dataset(
+    def _normalize_data(self, data, apply_only=False):
+        """
+        Normalize data using the configured normalization method.
+
+        :param data: Data to normalize
+        :type data: np.ndarray
+        :param apply_only: If True, applies existing normalization parameters instead of computing new ones
+        :type apply_only: bool
+        :return: Normalized data
+        :rtype: np.ndarray
+        """
+        if not self.normalize:
+            return data
+
+        if self.normalization_method == "minmax":
+            if not apply_only:
+                self.max_x = np.max(data, axis=0)
+                self.min_x = np.min(data, axis=0)
+            return (data - self.min_x) / (self.max_x - self.min_x)
+        elif self.normalization_method == "zscore":
+            if not apply_only:
+                self.mean_ = np.mean(data, axis=0)
+                self.std_ = np.std(data, axis=0) + 1e-8
+            return (data - self.mean_) / self.std_
+        else:
+            return data
+
+    def _process_id_group(self, group_data, context_window):
+        """
+        Process a single ID group to create sequences.
+
+        :param group_data: Data for a single ID group
+        :type group_data: np.ndarray
+        :param context_window: Context window size
+        :type context_window: int
+        :return: Sequences created from the group data or None if insufficient data
+        :rtype: np.ndarray or None
+        """
+        # Skip if not enough data
+        if len(group_data) <= context_window:
+            return None
+
+        # Normalize the group data using pre-computed parameters
+        normalized_data = self._normalize_data(group_data, apply_only=True)
+
+        # Create sequences
+        sequences = time_series_to_sequence(normalized_data, context_window)
+        return sequences
+
+    def _split_sequences(self, sequences, split_size):
+        """
+        Split sequences into train, validation, and test sets.
+
+        :param sequences: Sequences to split
+        :type sequences: np.ndarray
+        :param split_size: Size of the split for train, validation and test
+        :type split_size: float
+        :return: Tuple of (train_sequences, val_sequences, test_sequences)
+        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        """
+        samples = sequences.shape[0]
+        train_split_point = round((split_size - 0.1) * samples)
+        val_split_point = train_split_point + round(0.1 * samples)
+
+        # If we have enough data, split it properly
+        if val_split_point > train_split_point and samples > val_split_point:
+            train = sequences[:train_split_point]
+            val = sequences[train_split_point:val_split_point]
+            test = sequences[val_split_point:]
+        # Otherwise, just split proportionally
+        elif samples >= 3:  # At least 1 for each split
+            train_size = max(1, int(samples * (split_size - 0.1)))
+            val_size = max(1, int(samples * 0.1))
+
+            train = sequences[:train_size]
+            val = sequences[train_size : train_size + val_size]
+            test = sequences[train_size + val_size :]
+        else:
+            # For very small groups, just put all in training
+            train = sequences
+            val = np.zeros((0,) + sequences.shape[1:])
+            test = np.zeros((0,) + sequences.shape[1:])
+
+        return train, val, test
+
+    def _prepare_numpy_dataset_with_ids(
         self, data: np.array, context_window: int, normalize: bool, split_size: float
     ):
         """
-        Prepare the dataset for the model training and testing when the data is a single numpy array.
+        Prepare dataset for training and testing with id columns to separate sequences by group.
+
         :param data: numpy array with the data
         :type data: np.array
         :param context_window: context window for the model
@@ -450,36 +596,222 @@ class AutoEncoder:
         :type split_size: float
         :return: True if the dataset is prepared successfully
         """
-        # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
-        # Normalization can be done using minmax or zscore methods.
-        # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
-        if normalize:
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
-
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                # Avoid division by zero
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
-
-        # We need to transform the data into a sequence of data.
+        # Store the original data
         self.data = np.copy(data)
-        temp_data = time_series_to_sequence(self.data, context_window)
 
-        # We need to split the data into train, validation and test datasets.
-        # Validation should be 10% of the total data,
-        # so train is split_size - 10% and test is 100% - split_size
-        self.samples = temp_data.shape[0]
+        # Extract id columns and feature columns
+        id_data = data[:, self.id_column_indices]
 
-        train_split_point = round((split_size - 0.1) * self.samples)
-        val_split_point = train_split_point + round(0.1 * self.samples)
+        # Get all unique combinations of ID values
+        unique_ids = np.unique(id_data, axis=0)
 
-        self.x_train = temp_data[:train_split_point, :, :]
-        self.x_val = temp_data[train_split_point:val_split_point, :, :]
-        self.x_test = temp_data[val_split_point:, :, :]
+        if self.verbose:
+            logger.info(f"Found {len(unique_ids)} unique ID groups")
+
+        # Normalize the entire dataset to compute normalization parameters
+        if normalize:
+            self._normalize_data(data)
+
+        # Initialize lists to store sequences for each split
+        train_sequences = []
+        val_sequences = []
+        test_sequences = []
+
+        # Process each unique ID group
+        for id_group in unique_ids:
+            # Create a boolean mask for rows matching this ID group
+            if id_data.shape[1] == 1:
+                mask = (id_data == id_group).ravel()
+            else:
+                mask = np.all(id_data == id_group, axis=1)
+
+            # Get data for this group
+            group_data = data[mask]
+
+            # Process the group data
+            group_sequences = self._process_id_group(group_data, context_window)
+
+            if group_sequences is None:
+                if self.verbose:
+                    id_values = (
+                        ", ".join(str(val) for val in id_group)
+                        if hasattr(id_group, "__iter__")
+                        else str(id_group)
+                    )
+                    logger.warning(
+                        f"Skipping group with ID {id_values} - insufficient data ({len(group_data)} rows, need > {context_window})"
+                    )
+                continue
+
+            # Split the sequences into train, val, test
+            train, val, test = self._split_sequences(group_sequences, split_size)
+
+            # Add to our collections
+            if len(train) > 0:
+                train_sequences.append(train)
+            if len(val) > 0:
+                val_sequences.append(val)
+            if len(test) > 0:
+                test_sequences.append(test)
+
+        # Combine all sequences for each split
+        if train_sequences:
+            self.x_train = np.concatenate(train_sequences, axis=0)
+        else:
+            raise ValueError("No valid sequences were created for training set")
+
+        if val_sequences:
+            self.x_val = np.concatenate(val_sequences, axis=0)
+        else:
+            # Create an empty array with the right shape
+            self.x_val = np.zeros((0, context_window, data.shape[1]))
+
+        if test_sequences:
+            self.x_test = np.concatenate(test_sequences, axis=0)
+        else:
+            # Create an empty array with the right shape
+            self.x_test = np.zeros((0, context_window, data.shape[1]))
+
+        self.samples = (
+            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
+        )
+
+        if self.verbose:
+            logger.info(
+                f"Created {self.samples} total sequences from {len(unique_ids)} groups"
+            )
+            logger.info(
+                f"Train: {self.x_train.shape[0]}, Val: {self.x_val.shape[0]}, Test: {self.x_test.shape[0]}"
+            )
+
+        return True
+
+    def _prepare_tuple_dataset_with_ids(
+        self,
+        data: Tuple[np.ndarray, np.ndarray, np.ndarray],
+        context_window: int,
+        normalize: bool,
+    ):
+        """
+        Prepare the dataset for the model training and testing when the data is a tuple
+        with three numpy arrays, and using id columns to separate sequences by group.
+
+        :param data: tuple with three numpy arrays for the train, validation and test datasets
+        :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :return: True if the dataset is prepared successfully
+        """
+        # Store original data
+        self.data = data
+
+        # Combine all data for normalization
+        if normalize:
+            combined_data = np.concatenate((data[0], data[1], data[2]), axis=0)
+            # Calculate normalization parameters on the combined data
+            self._normalize_data(combined_data)
+
+        # Process each dataset (train, val, test) separately
+        train_sequences = []
+        val_sequences = []
+        test_sequences = []
+
+        # For logging
+        total_groups = 0
+        processed_groups = 0
+
+        # Process train data
+        train_data = data[0]
+        id_data_train = train_data[:, self.id_column_indices]
+        unique_ids_train = np.unique(id_data_train, axis=0)
+        total_groups += len(unique_ids_train)
+
+        for id_group in unique_ids_train:
+            # Create mask for this ID group
+            if id_data_train.shape[1] == 1:
+                mask = (id_data_train == id_group).ravel()
+            else:
+                mask = np.all(id_data_train == id_group, axis=1)
+
+            # Get data for this group
+            group_data = train_data[mask]
+
+            # Process the group data
+            group_sequences = self._process_id_group(group_data, context_window)
+
+            if group_sequences is not None:
+                train_sequences.append(group_sequences)
+                processed_groups += 1
+
+        # Process validation data
+        val_data = data[1]
+        id_data_val = val_data[:, self.id_column_indices]
+        unique_ids_val = np.unique(id_data_val, axis=0)
+        total_groups += len(unique_ids_val)
+
+        for id_group in unique_ids_val:
+            if id_data_val.shape[1] == 1:
+                mask = (id_data_val == id_group).ravel()
+            else:
+                mask = np.all(id_data_val == id_group, axis=1)
+
+            group_data = val_data[mask]
+            group_sequences = self._process_id_group(group_data, context_window)
+
+            if group_sequences is not None:
+                val_sequences.append(group_sequences)
+                processed_groups += 1
+
+        # Process test data
+        test_data = data[2]
+        id_data_test = test_data[:, self.id_column_indices]
+        unique_ids_test = np.unique(id_data_test, axis=0)
+        total_groups += len(unique_ids_test)
+
+        for id_group in unique_ids_test:
+            if id_data_test.shape[1] == 1:
+                mask = (id_data_test == id_group).ravel()
+            else:
+                mask = np.all(id_data_test == id_group, axis=1)
+
+            group_data = test_data[mask]
+            group_sequences = self._process_id_group(group_data, context_window)
+
+            if group_sequences is not None:
+                test_sequences.append(group_sequences)
+                processed_groups += 1
+
+        # Combine all sequences for each split
+        if train_sequences:
+            self.x_train = np.concatenate(train_sequences, axis=0)
+        else:
+            raise ValueError("No valid sequences were created for training set")
+
+        if val_sequences:
+            self.x_val = np.concatenate(val_sequences, axis=0)
+        else:
+            # Create empty array with right shape
+            self.x_val = np.zeros((0, context_window, data[0].shape[1]))
+
+        if test_sequences:
+            self.x_test = np.concatenate(test_sequences, axis=0)
+        else:
+            # Create empty array with right shape
+            self.x_test = np.zeros((0, context_window, data[0].shape[1]))
+
+        self.samples = (
+            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
+        )
+
+        if self.verbose:
+            logger.info(
+                f"Created {self.samples} total sequences from {processed_groups} of {total_groups} groups"
+            )
+            logger.info(
+                f"Train: {self.x_train.shape[0]}, Val: {self.x_val.shape[0]}, Test: {self.x_test.shape[0]}"
+            )
 
         return True
 
@@ -499,24 +831,20 @@ class AutoEncoder:
         :type normalize: bool
         :return: True if the dataset is prepared successfully
         """
+        # Check if we need to process id columns
+        if self.id_columns is not None and len(self.id_column_indices) > 0:
+            return self._prepare_tuple_dataset_with_ids(data, context_window, normalize)
+
         if normalize:
             train = data[0].shape[0]
             val = data[1].shape[0]
 
-            data = np.concatenate((data[0], data[1], data[2]), axis=0)
+            combined_data = np.concatenate((data[0], data[1], data[2]), axis=0)
+            normalized_data = self._normalize_data(combined_data)
 
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
-
-            data_train = data[:train, :]
-            data_val = data[train : train + val, :]
-            data_test = data[train + val :, :]
+            data_train = normalized_data[:train, :]
+            data_val = normalized_data[train : train + val, :]
+            data_test = normalized_data[train + val :, :]
 
             data = tuple([data_train, data_val, data_test])
 
@@ -529,6 +857,47 @@ class AutoEncoder:
         self.samples = (
             self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
         )
+
+        return True
+
+    def _prepare_numpy_dataset(
+        self, data: np.array, context_window: int, normalize: bool, split_size: float
+    ):
+        """
+        Prepare the dataset for the model training and testing when the data is a single numpy array.
+        :param data: numpy array with the data
+        :type data: np.array
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :param split_size: size of the split for the train, validation and test datasets
+        :type split_size: float
+        :return: True if the dataset is prepared successfully
+        """
+        # Check if we need to process id columns
+        if self.id_columns is not None and len(self.id_column_indices) > 0:
+            return self._prepare_numpy_dataset_with_ids(
+                data, context_window, normalize, split_size
+            )
+
+        # For data without IDs, use the updated implementation
+        if normalize:
+            data = self._normalize_data(data)
+
+        # We need to transform the data into a sequence of data.
+        self.data = np.copy(data)
+        temp_data = time_series_to_sequence(self.data, context_window)
+
+        # We need to split the data into train, validation and test datasets.
+        self.samples = temp_data.shape[0]
+
+        train_split_point = round((split_size - 0.1) * self.samples)
+        val_split_point = train_split_point + round(0.1 * self.samples)
+
+        self.x_train = temp_data[:train_split_point, :, :]
+        self.x_val = temp_data[train_split_point:val_split_point, :, :]
+        self.x_test = temp_data[val_split_point:, :, :]
 
         return True
 
