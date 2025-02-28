@@ -3,11 +3,10 @@ Processing
 
 The processing module is a collection of tools aimed at processing data:
 
-- Dates formatting
-- Reading and saving data from and to json, Excel, csv
-- Making operations on list, dict and other objects
-- Processing time series
-- Imputing missing values
+- `Date functions`_: functions to handle dates
+- `File functions`_: functions to handle files
+- `Object functions`_: functions to handle objects
+- `Data Imputer`_: imputes missing values
 
 Date functions
 ~~~~~~~~~~~~~~
