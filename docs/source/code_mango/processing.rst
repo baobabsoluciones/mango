@@ -38,6 +38,8 @@ Imputation refers to replacing missing data with substituted values. The ``DataI
       imputer = DataImputer(strategy="mean")
       imputed_df = imputer.apply_imputation(df)
 
+  *Uses* ``sklearn.impute.SimpleImputer``
+
 - **Median Imputation**: Replaces missing values with the median of the column.
   
   .. code-block:: python
@@ -45,12 +47,16 @@ Imputation refers to replacing missing data with substituted values. The ``DataI
       imputer = DataImputer(strategy="median")
       imputed_df = imputer.apply_imputation(df)
 
+  *Uses* ``sklearn.impute.SimpleImputer``
+
 - **Mode Imputation**: Replaces missing values with the most frequent value in the column.
   
   .. code-block:: python
   
       imputer = DataImputer(strategy="most_frequent")
       imputed_df = imputer.apply_imputation(df)
+
+  *Uses* ``sklearn.impute.SimpleImputer``
 
 **Machine Learning Based Imputation**
 
@@ -61,6 +67,8 @@ Imputation refers to replacing missing data with substituted values. The ``DataI
       imputer = DataImputer(strategy="knn", k_neighbors=5)
       imputed_df = imputer.apply_imputation(df)
 
+  *Uses* ``sklearn.impute.KNNImputer``
+
 - **Regression Imputation**: Uses regression models (Ridge, Lasso, or Linear Regression) to predict missing values.
   
   .. code-block:: python
@@ -68,12 +76,16 @@ Imputation refers to replacing missing data with substituted values. The ``DataI
       imputer = DataImputer(strategy="regression", regression_model="ridge")
       imputed_df = imputer.apply_imputation(df)
 
+  *Uses* ``sklearn.linear_model`` *(Ridge, Lasso, LinearRegression)*
+
 - **MICE (Multiple Imputation by Chained Equations)**: An iterative approach where each feature with missing values is modeled as a function of other features.
   
   .. code-block:: python
   
       imputer = DataImputer(strategy="mice")
       imputed_df = imputer.apply_imputation(df)
+
+  *Uses* ``sklearn.impute.IterativeImputer`` *(requires* ``sklearn.experimental.enable_iterative_imputer`` *)*
 
 **Time Series Imputation**
 
@@ -98,6 +110,8 @@ Imputation refers to replacing missing data with substituted values. The ``DataI
       imputer = DataImputer(strategy="interpolate", time_series_strategy="linear")
       imputed_df = imputer.apply_imputation(df)
 
+  *Uses* ``pandas`` *for time series operations*
+
 **Arbitrary Value Imputation**
 
 - **Constant Value**: Replaces missing values with a specified arbitrary value.
@@ -106,6 +120,8 @@ Imputation refers to replacing missing data with substituted values. The ``DataI
   
       imputer = DataImputer(strategy="arbitrary", arbitrary_value=0)
       imputed_df = imputer.apply_imputation(df)
+
+  *Uses* ``sklearn.impute.SimpleImputer``
 
 **Column-Wise Imputation**
 
@@ -133,6 +149,3 @@ The ``DataImputer`` class relies on several libraries to implement its imputatio
 - **polars**: For supporting polars DataFrames as input and output
 
 .. autoclass:: mango.processing.data_imputer.DataImputer
-    :members:
-    :undoc-members:
-    :private-members:
