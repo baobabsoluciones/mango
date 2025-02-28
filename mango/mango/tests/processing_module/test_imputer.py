@@ -44,7 +44,7 @@ class ImputerTests(unittest.TestCase):
         imputed_df = imputer.apply_imputation(self.df_polars)
         self.assertFalse(imputed_df.null_count().to_series().sum() > 0)
 
-    def test_apply_column_wise_imputation_with_polars(self):
+    def test_apply_column_global_imputation_with_polars(self):
         imputer = DataImputer(strategy="mean")
         result = imputer.apply_imputation(self.df_polars)
         self.assertIsInstance(result, pl.DataFrame)
@@ -58,6 +58,11 @@ class ImputerTests(unittest.TestCase):
         imputer = DataImputer(column_strategies={"C": "mean", "B": "mean"})
         with self.assertRaises(ValueError):
             imputer.apply_imputation(self.df_pandas)
+
+    def test_most_frequent_imputation(self):
+        imputer = DataImputer(strategy="most_frequent")
+        imputed_df = imputer.apply_imputation(self.df_pandas)
+        self.assertFalse(imputed_df.isnull().values.any())
 
     def test_knn_imputer_without_k_neighbors(self):
         imputer = DataImputer(strategy="knn")
@@ -118,11 +123,6 @@ class ImputerTests(unittest.TestCase):
         imputer = DataImputer(column_strategies={"A": "interpolate", "B": "mean"})
         imputed_df = imputer.apply_imputation(self.df_pandas)
         self.assertFalse(imputed_df.isnull().values.any())
-
-    def test_mode_imputation(self):
-        df = pd.DataFrame({"A": [1, np.nan, 1, 2], "B": [np.nan, 2, 2, 2]})
-        result = self.imputer._mode_impute(df.to_numpy())
-        self.assertFalse(pd.DataFrame(result).isnull().values.any())
 
     def test_invalid_strategy(self):
         imputer = DataImputer(strategy="invalid")

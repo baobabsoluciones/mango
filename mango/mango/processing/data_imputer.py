@@ -72,7 +72,6 @@ class DataImputer:
         self.strategy_methods = {
             "mean": self._simple_impute,
             "median": self._simple_impute,
-            "mode": self._mode_impute,
             "most_frequent": self._simple_impute,
             "knn": self._knn_impute,
             "mice": self._mice_impute,
@@ -332,18 +331,3 @@ class DataImputer:
         """
         df = pd.DataFrame(data_array)
         return df.interpolate(method=self.time_series_strategy).to_numpy()
-
-    @staticmethod
-    def _mode_impute(data_array):
-        """
-        Impute missing values using mode (most frequent value).
-
-        Uses pandas methods ``mode()`` and ``fillna()`` to replace missing values with the most common value.
-
-        :param data_array: Input data
-        :type data_array: np.ndarray
-        :return: Imputed data
-        :rtype: np.ndarray
-        """
-        df = pd.DataFrame(data_array)
-        return df.fillna(df.mode().iloc[0]).to_numpy()

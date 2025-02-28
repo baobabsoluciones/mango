@@ -49,7 +49,7 @@ Imputation refers to replacing missing data with substituted values. The ``DataI
   
   .. code-block:: python
   
-      imputer = DataImputer(strategy="mode")
+      imputer = DataImputer(strategy="most_frequent")
       imputed_df = imputer.apply_imputation(df)
 
 **Machine Learning Based Imputation**
