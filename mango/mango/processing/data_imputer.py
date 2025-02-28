@@ -3,7 +3,6 @@ from typing import Optional, Union, Dict
 import numpy as np
 import pandas as pd
 import polars as pl
-from pandas.core.generic import InterpolateOptions
 from sklearn.experimental import enable_iterative_imputer  # noqa
 from sklearn.impute import IterativeImputer
 from sklearn.impute import KNNImputer, SimpleImputer
@@ -22,7 +21,7 @@ class DataImputer:
         knn_params: Optional[Dict] = None,
         simple_params: Optional[Dict] = None,
         iterative_params: Optional[Dict] = None,
-        time_series_strategy: Optional[InterpolateOptions] = "linear",
+        time_series_strategy: Optional[str] = "linear",
     ):
         """
         Imputer class to fill missing values in a dataset.
