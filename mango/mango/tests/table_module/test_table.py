@@ -86,8 +86,8 @@ class TestTable(TestCase):
         def unique2_error():
             return Table(self.default_data).unique2()
 
-        self.assertRaises(NotImplementedError, unique_error)
-        self.assertRaises(NotImplementedError, unique2_error)
+        self.assertEqual(len(unique_error()), 4)
+        self.assertEqual(len(unique2_error()), 4)
 
     def test_take(self):
         result = Table(self.default_data).take(["Name", "Age"])
