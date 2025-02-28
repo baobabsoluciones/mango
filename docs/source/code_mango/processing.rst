@@ -121,10 +121,10 @@ The ``DataImputer`` also supports applying different imputation strategies to di
 The ``DataImputer`` class relies on several libraries to implement its imputation methods:
 
 - **scikit-learn**:
-  - ``sklearn.impute.SimpleImputer``: For mean, median, most frequent, and constant value imputation
-  - ``sklearn.impute.KNNImputer``: For KNN-based imputation
-  - ``sklearn.impute.IterativeImputer``: For MICE imputation (requires ``sklearn.experimental.enable_iterative_imputer``)
-  - ``sklearn.linear_model``: For regression-based imputation (Ridge, Lasso, LinearRegression)
+      - ``sklearn.impute.SimpleImputer``: For mean, median, most frequent, and constant value imputation
+      - ``sklearn.impute.KNNImputer``: For KNN-based imputation
+      - ``sklearn.impute.IterativeImputer``: For MICE imputation (requires ``sklearn.experimental.enable_iterative_imputer``)
+      - ``sklearn.linear_model``: For regression-based imputation (Ridge, Lasso, LinearRegression)
 
 - **pandas**: For time series imputation methods (forward fill, backward fill, interpolation) and data manipulation
 
