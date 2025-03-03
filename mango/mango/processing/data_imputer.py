@@ -12,16 +12,10 @@ from sklearn.linear_model import Ridge, Lasso, LinearRegression
 class DataImputer:
     def __init__(
         self,
-        strategy="mean",
-        k_neighbors: Optional[int] = None,
-        arbitrary_value: Optional[float] = None,
+        strategy: str = "mean",
         column_strategies: Optional[Dict[str, str]] = None,
         regression_model: Optional[str] = "ridge",
-        regression_params: Optional[Dict] = None,
-        knn_params: Optional[Dict] = None,
-        simple_params: Optional[Dict] = None,
-        iterative_params: Optional[Dict] = None,
-        time_series_strategy: Optional[str] = "linear",
+        **kwargs,
     ):
         """
         Imputer class to fill missing values in a dataset.
@@ -37,36 +31,22 @@ class DataImputer:
 
         :param strategy: strategy to fill missing values. It can be one of "mean", "median", "mode" or "arbitrary"
         :type strategy: str
-        :param k_neighbors: number of neighbors to use for KNN imputation. Required if strategy is "knn"
-        :type k_neighbors: Optional[int]
-        :param arbitrary_value: value to fill missing values if strategy is "arbitrary"
-        :type arbitrary_value: Optional[float]
         :param column_strategies: dictionary containing column names and their respective strategies. If None, global strategy will be used
         :type column_strategies: Optional[Dict[str,str]]
         :param regression_model: regression model to use for regression imputation. It can be "ridge" or "linear"
         :type regression_model: Optional[str]
-        :param regression_params: parameters for the regression model
-        :type regression_params: Optional[Dict]
-        :param knn_params: parameters for the KNN imputer
-        :type knn_params: Optional[Dict]
-        :param simple_params: parameters for the SimpleImputer
-        :type simple_params: Optional[Dict]
-        :param iterative_params: parameters for the IterativeImputer
-        :type iterative_params: Optional[Dict]
-        :param time_series_strategy: strategy to use for time series interpolation. It can be "linear" or "polynomial"
-        :type time_series_strategy: Optional[InterpolateOptions]
         """
 
         self.strategy = strategy
-        self.k_neighbors = k_neighbors
-        self.arbitrary_value = arbitrary_value
         self.column_strategies = column_strategies
         self.regression_model = regression_model
-        self.regression_params = regression_params or {}
-        self.knn_params = knn_params or {}
-        self.simple_params = simple_params or {}
-        self.iterative_params = iterative_params or {}
-        self.time_series_strategy = time_series_strategy
+        self.kwargs = kwargs
+
+        self.model_mapping = {
+            "ridge": Ridge,
+            "lasso": Lasso,
+            "linear": LinearRegression,
+        }
 
         self.strategy_methods = {
             "mean": self._simple_impute,
@@ -80,6 +60,65 @@ class DataImputer:
             "regression": self._regression_impute,
             "interpolate": self._interpolate_impute,
         }
+
+        self._validate_params()
+
+    def _validate_strategy(self, strategy: str):
+        """
+        Validate the imputation strategy.
+        :param strategy: Imputation strategy
+        :type strategy: str
+        """
+        if strategy not in self.strategy_methods:
+            raise ValueError(f"Invalid strategy '{strategy}'.")
+
+        if strategy == "knn":
+            n_neighbors = self.kwargs.get("n_neighbors")
+            if n_neighbors is None:
+                self.kwargs["n_neighbors"] = 5
+            elif n_neighbors <= 0:
+                raise ValueError("n_neighbors must be greater than 0.")
+
+        if strategy == "arbitrary" and self.kwargs.get("fill_value") is None:
+            raise ValueError(
+                "An arbitrary value must be provided for arbitrary imputation."
+            )
+
+        if strategy == "regression":
+            regression_model = self.kwargs.get(
+                "regression_model", self.regression_model
+            )
+            if regression_model not in self.model_mapping:
+                raise ValueError(
+                    "Invalid regression model. Choose from 'ridge', 'lasso', 'linear'."
+                )
+
+    def _validate_params(self):
+        """
+        Validate the imputer parameters.
+        """
+        if self.column_strategies is None:
+            self._validate_strategy(self.strategy)
+
+        else:
+            if not isinstance(self.column_strategies, dict):
+                raise ValueError("Column strategies must be a dictionary.")
+
+            # The different strategies are validated
+            invalid_strategies = [
+                (col, strat)
+                for col, strat in self.column_strategies.items()
+                if strat not in self.strategy_methods
+            ]
+
+            if invalid_strategies:
+                errors = ", ".join(
+                    [f"'{col}': '{strat}'" for col, strat in invalid_strategies]
+                )
+                raise ValueError(f"Invalid strategies found for columns: {errors}")
+
+            for col, strat in self.column_strategies.items():
+                self._validate_strategy(strat)
 
     @staticmethod
     def _convert_to_numpy(data: Union[pd.DataFrame, pl.DataFrame]):
@@ -153,44 +192,39 @@ class DataImputer:
         """
         data_array, data_type, columns = self._convert_to_numpy(data)
 
-        if self.strategy not in self.strategy_methods:
-            raise ValueError(f"Invalid strategy '{self.strategy}'.")
-
         imputed_data = self.strategy_methods[self.strategy](data_array)
 
         return self._convert_back(imputed_data, data_type, columns)
 
     def _apply_column_wise_imputation(self, data: Union[pd.DataFrame, pl.DataFrame]):
         """
-        Apply different imputation strategies to different columns.
-
-        This method allows for fine-grained control of imputation by column.
-        Converts polars DataFrame to pandas for processing if needed.
+        Apply column-wise imputation strategies to the dataset.
 
         :param data: Input data
         :type data: Union[pd.DataFrame, pl.DataFrame]
         :return: Imputed data
         :rtype: Union[pd.DataFrame, pl.DataFrame]
         """
-        data_type = "pandas" if isinstance(data, pd.DataFrame) else "polars"
+        # Convert polars or pandas DataFrame to numpy array to obtain data type and column names
+        data_array, data_type, columns = self._convert_to_numpy(data)
 
-        if data_type == "pandas":
-            df = data.copy()
-        else:
-            df = data.to_pandas().copy()
+        # The columns that are specified in the column_strategies must be present in the dataset
+        invalid_columns = [col for col in self.column_strategies if col not in columns]
+        if invalid_columns:
+            raise ValueError(f"Columns {invalid_columns} not found in dataset.")
 
-        for column, strategy in self.column_strategies.items():
-            if column not in df.columns:
-                raise ValueError(f"Column '{column}' not found in dataset.")
+        imputed_array = data_array.copy()
 
-            if strategy not in self.strategy_methods:
-                raise ValueError(
-                    f"Invalid strategy '{strategy}' for column '{column}'."
-                )
-            self.strategy = strategy
-            df[[column]] = self.strategy_methods[self.strategy](df[[column]].to_numpy())
+        for i, column in enumerate(columns):
+            if column in self.column_strategies:
+                self.strategy = self.column_strategies[column]
+                impute_func = self.strategy_methods[self.strategy]
 
-        return self._convert_back(df.to_numpy(), data_type, df.columns)
+                # Extract column, reshape to (n,1) for sklearn compatibility
+                column_data = imputed_array[:, i].reshape(-1, 1)
+                imputed_array[:, i] = impute_func(column_data).flatten()
+
+        return self._convert_back(imputed_array, data_type, columns)
 
     def _simple_impute(self, data_array: np.ndarray):
         """
@@ -203,7 +237,7 @@ class DataImputer:
         :return: Imputed data
         :rtype: np.ndarray
         """
-        imputer = SimpleImputer(strategy=self.strategy, **self.simple_params)
+        imputer = SimpleImputer(strategy=self.strategy, **self.kwargs)
         return imputer.fit_transform(data_array)
 
     def _knn_impute(self, data_array: np.ndarray):
@@ -217,10 +251,7 @@ class DataImputer:
         :return: Imputed data
         :rtype: np.ndarray
         """
-        if self.k_neighbors is None or self.k_neighbors <= 0:
-            raise ValueError("k_neighbors must be specified for KNN imputation.")
-
-        imputer = KNNImputer(n_neighbors=self.k_neighbors, **self.knn_params)
+        imputer = KNNImputer(**self.kwargs)
         return imputer.fit_transform(data_array)
 
     def _mice_impute(self, data_array: np.ndarray):
@@ -235,7 +266,7 @@ class DataImputer:
         :return: Imputed data
         :rtype: np.ndarray
         """
-        imputer = IterativeImputer(**self.iterative_params)
+        imputer = IterativeImputer(**self.kwargs)
         return imputer.fit_transform(data_array)
 
     def _arbitrary_impute(self, data_array: np.ndarray):
@@ -249,14 +280,7 @@ class DataImputer:
         :return: Imputed data
         :rtype: np.ndarray
         """
-        if self.arbitrary_value is None:
-            raise ValueError(
-                "An arbitrary_value must be provided for arbitrary imputation."
-            )
-
-        imputer = SimpleImputer(
-            strategy="constant", fill_value=self.arbitrary_value, **self.simple_params
-        )
+        imputer = SimpleImputer(strategy="constant", **self.kwargs)
         return imputer.fit_transform(data_array)
 
     def _fill_impute(self, data_array: np.ndarray):
@@ -291,6 +315,11 @@ class DataImputer:
         :rtype: np.ndarray
         """
         df = pd.DataFrame(data_array)
+        if df.shape[1] == 1:
+            raise ValueError(
+                "Insufficient columns for regression imputation. It is necessary to have at least two columns."
+            )
+
         for column in df.columns:
             if df[column].isnull().sum() == 0:
                 continue
@@ -304,14 +333,7 @@ class DataImputer:
             X_train = train_data.drop(columns=[column])
             y_train = train_data[column]
 
-            model_mapping = {"ridge": Ridge, "lasso": Lasso, "linear": LinearRegression}
-
-            if self.regression_model not in model_mapping:
-                raise ValueError(
-                    "Invalid regression model. Choose from 'ridge', 'lasso', 'linear'."
-                )
-
-            model = model_mapping[self.regression_model](**self.regression_params)
+            model = self.model_mapping[self.regression_model](**self.kwargs)
             model.fit(X_train, y_train)
             df.loc[df[column].isnull(), column] = model.predict(test_data)
 
@@ -329,4 +351,4 @@ class DataImputer:
         :rtype: np.ndarray
         """
         df = pd.DataFrame(data_array)
-        return df.interpolate(method=self.time_series_strategy).to_numpy()
+        return df.interpolate(**self.kwargs).to_numpy()

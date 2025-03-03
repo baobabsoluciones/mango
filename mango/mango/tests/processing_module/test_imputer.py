@@ -8,7 +8,6 @@ from mango.processing import DataImputer
 
 class ImputerTests(unittest.TestCase):
     def setUp(self):
-        self.imputer = DataImputer()
         self.df_pandas = pd.DataFrame({"A": [1, 2, np.nan, 4], "B": [np.nan, 2, 3, 4]})
         self.df_polars = pl.DataFrame({"A": [1, 2, None, 4], "B": [None, 2, 3, 4]})
 
@@ -16,23 +15,35 @@ class ImputerTests(unittest.TestCase):
         pass
 
     def test_convert_to_numpy_pandas(self):
-        array, dtype, columns = self.imputer._convert_to_numpy(self.df_pandas)
+        imputer = DataImputer(strategy="mean")
+        array, dtype, columns = imputer._convert_to_numpy(self.df_pandas)
         self.assertEqual(dtype, "pandas")
         self.assertEqual(len(columns), 2)
         self.assertTrue(isinstance(array, np.ndarray))
 
     def test_invalid_data_type_convert_to_numpy(self):
+        imputer = DataImputer(strategy="mean")
         with self.assertRaises(ValueError):
-            self.imputer._convert_to_numpy([1, 2, 3])
+            imputer._convert_to_numpy([1, 2, 3])
+
+    def test_invalid_strategy(self):
+        with self.assertRaises(ValueError):
+            DataImputer(strategy="invalid")
+
+    def test_column_strategie_not_dict(self):
+        with self.assertRaises(ValueError):
+            DataImputer(column_strategies="mean")
 
     def test_convert_to_numpy_polars(self):
-        array, dtype, columns = self.imputer._convert_to_numpy(self.df_polars)
+        imputer = DataImputer(strategy="mean")
+        array, dtype, columns = imputer._convert_to_numpy(self.df_polars)
         self.assertEqual(dtype, "polars")
         self.assertEqual(len(columns), 2)
         self.assertTrue(isinstance(array, np.ndarray))
 
     def test_apply_global_imputation(self):
-        imputed_df = self.imputer.apply_imputation(self.df_pandas)
+        imputer = DataImputer(strategy="mean")
+        imputed_df = imputer.apply_imputation(self.df_pandas)
         self.assertFalse(imputed_df.isnull().values.any())
 
     def test_apply_column_wise_imputation_pandas(self):
@@ -51,9 +62,8 @@ class ImputerTests(unittest.TestCase):
         self.assertIsInstance(result, pl.DataFrame)
 
     def test_invalid_column_strategy(self):
-        imputer = DataImputer(column_strategies={"A": "invalid_strategy", "B": "mean"})
         with self.assertRaises(ValueError):
-            imputer.apply_imputation(self.df_pandas)
+            DataImputer(column_strategies={"A": "invalid_strategy", "B": "mean"})
 
     def test_invalid_column_dataframe(self):
         imputer = DataImputer(column_strategies={"C": "mean", "B": "mean"})
@@ -67,21 +77,15 @@ class ImputerTests(unittest.TestCase):
 
     def test_knn_imputer_without_k_neighbors(self):
         imputer = DataImputer(strategy="knn")
-        with self.assertRaises(ValueError):
-            imputer.apply_imputation(self.df_pandas)
-
-    def test_knn_imputer_without_k_neighbors_polars(self):
-        imputer = DataImputer(strategy="knn")
-        with self.assertRaises(ValueError):
-            imputer.apply_imputation(self.df_polars)
+        # Check in n_neighbors is 5 (default value)
+        self.assertEqual(imputer.kwargs.get("n_neighbors"), 5)
 
     def test_knn_imputer_with_k_neighbors_negative(self):
-        imputer = DataImputer(strategy="knn", k_neighbors=-1)
         with self.assertRaises(ValueError):
-            imputer.apply_imputation(self.df_pandas)
+            DataImputer(strategy="knn", n_neighbors=-1)
 
     def test_knn_impute(self):
-        imputer = DataImputer(strategy="knn", k_neighbors=2)
+        imputer = DataImputer(strategy="knn", n_neighbors=2)
         imputed_df = imputer.apply_imputation(self.df_pandas)
         self.assertFalse(imputed_df.isnull().values.any())
 
@@ -91,42 +95,42 @@ class ImputerTests(unittest.TestCase):
         self.assertFalse(imputed_df.isnull().values.any())
 
     def test_arbitrary_impute(self):
-        imputer = DataImputer(strategy="arbitrary", arbitrary_value=10)
+        imputer = DataImputer(strategy="arbitrary", fill_value=10)
         imputed_df = imputer.apply_imputation(self.df_pandas)
         self.assertTrue((imputed_df == 10).any().any())
 
     def test_arbitrary_imputer_without_value(self):
-        imputer = DataImputer(strategy="arbitrary")
         with self.assertRaises(ValueError):
-            imputer.apply_imputation(self.df_pandas)
+            DataImputer(strategy="arbitrary")
 
     def test_fill_impute_forward_backward(self):
         imputer = DataImputer(column_strategies={"A": "forward", "B": "backward"})
         imputed_df = imputer.apply_imputation(self.df_pandas)
         self.assertFalse(imputed_df.isnull().values.any())
 
-    def test_invalid_fill_strategy(self):
-        imputer = DataImputer(strategy="invalid_fill")
-        with self.assertRaises(ValueError):
-            imputer.apply_imputation(self.df_pandas)
-
-    def test_regression_impute(self):
+    def test_regression_impute_default(self):
         imputer = DataImputer(strategy="regression")
         imputed_df = imputer.apply_imputation(self.df_pandas)
         self.assertFalse(imputed_df.isnull().values.any())
 
+    def test_regression_impute(self):
+        imputer = DataImputer(strategy="regression", regression_model="lasso")
+        imputed_df = imputer.apply_imputation(self.df_pandas)
+        self.assertFalse(imputed_df.isnull().values.any())
+
     def test_invalid_regression_model(self):
-        imputer = DataImputer(strategy="regression", regression_model="invalid")
         with self.assertRaises(ValueError):
-            imputer.apply_imputation(self.df_pandas)
+            DataImputer(strategy="regression", regression_model="invalid")
 
     def test_interpolate_impute(self):
         imputer = DataImputer(column_strategies={"A": "interpolate", "B": "mean"})
         imputed_df = imputer.apply_imputation(self.df_pandas)
         self.assertFalse(imputed_df.isnull().values.any())
 
-    def test_invalid_strategy(self):
-        imputer = DataImputer(strategy="invalid")
+    def test_regression_impute_column(self):
+        imputer = DataImputer(
+            column_strategies={"A": "regression", "B": "mean"}, regression_model="lasso"
+        )
         with self.assertRaises(ValueError):
             imputer.apply_imputation(self.df_pandas)
 
