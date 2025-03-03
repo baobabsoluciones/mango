@@ -52,6 +52,7 @@ class AutoEncoder:
         patience: int = 10,
         verbose: bool = False,
         feature_names: Optional[List[str]] = None,
+        id_columns: Union[str, int, List[str], List[int], None] = None,
     ):
         """
         Initialize the Autoencoder model
@@ -120,6 +121,10 @@ class AutoEncoder:
         :param feature_names: optional list of feature names to use for the model.
             If provided, these names will be used instead of automatically extracted ones.
         :type feature_names: Optional[List[str]]
+        :param id_columns: optional column(s) to process the data by groups.
+            If provided, the data will be grouped by this column and processed separately.
+            Can be a column name (str), a column index (int), or a list of either.
+        :type id_columns: Union[str, int, List[str], List[int], None]
         """
 
         root_dir = os.path.abspath(os.getcwd())
@@ -157,6 +162,37 @@ class AutoEncoder:
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
+
+        # Handle id_columns
+        if id_columns is not None:
+            if isinstance(id_columns, str) or isinstance(id_columns, int):
+                id_columns = [id_columns]
+            if isinstance(id_columns, list):
+                if all(isinstance(i, str) for i in id_columns):
+                    id_column_indices = [
+                        i
+                        for i, value in enumerate(extracted_feature_names)
+                        if value in id_columns
+                    ]
+                elif all(isinstance(i, int) for i in id_columns):
+                    id_column_indices = id_columns
+                else:
+                    raise ValueError("id_columns must be a list of strings or integers")
+            else:
+                raise ValueError(
+                    "id_columns must be a string, integer, or a list of strings or integers"
+                )
+            if isinstance(data, tuple):
+                self.id_data = tuple(d[:, id_column_indices] for d in data)
+            else:
+                self.id_data = data[:, id_column_indices]
+            if isinstance(data, np.ndarray):
+                data = np.delete(data, id_column_indices, axis=1)
+            elif isinstance(data, tuple):
+                data = tuple(np.delete(d, id_column_indices, axis=1) for d in data)
+
+        else:
+            self.id_data = None
 
         # Store feature names or generate default names
         if feature_names:
@@ -440,6 +476,7 @@ class AutoEncoder:
     ):
         """
         Prepare the dataset for the model training and testing when the data is a single numpy array.
+
         :param data: numpy array with the data
         :type data: np.array
         :param context_window: context window for the model
@@ -454,6 +491,7 @@ class AutoEncoder:
         # Normalization can be done using minmax or zscore methods.
         # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
         if normalize:
+            data = data.astype(np.float64)
             if self.normalization_method == "minmax":
                 self.max_x = np.max(data, axis=0)
                 self.min_x = np.min(data, axis=0)
@@ -467,7 +505,7 @@ class AutoEncoder:
 
         # We need to transform the data into a sequence of data.
         self.data = np.copy(data)
-        temp_data = time_series_to_sequence(self.data, context_window)
+        temp_data = time_series_to_sequence(self.data, context_window, id_data=self.id_data)
 
         # We need to split the data into train, validation and test datasets.
         # Validation should be 10% of the total data,
@@ -500,6 +538,7 @@ class AutoEncoder:
         :return: True if the dataset is prepared successfully
         """
         if normalize:
+            data = [np_ar.astype(np.float64) for np_ar in data]
             train = data[0].shape[0]
             val = data[1].shape[0]
 
@@ -522,9 +561,21 @@ class AutoEncoder:
 
         self.data = data
 
-        self.x_train = time_series_to_sequence(data[0], context_window)
-        self.x_val = time_series_to_sequence(data[1], context_window)
-        self.x_test = time_series_to_sequence(data[2], context_window)
+        self.x_train = time_series_to_sequence(
+            data[0],
+            context_window,
+            id_data=self.id_data[0] if self.id_data is not None else None,
+        )
+        self.x_val = time_series_to_sequence(
+            data[1],
+            context_window,
+            self.id_data[1] if self.id_data is not None else None,
+        )
+        self.x_test = time_series_to_sequence(
+            data[2],
+            context_window,
+            self.id_data[2] if self.id_data is not None else None,
+        )
 
         self.samples = (
             self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
