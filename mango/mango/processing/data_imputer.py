@@ -15,6 +15,7 @@ class DataImputer:
         strategy: str = "mean",
         column_strategies: Optional[Dict[str, str]] = None,
         regression_model: Optional[str] = "ridge",
+        id_columns: Optional[str] = None,
         **kwargs,
     ):
         """
@@ -35,11 +36,16 @@ class DataImputer:
         :type column_strategies: Optional[Dict[str,str]]
         :param regression_model: regression model to use for regression imputation. It can be "ridge" or "linear"
         :type regression_model: Optional[str]
+        :param id_columns: columns to be used as identifiers for regression imputation
+        :type id_columns: Optional[str]
+        :param kwargs: additional keyword arguments for the imputation strategy
+        :type kwargs: dict
         """
 
         self.strategy = strategy
         self.column_strategies = column_strategies
         self.regression_model = regression_model
+        self.id_columns = id_columns or []
         self.kwargs = kwargs
 
         self.model_mapping = {
@@ -162,6 +168,33 @@ class DataImputer:
         elif data_type == "polars":
             return pl.DataFrame(data, schema=columns)
 
+    def _apply_imputation_by_id(self, data: Union[pd.DataFrame, pl.DataFrame]):
+        """
+        Apply imputation by group of identifiers.
+        :param data: Input data
+        :type data: Union[pd.DataFrame, pl.DataFrame]
+        :return: Imputed data
+        """
+        if isinstance(data, pl.DataFrame):
+            data = data.to_pandas()
+
+        # Check if the id column is in the dataset
+        if not all(col in data.columns for col in self.id_columns):
+            raise ValueError(f"Columns {self.id_columns} not found in dataset.")
+
+        grouped = data.groupby(self.id_columns)
+        imputed_groups = []
+
+        for _, group in grouped:
+            group = group.copy()
+            if self.column_strategies:
+                imputed_group = self._apply_column_wise_imputation(group)
+            else:
+                imputed_group = self._apply_global_imputation(group)
+            imputed_groups.append(imputed_group)
+
+        return pd.concat(imputed_groups).reset_index(drop=True)
+
     def apply_imputation(self, data: Union[pd.DataFrame, pl.DataFrame]):
         """
         Fit and transform the data to fill missing values.
@@ -174,6 +207,8 @@ class DataImputer:
         :return: Imputed data
         :rtype: Union[pd.DataFrame, pl.DataFrame]
         """
+        if self.id_columns:
+            return self._apply_imputation_by_id(data)
         if self.column_strategies:
             return self._apply_column_wise_imputation(data)
         else:
