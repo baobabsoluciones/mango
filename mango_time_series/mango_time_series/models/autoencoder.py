@@ -252,6 +252,7 @@ class AutoEncoder:
                 "Invalid normalization method. Choose 'minmax' or 'zscore'."
             )
 
+        self.normalize = normalize
         self.normalization_method = normalization_method
         self.prepare_datasets(data, context_window, normalize, split_size)
 
@@ -755,18 +756,19 @@ class AutoEncoder:
         x_hat_val = x_hat_val.numpy()
         x_hat_test = x_hat_test.numpy()
 
-        if self.normalization_method == "minmax":
-            scale_max = self.max_x[self.feature_to_check]
-            scale_min = self.min_x[self.feature_to_check]
-            x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-            x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-            x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
-        elif self.normalization_method == "zscore":
-            scale_mean = self.mean_[self.feature_to_check]
-            scale_std = self.std_[self.feature_to_check]
-            x_hat_train = x_hat_train * scale_std + scale_mean
-            x_hat_val = x_hat_val * scale_std + scale_mean
-            x_hat_test = x_hat_test * scale_std + scale_mean
+        if self.normalize:
+            if self.normalization_method == "minmax":
+                scale_max = self.max_x[self.feature_to_check]
+                scale_min = self.min_x[self.feature_to_check]
+                x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
+                x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
+                x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
+            elif self.normalization_method == "zscore":
+                scale_mean = self.mean_[self.feature_to_check]
+                scale_std = self.std_[self.feature_to_check]
+                x_hat_train = x_hat_train * scale_std + scale_mean
+                x_hat_val = x_hat_val * scale_std + scale_mean
+                x_hat_test = x_hat_test * scale_std + scale_mean
 
         x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
 
@@ -780,14 +782,15 @@ class AutoEncoder:
             self.x_test[:, self.time_step_to_check, self.feature_to_check]
         )
 
-        if self.normalization_method == "minmax":
-            x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
-            x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-            x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
-        elif self.normalization_method == "zscore":
-            x_train_converted = x_train_converted * scale_std + scale_mean
-            x_val_converted = x_val_converted * scale_std + scale_mean
-            x_test_converted = x_test_converted * scale_std + scale_mean
+        if self.normalize:
+            if self.normalization_method == "minmax":
+                x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
+                x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
+                x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
+            elif self.normalization_method == "zscore":
+                x_train_converted = x_train_converted * scale_std + scale_mean
+                x_val_converted = x_val_converted * scale_std + scale_mean
+                x_test_converted = x_test_converted * scale_std + scale_mean
 
         x_converted = np.concatenate(
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
