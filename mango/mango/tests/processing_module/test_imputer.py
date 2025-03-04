@@ -19,6 +19,15 @@ class ImputerTests(unittest.TestCase):
             }
         )
 
+        self.df_multiple_id = pd.DataFrame(
+            {
+                "store_id": [1, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+                "store_id2": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
+                "A": [1, np.nan, 3, 4, 5, np.nan, 7, 8, 9, np.nan],
+                "B": [np.nan, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            }
+        )
+
     def tearDown(self):
         pass
 
@@ -195,6 +204,63 @@ class ImputerTests(unittest.TestCase):
         imputer = DataImputer(strategy="mean", id_columns=["non_existing_column"])
         with self.assertRaises(ValueError):
             imputer.apply_imputation(self.df_id)
+
+    def test_id_in_column_strategies(self):
+        with self.assertRaises(ValueError):
+            DataImputer(
+                column_strategies={"store_id": "mean", "B": "median"},
+                id_columns=["store_id"],
+            )
+
+    def test_multiple_id_global_imputation(self):
+        imputer = DataImputer(strategy="mean", id_columns=["store_id", "store_id2"])
+        imputed_df = imputer.apply_imputation(self.df_multiple_id)
+        self.assertFalse(imputed_df.isnull().values.any())
+        group_means = self.df_multiple_id.groupby(["store_id", "store_id2"]).mean()
+        for store_id, store_id2 in (
+            self.df_multiple_id[["store_id", "store_id2"]].drop_duplicates().values
+        ):
+            imputed_group = imputed_df[
+                (imputed_df["store_id"] == store_id)
+                & (imputed_df["store_id2"] == store_id2)
+            ]
+            for col in ["A", "B"]:
+                expected_value = group_means.loc[(store_id, store_id2), col]
+                self.assertTrue(
+                    (
+                        imputed_group[col].fillna(expected_value) == imputed_group[col]
+                    ).all()
+                )
+
+    def test_multiple_id_column_wise_imputation(self):
+        imputer = DataImputer(
+            column_strategies={"A": "mean", "B": "median"},
+            id_columns=["store_id", "store_id2"],
+        )
+        imputed_df = imputer.apply_imputation(self.df_multiple_id)
+        self.assertFalse(imputed_df.isnull().values.any())
+        for store_id, store_id2 in (
+            self.df_multiple_id[["store_id", "store_id2"]].drop_duplicates().values
+        ):
+            original_group = self.df_multiple_id[
+                (self.df_multiple_id["store_id"] == store_id)
+                & (self.df_multiple_id["store_id2"] == store_id2)
+            ]
+            imputed_group = imputed_df[
+                (imputed_df["store_id"] == store_id)
+                & (imputed_df["store_id2"] == store_id2)
+            ]
+            for col in ["A", "B"]:
+                if col in ["A"]:
+                    expected_value = original_group["A"].mean()
+                else:
+                    expected_value = original_group["B"].median()
+
+                self.assertTrue(
+                    (
+                        imputed_group[col].fillna(expected_value) == imputed_group[col]
+                    ).all()
+                )
 
 
 if __name__ == "__main__":

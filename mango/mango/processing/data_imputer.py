@@ -110,6 +110,15 @@ class DataImputer:
             if not isinstance(self.column_strategies, dict):
                 raise ValueError("Column strategies must be a dictionary.")
 
+            # Validate that ID columns are not in column_strategies
+            invalid_id_columns = [
+                col for col in self.id_columns if col in self.column_strategies
+            ]
+            if invalid_id_columns:
+                raise ValueError(
+                    f"ID columns {invalid_id_columns} should not be included in column strategies."
+                )
+
             # The different strategies are validated
             invalid_strategies = [
                 (col, strat)
