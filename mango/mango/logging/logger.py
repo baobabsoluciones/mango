@@ -358,6 +358,8 @@ def get_configured_logger(
             if log_console_level or log_file_level:
                 # Set the minimum level for the logger or 30 - WARNING (root logger default)
                 logger.setLevel(min(log_console_level or 30, log_file_level or 30))
+        else:
+            logger.setLevel(log_console_level or 30)
 
         # Create a console handler with the specified format
         console_handler = logging.StreamHandler()
@@ -421,7 +423,10 @@ def get_configured_logger(
 
         return logger
     else:
-        logger = logging.getLogger(logger_type)
+        if "AIRFLOW_HOME" in os.environ:
+            logger = logging.getLogger(__name__)
+        else:
+            logger = logging.getLogger(logger_type)
 
     # If no configuration is provided, use default
     logging_config = copy.deepcopy(config_dict or LOGGING_DICT_DEFAULT)
