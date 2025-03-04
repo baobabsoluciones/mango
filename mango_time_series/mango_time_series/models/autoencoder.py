@@ -242,10 +242,6 @@ class AutoEncoder:
                 raise ValueError(
                     f"Bidirectional is not supported for decoder type '{form}'."
                 )
-        if bidirectional_encoder or bidirectional_decoder:
-            self.bidirectional = True
-        else:
-            self.bidirectional = False
 
         if normalization_method not in ["minmax", "zscore"]:
             raise ValueError(
@@ -511,10 +507,7 @@ class AutoEncoder:
         # We need to transform the data into a sequence of data.
         self.data = np.copy(data)
         temp_data = time_series_to_sequence(
-            self.data,
-            context_window,
-            id_data=self.id_data,
-            bidirectional=self.bidirectional,
+            self.data, context_window, id_data=self.id_data
         )
 
         # We need to split the data into train, validation and test datasets.
@@ -575,19 +568,16 @@ class AutoEncoder:
             data[0],
             context_window,
             id_data=self.id_data[0] if self.id_data is not None else None,
-            bidirectional=self.bidirectional,
         )
         self.x_val = time_series_to_sequence(
             data[1],
             context_window,
             id_data=self.id_data[1] if self.id_data is not None else None,
-            bidirectional=self.bidirectional,
         )
         self.x_test = time_series_to_sequence(
             data[2],
             context_window,
             id_data=self.id_data[2] if self.id_data is not None else None,
-            bidirectional=self.bidirectional,
         )
 
         self.samples = (
@@ -784,9 +774,13 @@ class AutoEncoder:
 
         if self.normalize:
             if self.normalization_method == "minmax":
-                x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
+                x_train_converted = (
+                    x_train_converted * (scale_max - scale_min) + scale_min
+                )
                 x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-                x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
+                x_test_converted = (
+                    x_test_converted * (scale_max - scale_min) + scale_min
+                )
             elif self.normalization_method == "zscore":
                 x_train_converted = x_train_converted * scale_std + scale_mean
                 x_val_converted = x_val_converted * scale_std + scale_mean

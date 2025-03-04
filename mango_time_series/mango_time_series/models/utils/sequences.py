@@ -9,7 +9,6 @@ def time_series_to_sequence(
     data: Union[np.ndarray, pd.DataFrame, pl.DataFrame],
     context_window: int,
     id_data: Union[np.ndarray, pd.DataFrame, pl.DataFrame] = None,
-    bidirectional: bool = False,
 ) -> np.ndarray:
     """
     Convert a time series to a sequence of context_window length to be used with recurrent neural networks.
@@ -26,8 +25,6 @@ def time_series_to_sequence(
     :type context_window: int
     :param id_data: id data
     :type id_data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]
-    :param bidirectional: whether to create bidirectional sequences
-    :type bidirectional: bool
     :return: reshaped data
     :rtype: np.ndarray
     """
@@ -64,38 +61,20 @@ def time_series_to_sequence(
             # get the index of the unique id
             id_index = np.where(id_data == unique_id)[0]
             data_i = data[id_index]
-            if bidirectional:
-                sequences_i = np.array(
-                    [
-                        data_i[t - context_window : t]
-                        for t in range(
-                            context_window, len(data_i) - context_window + 1, 1
-                        )
-                    ]
-                )
-            else:
-                sequences_i = np.array(
-                    [
-                        data_i[t - context_window : t]
-                        for t in range(context_window, len(data_i) + 1, 1)
-                    ]
-                )
+            sequences_i = np.array(
+                [
+                    data_i[t - context_window : t]
+                    for t in range(context_window, len(data_i) + 1, 1)
+                ]
+            )
             sequences.extend(sequences_i)
         sequences = np.array(sequences)
 
     else:
-        if bidirectional:
-            sequences = np.array(
-                [
-                    data[t - context_window : t]
-                    for t in range(context_window, len(data) - context_window + 1, 1)
-                ]
-            )
-        else:
-            sequences = np.array(
-                [
-                    data[t - context_window : t]
-                    for t in range(context_window, len(data) + 1, 1)
-                ]
-            )
+        sequences = np.array(
+            [
+                data[t - context_window : t]
+                for t in range(context_window, len(data) + 1, 1)
+            ]
+        )
     return sequences
