@@ -93,6 +93,7 @@ class TestEncoder(unittest.TestCase):
         """
         model = encoder(
             form="dense",
+            context_window=10,
             features=5,
             hidden_dim=32,
             num_layers=2,
@@ -456,6 +457,76 @@ class TestAutoEncoder(unittest.TestCase):
             str(context.exception),
         )
 
+
+class TestAutoEncoderLoss(unittest.TestCase):
+    def setUp(self):
+        """
+        Generate synthetic sensor data for testing.
+        """
+        np.random.seed(42)
+        self.samples = 100
+        self.features = 4
+        self.data = np.random.rand(self.samples, self.features) * 10
+
+        # Introduce missing values (20%)
+        self.mask = np.ones_like(self.data)
+        missing_entries = np.random.choice([0, 1], size=self.data.shape, p=[0.2, 0.8])
+        self.data[missing_entries == 0] = np.nan
+        self.mask[missing_entries == 0] = 0
+
+        # Simulate reconstructed data with slight noise
+        self.reconstructed_data = np.nan_to_num(self.data) + np.random.normal(0, 0.5, self.data.shape)
+
+        # Define feature weights
+        self.feature_weights = [1.0, 0.5, 1.2, 0.8]
+
+        # Initialize AutoEncoder instances with required parameters
+        self.autoencoder_with_features = AutoEncoder(
+            form="lstm",
+            data=self.data,
+            context_window=10,
+            num_layers=2,
+            hidden_dim=[32, 16],
+            feature_weights=self.feature_weights,
+            epochs=5
+        )
+
+        self.autoencoder_without_features = AutoEncoder(
+            form="lstm",
+            data=self.data,
+            context_window=10,
+            num_layers=2,
+            hidden_dim=[32, 16],
+            epochs=5
+        )
+
+    def test_loss_no_mask_no_weights(self):
+        """
+        Test loss calculation without mask and without feature weights.
+        """
+        loss = self.autoencoder_without_features.masked_weighted_mse(self.data, self.reconstructed_data)
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
+
+    def test_loss_weights_no_mask(self):
+        """
+        Test loss calculation with feature weights but without mask.
+        """
+        loss = self.autoencoder_with_features.masked_weighted_mse(self.data, self.reconstructed_data)
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
+
+    def test_loss_mask_no_weights(self):
+        """
+        Test loss calculation with mask but without feature weights.
+        """
+        loss = self.autoencoder_without_features.masked_weighted_mse(self.data, self.reconstructed_data, mask=self.mask)
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
+
+    def test_loss_mask_and_weights(self):
+        """
+        Test loss calculation with both mask and feature weights.
+        """
+        loss = self.autoencoder_with_features.masked_weighted_mse(self.data, self.reconstructed_data, mask=self.mask)
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
 
 if __name__ == "__main__":
     unittest.main()

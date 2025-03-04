@@ -1,4 +1,4 @@
-import logging
+
 import os
 from typing import Union, List, Tuple, Any, Optional
 
@@ -6,6 +6,7 @@ import numpy as np
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
+from mango.logging.logger import get_basic_logger
 from tensorflow.keras.models import load_model
 
 from mango_time_series.models.losses import mean_squared_error
@@ -16,7 +17,7 @@ from mango_time_series.models.utils.plots import (
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
-logger = logging.getLogger(__name__)
+logger = get_basic_logger()
 
 
 class AutoEncoder:
@@ -52,6 +53,7 @@ class AutoEncoder:
         patience: int = 10,
         verbose: bool = False,
         feature_names: Optional[List[str]] = None,
+        feature_weights: Optional[List[float]] = None,
     ):
         """
         Initialize the Autoencoder model
@@ -120,6 +122,9 @@ class AutoEncoder:
         :param feature_names: optional list of feature names to use for the model.
             If provided, these names will be used instead of automatically extracted ones.
         :type feature_names: Optional[List[str]]
+        :param feature_weights: optional list of feature weights to use for the model.
+            If provided, these weights will be used to scale the loss for each feature.
+        :type feature_weights: Optional[List[float]]
         """
 
         root_dir = os.path.abspath(os.getcwd())
@@ -300,6 +305,7 @@ class AutoEncoder:
 
         self.use_early_stopping = use_early_stopping
         self.patience = patience
+        self.feature_weights = feature_weights
 
     @staticmethod
     def create_folder_structure(folder_structure: List[str]):
@@ -532,6 +538,42 @@ class AutoEncoder:
 
         return True
 
+    def masked_weighted_mse(self, y_true, y_pred, mask=None):
+        """
+        Compute Mean Squared Error (MSE) with optional masking and feature weights.
+
+        :param y_true: Ground truth values (batch_size, seq_length, num_features)
+        :param y_pred: Predicted values (batch_size, seq_length, num_features)
+        :param mask: Optional binary mask (batch_size, seq_length, num_features), 1 for observed values, 0 for missing values
+        :return: Masked and weighted MSE loss
+        """
+        y_true = tf.cast(y_true, tf.float32)
+        y_pred = tf.cast(y_pred, tf.float32)
+
+        squared_error = tf.square(y_true - y_pred)
+
+        # Apply mask if provided
+        if mask is not None:
+            mask = tf.cast(mask, tf.float32)
+            squared_error = squared_error * mask
+
+        # Apply feature-specific weights if provided
+        if self.feature_weights is not None:
+            feature_weights = tf.convert_to_tensor(
+                self.feature_weights, dtype=tf.float32
+            )
+            squared_error = squared_error * feature_weights
+
+        # Compute mean only over observed values if mask is provided
+        if mask is not None:
+            loss = tf.reduce_sum(squared_error) / tf.reduce_sum(
+                mask + tf.keras.backend.epsilon()
+            )
+        else:
+            loss = tf.reduce_mean(squared_error)
+
+        return loss
+
     @staticmethod
     def _get_optimizer(optimizer_name: str):
         """
@@ -560,10 +602,11 @@ class AutoEncoder:
         """
 
         @tf.function
-        def train_step(x):
+        def train_step(x, mask=None):
             """
             Training step for the model.
             :param x: input data
+            :param mask: optional binary mask for missing
             """
             with tf.GradientTape() as autoencoder_tape:
                 x = tf.cast(x, tf.float32)
@@ -578,7 +621,7 @@ class AutoEncoder:
                 x_pred = tf.expand_dims(x_hat, axis=1)
 
                 # Calculate mean loss across all selected points
-                train_loss = mean_squared_error(x_real, x_pred)
+                train_loss = self.masked_weighted_mse(x_real, x_pred, mask)
 
             autoencoder_gradient = autoencoder_tape.gradient(
                 train_loss, self.model.trainable_variables
