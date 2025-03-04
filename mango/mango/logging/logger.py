@@ -423,7 +423,10 @@ def get_configured_logger(
 
         return logger
     else:
-        logger = logging.getLogger(logger_type)
+        if "AIRFLOW_HOME" in os.environ:
+            logger = logging.getLogger(__name__)
+        else:
+            logger = logging.getLogger(logger_type)
 
     # If no configuration is provided, use default
     logging_config = copy.deepcopy(config_dict or LOGGING_DICT_DEFAULT)
