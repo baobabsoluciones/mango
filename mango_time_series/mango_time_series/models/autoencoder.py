@@ -242,6 +242,10 @@ class AutoEncoder:
                 raise ValueError(
                     f"Bidirectional is not supported for decoder type '{form}'."
                 )
+        if bidirectional_encoder or bidirectional_decoder:
+            self.bidirectional = True
+        else:
+            self.bidirectional = False
 
         if normalization_method not in ["minmax", "zscore"]:
             raise ValueError(
@@ -505,7 +509,12 @@ class AutoEncoder:
 
         # We need to transform the data into a sequence of data.
         self.data = np.copy(data)
-        temp_data = time_series_to_sequence(self.data, context_window, id_data=self.id_data)
+        temp_data = time_series_to_sequence(
+            self.data,
+            context_window,
+            id_data=self.id_data,
+            bidirectional=self.bidirectional,
+        )
 
         # We need to split the data into train, validation and test datasets.
         # Validation should be 10% of the total data,
@@ -565,16 +574,19 @@ class AutoEncoder:
             data[0],
             context_window,
             id_data=self.id_data[0] if self.id_data is not None else None,
+            bidirectional=self.bidirectional,
         )
         self.x_val = time_series_to_sequence(
             data[1],
             context_window,
-            self.id_data[1] if self.id_data is not None else None,
+            id_data=self.id_data[1] if self.id_data is not None else None,
+            bidirectional=self.bidirectional,
         )
         self.x_test = time_series_to_sequence(
             data[2],
             context_window,
-            self.id_data[2] if self.id_data is not None else None,
+            id_data=self.id_data[2] if self.id_data is not None else None,
+            bidirectional=self.bidirectional,
         )
 
         self.samples = (
