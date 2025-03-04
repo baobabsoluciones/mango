@@ -488,6 +488,7 @@ class AutoEncoder:
         :type split_size: float
         :return: True if the dataset is prepared successfully
         """
+        # FIXME: Normalize should be done based on the train data only
         # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
         # Normalization can be done using minmax or zscore methods.
         # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
