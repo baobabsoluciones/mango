@@ -358,6 +358,8 @@ def get_configured_logger(
             if log_console_level or log_file_level:
                 # Set the minimum level for the logger or 30 - WARNING (root logger default)
                 logger.setLevel(min(log_console_level or 30, log_file_level or 30))
+        else:
+            logger.setLevel(log_console_level or 30)
 
         # Create a console handler with the specified format
         console_handler = logging.StreamHandler()
