@@ -54,7 +54,6 @@ class AutoEncoder:
         feature_names: Optional[List[str]] = None,
         feature_weights: Optional[List[float]] = None,
         shuffle_train: bool = False,
-        shuffle_val_test: bool = False,
     ):
         """
         Initialize the Autoencoder model
@@ -128,8 +127,6 @@ class AutoEncoder:
         :type feature_weights: Optional[List[float]]
         :param shuffle_train: whether to shuffle the training dataset
         :type shuffle_train: bool
-        :param shuffle_val_test: whether to shuffle the validation and test datasets
-        :type shuffle_val_test: bool
         """
 
         root_dir = os.path.abspath(os.getcwd())
@@ -233,7 +230,6 @@ class AutoEncoder:
         self.output_features = len(self.feature_to_check)
 
         self.shuffle_train = shuffle_train
-        self.shuffle_val_test = shuffle_val_test
         train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
 
         if self.shuffle_train:
@@ -241,13 +237,8 @@ class AutoEncoder:
         train_dataset = train_dataset.cache().batch(batch_size)
 
         val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
-        test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
-
-        if self.shuffle_val_test:
-            val_dataset = val_dataset.shuffle(buffer_size=len(self.x_val))
-            test_dataset = test_dataset.shuffle(buffer_size=len(self.x_test))
-
         val_dataset = val_dataset.cache().batch(batch_size)
+        test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
         test_dataset = test_dataset.cache().batch(batch_size)
 
         self.bidirectional_encoder = bidirectional_encoder
