@@ -54,7 +54,7 @@ class AutoEncoder:
         feature_names: Optional[List[str]] = None,
         feature_weights: Optional[List[float]] = None,
         shuffle_train: bool = False,
-        suffle_val_test: bool = False,
+        shuffle_val_test: bool = False,
     ):
         """
         Initialize the Autoencoder model
@@ -126,6 +126,10 @@ class AutoEncoder:
         :param feature_weights: optional list of feature weights to use for the model.
             If provided, these weights will be used to scale the loss for each feature.
         :type feature_weights: Optional[List[float]]
+        :param shuffle_train: whether to shuffle the training dataset
+        :type shuffle_train: bool
+        :param shuffle_val_test: whether to shuffle the validation and test datasets
+        :type shuffle_val_test: bool
         """
 
         root_dir = os.path.abspath(os.getcwd())
@@ -229,7 +233,7 @@ class AutoEncoder:
         self.output_features = len(self.feature_to_check)
 
         self.shuffle_train = shuffle_train
-        self.shuffle_val_test = suffle_val_test
+        self.shuffle_val_test = shuffle_val_test
         train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
 
         if self.shuffle_train:
