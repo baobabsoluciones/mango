@@ -520,7 +520,7 @@ class TestAutoEncoderLoss(unittest.TestCase):
         Test loss calculation with feature weights but without mask.
         """
         loss = self.autoencoder_with_features.masked_weighted_mse(
-            self.data, self.reconstructed_data
+            self.data_no_nans, self.reconstructed_data
         )
         self.assertGreater(loss.numpy(), 0, "Loss should be positive")
 

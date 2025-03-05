@@ -1,4 +1,3 @@
-
 import os
 from typing import Union, List, Tuple, Any, Optional
 
@@ -550,12 +549,13 @@ class AutoEncoder:
         y_true = tf.cast(y_true, tf.float32)
         y_pred = tf.cast(y_pred, tf.float32)
 
-        squared_error = tf.square(y_true - y_pred)
-
         # Apply mask if provided
         if mask is not None:
             mask = tf.cast(mask, tf.float32)
-            squared_error = squared_error * mask
+            y_true = tf.where(mask > 0, y_true, tf.zeros_like(y_true))
+            y_pred = tf.where(mask > 0, y_pred, tf.zeros_like(y_pred))
+
+        squared_error = tf.square(y_true - y_pred)
 
         # Apply feature-specific weights if provided
         if self.feature_weights is not None:
