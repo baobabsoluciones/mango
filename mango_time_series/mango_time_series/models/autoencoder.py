@@ -488,40 +488,50 @@ class AutoEncoder:
         :type split_size: float
         :return: True if the dataset is prepared successfully
         """
-        # FIXME: Normalize should be done based on the train data only
+        # We need to split the data into train, validation and test datasets.
+        # Validation should be 10% of the total data,
+        # so train is split_size - 10% and test is 100% - split_size
+        train_split_point = round((split_size - 0.1) * data.shape[0])
+        val_split_point = train_split_point + round(0.1 * data.shape[0])
+
+        x_train = data[:train_split_point, :]
+        x_val = data[train_split_point:val_split_point, :]
+        x_test = data[val_split_point:, :]
+
         # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
         # Normalization can be done using minmax or zscore methods.
         # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
         if normalize:
-            data = data.astype(np.float64)
+            x_train = x_train.astype(np.float64)
             if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
+                self.max_x = np.max(x_train, axis=0)
+                self.min_x = np.min(x_train, axis=0)
+                range_x = self.max_x - self.min_x
+                x_train = (x_train - self.min_x) / range_x
+                x_val = (x_val - self.min_x) / range_x
+                x_test = (x_test - self.min_x) / range_x
 
             elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                # Avoid division by zero
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
+                self.mean_ = np.mean(x_train, axis=0)
+                self.std_ = np.std(x_train, axis=0)
+                x_train = (x_train - self.mean_) / self.std_
+                x_val = (x_val - self.mean_) / self.std_
+                x_test = (x_test - self.mean_) / self.std_
 
         # We need to transform the data into a sequence of data.
-        self.data = np.copy(data)
-        temp_data = time_series_to_sequence(
-            self.data, context_window, id_data=self.id_data
+        self.data = (x_train, x_val, x_test)
+        temp_train = time_series_to_sequence(
+            x_train, context_window, id_data=self.id_data
         )
+        temp_val = time_series_to_sequence(x_val, context_window, id_data=self.id_data)
+        temp_test = time_series_to_sequence(
+            x_test, context_window, id_data=self.id_data
+        )
+        self.samples = temp_train.shape[0] + temp_val.shape[0] + temp_test.shape[0]
 
-        # We need to split the data into train, validation and test datasets.
-        # Validation should be 10% of the total data,
-        # so train is split_size - 10% and test is 100% - split_size
-        self.samples = temp_data.shape[0]
-
-        train_split_point = round((split_size - 0.1) * self.samples)
-        val_split_point = train_split_point + round(0.1 * self.samples)
-
-        self.x_train = temp_data[:train_split_point, :, :]
-        self.x_val = temp_data[train_split_point:val_split_point, :, :]
-        self.x_test = temp_data[val_split_point:, :, :]
+        self.x_train = temp_train
+        self.x_val = temp_val
+        self.x_test = temp_test
 
         return True
 
@@ -541,42 +551,41 @@ class AutoEncoder:
         :type normalize: bool
         :return: True if the dataset is prepared successfully
         """
-        if normalize:
-            data = [np_ar.astype(np.float64) for np_ar in data]
-            train = data[0].shape[0]
-            val = data[1].shape[0]
 
-            data = np.concatenate((data[0], data[1], data[2]), axis=0)
+        x_train, x_val, x_test = data
+
+        if normalize:
+            x_train = x_train.astype(np.float64)
 
             if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
+                self.max_x = np.max(x_train, axis=0)
+                self.min_x = np.min(x_train, axis=0)
+                range_x = self.max_x - self.min_x + 1e-8  # Evita división por cero
+                x_train = (x_train - self.min_x) / range_x
+                x_val = (x_val - self.min_x) / range_x
+                x_test = (x_test - self.min_x) / range_x
+
             elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
+                self.mean_ = np.mean(x_train, axis=0)
+                self.std_ = np.std(x_train, axis=0) + 1e-8  # Evita división por cero
+                x_train = (x_train - self.mean_) / self.std_
+                x_val = (x_val - self.mean_) / self.std_
+                x_test = (x_test - self.mean_) / self.std_
 
-            data_train = data[:train, :]
-            data_val = data[train : train + val, :]
-            data_test = data[train + val :, :]
-
-            data = tuple([data_train, data_val, data_test])
-
-        self.data = data
+        self.data = (x_train, x_val, x_test)
 
         self.x_train = time_series_to_sequence(
-            data[0],
+            x_train,
             context_window,
             id_data=self.id_data[0] if self.id_data is not None else None,
         )
         self.x_val = time_series_to_sequence(
-            data[1],
+            x_val,
             context_window,
             id_data=self.id_data[1] if self.id_data is not None else None,
         )
         self.x_test = time_series_to_sequence(
-            data[2],
+            x_test,
             context_window,
             id_data=self.id_data[2] if self.id_data is not None else None,
         )
@@ -738,22 +747,18 @@ class AutoEncoder:
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
         """
         # Calculate fitted values for each dataset
-        x_hat_train = self.model(self.x_train)
-        x_hat_val = self.model(self.x_val)
-        x_hat_test = self.model(self.x_test)
-
-        # Convert to numpy arrays
-        x_hat_train = x_hat_train.numpy()
-        x_hat_val = x_hat_val.numpy()
-        x_hat_test = x_hat_test.numpy()
+        x_hat_train = self.model(self.x_train).numpy()
+        x_hat_val = self.model(self.x_val).numpy()
+        x_hat_test = self.model(self.x_test).numpy()
 
         if self.normalize:
             if self.normalization_method == "minmax":
                 scale_max = self.max_x[self.feature_to_check]
                 scale_min = self.min_x[self.feature_to_check]
-                x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-                x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-                x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
+                range_x = scale_max - scale_min
+                x_hat_train = x_hat_train * range_x + scale_min
+                x_hat_val = x_hat_val * range_x + scale_min
+                x_hat_test = x_hat_test * range_x + scale_min
             elif self.normalization_method == "zscore":
                 scale_mean = self.mean_[self.feature_to_check]
                 scale_std = self.std_[self.feature_to_check]
@@ -775,13 +780,9 @@ class AutoEncoder:
 
         if self.normalize:
             if self.normalization_method == "minmax":
-                x_train_converted = (
-                    x_train_converted * (scale_max - scale_min) + scale_min
-                )
-                x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-                x_test_converted = (
-                    x_test_converted * (scale_max - scale_min) + scale_min
-                )
+                x_train_converted = x_train_converted * range_x + scale_min
+                x_val_converted = x_val_converted * range_x + scale_min
+                x_test_converted = x_test_converted * range_x + scale_min
             elif self.normalization_method == "zscore":
                 x_train_converted = x_train_converted * scale_std + scale_mean
                 x_val_converted = x_val_converted * scale_std + scale_mean
@@ -791,12 +792,12 @@ class AutoEncoder:
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
         )
 
-        # Get feature labels for the selected features
-        if hasattr(self, "features_name") and self.features_name:
-            # If we have feature names, extract only those that correspond to feature_to_check
-            feature_labels = [self.features_name[i] for i in self.feature_to_check]
-        else:
-            feature_labels = None
+        # Get feature labels for the selected features, if we have feature names, extract only those that correspond to feature_to_check
+        feature_labels = (
+            [self.features_name[i] for i in self.feature_to_check]
+            if hasattr(self, "features_name")
+            else None
+        )
 
         plot_actual_and_reconstructed(
             actual=x_converted,
