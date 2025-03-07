@@ -17,6 +17,7 @@ from .file_functions import (
     is_excel_file,
     is_json_file,
 )
+from .data_imputer import DataImputer
 from .object_functions import (
     pickle_copy,
     unique,
