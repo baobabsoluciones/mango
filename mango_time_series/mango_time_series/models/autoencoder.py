@@ -194,6 +194,17 @@ class AutoEncoder:
         else:
             self.id_data = None
 
+        if self.id_data is not None:
+            unique_ids, counts = np.unique(self.id_data, return_counts=True)
+            min_samples_per_id = np.min(counts)
+
+            if min_samples_per_id < context_window:
+                raise ValueError(
+                    f"The minimum number of samples per ID is {min_samples_per_id}, "
+                    f"but the context_window is {context_window}. "
+                    "Reduce the context_window or ensure each ID has enough data."
+                )
+
         # Store feature names or generate default names
         if feature_names:
             # Use user-provided feature names
@@ -314,6 +325,12 @@ class AutoEncoder:
         if isinstance(time_step_to_check, int):
             time_step_to_check = [time_step_to_check]
         self.time_step_to_check = time_step_to_check
+
+        max_time_step = self.context_window - 1
+        if any(t > max_time_step for t in self.time_step_to_check):
+            raise ValueError(
+                f"time_step_to_check contains invalid indices. Must be between 0 and {max_time_step}."
+            )
 
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -491,12 +508,45 @@ class AutoEncoder:
         # We need to split the data into train, validation and test datasets.
         # Validation should be 10% of the total data,
         # so train is split_size - 10% and test is 100% - split_size
-        train_split_point = round((split_size - 0.1) * data.shape[0])
-        val_split_point = train_split_point + round(0.1 * data.shape[0])
+        # FIXME: Need to check if this is the best way to split the data
+        if self.id_data is not None:
+            unique_ids = np.unique(self.id_data)
+            train_indices, val_indices, test_indices = [], [], []
 
-        x_train = data[:train_split_point, :]
-        x_val = data[train_split_point:val_split_point, :]
-        x_test = data[val_split_point:, :]
+            for uid in unique_ids:
+                id_idx = np.where(self.id_data == uid)[0]
+
+                # ¿Necesario?
+                # id_idx = np.sort(id_idx)
+
+                train_cutoff = round(split_size * len(id_idx))
+                val_cutoff = train_cutoff + round(0.1 * len(id_idx))
+
+                train_indices.extend(id_idx[:train_cutoff])
+                val_indices.extend(id_idx[train_cutoff:val_cutoff])
+                test_indices.extend(id_idx[val_cutoff:])
+
+            train_idx = np.array(train_indices)
+            val_idx = np.array(val_indices)
+            test_idx = np.array(test_indices)
+
+            x_train, x_val, x_test = data[train_idx], data[val_idx], data[test_idx]
+            id_train, id_val, id_test = (
+                self.id_data[train_idx],
+                self.id_data[val_idx],
+                self.id_data[test_idx],
+            )
+
+        else:
+            # Default behavior if no IDs are provided
+            train_split_point = round((split_size - 0.1) * data.shape[0])
+            val_split_point = train_split_point + round(0.1 * data.shape[0])
+
+            x_train = data[:train_split_point, :]
+            x_val = data[train_split_point:val_split_point, :]
+            x_test = data[val_split_point:, :]
+
+            id_train = id_val = id_test = None
 
         # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
         # Normalization can be done using minmax or zscore methods.
@@ -520,18 +570,22 @@ class AutoEncoder:
 
         # We need to transform the data into a sequence of data.
         self.data = (x_train, x_val, x_test)
-        temp_train = time_series_to_sequence(
-            x_train, context_window, id_data=self.id_data
+        self.x_train = time_series_to_sequence(
+            x_train, context_window, id_data=id_train
         )
-        temp_val = time_series_to_sequence(x_val, context_window, id_data=self.id_data)
-        temp_test = time_series_to_sequence(
-            x_test, context_window, id_data=self.id_data
-        )
-        self.samples = temp_train.shape[0] + temp_val.shape[0] + temp_test.shape[0]
+        self.x_val = time_series_to_sequence(x_val, context_window, id_data=id_val)
+        self.x_test = time_series_to_sequence(x_test, context_window, id_data=id_test)
 
-        self.x_train = temp_train
-        self.x_val = temp_val
-        self.x_test = temp_test
+        if self.x_val.shape[0] == 0 or self.x_test.shape[0] == 0:
+            raise ValueError(
+                "Validation or Test sets are empty after sequence transformation. "
+                "Consider reducing context_window or adjusting split_size."
+            )
+
+        # Update samples count
+        self.samples = (
+            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
+        )
 
         return True
 
@@ -560,14 +614,14 @@ class AutoEncoder:
             if self.normalization_method == "minmax":
                 self.max_x = np.max(x_train, axis=0)
                 self.min_x = np.min(x_train, axis=0)
-                range_x = self.max_x - self.min_x + 1e-8  # Evita división por cero
+                range_x = self.max_x - self.min_x
                 x_train = (x_train - self.min_x) / range_x
                 x_val = (x_val - self.min_x) / range_x
                 x_test = (x_test - self.min_x) / range_x
 
             elif self.normalization_method == "zscore":
                 self.mean_ = np.mean(x_train, axis=0)
-                self.std_ = np.std(x_train, axis=0) + 1e-8  # Evita división por cero
+                self.std_ = np.std(x_train, axis=0)
                 x_train = (x_train - self.mean_) / self.std_
                 x_val = (x_val - self.mean_) / self.std_
                 x_test = (x_test - self.mean_) / self.std_
@@ -805,6 +859,7 @@ class AutoEncoder:
             save_path=os.path.join(self.save_path, "plots"),
             feature_labels=feature_labels,
             split_size=self.split_size,
+            ids=self.id_data,
         )
 
         return True
