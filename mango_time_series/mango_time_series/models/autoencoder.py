@@ -769,9 +769,21 @@ class AutoEncoder:
 
         self.data = (x_train, x_val, x_test)
 
-        self.x_train = time_series_to_sequence(x_train, context_window, id_data=self.id_data[0] if self.id_data is not None else None)
-        self.x_val = time_series_to_sequence(x_val, context_window, id_data=self.id_data[1] if self.id_data is not None else None)
-        self.x_test = time_series_to_sequence(x_test, context_window, id_data=self.id_data[2] if self.id_data is not None else None)
+        self.x_train = time_series_to_sequence(
+            x_train,
+            context_window,
+            id_data=self.id_data[0] if self.id_data is not None else None,
+        )
+        self.x_val = time_series_to_sequence(
+            x_val,
+            context_window,
+            id_data=self.id_data[1] if self.id_data is not None else None,
+        )
+        self.x_test = time_series_to_sequence(
+            x_test,
+            context_window,
+            id_data=self.id_data[2] if self.id_data is not None else None,
+        )
 
         self.samples = (
             self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
