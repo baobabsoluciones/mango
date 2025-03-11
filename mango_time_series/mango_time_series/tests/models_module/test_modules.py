@@ -6,6 +6,7 @@ from keras.src.layers import Bidirectional
 
 from mango_time_series.models.autoencoder import AutoEncoder
 from mango_time_series.models.modules import encoder, decoder
+from mango.processing.data_imputer import DataImputer
 
 
 class TestEncoder(unittest.TestCase):
@@ -93,6 +94,7 @@ class TestEncoder(unittest.TestCase):
         """
         model = encoder(
             form="dense",
+            context_window=10,
             features=5,
             hidden_dim=32,
             num_layers=2,
@@ -377,7 +379,6 @@ class TestAutoEncoder(unittest.TestCase):
             form="lstm",
             data=np.random.rand(100, 5),
             context_window=10,
-            num_layers=2,
             hidden_dim=hidden_dims,
             bidirectional_encoder=True,
             bidirectional_decoder=True,
@@ -418,7 +419,6 @@ class TestAutoEncoder(unittest.TestCase):
                 form="dense",
                 data=data,
                 context_window=10,
-                num_layers=2,
                 hidden_dim=[32, 16],
                 bidirectional_encoder=True,
             )
@@ -432,7 +432,6 @@ class TestAutoEncoder(unittest.TestCase):
                 form="dense",
                 data=data,
                 context_window=10,
-                num_layers=2,
                 hidden_dim=[32, 16],
                 bidirectional_decoder=True,
             )
@@ -446,7 +445,6 @@ class TestAutoEncoder(unittest.TestCase):
                 form="dense",
                 data=data,
                 context_window=10,
-                num_layers=2,
                 hidden_dim=[32, 16],
                 bidirectional_encoder=True,
                 bidirectional_decoder=True,
@@ -455,6 +453,219 @@ class TestAutoEncoder(unittest.TestCase):
             "Bidirectional is not supported for encoder and decoder type 'dense'",
             str(context.exception),
         )
+
+
+class TestAutoEncoderLoss(unittest.TestCase):
+    def setUp(self):
+        """
+        Generate synthetic sensor data for testing.
+        """
+        np.random.seed(42)
+        self.samples = 100
+        self.features = 4
+        self.data = np.random.rand(self.samples, self.features) * 10
+
+        # Introduce missing values (20%)
+        self.mask = np.ones_like(self.data)
+        missing_entries = np.random.choice([0, 1], size=self.data.shape, p=[0.2, 0.8])
+        self.data[missing_entries == 0] = np.nan
+        self.mask[missing_entries == 0] = 0
+
+        self.data_no_nans = np.where(
+            np.isnan(self.data), np.nanmean(self.data, axis=0), self.data
+        )
+
+        # Simulate reconstructed data with slight noise
+        self.reconstructed_data = np.nan_to_num(self.data) + np.random.normal(
+            0, 0.5, self.data.shape
+        )
+
+        # Define feature weights
+        self.feature_weights = [1.0, 0.5, 1.2, 0.8]
+
+    def test_loss_no_mask_no_weights(self):
+        """
+        Test loss calculation without mask and without feature weights.
+        """
+        autoencoder = AutoEncoder(
+            form="lstm",
+            data=self.data_no_nans,
+            context_window=10,
+            hidden_dim=[32, 16],
+            epochs=1,
+            use_mask=False,
+        )
+
+        loss = autoencoder.masked_weighted_mse(
+            self.data_no_nans, self.reconstructed_data
+        )
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
+
+    def test_loss_weights_no_mask(self):
+        """
+        Test loss calculation with feature weights but without mask.
+        """
+        autoencoder = AutoEncoder(
+            form="lstm",
+            data=self.data_no_nans,
+            context_window=10,
+            hidden_dim=[32, 16],
+            feature_weights=self.feature_weights,
+            epochs=1,
+            use_mask=False,
+        )
+
+        loss = autoencoder.masked_weighted_mse(
+            self.data_no_nans, self.reconstructed_data
+        )
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
+
+    def test_loss_mask_no_weights(self):
+        """
+        Test loss calculation with mask but without feature weights.
+        """
+        autoencoder = AutoEncoder(
+            form="lstm",
+            data=self.data,
+            context_window=10,
+            hidden_dim=[32, 16],
+            epochs=1,
+            use_mask=True,
+        )
+
+        loss = autoencoder.masked_weighted_mse(
+            self.data, self.reconstructed_data, mask=self.mask
+        )
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
+
+    def test_loss_mask_and_weights(self):
+        """
+        Test loss calculation with both mask and feature weights.
+        """
+        autoencoder = AutoEncoder(
+            form="lstm",
+            data=self.data,
+            context_window=10,
+            hidden_dim=[32, 16],
+            feature_weights=self.feature_weights,
+            epochs=1,
+            use_mask=True,
+        )
+
+        loss = autoencoder.masked_weighted_mse(
+            self.data, self.reconstructed_data, mask=self.mask
+        )
+        self.assertGreater(loss.numpy(), 0, "Loss should be positive")
+
+    def test_raise_error_nan_no_mask(self):
+        """
+        Test that an error is raised when NaNs are present and no mask is used.
+        """
+        with self.assertRaises(ValueError) as context:
+            AutoEncoder(
+                form="lstm",
+                data=self.data,
+                context_window=10,
+                hidden_dim=[32, 16],
+                epochs=1,
+                use_mask=False,
+            )
+        self.assertIn(
+            "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs.",
+            str(context.exception),
+        )
+
+    # def test_custom_mask_application(self):
+    #     """
+    #     Test that a custom mask is correctly applied.
+    #     """
+    #     custom_mask = np.random.choice([0, 1], size=self.data.shape, p=[0.2, 0.8])
+    #
+    #     autoencoder = AutoEncoder(
+    #         form="lstm",
+    #         data=self.data,
+    #         context_window=10,
+    #         hidden_dim=[32, 16],
+    #         epochs=1,
+    #         use_mask=True,
+    #         custom_mask=custom_mask,
+    #     )
+    #
+    #     # Ensure mask is correctly stored
+    #     np.testing.assert_array_equal(autoencoder.mask_train, custom_mask)
+
+    # def test_custom_mask_wrong_shape(self):
+    #     """
+    #     Test that providing a custom mask with incorrect shape raises an error.
+    #     """
+    #     custom_mask_wrong_shape = np.random.choice([0, 1], size=(50, 4), p=[0.2, 0.8])
+    #
+    #     with self.assertRaises(ValueError) as context:
+    #         AutoEncoder(
+    #             form="lstm",
+    #             data=self.data,
+    #             context_window=10,
+    #             hidden_dim=[32, 16],
+    #             epochs=1,
+    #             use_mask=True,
+    #             custom_mask=custom_mask_wrong_shape,
+    #         )
+    #     self.assertIn(
+    #         "custom_mask must have the same shape as the input data",
+    #         str(context.exception),
+    #     )
+
+    # def test_imputer_usage(self):
+    #     """
+    #     Test that the imputer is used when provided.
+    #     """
+    #     imputer = DataImputer(strategy="mean")
+    #
+    #     autoencoder = AutoEncoder(
+    #         form="lstm",
+    #         data=self.data,
+    #         context_window=10,
+    #         hidden_dim=[32, 16],
+    #         epochs=1,
+    #         use_mask=True,
+    #         imputer=imputer,
+    #     )
+    #
+    #     self.assertFalse(np.isnan(autoencoder.x_train).any())
+
+    # def test_shuffle_behavior(self):
+    #     """
+    #     Test that shuffling behaves as expected.
+    #     """
+    #     autoencoder = AutoEncoder(
+    #         form="lstm",
+    #         data=self.data_no_nans,
+    #         context_window=10,
+    #         hidden_dim=[32, 16],
+    #         epochs=1,
+    #         use_mask=False,
+    #         shuffle=True,
+    #         shuffle_buffer_size=50,
+    #     )
+    #
+    #     self.assertEqual(autoencoder.shuffle_buffer_size, 50)
+
+    # def test_shuffle_invalid_buffer_size(self):
+    #     """
+    #     Test that an invalid shuffle buffer size raises an error.
+    #     """
+    #     with self.assertRaises(ValueError) as context:
+    #         AutoEncoder(
+    #             form="lstm",
+    #             data=self.data_no_nans,
+    #             context_window=10,
+    #             hidden_dim=[32, 16],
+    #             epochs=1,
+    #             use_mask=False,
+    #             shuffle=True,
+    #             shuffle_buffer_size=-10,
+    #         )
+    #     self.assertIn("shuffle_buffer_size must be a positive integer", str(context.exception))
 
 
 if __name__ == "__main__":

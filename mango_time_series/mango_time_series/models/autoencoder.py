@@ -6,9 +6,10 @@ import numpy as np
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
+from mango.logging import get_configured_logger
+from mango.processing.data_imputer import DataImputer
 from tensorflow.keras.models import load_model
 
-from mango_time_series.models.losses import mean_squared_error
 from mango_time_series.models.modules import encoder, decoder
 from mango_time_series.models.utils.plots import (
     plot_actual_and_reconstructed,
@@ -16,7 +17,7 @@ from mango_time_series.models.utils.plots import (
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
-logger = logging.getLogger(__name__)
+logger = get_configured_logger()
 
 
 class AutoEncoder:
@@ -34,17 +35,15 @@ class AutoEncoder:
         context_window: int = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
-        num_layers: int = None,
         hidden_dim: Union[int, List[int]] = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
         activation_encoder: str = None,
         activation_decoder: str = None,
-        normalize: bool = True,
+        normalize: bool = False,
         normalization_method: str = "minmax",
         optimizer: str = "adam",
         batch_size: int = 32,
-        split_size: float = 0.7,
         epochs: int = 100,
         save_path: str = None,
         checkpoint: int = 10,
@@ -52,6 +51,17 @@ class AutoEncoder:
         patience: int = 10,
         verbose: bool = False,
         feature_names: Optional[List[str]] = None,
+        feature_weights: Optional[List[float]] = None,
+        shuffle: bool = False,
+        shuffle_buffer_size: Optional[int] = None,
+        use_mask: bool = False,
+        custom_mask: Optional[
+            Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        ] = None,
+        imputer: Optional[DataImputer] = None,
+        train_size: Optional[float] = None,
+        val_size: Optional[float] = None,
+        test_size: Optional[float] = None,
         id_columns: Union[str, int, List[str], List[int], None] = None,
     ):
         """
@@ -77,12 +87,6 @@ class AutoEncoder:
           indices to check. For taking only the last timestep of the context
           window this should be set to -1.
         :type time_step_to_check: Union[int, List[int]]
-        :param num_layers: number of internal layers. This number is used to
-          know the number of encoding layers after the input (the result of
-          the last layer is going to be the embedding of the autoencoder) and
-          the number of decoding layers before the output (the result of the
-          last layer is going to be the reconstructed data).
-        :type num_layers: int
         :param hidden_dim: number of hidden dimensions in the internal layers.
           It can be a single integer (same for all layers) or a list of
           dimensions for each layer.
@@ -121,6 +125,23 @@ class AutoEncoder:
         :param feature_names: optional list of feature names to use for the model.
             If provided, these names will be used instead of automatically extracted ones.
         :type feature_names: Optional[List[str]]
+        :param feature_weights: optional list of feature weights to use for the model.
+            If provided, these weights will be used to scale the loss for each feature.
+        :type feature_weights: Optional[List[float]]
+        :param shuffle: whether to shuffle the training dataset
+        :type shuffle: bool
+        :param use_mask: whether to use a mask for missing values
+        :type use_mask: bool
+        :param custom_mask: optional custom mask to use for missing values
+        :type custom_mask: Optional[np.array]
+        :param imputer: optional imputer to use for missing values
+        :type imputer: Optional[DataImputer]
+        :param train_size: proportion of the dataset to include in the training set
+        :type train_size: Optional[float]
+        :param val_size: proportion of the dataset to include in the validation set
+        :type val_size: Optional[float]
+        :param test_size: proportion of the dataset to include in the test set
+        :type test_size: Optional[float]
         :param id_columns: optional column(s) to process the data by groups.
             If provided, the data will be grouped by this column and processed separately.
             Can be a column name (str), a column index (int), or a list of either.
@@ -139,29 +160,21 @@ class AutoEncoder:
             ]
         )
 
-        # First we check if hidden dim is a list it has a number of elements
-        # equal to num_layers
         if isinstance(hidden_dim, list):
-            if len(hidden_dim) != num_layers:
-                raise ValueError(
-                    "hidden_dim must have a number of elements equal to num_layers"
-                )
-
-        # If hidden dim is not a list, we check if it is an integer and if it is greater
-        #  than 0
+            self.hidden_dim = hidden_dim
         elif isinstance(hidden_dim, int):
-            if hidden_dim <= 0:
-                raise ValueError("hidden_dim must be greater than 0")
-            else:
-                hidden_dim = [hidden_dim] * num_layers
-
-        # If hidden dim is not a list or an integer, we raise an error
+            self.hidden_dim = [hidden_dim]
         else:
             raise ValueError("hidden_dim must be a list of integers or an integer")
+
+        num_layers = len(self.hidden_dim)
 
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
+        self.use_mask = use_mask
+        if self.use_mask and custom_mask is not None:
+            custom_mask, _ = self._convert_data_to_numpy(custom_mask)
 
         # Handle id_columns
         if id_columns is not None:
@@ -238,6 +251,17 @@ class AutoEncoder:
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
 
+        if isinstance(data, tuple):
+            if not isinstance(custom_mask, tuple) or len(custom_mask) != 3:
+                raise ValueError(
+                    "If data is a tuple, custom_mask must also be a tuple of the same length."
+                )
+        else:
+            if isinstance(custom_mask, tuple):
+                raise ValueError(
+                    "If data is a single array, custom_mask cannot be a tuple."
+                )
+
         bidirectional_allowed = {"lstm", "gru", "rnn"}
 
         if form not in bidirectional_allowed:
@@ -259,9 +283,27 @@ class AutoEncoder:
                 "Invalid normalization method. Choose 'minmax' or 'zscore'."
             )
 
-        self.normalize = normalize
         self.normalization_method = normalization_method
-        self.prepare_datasets(data, context_window, normalize, split_size)
+
+        contains_nans = np.isnan(data).any() if isinstance(data, np.ndarray) else False
+        if contains_nans and not use_mask:
+            raise ValueError(
+                "Data contains NaNs, but use_mask is False. "
+                "Please remove or impute NaNs before training."
+            )
+
+        self.train_size = train_size
+        self.val_size = val_size
+        self.test_size = test_size
+
+        # if this three sizes are none, we set the default values
+        if self.train_size is None and self.val_size is None and self.test_size is None:
+            self.train_size = 0.8
+            self.val_size = 0.1
+            self.test_size = 0.1
+
+        self.prepare_datasets(data, context_window, normalize)
+        self.normalize = normalize
 
         if isinstance(feature_to_check, int):
             feature_to_check = [feature_to_check]
@@ -270,14 +312,94 @@ class AutoEncoder:
         self.input_features = self.x_train.shape[2]
         self.output_features = len(self.feature_to_check)
 
-        train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
-        train_dataset = train_dataset.cache().batch(batch_size)
+        self.shuffle = shuffle
 
-        val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
-        val_dataset = val_dataset.cache().batch(batch_size)
+        if self.shuffle:
+            if shuffle_buffer_size is not None:
+                if not isinstance(shuffle_buffer_size, int) or shuffle_buffer_size <= 0:
+                    raise ValueError("shuffle_buffer_size must be a positive integer.")
+                self.shuffle_buffer_size = shuffle_buffer_size
+            else:
+                self.shuffle_buffer_size = len(self.x_train)
+        else:
+            self.shuffle_buffer_size = None
 
-        test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
-        test_dataset = test_dataset.cache().batch(batch_size)
+        self.x_train_original = np.copy(self.x_train)
+
+        if self.use_mask:
+            if custom_mask is not None:
+                if isinstance(custom_mask, tuple):
+                    if len(custom_mask) != 3:
+                        raise ValueError(
+                            "If custom_mask is a tuple, it must contain three arrays (train, val, test)."
+                        )
+                    mask_train, mask_val, mask_test = custom_mask
+                    if (
+                        mask_train.shape != self.x_train.shape
+                        or mask_val.shape != self.x_val.shape
+                        or mask_test.shape != self.x_test.shape
+                    ):
+                        raise ValueError(
+                            "Each element of custom_mask must have the same shape as its corresponding dataset "
+                            "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
+                        )
+                else:
+                    if custom_mask.shape != data.shape:
+                        raise ValueError(
+                            "custom_mask must have the same shape as the original input data before transformation"
+                        )
+                    mask_train, mask_val, mask_test = self._time_series_split(
+                        custom_mask, self.train_size, self.val_size, self.test_size
+                    )
+            else:
+                mask_train = np.where(np.isnan(self.x_train), 0, 1)
+                mask_val = np.where(np.isnan(self.x_val), 0, 1)
+                mask_test = np.where(np.isnan(self.x_test), 0, 1)
+
+            self.mask_train = time_series_to_sequence(mask_train, context_window)
+            self.mask_val = time_series_to_sequence(mask_val, context_window)
+            self.mask_test = time_series_to_sequence(mask_test, context_window)
+
+            if imputer is not None:
+                self.x_train = imputer.apply_imputation(self.x_train)
+                self.x_val = imputer.apply_imputation(self.x_val)
+                self.x_test = imputer.apply_imputation(self.x_test)
+            else:
+                self.x_train = np.nan_to_num(self.x_train)
+                self.x_val = np.nan_to_num(self.x_val)
+                self.x_test = np.nan_to_num(self.x_test)
+
+            train_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_train, self.mask_train)
+            )
+            val_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_val, self.mask_val)
+            )
+            test_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_test, self.mask_test)
+            )
+
+        else:
+            if (
+                np.isnan(self.x_train).any()
+                or np.isnan(self.x_val).any()
+                or np.isnan(self.x_test).any()
+            ):
+                raise ValueError(
+                    "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
+                )
+
+            train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
+            val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
+            test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
+
+        if self.shuffle:
+            self.train_dataset = train_dataset.shuffle(
+                buffer_size=self.shuffle_buffer_size
+            )
+        self.train_dataset = train_dataset.cache().batch(batch_size)
+        self.val_dataset = val_dataset.cache().batch(batch_size)
+        self.test_dataset = test_dataset.cache().batch(batch_size)
 
         self.bidirectional_encoder = bidirectional_encoder
         self.bidirectional_decoder = bidirectional_decoder
@@ -333,13 +455,6 @@ class AutoEncoder:
             )
 
         self.hidden_dim = hidden_dim
-        self.num_layers = num_layers
-
-        self.train_dataset = train_dataset
-        self.val_dataset = val_dataset
-        self.test_dataset = test_dataset
-
-        self.split_size = split_size
 
         self.last_epoch = 0
         self.epochs = epochs
@@ -354,6 +469,7 @@ class AutoEncoder:
 
         self.use_early_stopping = use_early_stopping
         self.patience = patience
+        self.feature_weights = feature_weights
 
     @staticmethod
     def create_folder_structure(folder_structure: List[str]):
@@ -366,6 +482,53 @@ class AutoEncoder:
         """
         for path in folder_structure:
             os.makedirs(path, exist_ok=True)
+
+    @staticmethod
+    def _time_series_split(
+        data, train_size=None, val_size=None, test_size=None
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Splits data into training, validation, and test sets according to the specified percentages.
+
+        :param data: array-like data to split
+        :type data: np.ndarray
+        :param train_size: float, optional
+            Proportion of the dataset to include in the training set (0-1).
+        :param val_size: float, optional
+            Proportion of the dataset to include in the validation set (0-1).
+        :param test_size: float, optional
+            Proportion of the dataset to include in the test set (0-1).
+        :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
+            The training, validation, and test sets as numpy arrays.
+        """
+
+        if train_size is None and val_size is None and test_size is None:
+            raise ValueError(
+                "At least one of train_size, val_size, or test_size must be specified."
+            )
+
+        if train_size is None:
+            train_size = 1.0 - (val_size or 0) - (test_size or 0)
+        if val_size is None:
+            val_size = 1.0 - train_size - (test_size or 0)
+        if test_size is None:
+            test_size = 1.0 - train_size - val_size
+
+        total_size = train_size + val_size + test_size
+        if not np.isclose(total_size, 1.0):
+            raise ValueError(
+                f"The sum of train_size, val_size, and test_size must be 1.0, but got {total_size}."
+            )
+
+        n = len(data)
+        train_end = int(n * train_size)
+        val_end = train_end + int(n * val_size)
+
+        train_set = data[:train_end]
+        val_set = data[train_end:val_end] if val_size > 0 else None
+        test_set = data[val_end:] if test_size > 0 else None
+
+        return train_set, val_set, test_set
 
     @staticmethod
     def _convert_data_to_numpy(data):
@@ -450,12 +613,39 @@ class AutoEncoder:
                 f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
             )
 
+    def _normalize_data(self, x_train: np.array, x_val: np.array, x_test: np.array):
+        """
+        Normalize the data using the specified method.
+        :param x_train: training data
+        :type x_train: np.array
+        :param x_val: validation data
+        :type x_val: np.array
+        :param x_test: test data
+        :type x_test: np.array
+        :return: normalized data
+        """
+        # Normalize train for non nulls and apply the same transformation to val and test
+        mask = ~np.isnan(x_train)
+        if self.normalization_method == "minmax":
+            self.min_x = np.min(x_train[mask], axis=0)
+            self.max_x = np.max(x_train[mask], axis=0)
+            range_x = self.max_x - self.min_x
+            x_train = (x_train - self.min_x) / range_x
+            x_val = (x_val - self.min_x) / range_x
+            x_test = (x_test - self.min_x) / range_x
+        elif self.normalization_method == "zscore":
+            self.mean_ = np.mean(x_train[mask], axis=0)
+            self.std_ = np.std(x_train[mask], axis=0)
+            x_train = (x_train - self.mean_) / self.std_
+            x_val = (x_val - self.mean_) / self.std_
+            x_test = (x_test - self.mean_) / self.std_
+        return x_train, x_val, x_test
+
     def prepare_datasets(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
         context_window: int,
         normalize: bool,
-        split_size: float,
     ):
         """
         Prepare the datasets for the model training and testing.
@@ -468,16 +658,12 @@ class AutoEncoder:
         :type context_window: int
         :param normalize: whether to normalize the data or not
         :type normalize: bool
-        :param split_size: size of the split for the train, validation and test datasets
-        :type split_size: float
         :return: True if the datasets are prepared successfully
         """
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
-            return self._prepare_numpy_dataset(
-                data, context_window, normalize, split_size
-            )
+            return self._prepare_numpy_dataset(data, context_window, normalize)
         elif (
             isinstance(data, tuple)
             and len(data) == 3
@@ -494,7 +680,6 @@ class AutoEncoder:
     ):
         """
         Prepare the dataset for the model training and testing when the data is a single numpy array.
-
         :param data: numpy array with the data
         :type data: np.array
         :param context_window: context window for the model
@@ -505,10 +690,6 @@ class AutoEncoder:
         :type split_size: float
         :return: True if the dataset is prepared successfully
         """
-        # We need to split the data into train, validation and test datasets.
-        # Validation should be 10% of the total data,
-        # so train is split_size - 10% and test is 100% - split_size
-        # FIXME: Need to check if this is the best way to split the data
         if self.id_data is not None:
             unique_ids = np.unique(self.id_data)
             train_indices, val_indices, test_indices = [], [], []
@@ -538,35 +719,12 @@ class AutoEncoder:
             )
 
         else:
-            # Default behavior if no IDs are provided
-            train_split_point = round((split_size - 0.1) * data.shape[0])
-            val_split_point = train_split_point + round(0.1 * data.shape[0])
-
-            x_train = data[:train_split_point, :]
-            x_val = data[train_split_point:val_split_point, :]
-            x_test = data[val_split_point:, :]
-
-            id_train = id_val = id_test = None
-
-        # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
-        # Normalization can be done using minmax or zscore methods.
-        # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
+            x_train, x_val, x_test = self._time_series_split(
+                data, self.train_size, self.val_size, self.test_size
+            )
+        id_train = id_val = id_test = None
         if normalize:
-            x_train = x_train.astype(np.float64)
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(x_train, axis=0)
-                self.min_x = np.min(x_train, axis=0)
-                range_x = self.max_x - self.min_x
-                x_train = (x_train - self.min_x) / range_x
-                x_val = (x_val - self.min_x) / range_x
-                x_test = (x_test - self.min_x) / range_x
-
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(x_train, axis=0)
-                self.std_ = np.std(x_train, axis=0)
-                x_train = (x_train - self.mean_) / self.std_
-                x_val = (x_val - self.mean_) / self.std_
-                x_test = (x_test - self.mean_) / self.std_
+            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
         # We need to transform the data into a sequence of data.
         self.data = (x_train, x_val, x_test)
@@ -586,7 +744,6 @@ class AutoEncoder:
         self.samples = (
             self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
         )
-
         return True
 
     def _prepare_tuple_dataset(
@@ -605,50 +762,59 @@ class AutoEncoder:
         :type normalize: bool
         :return: True if the dataset is prepared successfully
         """
-
         x_train, x_val, x_test = data
 
         if normalize:
-            x_train = x_train.astype(np.float64)
-
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(x_train, axis=0)
-                self.min_x = np.min(x_train, axis=0)
-                range_x = self.max_x - self.min_x
-                x_train = (x_train - self.min_x) / range_x
-                x_val = (x_val - self.min_x) / range_x
-                x_test = (x_test - self.min_x) / range_x
-
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(x_train, axis=0)
-                self.std_ = np.std(x_train, axis=0)
-                x_train = (x_train - self.mean_) / self.std_
-                x_val = (x_val - self.mean_) / self.std_
-                x_test = (x_test - self.mean_) / self.std_
+            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
         self.data = (x_train, x_val, x_test)
 
-        self.x_train = time_series_to_sequence(
-            x_train,
-            context_window,
-            id_data=self.id_data[0] if self.id_data is not None else None,
-        )
-        self.x_val = time_series_to_sequence(
-            x_val,
-            context_window,
-            id_data=self.id_data[1] if self.id_data is not None else None,
-        )
-        self.x_test = time_series_to_sequence(
-            x_test,
-            context_window,
-            id_data=self.id_data[2] if self.id_data is not None else None,
-        )
+        self.x_train = time_series_to_sequence(x_train, context_window, id_data=self.id_data[0] if self.id_data is not None else None)
+        self.x_val = time_series_to_sequence(x_val, context_window, id_data=self.id_data[1] if self.id_data is not None else None)
+        self.x_test = time_series_to_sequence(x_test, context_window, id_data=self.id_data[2] if self.id_data is not None else None)
 
         self.samples = (
             self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
         )
 
         return True
+
+    def masked_weighted_mse(self, y_true, y_pred, mask=None):
+        """
+        Compute Mean Squared Error (MSE) with optional masking and feature weights.
+
+        :param y_true: Ground truth values (batch_size, seq_length, num_features)
+        :param y_pred: Predicted values (batch_size, seq_length, num_features)
+        :param mask: Optional binary mask (batch_size, seq_length, num_features), 1 for observed values, 0 for missing values
+        :return: Masked and weighted MSE loss
+        """
+        y_true = tf.cast(y_true, tf.float32)
+        y_pred = tf.cast(y_pred, tf.float32)
+
+        # Apply mask if provided
+        if mask is not None:
+            mask = tf.cast(mask, tf.float32)
+            y_true = tf.where(mask > 0, y_true, tf.zeros_like(y_true))
+            y_pred = tf.where(mask > 0, y_pred, tf.zeros_like(y_pred))
+
+        squared_error = tf.square(y_true - y_pred)
+
+        # Apply feature-specific weights if provided
+        if self.feature_weights is not None:
+            feature_weights = tf.convert_to_tensor(
+                self.feature_weights, dtype=tf.float32
+            )
+            squared_error = squared_error * feature_weights
+
+        # Compute mean only over observed values if mask is provided
+        if mask is not None:
+            loss = tf.reduce_sum(squared_error) / tf.reduce_sum(
+                mask + tf.keras.backend.epsilon()
+            )
+        else:
+            loss = tf.reduce_mean(squared_error)
+
+        return loss
 
     @staticmethod
     def _get_optimizer(optimizer_name: str):
@@ -678,10 +844,11 @@ class AutoEncoder:
         """
 
         @tf.function
-        def train_step(x):
+        def train_step(x, mask=None):
             """
             Training step for the model.
             :param x: input data
+            :param mask: optional binary mask for missing
             """
             with tf.GradientTape() as autoencoder_tape:
                 x = tf.cast(x, tf.float32)
@@ -696,7 +863,7 @@ class AutoEncoder:
                 x_pred = tf.expand_dims(x_hat, axis=1)
 
                 # Calculate mean loss across all selected points
-                train_loss = mean_squared_error(x_real, x_pred)
+                train_loss = self.masked_weighted_mse(x_real, x_pred, mask)
 
             autoencoder_gradient = autoencoder_tape.gradient(
                 train_loss, self.model.trainable_variables
@@ -709,10 +876,11 @@ class AutoEncoder:
             return train_loss
 
         @tf.function
-        def validation_step(x):
+        def validation_step(x, mask=None):
             """
             Validation step for the model.
             :param x: input data
+            :param mask: optional binary mask for missing
             """
             x = tf.cast(x, tf.float32)
 
@@ -725,7 +893,7 @@ class AutoEncoder:
 
             x_pred = tf.expand_dims(x_hat, axis=1)
             # Calculate mean loss across all selected points
-            val_loss = mean_squared_error(x_real, x_pred)
+            val_loss = self.masked_weighted_mse(x_real, x_pred, mask)
 
             return val_loss
 
@@ -738,8 +906,14 @@ class AutoEncoder:
         for epoch in range(1, self.epochs + 1):
             # Training loop
             epoch_train_losses = []
-            for data in self.train_dataset:
-                loss = train_step(data)
+            for batch in self.train_dataset:
+                if self.use_mask:
+                    data, mask = batch
+                else:
+                    data = batch
+                    mask = None
+
+                loss = train_step(x=data, mask=mask)
                 epoch_train_losses.append(float(loss))
 
             # Calculate average training loss for the epoch
@@ -748,8 +922,14 @@ class AutoEncoder:
 
             # Validation loop
             epoch_val_losses = []
-            for data in self.val_dataset:
-                val_loss = validation_step(data)
+            for batch in self.val_dataset:
+                if self.use_mask:
+                    data, mask = batch
+                else:
+                    data = batch
+                    mask = None
+
+                val_loss = validation_step(x=data, mask=mask)
                 epoch_val_losses.append(float(val_loss))
 
             # Calculate average validation loss for the epoch
@@ -801,18 +981,22 @@ class AutoEncoder:
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
         """
         # Calculate fitted values for each dataset
-        x_hat_train = self.model(self.x_train).numpy()
-        x_hat_val = self.model(self.x_val).numpy()
-        x_hat_test = self.model(self.x_test).numpy()
+        # We use the original data for the training set to avoid shuffling in reconstruction step
+        x_hat_train = self.model(self.x_train_original)
+        x_hat_val = self.model(self.x_val)
+        x_hat_test = self.model(self.x_test)
 
+        # Convert to numpy arrays
+        x_hat_train = x_hat_train.numpy()
+        x_hat_val = x_hat_val.numpy()
+        x_hat_test = x_hat_test.numpy()
         if self.normalize:
             if self.normalization_method == "minmax":
                 scale_max = self.max_x[self.feature_to_check]
                 scale_min = self.min_x[self.feature_to_check]
-                range_x = scale_max - scale_min
-                x_hat_train = x_hat_train * range_x + scale_min
-                x_hat_val = x_hat_val * range_x + scale_min
-                x_hat_test = x_hat_test * range_x + scale_min
+                x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
+                x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
+                x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
             elif self.normalization_method == "zscore":
                 scale_mean = self.mean_[self.feature_to_check]
                 scale_std = self.std_[self.feature_to_check]
@@ -832,15 +1016,14 @@ class AutoEncoder:
             self.x_test[:, self.time_step_to_check, self.feature_to_check]
         )
 
-        if self.normalize:
-            if self.normalization_method == "minmax":
-                x_train_converted = x_train_converted * range_x + scale_min
-                x_val_converted = x_val_converted * range_x + scale_min
-                x_test_converted = x_test_converted * range_x + scale_min
-            elif self.normalization_method == "zscore":
-                x_train_converted = x_train_converted * scale_std + scale_mean
-                x_val_converted = x_val_converted * scale_std + scale_mean
-                x_test_converted = x_test_converted * scale_std + scale_mean
+        if self.normalization_method == "minmax":
+            x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
+            x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
+            x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
+        elif self.normalization_method == "zscore":
+            x_train_converted = x_train_converted * scale_std + scale_mean
+            x_val_converted = x_val_converted * scale_std + scale_mean
+            x_test_converted = x_test_converted * scale_std + scale_mean
 
         x_converted = np.concatenate(
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
@@ -858,7 +1041,6 @@ class AutoEncoder:
             reconstructed=x_hat,
             save_path=os.path.join(self.save_path, "plots"),
             feature_labels=feature_labels,
-            split_size=self.split_size,
             ids=self.id_data,
         )
 
