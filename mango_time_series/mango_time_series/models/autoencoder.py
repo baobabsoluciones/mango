@@ -5,10 +5,10 @@ import numpy as np
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
-from mango.logging.logger import get_basic_logger
+from mango.logging import get_configured_logger
+from mango.processing.data_imputer import DataImputer
 from tensorflow.keras.models import load_model
 
-from mango_time_series.models.losses import mean_squared_error
 from mango_time_series.models.modules import encoder, decoder
 from mango_time_series.models.utils.plots import (
     plot_actual_and_reconstructed,
@@ -16,7 +16,7 @@ from mango_time_series.models.utils.plots import (
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
-logger = get_basic_logger()
+logger = get_configured_logger()
 
 
 class AutoEncoder:
@@ -34,7 +34,6 @@ class AutoEncoder:
         context_window: int = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
-        num_layers: int = None,
         hidden_dim: Union[int, List[int]] = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
@@ -54,6 +53,10 @@ class AutoEncoder:
         feature_names: Optional[List[str]] = None,
         feature_weights: Optional[List[float]] = None,
         shuffle: bool = False,
+        shuffle_buffer_size: Optional[int] = None,
+        use_mask: bool = False,
+        custom_mask: Optional[np.array] = None,
+        imputer: Optional[DataImputer] = None,
     ):
         """
         Initialize the Autoencoder model
@@ -78,12 +81,6 @@ class AutoEncoder:
           indices to check. For taking only the last timestep of the context
           window this should be set to -1.
         :type time_step_to_check: Union[int, List[int]]
-        :param num_layers: number of internal layers. This number is used to
-          know the number of encoding layers after the input (the result of
-          the last layer is going to be the embedding of the autoencoder) and
-          the number of decoding layers before the output (the result of the
-          last layer is going to be the reconstructed data).
-        :type num_layers: int
         :param hidden_dim: number of hidden dimensions in the internal layers.
           It can be a single integer (same for all layers) or a list of
           dimensions for each layer.
@@ -127,6 +124,12 @@ class AutoEncoder:
         :type feature_weights: Optional[List[float]]
         :param shuffle: whether to shuffle the training dataset
         :type shuffle: bool
+        :param use_mask: whether to use a mask for missing values
+        :type use_mask: bool
+        :param custom_mask: optional custom mask to use for missing values
+        :type custom_mask: Optional[np.array]
+        :param imputer: optional imputer to use for missing values
+        :type imputer: Optional[DataImputer]
         """
 
         root_dir = os.path.abspath(os.getcwd())
@@ -141,25 +144,14 @@ class AutoEncoder:
             ]
         )
 
-        # First we check if hidden dim is a list it has a number of elements
-        # equal to num_layers
         if isinstance(hidden_dim, list):
-            if len(hidden_dim) != num_layers:
-                raise ValueError(
-                    "hidden_dim must have a number of elements equal to num_layers"
-                )
-
-        # If hidden dim is not a list, we check if it is an integer and if it is greater
-        #  than 0
+            self.hidden_dim = hidden_dim
         elif isinstance(hidden_dim, int):
-            if hidden_dim <= 0:
-                raise ValueError("hidden_dim must be greater than 0")
-            else:
-                hidden_dim = [hidden_dim] * num_layers
-
-        # If hidden dim is not a list or an integer, we raise an error
+            self.hidden_dim = [hidden_dim]
         else:
             raise ValueError("hidden_dim must be a list of integers or an integer")
+
+        num_layers = len(self.hidden_dim)
 
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
@@ -220,7 +212,17 @@ class AutoEncoder:
             )
 
         self.normalization_method = normalization_method
+        self.use_mask = use_mask
+
+        contains_nans = np.isnan(data).any() if isinstance(data, np.ndarray) else False
+        if contains_nans and not use_mask:
+            raise ValueError(
+                "Data contains NaNs, but use_mask is False. "
+                "Please remove or impute NaNs before training."
+            )
+
         self.prepare_datasets(data, context_window, normalize, split_size)
+        self.normalize = normalize
 
         if isinstance(feature_to_check, int):
             feature_to_check = [feature_to_check]
@@ -230,16 +232,68 @@ class AutoEncoder:
         self.output_features = len(self.feature_to_check)
 
         self.shuffle = shuffle
-        train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
+        if shuffle_buffer_size is not None:
+            if not isinstance(shuffle_buffer_size, int) or shuffle_buffer_size <= 0:
+                raise ValueError("shuffle_buffer_size must be a positive integer.")
+            self.shuffle_buffer_size = shuffle_buffer_size
+        else:
+            self.shuffle_buffer_size = len(self.x_train)
+        self.x_train_original = self.x_train
+
+        if self.use_mask:
+            if custom_mask is not None:
+                # First, validate if the custom mask has the same shape as the input data
+                if custom_mask.shape != self.x_train.shape:
+                    raise ValueError(
+                        "custom_mask must have the same shape as the input data"
+                    )
+                self.mask_train = custom_mask
+            else:
+                # If custom mask is not provided, create a mask based on missing values
+                self.mask_train = np.where(np.isnan(self.x_train), 0, 1)
+                self.mask_val = np.where(np.isnan(self.x_val), 0, 1)
+                self.mask_test = np.where(np.isnan(self.x_test), 0, 1)
+
+            if imputer is not None:
+                self.x_train = imputer.apply_imputation(self.x_train)
+                self.x_val = imputer.apply_imputation(self.x_val)
+                self.x_test = imputer.apply_imputation(self.x_test)
+            else:
+                # Replace NaN values with 0 - basic imputer
+                self.x_train = np.nan_to_num(self.x_train)
+                self.x_val = np.nan_to_num(self.x_val)
+                self.x_test = np.nan_to_num(self.x_test)
+
+            train_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_train, self.mask_train)
+            )
+            val_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_val, self.mask_val)
+            )
+            test_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_test, self.mask_test)
+            )
+        else:
+            if (
+                np.isnan(self.x_train).any()
+                or np.isnan(self.x_val).any()
+                or np.isnan(self.x_test).any()
+            ):
+                raise ValueError(
+                    "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
+                )
+
+            train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
+            val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
+            test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
 
         if self.shuffle:
-            train_dataset = train_dataset.shuffle(buffer_size=len(self.x_train))
-        train_dataset = train_dataset.cache().batch(batch_size)
-
-        val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
-        val_dataset = val_dataset.cache().batch(batch_size)
-        test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
-        test_dataset = test_dataset.cache().batch(batch_size)
+            self.train_dataset = train_dataset.shuffle(
+                buffer_size=self.shuffle_buffer_size
+            )
+        self.train_dataset = train_dataset.cache().batch(batch_size)
+        self.val_dataset = val_dataset.cache().batch(batch_size)
+        self.test_dataset = test_dataset.cache().batch(batch_size)
 
         self.bidirectional_encoder = bidirectional_encoder
         self.bidirectional_decoder = bidirectional_decoder
@@ -289,12 +343,6 @@ class AutoEncoder:
         self.time_step_to_check = time_step_to_check
 
         self.hidden_dim = hidden_dim
-        self.num_layers = num_layers
-
-        self.train_dataset = train_dataset
-        self.val_dataset = val_dataset
-        self.test_dataset = test_dataset
-
         self.split_size = split_size
 
         self.last_epoch = 0
@@ -640,10 +688,11 @@ class AutoEncoder:
             return train_loss
 
         @tf.function
-        def validation_step(x):
+        def validation_step(x, mask=None):
             """
             Validation step for the model.
             :param x: input data
+            :param mask: optional binary mask for missing
             """
             x = tf.cast(x, tf.float32)
 
@@ -656,7 +705,7 @@ class AutoEncoder:
 
             x_pred = tf.expand_dims(x_hat, axis=1)
             # Calculate mean loss across all selected points
-            val_loss = mean_squared_error(x_real, x_pred)
+            val_loss = self.masked_weighted_mse(x_real, x_pred, mask)
 
             return val_loss
 
@@ -669,8 +718,14 @@ class AutoEncoder:
         for epoch in range(1, self.epochs + 1):
             # Training loop
             epoch_train_losses = []
-            for data in self.train_dataset:
-                loss = train_step(data)
+            for batch in self.train_dataset:
+                if self.use_mask:
+                    data, mask = batch
+                else:
+                    data = batch
+                    mask = None
+
+                loss = train_step(x=data, mask=mask)
                 epoch_train_losses.append(float(loss))
 
             # Calculate average training loss for the epoch
@@ -679,8 +734,14 @@ class AutoEncoder:
 
             # Validation loop
             epoch_val_losses = []
-            for data in self.val_dataset:
-                val_loss = validation_step(data)
+            for batch in self.val_dataset:
+                if self.use_mask:
+                    data, mask = batch
+                else:
+                    data = batch
+                    mask = None
+
+                val_loss = validation_step(x=data, mask=mask)
                 epoch_val_losses.append(float(val_loss))
 
             # Calculate average validation loss for the epoch
@@ -732,7 +793,8 @@ class AutoEncoder:
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
         """
         # Calculate fitted values for each dataset
-        x_hat_train = self.model(self.x_train)
+        # We use the original data for the training set to avoid shuffling in reconstruction step
+        x_hat_train = self.model(self.x_train_original)
         x_hat_val = self.model(self.x_val)
         x_hat_test = self.model(self.x_test)
 
@@ -740,19 +802,19 @@ class AutoEncoder:
         x_hat_train = x_hat_train.numpy()
         x_hat_val = x_hat_val.numpy()
         x_hat_test = x_hat_test.numpy()
-
-        if self.normalization_method == "minmax":
-            scale_max = self.max_x[self.feature_to_check]
-            scale_min = self.min_x[self.feature_to_check]
-            x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-            x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-            x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
-        elif self.normalization_method == "zscore":
-            scale_mean = self.mean_[self.feature_to_check]
-            scale_std = self.std_[self.feature_to_check]
-            x_hat_train = x_hat_train * scale_std + scale_mean
-            x_hat_val = x_hat_val * scale_std + scale_mean
-            x_hat_test = x_hat_test * scale_std + scale_mean
+        if self.normalize:
+            if self.normalization_method == "minmax":
+                scale_max = self.max_x[self.feature_to_check]
+                scale_min = self.min_x[self.feature_to_check]
+                x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
+                x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
+                x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
+            elif self.normalization_method == "zscore":
+                scale_mean = self.mean_[self.feature_to_check]
+                scale_std = self.std_[self.feature_to_check]
+                x_hat_train = x_hat_train * scale_std + scale_mean
+                x_hat_val = x_hat_val * scale_std + scale_mean
+                x_hat_test = x_hat_test * scale_std + scale_mean
 
         x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
 
