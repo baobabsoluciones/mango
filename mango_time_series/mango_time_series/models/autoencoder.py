@@ -39,11 +39,10 @@ class AutoEncoder:
         bidirectional_decoder: bool = False,
         activation_encoder: str = None,
         activation_decoder: str = None,
-        normalize: bool = True,
+        normalize: bool = False,
         normalization_method: str = "minmax",
         optimizer: str = "adam",
         batch_size: int = 32,
-        split_size: float = 0.7,
         epochs: int = 100,
         save_path: str = None,
         checkpoint: int = 10,
@@ -55,8 +54,13 @@ class AutoEncoder:
         shuffle: bool = False,
         shuffle_buffer_size: Optional[int] = None,
         use_mask: bool = False,
-        custom_mask: Optional[np.array] = None,
+        custom_mask: Optional[
+            Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        ] = None,
         imputer: Optional[DataImputer] = None,
+        train_size: Optional[float] = None,
+        val_size: Optional[float] = None,
+        test_size: Optional[float] = None,
     ):
         """
         Initialize the Autoencoder model
@@ -130,6 +134,12 @@ class AutoEncoder:
         :type custom_mask: Optional[np.array]
         :param imputer: optional imputer to use for missing values
         :type imputer: Optional[DataImputer]
+        :param train_size: proportion of the dataset to include in the training set
+        :type train_size: Optional[float]
+        :param val_size: proportion of the dataset to include in the validation set
+        :type val_size: Optional[float]
+        :param test_size: proportion of the dataset to include in the test set
+        :type test_size: Optional[float]
         """
 
         root_dir = os.path.abspath(os.getcwd())
@@ -156,6 +166,9 @@ class AutoEncoder:
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
+        self.use_mask = use_mask
+        if self.use_mask and custom_mask is not None:
+            custom_mask, _ = self._convert_data_to_numpy(custom_mask)
 
         # Store feature names or generate default names
         if feature_names:
@@ -190,6 +203,17 @@ class AutoEncoder:
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
 
+        if isinstance(data, tuple):
+            if not isinstance(custom_mask, tuple) or len(custom_mask) != 3:
+                raise ValueError(
+                    "If data is a tuple, custom_mask must also be a tuple of the same length."
+                )
+        else:
+            if isinstance(custom_mask, tuple):
+                raise ValueError(
+                    "If data is a single array, custom_mask cannot be a tuple."
+                )
+
         bidirectional_allowed = {"lstm", "gru", "rnn"}
 
         if form not in bidirectional_allowed:
@@ -212,7 +236,6 @@ class AutoEncoder:
             )
 
         self.normalization_method = normalization_method
-        self.use_mask = use_mask
 
         contains_nans = np.isnan(data).any() if isinstance(data, np.ndarray) else False
         if contains_nans and not use_mask:
@@ -221,7 +244,17 @@ class AutoEncoder:
                 "Please remove or impute NaNs before training."
             )
 
-        self.prepare_datasets(data, context_window, normalize, split_size)
+        self.train_size = train_size
+        self.val_size = val_size
+        self.test_size = test_size
+
+        # if this three sizes are none, we set the default values
+        if self.train_size is None and self.val_size is None and self.test_size is None:
+            self.train_size = 0.8
+            self.val_size = 0.1
+            self.test_size = 0.1
+
+        self.prepare_datasets(data, context_window, normalize)
         self.normalize = normalize
 
         if isinstance(feature_to_check, int):
@@ -232,34 +265,58 @@ class AutoEncoder:
         self.output_features = len(self.feature_to_check)
 
         self.shuffle = shuffle
-        if shuffle_buffer_size is not None:
-            if not isinstance(shuffle_buffer_size, int) or shuffle_buffer_size <= 0:
-                raise ValueError("shuffle_buffer_size must be a positive integer.")
-            self.shuffle_buffer_size = shuffle_buffer_size
+
+        if self.shuffle:
+            if shuffle_buffer_size is not None:
+                if not isinstance(shuffle_buffer_size, int) or shuffle_buffer_size <= 0:
+                    raise ValueError("shuffle_buffer_size must be a positive integer.")
+                self.shuffle_buffer_size = shuffle_buffer_size
+            else:
+                self.shuffle_buffer_size = len(self.x_train)
         else:
-            self.shuffle_buffer_size = len(self.x_train)
-        self.x_train_original = self.x_train
+            self.shuffle_buffer_size = None
+
+        self.x_train_original = np.copy(self.x_train)
 
         if self.use_mask:
             if custom_mask is not None:
-                # First, validate if the custom mask has the same shape as the input data
-                if custom_mask.shape != self.x_train.shape:
-                    raise ValueError(
-                        "custom_mask must have the same shape as the input data"
+                if isinstance(custom_mask, tuple):
+                    if len(custom_mask) != 3:
+                        raise ValueError(
+                            "If custom_mask is a tuple, it must contain three arrays (train, val, test)."
+                        )
+                    mask_train, mask_val, mask_test = custom_mask
+                    if (
+                        mask_train.shape != self.x_train.shape
+                        or mask_val.shape != self.x_val.shape
+                        or mask_test.shape != self.x_test.shape
+                    ):
+                        raise ValueError(
+                            "Each element of custom_mask must have the same shape as its corresponding dataset "
+                            "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
+                        )
+                else:
+                    if custom_mask.shape != data.shape:
+                        raise ValueError(
+                            "custom_mask must have the same shape as the original input data before transformation"
+                        )
+                    mask_train, mask_val, mask_test = self._time_series_split(
+                        custom_mask, self.train_size, self.val_size, self.test_size
                     )
-                self.mask_train = custom_mask
             else:
-                # If custom mask is not provided, create a mask based on missing values
-                self.mask_train = np.where(np.isnan(self.x_train), 0, 1)
-                self.mask_val = np.where(np.isnan(self.x_val), 0, 1)
-                self.mask_test = np.where(np.isnan(self.x_test), 0, 1)
+                mask_train = np.where(np.isnan(self.x_train), 0, 1)
+                mask_val = np.where(np.isnan(self.x_val), 0, 1)
+                mask_test = np.where(np.isnan(self.x_test), 0, 1)
+
+            self.mask_train = time_series_to_sequence(mask_train, context_window)
+            self.mask_val = time_series_to_sequence(mask_val, context_window)
+            self.mask_test = time_series_to_sequence(mask_test, context_window)
 
             if imputer is not None:
                 self.x_train = imputer.apply_imputation(self.x_train)
                 self.x_val = imputer.apply_imputation(self.x_val)
                 self.x_test = imputer.apply_imputation(self.x_test)
             else:
-                # Replace NaN values with 0 - basic imputer
                 self.x_train = np.nan_to_num(self.x_train)
                 self.x_val = np.nan_to_num(self.x_val)
                 self.x_test = np.nan_to_num(self.x_test)
@@ -273,6 +330,7 @@ class AutoEncoder:
             test_dataset = tf.data.Dataset.from_tensor_slices(
                 (self.x_test, self.mask_test)
             )
+
         else:
             if (
                 np.isnan(self.x_train).any()
@@ -343,7 +401,6 @@ class AutoEncoder:
         self.time_step_to_check = time_step_to_check
 
         self.hidden_dim = hidden_dim
-        self.split_size = split_size
 
         self.last_epoch = 0
         self.epochs = epochs
@@ -371,6 +428,53 @@ class AutoEncoder:
         """
         for path in folder_structure:
             os.makedirs(path, exist_ok=True)
+
+    @staticmethod
+    def _time_series_split(
+        data, train_size=None, val_size=None, test_size=None
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Splits data into training, validation, and test sets according to the specified percentages.
+
+        :param data: array-like data to split
+        :type data: np.ndarray
+        :param train_size: float, optional
+            Proportion of the dataset to include in the training set (0-1).
+        :param val_size: float, optional
+            Proportion of the dataset to include in the validation set (0-1).
+        :param test_size: float, optional
+            Proportion of the dataset to include in the test set (0-1).
+        :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
+            The training, validation, and test sets as numpy arrays.
+        """
+
+        if train_size is None and val_size is None and test_size is None:
+            raise ValueError(
+                "At least one of train_size, val_size, or test_size must be specified."
+            )
+
+        if train_size is None:
+            train_size = 1.0 - (val_size or 0) - (test_size or 0)
+        if val_size is None:
+            val_size = 1.0 - train_size - (test_size or 0)
+        if test_size is None:
+            test_size = 1.0 - train_size - val_size
+
+        total_size = train_size + val_size + test_size
+        if not np.isclose(total_size, 1.0):
+            raise ValueError(
+                f"The sum of train_size, val_size, and test_size must be 1.0, but got {total_size}."
+            )
+
+        n = len(data)
+        train_end = int(n * train_size)
+        val_end = train_end + int(n * val_size)
+
+        train_set = data[:train_end]
+        val_set = data[train_end:val_end] if val_size > 0 else None
+        test_set = data[val_end:] if test_size > 0 else None
+
+        return train_set, val_set, test_set
 
     @staticmethod
     def _convert_data_to_numpy(data):
@@ -455,12 +559,39 @@ class AutoEncoder:
                 f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
             )
 
+    def _normalize_data(self, x_train: np.array, x_val: np.array, x_test: np.array):
+        """
+        Normalize the data using the specified method.
+        :param x_train: training data
+        :type x_train: np.array
+        :param x_val: validation data
+        :type x_val: np.array
+        :param x_test: test data
+        :type x_test: np.array
+        :return: normalized data
+        """
+        # Normalize train for non nulls and apply the same transformation to val and test
+        mask = ~np.isnan(x_train)
+        if self.normalization_method == "minmax":
+            self.min_x = np.min(x_train[mask], axis=0)
+            self.max_x = np.max(x_train[mask], axis=0)
+            range_x = self.max_x - self.min_x
+            x_train = (x_train - self.min_x) / range_x
+            x_val = (x_val - self.min_x) / range_x
+            x_test = (x_test - self.min_x) / range_x
+        elif self.normalization_method == "zscore":
+            self.mean_ = np.mean(x_train[mask], axis=0)
+            self.std_ = np.std(x_train[mask], axis=0)
+            x_train = (x_train - self.mean_) / self.std_
+            x_val = (x_val - self.mean_) / self.std_
+            x_test = (x_test - self.mean_) / self.std_
+        return x_train, x_val, x_test
+
     def prepare_datasets(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
         context_window: int,
         normalize: bool,
-        split_size: float,
     ):
         """
         Prepare the datasets for the model training and testing.
@@ -473,16 +604,12 @@ class AutoEncoder:
         :type context_window: int
         :param normalize: whether to normalize the data or not
         :type normalize: bool
-        :param split_size: size of the split for the train, validation and test datasets
-        :type split_size: float
         :return: True if the datasets are prepared successfully
         """
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
-            return self._prepare_numpy_dataset(
-                data, context_window, normalize, split_size
-            )
+            return self._prepare_numpy_dataset(data, context_window, normalize)
         elif (
             isinstance(data, tuple)
             and len(data) == 3
@@ -509,37 +636,23 @@ class AutoEncoder:
         :type split_size: float
         :return: True if the dataset is prepared successfully
         """
-        # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
-        # Normalization can be done using minmax or zscore methods.
-        # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
+
+        x_train, x_val, x_test = self._time_series_split(
+            data, self.train_size, self.val_size, self.test_size
+        )
+
         if normalize:
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
+            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                # Avoid division by zero
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
+        self.data = (x_train, x_val, x_test)
+        self.x_train = time_series_to_sequence(x_train, context_window)
+        self.x_val = time_series_to_sequence(x_val, context_window)
+        self.x_test = time_series_to_sequence(x_test, context_window)
 
-        # We need to transform the data into a sequence of data.
-        self.data = np.copy(data)
-        temp_data = time_series_to_sequence(self.data, context_window)
-
-        # We need to split the data into train, validation and test datasets.
-        # Validation should be 10% of the total data,
-        # so train is split_size - 10% and test is 100% - split_size
-        self.samples = temp_data.shape[0]
-
-        train_split_point = round((split_size - 0.1) * self.samples)
-        val_split_point = train_split_point + round(0.1 * self.samples)
-
-        self.x_train = temp_data[:train_split_point, :, :]
-        self.x_val = temp_data[train_split_point:val_split_point, :, :]
-        self.x_test = temp_data[val_split_point:, :, :]
-
+        # Update samples count
+        self.samples = (
+            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
+        )
         return True
 
     def _prepare_tuple_dataset(
@@ -558,32 +671,16 @@ class AutoEncoder:
         :type normalize: bool
         :return: True if the dataset is prepared successfully
         """
+        x_train, x_val, x_test = data
+
         if normalize:
-            train = data[0].shape[0]
-            val = data[1].shape[0]
+            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
-            data = np.concatenate((data[0], data[1], data[2]), axis=0)
+        self.data = (x_train, x_val, x_test)
 
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
-
-            data_train = data[:train, :]
-            data_val = data[train : train + val, :]
-            data_test = data[train + val :, :]
-
-            data = tuple([data_train, data_val, data_test])
-
-        self.data = data
-
-        self.x_train = time_series_to_sequence(data[0], context_window)
-        self.x_val = time_series_to_sequence(data[1], context_window)
-        self.x_test = time_series_to_sequence(data[2], context_window)
+        self.x_train = time_series_to_sequence(x_train, context_window)
+        self.x_val = time_series_to_sequence(x_val, context_window)
+        self.x_test = time_series_to_sequence(x_test, context_window)
 
         self.samples = (
             self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
