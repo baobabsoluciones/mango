@@ -626,17 +626,16 @@ class AutoEncoder:
         :return: normalized data
         """
         # Normalize train for non nulls and apply the same transformation to val and test
-        mask = ~np.isnan(x_train)
         if self.normalization_method == "minmax":
-            self.min_x = np.min(x_train[mask], axis=0)
-            self.max_x = np.max(x_train[mask], axis=0)
+            self.min_x = np.nanmin(x_train, axis=0)
+            self.max_x = np.nanmax(x_train, axis=0)
             range_x = self.max_x - self.min_x
             x_train = (x_train - self.min_x) / range_x
             x_val = (x_val - self.min_x) / range_x
             x_test = (x_test - self.min_x) / range_x
         elif self.normalization_method == "zscore":
-            self.mean_ = np.mean(x_train[mask], axis=0)
-            self.std_ = np.std(x_train[mask], axis=0)
+            self.mean_ = np.nanmean(x_train, axis=0)
+            self.std_ = np.nanstd(x_train, axis=0)
             x_train = (x_train - self.mean_) / self.std_
             x_val = (x_val - self.mean_) / self.std_
             x_test = (x_test - self.mean_) / self.std_
