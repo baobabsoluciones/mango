@@ -251,16 +251,17 @@ class AutoEncoder:
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
 
-        if isinstance(data, tuple):
-            if not isinstance(custom_mask, tuple) or len(custom_mask) != 3:
-                raise ValueError(
-                    "If data is a tuple, custom_mask must also be a tuple of the same length."
-                )
-        else:
-            if isinstance(custom_mask, tuple):
-                raise ValueError(
-                    "If data is a single array, custom_mask cannot be a tuple."
-                )
+        if custom_mask is not None:
+            if isinstance(data, tuple):
+                if not isinstance(custom_mask, tuple) or len(custom_mask) != 3:
+                    raise ValueError(
+                        "If data is a tuple, custom_mask must also be a tuple of the same length."
+                    )
+            else:
+                if isinstance(custom_mask, tuple):
+                    raise ValueError(
+                        "If data is a single array, custom_mask cannot be a tuple."
+                    )
 
         bidirectional_allowed = {"lstm", "gru", "rnn"}
 
@@ -676,7 +677,7 @@ class AutoEncoder:
             )
 
     def _prepare_numpy_dataset(
-        self, data: np.array, context_window: int, normalize: bool, split_size: float
+        self, data: np.array, context_window: int, normalize: bool
     ):
         """
         Prepare the dataset for the model training and testing when the data is a single numpy array.
@@ -686,8 +687,6 @@ class AutoEncoder:
         :type context_window: int
         :param normalize: whether to normalize the data or not
         :type normalize: bool
-        :param split_size: size of the split for the train, validation and test datasets
-        :type split_size: float
         :return: True if the dataset is prepared successfully
         """
         if self.id_data is not None:
@@ -700,7 +699,7 @@ class AutoEncoder:
                 # ¿Necesario?
                 # id_idx = np.sort(id_idx)
 
-                train_cutoff = round(split_size * len(id_idx))
+                train_cutoff = round(0.8 * len(id_idx))
                 val_cutoff = train_cutoff + round(0.1 * len(id_idx))
 
                 train_indices.extend(id_idx[:train_cutoff])
@@ -1027,15 +1026,19 @@ class AutoEncoder:
         x_test_converted = np.copy(
             self.x_test[:, self.time_step_to_check, self.feature_to_check]
         )
-
-        if self.normalization_method == "minmax":
-            x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
-            x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-            x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
-        elif self.normalization_method == "zscore":
-            x_train_converted = x_train_converted * scale_std + scale_mean
-            x_val_converted = x_val_converted * scale_std + scale_mean
-            x_test_converted = x_test_converted * scale_std + scale_mean
+        if self.normalize:
+            if self.normalization_method == "minmax":
+                x_train_converted = (
+                    x_train_converted * (scale_max - scale_min) + scale_min
+                )
+                x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
+                x_test_converted = (
+                    x_test_converted * (scale_max - scale_min) + scale_min
+                )
+            elif self.normalization_method == "zscore":
+                x_train_converted = x_train_converted * scale_std + scale_mean
+                x_val_converted = x_val_converted * scale_std + scale_mean
+                x_test_converted = x_test_converted * scale_std + scale_mean
 
         x_converted = np.concatenate(
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
@@ -1048,12 +1051,17 @@ class AutoEncoder:
             else None
         )
 
+        # Get the split indices
+        train_split = self.x_train.shape[0]
+        val_split = train_split + self.x_val.shape[0]
+
         plot_actual_and_reconstructed(
             actual=x_converted,
             reconstructed=x_hat,
             save_path=os.path.join(self.save_path, "plots"),
             feature_labels=feature_labels,
-            ids=self.id_data,
+            train_split=train_split,
+            val_split=val_split,
         )
 
         return True

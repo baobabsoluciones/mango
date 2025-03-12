@@ -62,10 +62,8 @@ def plot_actual_and_reconstructed(
     reconstructed: np.ndarray,
     save_path: str,
     feature_labels: Optional[List[str]] = None,
-    split_size: float = 0.7,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    ids: Optional[np.ndarray] = None,
+    train_split: Optional[int] = None,
+    val_split: Optional[int] = None,
 ):
     """
     Plot actual vs reconstructed values for each feature and save to specified folder.
@@ -78,14 +76,10 @@ def plot_actual_and_reconstructed(
     :type save_path: str
     :param feature_labels: optional list of labels for each feature
     :type feature_labels: Optional[List[str]]
-    :param split_size: proportion of data used for training (validation will be 10% and test the rest)
-    :type split_size: float
-    :param start_date: optional start date for the plot
-    :type start_date: Optional[str]
-    :param end_date: optional end date for the plot
-    :type end_date: Optional[str]
-    :param ids: optional array of IDs to group the data
-    :type ids: Optional[np.ndarray]
+    :param train_split: index position where training data ends (exclusive)
+    :type train_split: Optional[int]
+    :param val_split: index position where validation data ends (exclusive)
+    :type val_split: Optional[int]
     """
     # Create save directory if it doesn't exist
     os.makedirs(save_path, exist_ok=True)
@@ -98,9 +92,18 @@ def plot_actual_and_reconstructed(
     elif len(feature_labels) != num_features:
         raise ValueError("Number of feature labels must match number of features")
 
-    # Calculate split points
-    train_split = round((split_size - 0.1) * reconstructed.shape[1])
-    val_split = round(split_size * reconstructed.shape[1])
+    # Set default split points if not provided
+    data_length = reconstructed.shape[1]
+    if train_split is None:
+        train_split = round(0.6 * data_length)
+    if val_split is None:
+        val_split = round(0.7 * data_length)
+
+    # Ensure splits are valid
+    if not (0 < train_split < val_split <= data_length):
+        raise ValueError(
+            f"Invalid split points: train_split={train_split}, val_split={val_split}, data_length={data_length}"
+        )
 
     # Split reconstructed data into train, validation and test
     reconstructed_train = reconstructed[:, :train_split]
@@ -133,13 +136,6 @@ def plot_actual_and_reconstructed(
         (zeros_before_test, reconstructed_test), axis=1
     )
 
-    # FIXME: Check this part when split is done correctly for IDs
-    id_groups = {}
-    if ids is not None:
-        ids = ids.flatten()
-        unique_ids = np.unique(ids)
-        id_groups = {uid: np.where(ids == uid)[0] for uid in unique_ids}
-
     for feature, label in enumerate(feature_labels):
         # First plot: Separate actual and reconstructed
         fig_separate = make_subplots(
@@ -152,69 +148,30 @@ def plot_actual_and_reconstructed(
         )
 
         # Add the actual line plot
-        if ids is not None:
-            for uid, indices in id_groups.items():
-                fig_separate.add_trace(
-                    go.Scatter(
-                        y=actual[feature, indices],
-                        mode="lines",
-                        name=f"Actual (ID {uid})",
-                    ),
-                    row=1,
-                    col=1,
-                )
-                fig_separate.add_trace(
-                    go.Scatter(
-                        y=reconstructed_train_padded[feature, indices],
-                        mode="lines",
-                        name=f"Train (ID {uid})",
-                    ),
-                    row=2,
-                    col=1,
-                )
-                fig_separate.add_trace(
-                    go.Scatter(
-                        y=reconstructed_val_padded[feature, indices],
-                        mode="lines",
-                        name=f"Validation (ID {uid})",
-                    ),
-                    row=2,
-                    col=1,
-                )
-                fig_separate.add_trace(
-                    go.Scatter(
-                        y=reconstructed_test_padded[feature, indices],
-                        mode="lines",
-                        name=f"Test (ID {uid})",
-                    ),
-                    row=2,
-                    col=1,
-                )
-        else:
-            fig_separate.add_trace(
-                go.Scatter(y=actual[feature], mode="lines", name="Actual"), row=1, col=1
-            )
-            fig_separate.add_trace(
-                go.Scatter(
-                    y=reconstructed_train_padded[feature], mode="lines", name="Train"
-                ),
-                row=2,
-                col=1,
-            )
-            fig_separate.add_trace(
-                go.Scatter(
-                    y=reconstructed_val_padded[feature], mode="lines", name="Validation"
-                ),
-                row=2,
-                col=1,
-            )
-            fig_separate.add_trace(
-                go.Scatter(
-                    y=reconstructed_test_padded[feature], mode="lines", name="Test"
-                ),
-                row=2,
-                col=1,
-            )
+        fig_separate.add_trace(
+            go.Scatter(y=actual[feature], mode="lines", name="Actual"), row=1, col=1
+        )
+
+        # Add the reconstructed line plots
+        fig_separate.add_trace(
+            go.Scatter(
+                y=reconstructed_train_padded[feature], mode="lines", name="Train"
+            ),
+            row=2,
+            col=1,
+        )
+        fig_separate.add_trace(
+            go.Scatter(
+                y=reconstructed_val_padded[feature], mode="lines", name="Validation"
+            ),
+            row=2,
+            col=1,
+        )
+        fig_separate.add_trace(
+            go.Scatter(y=reconstructed_test_padded[feature], mode="lines", name="Test"),
+            row=2,
+            col=1,
+        )
 
         fig_separate.update_layout(title=f"{label} - Separate Views", showlegend=True)
 
@@ -224,61 +181,30 @@ def plot_actual_and_reconstructed(
 
         # Second plot: Overlapped actual and reconstructed
         fig_overlap = go.Figure()
-        if ids is not None:
-            for uid, indices in id_groups.items():
-                fig_overlap.add_trace(
-                    go.Scatter(
-                        y=actual[feature, indices],
-                        mode="lines",
-                        name=f"Actual (ID {uid})",
-                    )
-                )
-                fig_overlap.add_trace(
-                    go.Scatter(
-                        y=reconstructed_train_padded[feature, indices],
-                        mode="lines",
-                        name=f"Train (ID {uid})",
-                    )
-                )
-                fig_overlap.add_trace(
-                    go.Scatter(
-                        y=reconstructed_val_padded[feature, indices],
-                        mode="lines",
-                        name=f"Validation (ID {uid})",
-                    )
-                )
-                fig_overlap.add_trace(
-                    go.Scatter(
-                        y=reconstructed_test_padded[feature, indices],
-                        mode="lines",
-                        name=f"Test (ID {uid})",
-                    )
-                )
-        else:
-            fig_overlap.add_trace(
-                go.Scatter(y=actual[feature], mode="lines", name="Actual")
+        fig_overlap.add_trace(
+            go.Scatter(y=actual[feature], mode="lines", name="Actual")
+        )
+        fig_overlap.add_trace(
+            go.Scatter(
+                y=reconstructed_train_padded[feature],
+                mode="lines",
+                name="Reconstructed - Train",
             )
-            fig_overlap.add_trace(
-                go.Scatter(
-                    y=reconstructed_train_padded[feature],
-                    mode="lines",
-                    name="Reconstructed - Train",
-                )
+        )
+        fig_overlap.add_trace(
+            go.Scatter(
+                y=reconstructed_val_padded[feature],
+                mode="lines",
+                name="Reconstructed - Validation",
             )
-            fig_overlap.add_trace(
-                go.Scatter(
-                    y=reconstructed_val_padded[feature],
-                    mode="lines",
-                    name="Reconstructed - Validation",
-                )
+        )
+        fig_overlap.add_trace(
+            go.Scatter(
+                y=reconstructed_test_padded[feature],
+                mode="lines",
+                name="Reconstructed - Test",
             )
-            fig_overlap.add_trace(
-                go.Scatter(
-                    y=reconstructed_test_padded[feature],
-                    mode="lines",
-                    name="Reconstructed - Test",
-                )
-            )
+        )
 
         fig_overlap.update_layout(
             title=f"{label} - Overlapped View",
@@ -295,41 +221,24 @@ def plot_actual_and_reconstructed(
 
     # Add traces for each feature - both actual and reconstructed
     for feature, label in enumerate(feature_labels):
-        if ids is not None:
-            for uid, indices in id_groups.items():
-                fig_all.add_trace(
-                    go.Scatter(
-                        y=actual[feature, indices],
-                        mode="lines",
-                        name=f"{label} - Actual (ID {uid})",
-                        line=dict(dash="solid"),
-                    )
-                )
-                fig_all.add_trace(
-                    go.Scatter(
-                        y=reconstructed[feature, indices],
-                        mode="lines",
-                        name=f"{label} - Reconstructed (ID {uid})",
-                        line=dict(dash="dash"),
-                    )
-                )
-        else:
-            fig_all.add_trace(
-                go.Scatter(
-                    y=actual[feature],
-                    mode="lines",
-                    name=f"{label} - Actual",
-                    line=dict(dash="solid"),
-                )
+        # Add actual values
+        fig_all.add_trace(
+            go.Scatter(
+                y=actual[feature],
+                mode="lines",
+                name=f"{label} - Actual",
+                line=dict(dash="solid"),
             )
-            fig_all.add_trace(
-                go.Scatter(
-                    y=reconstructed[feature],
-                    mode="lines",
-                    name=f"{label} - Reconstructed",
-                    line=dict(dash="dash"),
-                )
+        )
+        # Add reconstructed values
+        fig_all.add_trace(
+            go.Scatter(
+                y=reconstructed[feature],
+                mode="lines",
+                name=f"{label} - Reconstructed",
+                line=dict(dash="dash"),
             )
+        )
 
     # Update layout
     fig_all.update_layout(
