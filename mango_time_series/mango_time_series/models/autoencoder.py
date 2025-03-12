@@ -172,52 +172,6 @@ class AutoEncoder:
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
-        self.use_mask = use_mask
-        if self.use_mask and custom_mask is not None:
-            custom_mask, _ = self._convert_data_to_numpy(custom_mask)
-
-        # Handle id_columns
-        if id_columns is not None:
-            if isinstance(id_columns, str) or isinstance(id_columns, int):
-                id_columns = [id_columns]
-            if isinstance(id_columns, list):
-                if all(isinstance(i, str) for i in id_columns):
-                    id_column_indices = [
-                        i
-                        for i, value in enumerate(extracted_feature_names)
-                        if value in id_columns
-                    ]
-                elif all(isinstance(i, int) for i in id_columns):
-                    id_column_indices = id_columns
-                else:
-                    raise ValueError("id_columns must be a list of strings or integers")
-            else:
-                raise ValueError(
-                    "id_columns must be a string, integer, or a list of strings or integers"
-                )
-            if isinstance(data, tuple):
-                self.id_data = tuple(d[:, id_column_indices] for d in data)
-            else:
-                self.id_data = data[:, id_column_indices]
-            if isinstance(data, np.ndarray):
-                data = np.delete(data, id_column_indices, axis=1)
-            elif isinstance(data, tuple):
-                data = tuple(np.delete(d, id_column_indices, axis=1) for d in data)
-
-        else:
-            self.id_data = None
-
-        if self.id_data is not None:
-            unique_ids, counts = np.unique(self.id_data, return_counts=True)
-            min_samples_per_id = np.min(counts)
-
-            if min_samples_per_id < context_window:
-                raise ValueError(
-                    f"The minimum number of samples per ID is {min_samples_per_id}, "
-                    f"but the context_window is {context_window}. "
-                    "Reduce the context_window or ensure each ID has enough data."
-                )
-
         # Store feature names or generate default names
         if feature_names:
             # Use user-provided feature names
@@ -239,6 +193,57 @@ class AutoEncoder:
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
             else:
                 self.features_name = []
+
+        self.use_mask = use_mask
+        if self.use_mask and custom_mask is not None:
+            custom_mask, _ = self._convert_data_to_numpy(custom_mask)
+
+        # Handle id_columns
+        if id_columns is not None:
+            if isinstance(id_columns, str) or isinstance(id_columns, int):
+                id_columns = [id_columns]
+            if isinstance(id_columns, list):
+                if all(isinstance(i, str) for i in id_columns):
+                    id_column_indices = [
+                        i
+                        for i, value in enumerate(self.features_name)
+                        if value in id_columns
+                    ]
+                elif all(isinstance(i, int) for i in id_columns):
+                    id_column_indices = id_columns
+                else:
+                    raise ValueError("id_columns must be a list of strings or integers")
+            else:
+                raise ValueError(
+                    "id_columns must be a string, integer, or a list of strings or integers"
+                )
+            if isinstance(data, tuple):
+                self.id_data = tuple(d[:, id_column_indices] for d in data)
+            else:
+                self.id_data = data[:, id_column_indices]
+            if isinstance(data, np.ndarray):
+                data = np.delete(data, id_column_indices, axis=1)
+            elif isinstance(data, tuple):
+                data = tuple(np.delete(d, id_column_indices, axis=1) for d in data)
+
+            if isinstance(data, tuple):
+                data = tuple(d.astype(np.float64) for d in data)
+            else:
+                data = data.astype(np.float64)
+
+        else:
+            self.id_data = None
+
+        if self.id_data is not None:
+            unique_ids, counts = np.unique(self.id_data, return_counts=True)
+            min_samples_per_id = np.min(counts)
+
+            if min_samples_per_id < context_window:
+                raise ValueError(
+                    f"The minimum number of samples per ID is {min_samples_per_id}, "
+                    f"but the context_window is {context_window}. "
+                    "Reduce the context_window or ensure each ID has enough data."
+                )
 
         # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
