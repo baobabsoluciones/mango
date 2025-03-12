@@ -235,12 +235,21 @@ class AutoEncoder:
             self.id_data = None
 
         if self.id_data is not None:
-            unique_ids, counts = np.unique(self.id_data, return_counts=True)
-            min_samples_per_id = np.min(counts)
+            if isinstance(self.id_data, tuple):
+                min_samples_all_ids = min(
+                    [
+                        np.min(np.unique(id_data, return_counts=True)[1])
+                        for id_data in self.id_data
+                    ]
+                )
+            else:
+                min_samples_all_ids = np.min(
+                    np.unique(self.id_data, return_counts=True)[1]
+                )
 
-            if min_samples_per_id < context_window:
+            if min_samples_all_ids < context_window:
                 raise ValueError(
-                    f"The minimum number of samples per ID is {min_samples_per_id}, "
+                    f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
                     f"but the context_window is {context_window}. "
                     "Reduce the context_window or ensure each ID has enough data."
                 )
