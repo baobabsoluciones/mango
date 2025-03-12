@@ -364,7 +364,11 @@ class AutoEncoder:
                             "custom_mask must have the same shape as the original input data before transformation"
                         )
                     mask_train, mask_val, mask_test = self._time_series_split(
-                        custom_mask, self.train_size, self.val_size, self.test_size
+                        custom_mask,
+                        self.train_size,
+                        self.val_size,
+                        self.test_size,
+                        id_data=self.id_data,
                     )
             else:
                 mask_train = np.where(np.isnan(self.x_train), 0, 1)
@@ -500,7 +504,7 @@ class AutoEncoder:
 
     @staticmethod
     def _time_series_split(
-        data, train_size=None, val_size=None, test_size=None
+        data, train_size=None, val_size=None, test_size=None, id_data=None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Splits data into training, validation, and test sets according to the specified percentages.
@@ -513,6 +517,8 @@ class AutoEncoder:
             Proportion of the dataset to include in the validation set (0-1).
         :param test_size: float, optional
             Proportion of the dataset to include in the test set (0-1).
+        :param id_data: array of identifiers for the data, if provided split will be done by unique IDs
+        :type id_data: np.ndarray, optional
         :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
             The training, validation, and test sets as numpy arrays.
         """
@@ -535,15 +541,48 @@ class AutoEncoder:
                 f"The sum of train_size, val_size, and test_size must be 1.0, but got {total_size}."
             )
 
-        n = len(data)
-        train_end = int(n * train_size)
-        val_end = train_end + int(n * val_size)
+        if id_data is not None:
+            if len(id_data) != len(data):
+                raise ValueError(
+                    f"Length of id_data ({len(id_data)}) must match length of data ({len(data)})"
+                )
 
-        train_set = data[:train_end]
-        val_set = data[train_end:val_end] if val_size > 0 else None
-        test_set = data[val_end:] if test_size > 0 else None
+            # Get unique IDs
+            unique_ids = np.unique(id_data)
 
-        return train_set, val_set, test_set
+            train_set, val_set, test_set = [], [], []
+            for id in unique_ids:
+                data_id_i = data[np.where(id_data == id)[0]]
+                n_id_i = len(data_id_i)
+                train_end_id_i = int(n_id_i * train_size)
+                val_end_id_i = train_end_id_i + int(n_id_i * val_size)
+
+                train_set_id_i = data_id_i[:train_end_id_i]
+                val_set_id_i = (
+                    data_id_i[train_end_id_i:val_end_id_i] if val_size > 0 else None
+                )
+                test_set_id_i = data_id_i[val_end_id_i:] if test_size > 0 else None
+
+                train_set.append(train_set_id_i)
+                val_set.append(val_set_id_i)
+                test_set.append(test_set_id_i)
+
+            train_set = np.concatenate(train_set)
+            val_set = np.concatenate(val_set) if val_size > 0 else None
+            test_set = np.concatenate(test_set) if test_size > 0 else None
+
+            return train_set, val_set, test_set
+        else:
+            # Original implementation for sequential split
+            n = len(data)
+            train_end = int(n * train_size)
+            val_end = train_end + int(n * val_size)
+
+            train_set = data[:train_end]
+            val_set = data[train_end:val_end] if val_size > 0 else None
+            test_set = data[val_end:] if test_size > 0 else None
+
+            return train_set, val_set, test_set
 
     @staticmethod
     def _convert_data_to_numpy(data):
@@ -702,49 +741,39 @@ class AutoEncoder:
         :type normalize: bool
         :return: True if the dataset is prepared successfully
         """
+        # Split data using the _time_series_split method which now handles ID-based splitting
+        x_train, x_val, x_test = self._time_series_split(
+            data, self.train_size, self.val_size, self.test_size, id_data=self.id_data
+        )
         if self.id_data is not None:
-            unique_ids = np.unique(self.id_data)
-            train_indices, val_indices, test_indices = [], [], []
-
-            for uid in unique_ids:
-                id_idx = np.where(self.id_data == uid)[0]
-
-                # ¿Necesario?
-                # id_idx = np.sort(id_idx)
-
-                train_cutoff = round(0.8 * len(id_idx))
-                val_cutoff = train_cutoff + round(0.1 * len(id_idx))
-
-                train_indices.extend(id_idx[:train_cutoff])
-                val_indices.extend(id_idx[train_cutoff:val_cutoff])
-                test_indices.extend(id_idx[val_cutoff:])
-
-            train_idx = np.array(train_indices)
-            val_idx = np.array(val_indices)
-            test_idx = np.array(test_indices)
-
-            x_train, x_val, x_test = data[train_idx], data[val_idx], data[test_idx]
-            id_train, id_val, id_test = (
-                self.id_data[train_idx],
-                self.id_data[val_idx],
-                self.id_data[test_idx],
+            self.id_data = self._time_series_split(
+                self.id_data,
+                self.train_size,
+                self.val_size,
+                self.test_size,
+                id_data=self.id_data,
             )
 
-        else:
-            x_train, x_val, x_test = self._time_series_split(
-                data, self.train_size, self.val_size, self.test_size
-            )
-        id_train = id_val = id_test = None
         if normalize:
             x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
         # We need to transform the data into a sequence of data.
         self.data = (x_train, x_val, x_test)
         self.x_train = time_series_to_sequence(
-            x_train, context_window, id_data=id_train
+            x_train,
+            context_window,
+            id_data=self.id_data[0] if self.id_data is not None else None,
         )
-        self.x_val = time_series_to_sequence(x_val, context_window, id_data=id_val)
-        self.x_test = time_series_to_sequence(x_test, context_window, id_data=id_test)
+        self.x_val = time_series_to_sequence(
+            x_val,
+            context_window,
+            id_data=self.id_data[1] if self.id_data is not None else None,
+        )
+        self.x_test = time_series_to_sequence(
+            x_test,
+            context_window,
+            id_data=self.id_data[2] if self.id_data is not None else None,
+        )
 
         if self.x_val.shape[0] == 0 or self.x_test.shape[0] == 0:
             raise ValueError(
@@ -1068,6 +1097,24 @@ class AutoEncoder:
         train_split = self.x_train.shape[0]
         val_split = train_split + self.x_val.shape[0]
 
+        # Remove the context window lenght from the beginning of the id_data for each id
+        id_data_sequences = []
+        if self.id_data is not None:
+            for i, id_data_i in enumerate(self.id_data):
+                # Get the unique IDs
+                unique_ids = np.unique(id_data_i)
+                for id in unique_ids:
+                    # Remove the context window length from the beginning of the id_data
+                    id_data_i[np.where(id_data_i == id)[0][: self.context_window-1]] = (
+                        None
+                    )
+
+                # Remove rows with None
+                id_data_i = id_data_i[~np.all(id_data_i == None, axis=1)]
+
+                id_data_sequences.append(id_data_i)
+            id_data_sequences = tuple(id_data_sequences)
+
         plot_actual_and_reconstructed(
             actual=x_converted,
             reconstructed=x_hat,
@@ -1075,6 +1122,7 @@ class AutoEncoder:
             feature_labels=feature_labels,
             train_split=train_split,
             val_split=val_split,
+            id_data=id_data_sequences if self.id_data is not None else None,
         )
 
         return True

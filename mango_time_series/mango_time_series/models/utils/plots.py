@@ -64,9 +64,11 @@ def plot_actual_and_reconstructed(
     feature_labels: Optional[List[str]] = None,
     train_split: Optional[int] = None,
     val_split: Optional[int] = None,
+    id_data: Optional[np.ndarray] = None,
 ):
     """
     Plot actual vs reconstructed values for each feature and save to specified folder.
+    Can separate plots by data ID if id_data is provided.
 
     :param actual: numpy array of shape (F,N) where F is number of features and N is observations
     :type actual: np.ndarray
@@ -80,6 +82,8 @@ def plot_actual_and_reconstructed(
     :type train_split: Optional[int]
     :param val_split: index position where validation data ends (exclusive)
     :type val_split: Optional[int]
+    :param id_data: numpy array indicating the ID for each data point in the time series
+    :type id_data: Optional[np.ndarray]
     """
     # Create save directory if it doesn't exist
     os.makedirs(save_path, exist_ok=True)
@@ -136,6 +140,131 @@ def plot_actual_and_reconstructed(
         (zeros_before_test, reconstructed_test), axis=1
     )
 
+    # If ID data is provided, process per ID
+    if id_data is not None:
+        id_data = np.concatenate(id_data)
+        # Get unique IDs
+        unique_ids = np.unique(id_data)
+
+        # Create a separate directory for ID-based plots
+        id_save_path = os.path.join(save_path, "by_id")
+        os.makedirs(id_save_path, exist_ok=True)
+
+        # Process each ID separately
+        for id_value in unique_ids:
+            # Get indices for this ID
+            id_indices = np.where(id_data == id_value)[0]
+
+            # Extract data for this ID
+            id_actual = actual[:, id_indices]
+            id_reconstructed = reconstructed[:, id_indices]
+
+            # Find which splits the ID data falls into
+            train_mask = id_indices < train_split
+            val_mask = (id_indices >= train_split) & (id_indices < val_split)
+            test_mask = id_indices >= val_split
+
+            # Create an ID-specific directory
+            id_specific_path = os.path.join(id_save_path, f"id_{id_value}")
+            os.makedirs(id_specific_path, exist_ok=True)
+
+            # Plot for each feature for this ID
+            for feature, label in enumerate(feature_labels):
+                # Plot for this ID and feature
+                fig_id = go.Figure()
+
+                # Add actual values
+                fig_id.add_trace(
+                    go.Scatter(
+                        y=id_actual[feature],
+                        mode="lines",
+                        name=f"Actual",
+                        line=dict(color="blue"),
+                    )
+                )
+
+                # Add reconstructed values with split coloring
+                if np.any(train_mask):
+                    fig_id.add_trace(
+                        go.Scatter(
+                            y=id_reconstructed[feature, train_mask],
+                            mode="lines",
+                            name=f"Reconstructed - Train",
+                            line=dict(color="green"),
+                        )
+                    )
+
+                if np.any(val_mask):
+                    fig_id.add_trace(
+                        go.Scatter(
+                            y=id_reconstructed[feature, val_mask],
+                            mode="lines",
+                            name=f"Reconstructed - Validation",
+                            line=dict(color="orange"),
+                        )
+                    )
+
+                if np.any(test_mask):
+                    fig_id.add_trace(
+                        go.Scatter(
+                            y=id_reconstructed[feature, test_mask],
+                            mode="lines",
+                            name=f"Reconstructed - Test",
+                            line=dict(color="red"),
+                        )
+                    )
+
+                # Update layout
+                fig_id.update_layout(
+                    title=f"ID {id_value} - {label}",
+                    xaxis_title="Time Step",
+                    yaxis_title="Value",
+                    showlegend=True,
+                    hovermode="x unified",
+                )
+
+                # Save ID-specific plot
+                id_plot_path = os.path.join(id_specific_path, f"{label}.html")
+                fig_id.write_html(id_plot_path)
+
+            # Create all features combined plot for this ID
+            fig_id_all = go.Figure()
+
+            # Add traces for each feature - both actual and reconstructed
+            for feature, label in enumerate(feature_labels):
+                # Add actual values
+                fig_id_all.add_trace(
+                    go.Scatter(
+                        y=id_actual[feature],
+                        mode="lines",
+                        name=f"{label} - Actual",
+                        line=dict(dash="solid"),
+                    )
+                )
+                # Add reconstructed values
+                fig_id_all.add_trace(
+                    go.Scatter(
+                        y=id_reconstructed[feature],
+                        mode="lines",
+                        name=f"{label} - Reconstructed",
+                        line=dict(dash="dash"),
+                    )
+                )
+
+            # Update layout
+            fig_id_all.update_layout(
+                title=f"ID {id_value} - All Features",
+                xaxis_title="Time Step",
+                yaxis_title="Value",
+                showlegend=True,
+                hovermode="x unified",
+            )
+
+            # Save combined ID plot
+            id_combined_path = os.path.join(id_specific_path, "all_features.html")
+            fig_id_all.write_html(id_combined_path)
+
+    # Continue with original plotting for the full dataset
     for feature, label in enumerate(feature_labels):
         # First plot: Separate actual and reconstructed
         fig_separate = make_subplots(
