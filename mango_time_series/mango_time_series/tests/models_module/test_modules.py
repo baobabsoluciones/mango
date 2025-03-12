@@ -98,7 +98,7 @@ class TestEncoder(unittest.TestCase):
         """
         model = encoder(
             form="dense",
-            context_window=10,
+            # context_window=10,
             features=5,
             hidden_dim=32,
             num_layers=2,
@@ -372,7 +372,7 @@ class TestDecoder(unittest.TestCase):
         self.assertEqual(output.shape, (batch_size, 5))
 
 
-class TestAutoEncoder(unittest.TestCase):
+class TestAutoEncoderBidirectional(unittest.TestCase):
     def test_bidirectional_autoencoder(self):
         """
         Test full autoencoder with bidirectional LSTM in encoder and decoder
@@ -381,7 +381,7 @@ class TestAutoEncoder(unittest.TestCase):
 
         model = AutoEncoder(
             form="lstm",
-            data=np.random.rand(100, 5),
+            data=np.random.rand(500, 5),
             context_window=10,
             hidden_dim=hidden_dims,
             bidirectional_encoder=True,
@@ -417,7 +417,7 @@ class TestAutoEncoder(unittest.TestCase):
         Ensure AutoEncoder raises an error when bidirectional is used with 'dense'
         """
 
-        data = np.random.rand(100, 5)
+        data = np.random.rand(500, 5)
         with self.assertRaises(ValueError) as context:
             AutoEncoder(
                 form="dense",
@@ -609,7 +609,7 @@ class TestAutoEncoderLoss(unittest.TestCase):
                 use_mask=False,
             )
         self.assertIn(
-            "Data contains NaNs, but use_mask is False. Please remove or impute NaNs before training.",
+            "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs.",
             str(context.exception),
         )
 
@@ -699,6 +699,78 @@ class TestAutoEncoderLoss(unittest.TestCase):
             autoencoder.mask_test,
             time_series_to_sequence(custom_mask_test, context_window),
         )
+
+    def test_custom_mask_as_tuple_data_as_array(self):
+        """
+        Test that custom mask provided as a tuple is applied correctly.
+        """
+        context_window = 10
+        custom_mask_train = np.random.randint(0, 2, size=(400, self.features))
+        custom_mask_val = np.random.randint(0, 2, size=(50, self.features))
+        custom_mask_test = np.random.randint(0, 2, size=(50, self.features))
+
+        with self.assertRaises(ValueError) as context:
+            AutoEncoder(
+                form="lstm",
+                data=self.data,
+                context_window=context_window,
+                hidden_dim=[32, 16],
+                epochs=1,
+                normalize=True,
+                use_mask=True,
+                custom_mask=(custom_mask_train, custom_mask_val, custom_mask_test),
+            )
+            self.assertIn(
+                "If data is a single array, custom_mask cannot be a tuple.",
+                str(context.exception),
+            )
+
+    def test_custom_mask_as_array_data_as_tuple(self):
+        """
+        Test that custom mask provided as a tuple is applied correctly.
+        """
+        context_window = 10
+        custom_mask = np.random.randint(0, 2, size=(500, self.features))
+
+        with self.assertRaises(ValueError) as context:
+            AutoEncoder(
+                form="lstm",
+                data=(self.data[:400], self.data[400:450], self.data[450:]),
+                context_window=context_window,
+                hidden_dim=[32, 16],
+                epochs=1,
+                normalize=True,
+                use_mask=True,
+                custom_mask=custom_mask,
+            )
+            self.assertIn(
+                "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test).",
+                str(context.exception),
+            )
+
+    def test_custom_mask_as_tuple_data_as_tuple(self):
+        """
+        Test that custom mask provided as a tuple is applied correctly.
+        """
+        context_window = 10
+        custom_mask_train = np.random.randint(0, 2, size=(450, self.features))
+        custom_mask_val = np.random.randint(0, 2, size=(50, self.features))
+
+        with self.assertRaises(ValueError) as context:
+            AutoEncoder(
+                form="lstm",
+                data=(self.data[:400], self.data[400:450], self.data[450:]),
+                context_window=context_window,
+                hidden_dim=[32, 16],
+                epochs=1,
+                normalize=True,
+                use_mask=True,
+                custom_mask=(custom_mask_train, custom_mask_val),
+            )
+            self.assertIn(
+                "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test).",
+                str(context.exception),
+            )
 
     def test_data_split_default(self):
         """

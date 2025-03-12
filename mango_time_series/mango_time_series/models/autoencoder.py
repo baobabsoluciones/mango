@@ -221,13 +221,6 @@ class AutoEncoder:
 
         self.normalization_method = normalization_method
 
-        contains_nans = np.isnan(data).any() if isinstance(data, np.ndarray) else False
-        if contains_nans and not use_mask:
-            raise ValueError(
-                "Data contains NaNs, but use_mask is False. "
-                "Please remove or impute NaNs before training."
-            )
-
         self.train_size = train_size
         self.val_size = val_size
         self.test_size = test_size
@@ -679,10 +672,30 @@ class AutoEncoder:
         """
         x_train, x_val, x_test = data
 
+        if self.use_mask and self.custom_mask is None:
+            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
+            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
+            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
+
+            self.mask_train = time_series_to_sequence(mask_train, context_window)
+            self.mask_val = time_series_to_sequence(mask_val, context_window)
+            self.mask_test = time_series_to_sequence(mask_test, context_window)
+
         if normalize:
             x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
         self.data = (x_train, x_val, x_test)
+
+        if self.use_mask and self.imputer is not None:
+            import pandas as pd
+
+            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
+            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
+            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
+        else:
+            x_train = np.nan_to_num(x_train)
+            x_val = np.nan_to_num(x_val)
+            x_test = np.nan_to_num(x_test)
 
         self.x_train = time_series_to_sequence(x_train, context_window)
         self.x_val = time_series_to_sequence(x_val, context_window)
