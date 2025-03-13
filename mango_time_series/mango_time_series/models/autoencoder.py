@@ -889,8 +889,16 @@ class AutoEncoder:
         # Apply mask if provided
         if mask is not None:
             mask = tf.cast(mask, tf.float32)
-            y_true = tf.where(mask > 0, y_true, tf.zeros_like(y_true))
-            y_pred = tf.where(mask > 0, y_pred, tf.zeros_like(y_pred))
+
+            # Select the same time steps and features from the mask as we're using from the data
+            # First select the time steps
+            mask_selected = tf.gather(mask, self.time_step_to_check, axis=1)
+            # Then select the features
+            mask_selected = tf.gather(mask_selected, self.feature_to_check, axis=2)
+
+            # Apply the mask to both true and predicted values
+            y_true = tf.where(mask_selected > 0, y_true, tf.zeros_like(y_true))
+            y_pred = tf.where(mask_selected > 0, y_pred, tf.zeros_like(y_pred))
 
         squared_error = tf.square(y_true - y_pred)
 
@@ -903,8 +911,9 @@ class AutoEncoder:
 
         # Compute mean only over observed values if mask is provided
         if mask is not None:
-            loss = tf.reduce_sum(squared_error) / tf.reduce_sum(
-                mask + tf.keras.backend.epsilon()
+            # Use the selected mask dimensions
+            loss = tf.reduce_sum(squared_error) / (
+                tf.reduce_sum(mask_selected + tf.keras.backend.epsilon())
             )
         else:
             loss = tf.reduce_mean(squared_error)
