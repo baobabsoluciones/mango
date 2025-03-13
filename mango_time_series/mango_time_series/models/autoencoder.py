@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Union, List, Tuple, Any, Optional
 
@@ -55,9 +54,7 @@ class AutoEncoder:
         shuffle: bool = False,
         shuffle_buffer_size: Optional[int] = None,
         use_mask: bool = False,
-        custom_mask: Optional[
-            Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-        ] = None,
+        custom_mask: Any = None,
         imputer: Optional[DataImputer] = None,
         train_size: Optional[float] = None,
         val_size: Optional[float] = None,
@@ -108,10 +105,6 @@ class AutoEncoder:
         :type normalization_method: str
         :param batch_size: batch size for the model
         :type batch_size: int
-        :param split_size: size of the split for the train (train + validation,
-          validation always 10% of total data) and test datasets.
-          Default value is 60% train, 10% validation and 30% test.
-        :type split_size: float
         :param epochs: number of epochs to train the model
         :type epochs: int
         :param save_path: folder path to save the model checkpoints
@@ -172,6 +165,11 @@ class AutoEncoder:
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
+        self.use_mask = use_mask
+        self.custom_mask = custom_mask
+        if self.use_mask and self.custom_mask is not None:
+            self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
+
         # Store feature names or generate default names
         if feature_names:
             # Use user-provided feature names
@@ -193,10 +191,6 @@ class AutoEncoder:
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
             else:
                 self.features_name = []
-
-        self.use_mask = use_mask
-        if self.use_mask and custom_mask is not None:
-            custom_mask, _ = self._convert_data_to_numpy(custom_mask)
 
         # Handle id_columns
         if id_columns is not None:
@@ -265,18 +259,6 @@ class AutoEncoder:
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
 
-        if custom_mask is not None:
-            if isinstance(data, tuple):
-                if not isinstance(custom_mask, tuple) or len(custom_mask) != 3:
-                    raise ValueError(
-                        "If data is a tuple, custom_mask must also be a tuple of the same length."
-                    )
-            else:
-                if isinstance(custom_mask, tuple):
-                    raise ValueError(
-                        "If data is a single array, custom_mask cannot be a tuple."
-                    )
-
         bidirectional_allowed = {"lstm", "gru", "rnn"}
 
         if form not in bidirectional_allowed:
@@ -300,13 +282,6 @@ class AutoEncoder:
 
         self.normalization_method = normalization_method
 
-        contains_nans = np.isnan(data).any() if isinstance(data, np.ndarray) else False
-        if contains_nans and not use_mask:
-            raise ValueError(
-                "Data contains NaNs, but use_mask is False. "
-                "Please remove or impute NaNs before training."
-            )
-
         self.train_size = train_size
         self.val_size = val_size
         self.test_size = test_size
@@ -317,6 +292,12 @@ class AutoEncoder:
             self.val_size = 0.1
             self.test_size = 0.1
 
+        if not self.use_mask and np.isnan(data).any():
+            raise ValueError(
+                "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
+            )
+
+        self.imputer = imputer
         self.prepare_datasets(data, context_window, normalize)
         self.normalize = normalize
 
@@ -339,54 +320,56 @@ class AutoEncoder:
         else:
             self.shuffle_buffer_size = None
 
-        self.x_train_original = np.copy(self.x_train)
+        self.x_train_no_shuffle = np.copy(self.x_train)
 
         if self.use_mask:
-            if custom_mask is not None:
-                if isinstance(custom_mask, tuple):
-                    if len(custom_mask) != 3:
-                        raise ValueError(
-                            "If custom_mask is a tuple, it must contain three arrays (train, val, test)."
-                        )
-                    mask_train, mask_val, mask_test = custom_mask
+            if self.custom_mask is not None:
+                if isinstance(data, tuple) and (
+                    not isinstance(self.custom_mask, tuple)
+                    or len(self.custom_mask) != 3
+                ):
+                    raise ValueError(
+                        "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
+                    )
+
+                if not isinstance(data, tuple) and isinstance(self.custom_mask, tuple):
+                    raise ValueError(
+                        "If data is a single array, custom_mask cannot be a tuple."
+                    )
+
+                if isinstance(self.custom_mask, tuple):
+                    mask_train, mask_val, mask_test = self.custom_mask
                     if (
-                        mask_train.shape != self.x_train.shape
-                        or mask_val.shape != self.x_val.shape
-                        or mask_test.shape != self.x_test.shape
+                        mask_train.shape != self.data[0].shape
+                        or mask_val.shape != self.data[1].shape
+                        or mask_test.shape != self.data[2].shape
                     ):
                         raise ValueError(
                             "Each element of custom_mask must have the same shape as its corresponding dataset "
                             "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
                         )
                 else:
-                    if custom_mask.shape != data.shape:
+                    if self.custom_mask.shape != data.shape:
                         raise ValueError(
                             "custom_mask must have the same shape as the original input data before transformation"
                         )
                     mask_train, mask_val, mask_test = self._time_series_split(
-                        custom_mask,
-                        self.train_size,
-                        self.val_size,
-                        self.test_size,
-                        id_data=self.id_data,
+                        self.custom_mask, self.train_size, self.val_size, self.test_size, id_data=self.id_data,
                     )
-            else:
-                mask_train = np.where(np.isnan(self.x_train), 0, 1)
-                mask_val = np.where(np.isnan(self.x_val), 0, 1)
-                mask_test = np.where(np.isnan(self.x_test), 0, 1)
 
-            self.mask_train = time_series_to_sequence(mask_train, context_window)
-            self.mask_val = time_series_to_sequence(mask_val, context_window)
-            self.mask_test = time_series_to_sequence(mask_test, context_window)
+                self.mask_train = time_series_to_sequence(mask_train, context_window)
+                self.mask_val = time_series_to_sequence(mask_val, context_window)
+                self.mask_test = time_series_to_sequence(mask_test, context_window)
 
-            if imputer is not None:
-                self.x_train = imputer.apply_imputation(self.x_train)
-                self.x_val = imputer.apply_imputation(self.x_val)
-                self.x_test = imputer.apply_imputation(self.x_test)
-            else:
-                self.x_train = np.nan_to_num(self.x_train)
-                self.x_val = np.nan_to_num(self.x_val)
-                self.x_test = np.nan_to_num(self.x_test)
+            # Check if masks and data have the same shape
+            if (
+                self.mask_train.shape != self.x_train.shape
+                or self.mask_val.shape != self.x_val.shape
+                or self.mask_test.shape != self.x_test.shape
+            ):
+                raise ValueError(
+                    "Masks must have the same shape as the data after transformation."
+                )
 
             train_dataset = tf.data.Dataset.from_tensor_slices(
                 (self.x_train, self.mask_train)
@@ -399,15 +382,6 @@ class AutoEncoder:
             )
 
         else:
-            if (
-                np.isnan(self.x_train).any()
-                or np.isnan(self.x_val).any()
-                or np.isnan(self.x_test).any()
-            ):
-                raise ValueError(
-                    "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
-                )
-
             train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
             val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
             test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
@@ -741,7 +715,7 @@ class AutoEncoder:
         :type normalize: bool
         :return: True if the dataset is prepared successfully
         """
-        # Split data using the _time_series_split method which now handles ID-based splitting
+
         x_train, x_val, x_test = self._time_series_split(
             data, self.train_size, self.val_size, self.test_size, id_data=self.id_data
         )
@@ -754,11 +728,32 @@ class AutoEncoder:
                 id_data=self.id_data,
             )
 
+        if self.use_mask and self.custom_mask is None:
+            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
+            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
+            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
+
+            self.mask_train = time_series_to_sequence(mask_train, context_window)
+            self.mask_val = time_series_to_sequence(mask_val, context_window)
+            self.mask_test = time_series_to_sequence(mask_test, context_window)
+
+        # Normalize without taking into account the NaNs or imputed values
         if normalize:
             x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
-        # We need to transform the data into a sequence of data.
         self.data = (x_train, x_val, x_test)
+
+        if self.use_mask and self.imputer is not None:
+            import pandas as pd
+
+            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
+            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
+            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
+        else:
+            x_train = np.nan_to_num(x_train)
+            x_val = np.nan_to_num(x_val)
+            x_test = np.nan_to_num(x_test)
+
         self.x_train = time_series_to_sequence(
             x_train,
             context_window,
@@ -805,10 +800,30 @@ class AutoEncoder:
         """
         x_train, x_val, x_test = data
 
+        if self.use_mask and self.custom_mask is None:
+            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
+            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
+            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
+
+            self.mask_train = time_series_to_sequence(mask_train, context_window)
+            self.mask_val = time_series_to_sequence(mask_val, context_window)
+            self.mask_test = time_series_to_sequence(mask_test, context_window)
+
         if normalize:
             x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
 
         self.data = (x_train, x_val, x_test)
+
+        if self.use_mask and self.imputer is not None:
+            import pandas as pd
+
+            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
+            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
+            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
+        else:
+            x_train = np.nan_to_num(x_train)
+            x_val = np.nan_to_num(x_val)
+            x_test = np.nan_to_num(x_test)
 
         self.x_train = time_series_to_sequence(
             x_train,
@@ -825,7 +840,6 @@ class AutoEncoder:
             context_window,
             id_data=self.id_data[2] if self.id_data is not None else None,
         )
-
         self.samples = (
             self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
         )
@@ -1035,7 +1049,7 @@ class AutoEncoder:
         """
         # Calculate fitted values for each dataset
         # We use the original data for the training set to avoid shuffling in reconstruction step
-        x_hat_train = self.model(self.x_train_original)
+        x_hat_train = self.model(self.x_train_no_shuffle)
         x_hat_val = self.model(self.x_val)
         x_hat_test = self.model(self.x_test)
 
