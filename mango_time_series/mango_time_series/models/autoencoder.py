@@ -361,9 +361,21 @@ class AutoEncoder:
                         id_data=self.id_data,
                     )
 
-                self.mask_train = time_series_to_sequence(mask_train, context_window)
-                self.mask_val = time_series_to_sequence(mask_val, context_window)
-                self.mask_test = time_series_to_sequence(mask_test, context_window)
+                self.mask_train = time_series_to_sequence(
+                    mask_train,
+                    context_window,
+                    id_data=self.id_data[0] if self.id_data is not None else None,
+                )
+                self.mask_val = time_series_to_sequence(
+                    mask_val,
+                    context_window,
+                    id_data=self.id_data[1] if self.id_data is not None else None,
+                )
+                self.mask_test = time_series_to_sequence(
+                    mask_test,
+                    context_window,
+                    id_data=self.id_data[2] if self.id_data is not None else None,
+                )
 
             # Check if masks and data have the same shape
             if (
@@ -737,9 +749,21 @@ class AutoEncoder:
             mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
             mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
 
-            self.mask_train = time_series_to_sequence(mask_train, context_window)
-            self.mask_val = time_series_to_sequence(mask_val, context_window)
-            self.mask_test = time_series_to_sequence(mask_test, context_window)
+            self.mask_train = time_series_to_sequence(
+                mask_train,
+                context_window,
+                id_data=self.id_data[0] if self.id_data is not None else None,
+            )
+            self.mask_val = time_series_to_sequence(
+                mask_val,
+                context_window,
+                id_data=self.id_data[1] if self.id_data is not None else None,
+            )
+            self.mask_test = time_series_to_sequence(
+                mask_test,
+                context_window,
+                id_data=self.id_data[2] if self.id_data is not None else None,
+            )
 
         # Normalize without taking into account the NaNs or imputed values
         if normalize:
