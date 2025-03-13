@@ -354,7 +354,11 @@ class AutoEncoder:
                             "custom_mask must have the same shape as the original input data before transformation"
                         )
                     mask_train, mask_val, mask_test = self._time_series_split(
-                        self.custom_mask, self.train_size, self.val_size, self.test_size, id_data=self.id_data,
+                        self.custom_mask,
+                        self.train_size,
+                        self.val_size,
+                        self.test_size,
+                        id_data=self.id_data,
                     )
 
                 self.mask_train = time_series_to_sequence(mask_train, context_window)
@@ -1119,9 +1123,9 @@ class AutoEncoder:
                 unique_ids = np.unique(id_data_i)
                 for id in unique_ids:
                     # Remove the context window length from the beginning of the id_data
-                    id_data_i[np.where(id_data_i == id)[0][: self.context_window-1]] = (
-                        None
-                    )
+                    id_data_i[
+                        np.where(id_data_i == id)[0][: self.context_window - 1]
+                    ] = None
 
                 # Remove rows with None
                 id_data_i = id_data_i[~np.all(id_data_i == None, axis=1)]
