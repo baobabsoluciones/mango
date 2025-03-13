@@ -212,9 +212,16 @@ class AutoEncoder:
                     "id_columns must be a string, integer, or a list of strings or integers"
                 )
             if isinstance(data, tuple):
-                self.id_data = tuple(d[:, id_column_indices] for d in data)
+                self.id_data = tuple(
+                    np.array(
+                        ["__".join(map(str, row)) for row in d[:, id_column_indices]]
+                    )
+                    for d in data
+                )
             else:
-                self.id_data = data[:, id_column_indices]
+                self.id_data = np.array(
+                    ["__".join(map(str, row)) for row in data[:, id_column_indices]]
+                )
             if isinstance(data, np.ndarray):
                 data = np.delete(data, id_column_indices, axis=1)
             elif isinstance(data, tuple):
