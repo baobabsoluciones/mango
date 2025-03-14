@@ -56,9 +56,9 @@ class AutoEncoder:
         use_mask: bool = False,
         custom_mask: Any = None,
         imputer: Optional[DataImputer] = None,
-        train_size: Optional[float] = None,
-        val_size: Optional[float] = None,
-        test_size: Optional[float] = None,
+        train_size: float = 0.8,
+        val_size: float = 0.1,
+        test_size: float = 0.1,
         id_columns: Union[str, int, List[str], List[int], None] = None,
     ):
         """
@@ -130,11 +130,11 @@ class AutoEncoder:
         :param imputer: optional imputer to use for missing values
         :type imputer: Optional[DataImputer]
         :param train_size: proportion of the dataset to include in the training set
-        :type train_size: Optional[float]
+        :type train_size: float
         :param val_size: proportion of the dataset to include in the validation set
-        :type val_size: Optional[float]
+        :type val_size: float
         :param test_size: proportion of the dataset to include in the test set
-        :type test_size: Optional[float]
+        :type test_size: float
         :param id_columns: optional column(s) to process the data by groups.
             If provided, the data will be grouped by this column and processed separately.
             Can be a column name (str), a column index (int), or a list of either.
@@ -231,9 +231,24 @@ class AutoEncoder:
                 data = tuple(d.astype(np.float64) for d in data)
             else:
                 data = data.astype(np.float64)
-
         else:
             self.id_data = None
+
+        self.id_data_dict = {}
+        if self.id_data is not None:
+            if isinstance(self.id_data, tuple):
+                unique_ids = np.unique(self.id_data[0])
+                self.id_data_dict = {
+                    unique_id: (
+                        data[0][self.id_data[0] == unique_id],
+                        data[1][self.id_data[1] == unique_id],
+                        data[2][self.id_data[2] == unique_id],
+                    )
+                    for unique_id in unique_ids
+                }
+            else:
+                unique_ids = np.unique(self.id_data)
+                self.id_data_dict = {id: data[self.id_data == id] for id in unique_ids}
 
         if self.id_data is not None:
             if isinstance(self.id_data, tuple):
@@ -293,19 +308,72 @@ class AutoEncoder:
         self.val_size = val_size
         self.test_size = test_size
 
-        # if this three sizes are none, we set the default values
-        if self.train_size is None and self.val_size is None and self.test_size is None:
-            self.train_size = 0.8
-            self.val_size = 0.1
-            self.test_size = 0.1
-
         if not self.use_mask and np.isnan(data).any():
             raise ValueError(
                 "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
             )
 
         self.imputer = imputer
-        self.prepare_datasets(data, context_window, normalize)
+        if self.id_data is not None:
+            self.data = {}
+            self.x_train = {}
+            self.x_val = {}
+            self.x_test = {}
+            self.mask_train = {}
+            self.mask_val = {}
+            self.mask_test = {}
+            for id_iter in self.id_data_dict:
+                self.prepare_datasets(
+                    self.id_data_dict[id_iter],
+                    context_window,
+                    normalize,
+                    id_iter=id_iter,
+                )
+
+            # Extract the length of the datasets for each id to use it on the reconstruction
+            self.length_datasets = {}
+            for id_iter in self.id_data_dict:
+                self.length_datasets[id_iter] = {}
+                self.length_datasets[id_iter]["train"] = len(self.x_train[id_iter])
+                self.length_datasets[id_iter]["val"] = len(self.x_val[id_iter])
+                self.length_datasets[id_iter]["test"] = len(self.x_test[id_iter])
+
+            # Concat all the datasets
+            self.x_train = np.concatenate(
+                [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+                axis=0,
+            )
+            self.x_val = np.concatenate(
+                [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+                axis=0,
+            )
+            self.x_test = np.concatenate(
+                [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+                axis=0,
+            )
+            self.mask_train = np.concatenate(
+                [
+                    self.mask_train[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_val = np.concatenate(
+                [
+                    self.mask_val[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_test = np.concatenate(
+                [
+                    self.mask_test[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+        else:
+            self.prepare_datasets(data, context_window, normalize)
         self.normalize = normalize
 
         if isinstance(feature_to_check, int):
@@ -365,7 +433,6 @@ class AutoEncoder:
                         self.train_size,
                         self.val_size,
                         self.test_size,
-                        id_data=self.id_data,
                     )
 
                 self.mask_train = time_series_to_sequence(
@@ -501,7 +568,7 @@ class AutoEncoder:
 
     @staticmethod
     def _time_series_split(
-        data, train_size=None, val_size=None, test_size=None, id_data=None
+        data, train_size=None, val_size=None, test_size=None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Splits data into training, validation, and test sets according to the specified percentages.
@@ -514,8 +581,6 @@ class AutoEncoder:
             Proportion of the dataset to include in the validation set (0-1).
         :param test_size: float, optional
             Proportion of the dataset to include in the test set (0-1).
-        :param id_data: array of identifiers for the data, if provided split will be done by unique IDs
-        :type id_data: np.ndarray, optional
         :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
             The training, validation, and test sets as numpy arrays.
         """
@@ -538,48 +603,16 @@ class AutoEncoder:
                 f"The sum of train_size, val_size, and test_size must be 1.0, but got {total_size}."
             )
 
-        if id_data is not None:
-            if len(id_data) != len(data):
-                raise ValueError(
-                    f"Length of id_data ({len(id_data)}) must match length of data ({len(data)})"
-                )
+        # Original implementation for sequential split
+        n = len(data)
+        train_end = int(n * train_size)
+        val_end = train_end + int(n * val_size)
 
-            # Get unique IDs
-            unique_ids = np.unique(id_data)
+        train_set = data[:train_end]
+        val_set = data[train_end:val_end] if val_size > 0 else None
+        test_set = data[val_end:] if test_size > 0 else None
 
-            train_set, val_set, test_set = [], [], []
-            for id in unique_ids:
-                data_id_i = data[np.where(id_data == id)[0]]
-                n_id_i = len(data_id_i)
-                train_end_id_i = int(n_id_i * train_size)
-                val_end_id_i = train_end_id_i + int(n_id_i * val_size)
-
-                train_set_id_i = data_id_i[:train_end_id_i]
-                val_set_id_i = (
-                    data_id_i[train_end_id_i:val_end_id_i] if val_size > 0 else None
-                )
-                test_set_id_i = data_id_i[val_end_id_i:] if test_size > 0 else None
-
-                train_set.append(train_set_id_i)
-                val_set.append(val_set_id_i)
-                test_set.append(test_set_id_i)
-
-            train_set = np.concatenate(train_set)
-            val_set = np.concatenate(val_set) if val_size > 0 else None
-            test_set = np.concatenate(test_set) if test_size > 0 else None
-
-            return train_set, val_set, test_set
-        else:
-            # Original implementation for sequential split
-            n = len(data)
-            train_end = int(n * train_size)
-            val_end = train_end + int(n * val_size)
-
-            train_set = data[:train_end]
-            val_set = data[train_end:val_end] if val_size > 0 else None
-            test_set = data[val_end:] if test_size > 0 else None
-
-            return train_set, val_set, test_set
+        return train_set, val_set, test_set
 
     @staticmethod
     def _convert_data_to_numpy(data):
@@ -696,6 +729,7 @@ class AutoEncoder:
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
         context_window: int,
         normalize: bool,
+        id_iter: Optional[Union[str, int]] = None,
     ):
         """
         Prepare the datasets for the model training and testing.
@@ -708,129 +742,46 @@ class AutoEncoder:
         :type context_window: int
         :param normalize: whether to normalize the data or not
         :type normalize: bool
+        :param id_iter: id of the iteration
+        :type id_iter: Optional[Union[str, int]]
         :return: True if the datasets are prepared successfully
         """
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
-            return self._prepare_numpy_dataset(data, context_window, normalize)
-        elif (
-            isinstance(data, tuple)
-            and len(data) == 3
-            and all(isinstance(i, np.ndarray) for i in data)
-        ):
-            return self._prepare_tuple_dataset(data, context_window, normalize)
-        else:
-            raise ValueError(
-                "Data must be a numpy array or a tuple with three numpy arrays"
-            )
-
-    def _prepare_numpy_dataset(
-        self, data: np.array, context_window: int, normalize: bool
-    ):
-        """
-        Prepare the dataset for the model training and testing when the data is a single numpy array.
-        :param data: numpy array with the data
-        :type data: np.array
-        :param context_window: context window for the model
-        :type context_window: int
-        :param normalize: whether to normalize the data or not
-        :type normalize: bool
-        :return: True if the dataset is prepared successfully
-        """
-
-        x_train, x_val, x_test = self._time_series_split(
-            data, self.train_size, self.val_size, self.test_size, id_data=self.id_data
-        )
-        if self.id_data is not None:
-            self.id_data = self._time_series_split(
-                self.id_data,
+            x_train, x_val, x_test = self._time_series_split(
+                data,
                 self.train_size,
                 self.val_size,
                 self.test_size,
-                id_data=self.id_data,
             )
-
-        if self.use_mask and self.custom_mask is None:
-            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
-            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
-            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
-
-            self.mask_train = time_series_to_sequence(
-                mask_train,
-                context_window,
-                id_data=self.id_data[0] if self.id_data is not None else None,
-            )
-            self.mask_val = time_series_to_sequence(
-                mask_val,
-                context_window,
-                id_data=self.id_data[1] if self.id_data is not None else None,
-            )
-            self.mask_test = time_series_to_sequence(
-                mask_test,
-                context_window,
-                id_data=self.id_data[2] if self.id_data is not None else None,
-            )
-
-        # Normalize without taking into account the NaNs or imputed values
-        if normalize:
-            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
-
-        self.data = (x_train, x_val, x_test)
-
-        if self.use_mask and self.imputer is not None:
-            import pandas as pd
-
-            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
-            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
-            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
+            data = tuple([x_train, x_val, x_test])
         else:
-            x_train = np.nan_to_num(x_train)
-            x_val = np.nan_to_num(x_val)
-            x_test = np.nan_to_num(x_test)
+            if not isinstance(data, tuple) or len(data) != 3:
+                raise ValueError(
+                    "Data must be a numpy array or a tuple with three numpy arrays"
+                )
 
-        self.x_train = time_series_to_sequence(
-            x_train,
-            context_window,
-            id_data=self.id_data[0] if self.id_data is not None else None,
-        )
-        self.x_val = time_series_to_sequence(
-            x_val,
-            context_window,
-            id_data=self.id_data[1] if self.id_data is not None else None,
-        )
-        self.x_test = time_series_to_sequence(
-            x_test,
-            context_window,
-            id_data=self.id_data[2] if self.id_data is not None else None,
-        )
+        return self._prepare_dataset(data, context_window, normalize, id_iter=id_iter)
 
-        if self.x_val.shape[0] == 0 or self.x_test.shape[0] == 0:
-            raise ValueError(
-                "Validation or Test sets are empty after sequence transformation. "
-                "Consider reducing context_window or adjusting split_size."
-            )
-
-        # Update samples count
-        self.samples = (
-            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
-        )
-        return True
-
-    def _prepare_tuple_dataset(
+    def _prepare_dataset(
         self,
         data: Tuple[np.ndarray, np.ndarray, np.ndarray],
         context_window: int,
         normalize: bool,
+        id_iter: Optional[Union[str, int]] = None,
     ):
         """
         Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
+
         :param data: tuple with three numpy arrays for the train, validation and test datasets
         :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
         :param context_window: context window for the model
         :type context_window: int
         :param normalize: whether to normalize the data or not
         :type normalize: bool
+        :param id_iter: id of the iteration
+        :type id_iter: Optional[Union[str, int]]
         :return: True if the dataset is prepared successfully
         """
         x_train, x_val, x_test = data
@@ -840,14 +791,12 @@ class AutoEncoder:
             mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
             mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
 
-            self.mask_train = time_series_to_sequence(mask_train, context_window)
-            self.mask_val = time_series_to_sequence(mask_val, context_window)
-            self.mask_test = time_series_to_sequence(mask_test, context_window)
+            seq_mask_train = time_series_to_sequence(mask_train, context_window)
+            seq_mask_val = time_series_to_sequence(mask_val, context_window)
+            seq_mask_test = time_series_to_sequence(mask_test, context_window)
 
         if normalize:
             x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
-
-        self.data = (x_train, x_val, x_test)
 
         if self.use_mask and self.imputer is not None:
             import pandas as pd
@@ -860,24 +809,26 @@ class AutoEncoder:
             x_val = np.nan_to_num(x_val)
             x_test = np.nan_to_num(x_test)
 
-        self.x_train = time_series_to_sequence(
-            x_train,
-            context_window,
-            id_data=self.id_data[0] if self.id_data is not None else None,
-        )
-        self.x_val = time_series_to_sequence(
-            x_val,
-            context_window,
-            id_data=self.id_data[1] if self.id_data is not None else None,
-        )
-        self.x_test = time_series_to_sequence(
-            x_test,
-            context_window,
-            id_data=self.id_data[2] if self.id_data is not None else None,
-        )
-        self.samples = (
-            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
-        )
+        seq_x_train = time_series_to_sequence(x_train, context_window)
+        seq_x_val = time_series_to_sequence(x_val, context_window)
+        seq_x_test = time_series_to_sequence(x_test, context_window)
+
+        if id_iter is not None:
+            self.data[id_iter] = (x_train, x_val, x_test)
+            self.x_train[id_iter] = seq_x_train
+            self.x_val[id_iter] = seq_x_val
+            self.x_test[id_iter] = seq_x_test
+            self.mask_train[id_iter] = seq_mask_train
+            self.mask_val[id_iter] = seq_mask_val
+            self.mask_test[id_iter] = seq_mask_test
+        else:
+            self.data = (seq_x_train, seq_x_val, seq_x_test)
+            self.x_train = seq_x_train
+            self.x_val = seq_x_val
+            self.x_test = seq_x_test
+            self.mask_train = seq_mask_train
+            self.mask_val = seq_mask_val
+            self.mask_test = seq_mask_test
 
         return True
 
@@ -1155,24 +1106,6 @@ class AutoEncoder:
         train_split = self.x_train.shape[0]
         val_split = train_split + self.x_val.shape[0]
 
-        # Remove the context window lenght from the beginning of the id_data for each id
-        id_data_sequences = []
-        if self.id_data is not None:
-            for i, id_data_i in enumerate(self.id_data):
-                # Get the unique IDs
-                unique_ids = np.unique(id_data_i)
-                for id in unique_ids:
-                    # Remove the context window length from the beginning of the id_data
-                    id_data_i[
-                        np.where(id_data_i == id)[0][: self.context_window - 1]
-                    ] = None
-
-                # Remove rows with None
-                id_data_i = id_data_i[~np.all(id_data_i == None, axis=1)]
-
-                id_data_sequences.append(id_data_i)
-            id_data_sequences = tuple(id_data_sequences)
-
         plot_actual_and_reconstructed(
             actual=x_converted,
             reconstructed=x_hat,
@@ -1180,7 +1113,7 @@ class AutoEncoder:
             feature_labels=feature_labels,
             train_split=train_split,
             val_split=val_split,
-            id_data=id_data_sequences if self.id_data is not None else None,
+            length_datasets=self.length_datasets if self.id_data_dict != {} else None,
         )
 
         return True

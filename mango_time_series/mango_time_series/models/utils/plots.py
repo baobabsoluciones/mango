@@ -64,7 +64,7 @@ def plot_actual_and_reconstructed(
     feature_labels: Optional[List[str]] = None,
     train_split: Optional[int] = None,
     val_split: Optional[int] = None,
-    id_data: Optional[np.ndarray] = None,
+    length_datasets: Optional[dict] = None,
 ):
     """
     Plot actual vs reconstructed values for each feature and save to specified folder.
@@ -82,8 +82,8 @@ def plot_actual_and_reconstructed(
     :type train_split: Optional[int]
     :param val_split: index position where validation data ends (exclusive)
     :type val_split: Optional[int]
-    :param id_data: numpy array indicating the ID for each data point in the time series
-    :type id_data: Optional[np.ndarray]
+    :param length_datasets: dictionary with the length of the datasets for each id
+    :type length_datasets: Optional[dict]
     """
     # Create save directory if it doesn't exist
     os.makedirs(save_path, exist_ok=True)
@@ -140,33 +140,64 @@ def plot_actual_and_reconstructed(
         (zeros_before_test, reconstructed_test), axis=1
     )
 
-    # If ID data is provided, process per ID
-    if id_data is not None:
-        id_data = np.concatenate(id_data)
-        # Get unique IDs
-        unique_ids = np.unique(id_data)
+    # Actual data
+    actual_train = actual[:, :train_split]
+    actual_val = actual[:, train_split:val_split]
+    actual_test = actual[:, val_split:]
 
+    # If ID data is provided, process per ID
+    if length_datasets is not None:
         # Create a separate directory for ID-based plots
         id_save_path = os.path.join(save_path, "by_id")
         os.makedirs(id_save_path, exist_ok=True)
 
         # Process each ID separately
-        for id_value in unique_ids:
-            # Get indices for this ID
-            id_indices = np.where(id_data == id_value)[0]
+        for id_value in sorted(length_datasets.keys()):
+            # Get the length of the datasets for this id
+            train_len = length_datasets[id_value]["train"]
+            val_len = length_datasets[id_value]["val"]
+            test_len = length_datasets[id_value]["test"]
 
             # Extract data for this ID
-            id_actual = actual[:, id_indices]
-            id_reconstructed = reconstructed[:, id_indices]
+            id_actual_train = actual_train[:, :train_len]
+            id_actual_val = actual_val[:, :val_len]
+            id_actual_test = actual_test[:, :test_len]
 
-            # Find which splits the ID data falls into
-            train_mask = id_indices < train_split
-            val_mask = (id_indices >= train_split) & (id_indices < val_split)
-            test_mask = id_indices >= val_split
+            # Remove from actual_train, actual_val and actual_test the data for this id
+            actual_train = actual_train[:, train_len:]
+            actual_val = actual_val[:, val_len:]
+            actual_test = actual_test[:, test_len:]
 
-            # Create an ID-specific directory
-            id_specific_path = os.path.join(id_save_path, f"id_{id_value}")
-            os.makedirs(id_specific_path, exist_ok=True)
+            id_reconstructed_train = reconstructed_train[:, :train_len]
+            id_reconstructed_val = reconstructed_val[:, :val_len]
+            id_reconstructed_test = reconstructed_test[:, :test_len]
+
+            # Create zero arrays for padding
+            zeros_after_train = np.zeros((reconstructed.shape[0], val_len + test_len))
+            zeros_before_val = np.zeros((reconstructed.shape[0], train_len))
+            zeros_after_val = np.zeros((reconstructed.shape[0], test_len))
+            zeros_before_test = np.zeros((reconstructed.shape[0], train_len + val_len))
+
+            # Pad each split with zeros in the correct positions
+            id_reconstructed_train_padded = np.concatenate(
+                (id_reconstructed_train, zeros_after_train), axis=1
+            )
+            id_reconstructed_val_padded = np.concatenate(
+                (zeros_before_val, id_reconstructed_val, zeros_after_val), axis=1
+            )
+            id_reconstructed_test_padded = np.concatenate(
+                (zeros_before_test, id_reconstructed_test), axis=1
+            )
+
+            # Remove from reconstructed_train, reconstructed_val and reconstructed_test the data for this id
+            reconstructed_train = reconstructed_train[:, train_len:]
+            reconstructed_val = reconstructed_val[:, val_len:]
+            reconstructed_test = reconstructed_test[:, test_len:]
+
+            # Concat the dataset and plot
+            id_actual = np.concatenate(
+                (id_actual_train, id_actual_val, id_actual_test), axis=1
+            )
 
             # Plot for each feature for this ID
             for feature, label in enumerate(feature_labels):
@@ -178,38 +209,54 @@ def plot_actual_and_reconstructed(
                     go.Scatter(
                         y=id_actual[feature],
                         mode="lines",
-                        name=f"Actual",
+                        name="Actual",
                         line=dict(color="blue"),
                     )
                 )
 
+                # Define masks for train, validation, and test
+                train_mask = np.arange(id_actual_train.shape[1])
+                val_mask = np.arange(
+                    id_actual_train.shape[1],
+                    id_actual_train.shape[1] + id_actual_val.shape[1],
+                )
+                test_mask = np.arange(
+                    id_actual_train.shape[1] + id_actual_val.shape[1],
+                    id_actual_train.shape[1]
+                    + id_actual_val.shape[1]
+                    + id_actual_test.shape[1],
+                )
+
                 # Add reconstructed values with split coloring
-                if np.any(train_mask):
+                if id_reconstructed_train_padded.shape[1] > 0:
                     fig_id.add_trace(
                         go.Scatter(
-                            y=id_reconstructed[feature, train_mask],
+                            y=id_reconstructed_train_padded[feature],
                             mode="lines",
-                            name=f"Reconstructed - Train",
+                            name="Reconstructed - Train",
                             line=dict(color="green"),
                         )
                     )
 
-                if np.any(val_mask):
+                if id_reconstructed_val_padded.shape[1] > id_actual_train.shape[1]:
                     fig_id.add_trace(
                         go.Scatter(
-                            y=id_reconstructed[feature, val_mask],
+                            y=id_reconstructed_val_padded[feature],
                             mode="lines",
-                            name=f"Reconstructed - Validation",
+                            name="Reconstructed - Validation",
                             line=dict(color="orange"),
                         )
                     )
 
-                if np.any(test_mask):
+                if (
+                    id_reconstructed_test_padded.shape[1]
+                    > id_actual_train.shape[1] + id_actual_val.shape[1]
+                ):
                     fig_id.add_trace(
                         go.Scatter(
-                            y=id_reconstructed[feature, test_mask],
+                            y=id_reconstructed_test_padded[feature],
                             mode="lines",
-                            name=f"Reconstructed - Test",
+                            name="Reconstructed - Test",
                             line=dict(color="red"),
                         )
                     )
@@ -224,160 +271,176 @@ def plot_actual_and_reconstructed(
                 )
 
                 # Save ID-specific plot
-                id_plot_path = os.path.join(id_specific_path, f"{label}.html")
+                id_plot_path = os.path.join(
+                    save_path, "by_id", f"{label}_id_{id_value}.html"
+                )
                 fig_id.write_html(id_plot_path)
 
-            # Create all features combined plot for this ID
-            fig_id_all = go.Figure()
-
-            # Add traces for each feature - both actual and reconstructed
+            # Plot all features for this ID
+            fig_all_id = go.Figure()
             for feature, label in enumerate(feature_labels):
-                # Add actual values
-                fig_id_all.add_trace(
+                fig_all_id.add_trace(
+                    go.Scatter(y=id_actual[feature], mode="lines", name=label)
+                )
+                fig_all_id.add_trace(
                     go.Scatter(
-                        y=id_actual[feature],
+                        y=id_reconstructed_train_padded[feature],
                         mode="lines",
-                        name=f"{label} - Actual",
-                        line=dict(dash="solid"),
+                        line=dict(dash="dash"),
+                        name=f"Reconstructed - Train ({label})",
                     )
                 )
-                # Add reconstructed values
-                fig_id_all.add_trace(
+                fig_all_id.add_trace(
                     go.Scatter(
-                        y=id_reconstructed[feature],
+                        y=id_reconstructed_val_padded[feature],
                         mode="lines",
-                        name=f"{label} - Reconstructed",
                         line=dict(dash="dash"),
+                        name=f"Reconstructed - Validation ({label})",
+                    )
+                )
+                fig_all_id.add_trace(
+                    go.Scatter(
+                        y=id_reconstructed_test_padded[feature],
+                        mode="lines",
+                        line=dict(dash="dash"),
+                        name=f"Reconstructed - Test ({label})",
                     )
                 )
 
-            # Update layout
-            fig_id_all.update_layout(
-                title=f"ID {id_value} - All Features",
+                fig_all_id.update_layout(
+                    title=f"ID {id_value} - All Features",
+                    xaxis_title="Time Step",
+                    yaxis_title="Value",
+                    showlegend=True,
+                    hovermode="x unified",
+                )
+
+                id_plot_path = os.path.join(
+                    save_path, "by_id", f"all_features_id_{id_value}.html"
+                )
+                fig_all_id.write_html(id_plot_path)
+
+    else:
+        # Continue with original plotting for the full dataset
+        for feature, label in enumerate(feature_labels):
+            # First plot: Separate actual and reconstructed
+            fig_separate = make_subplots(
+                rows=2,
+                cols=1,
+                subplot_titles=(
+                    f"Actual - {label}",
+                    f"Reconstructed - {label}",
+                ),
+            )
+
+            # Add the actual line plot
+            fig_separate.add_trace(
+                go.Scatter(y=actual[feature], mode="lines", name="Actual"), row=1, col=1
+            )
+
+            # Add the reconstructed line plots
+            fig_separate.add_trace(
+                go.Scatter(
+                    y=reconstructed_train_padded[feature], mode="lines", name="Train"
+                ),
+                row=2,
+                col=1,
+            )
+            fig_separate.add_trace(
+                go.Scatter(
+                    y=reconstructed_val_padded[feature], mode="lines", name="Validation"
+                ),
+                row=2,
+                col=1,
+            )
+            fig_separate.add_trace(
+                go.Scatter(
+                    y=reconstructed_test_padded[feature], mode="lines", name="Test"
+                ),
+                row=2,
+                col=1,
+            )
+
+            fig_separate.update_layout(
+                title=f"{label} - Separate Views", showlegend=True
+            )
+
+            # Save separate view plot
+            separate_path = os.path.join(save_path, f"{label}_separate.html")
+            fig_separate.write_html(separate_path)
+
+            # Second plot: Overlapped actual and reconstructed
+            fig_overlap = go.Figure()
+            fig_overlap.add_trace(
+                go.Scatter(y=actual[feature], mode="lines", name="Actual")
+            )
+            fig_overlap.add_trace(
+                go.Scatter(
+                    y=reconstructed_train_padded[feature],
+                    mode="lines",
+                    name="Reconstructed - Train",
+                )
+            )
+            fig_overlap.add_trace(
+                go.Scatter(
+                    y=reconstructed_val_padded[feature],
+                    mode="lines",
+                    name="Reconstructed - Validation",
+                )
+            )
+            fig_overlap.add_trace(
+                go.Scatter(
+                    y=reconstructed_test_padded[feature],
+                    mode="lines",
+                    name="Reconstructed - Test",
+                )
+            )
+
+            fig_overlap.update_layout(
+                title=f"{label} - Overlapped View",
                 xaxis_title="Time Step",
                 yaxis_title="Value",
                 showlegend=True,
-                hovermode="x unified",
             )
 
-            # Save combined ID plot
-            id_combined_path = os.path.join(id_specific_path, "all_features.html")
-            fig_id_all.write_html(id_combined_path)
+            # Save overlapped view plot
+            overlap_path = os.path.join(save_path, f"{label}_overlap.html")
+            fig_overlap.write_html(overlap_path)
 
-    # Continue with original plotting for the full dataset
-    for feature, label in enumerate(feature_labels):
-        # First plot: Separate actual and reconstructed
-        fig_separate = make_subplots(
-            rows=2,
-            cols=1,
-            subplot_titles=(
-                f"Actual - {label}",
-                f"Reconstructed - {label}",
-            ),
-        )
+            fig_all = go.Figure()
 
-        # Add the actual line plot
-        fig_separate.add_trace(
-            go.Scatter(y=actual[feature], mode="lines", name="Actual"), row=1, col=1
-        )
-
-        # Add the reconstructed line plots
-        fig_separate.add_trace(
-            go.Scatter(
-                y=reconstructed_train_padded[feature], mode="lines", name="Train"
-            ),
-            row=2,
-            col=1,
-        )
-        fig_separate.add_trace(
-            go.Scatter(
-                y=reconstructed_val_padded[feature], mode="lines", name="Validation"
-            ),
-            row=2,
-            col=1,
-        )
-        fig_separate.add_trace(
-            go.Scatter(y=reconstructed_test_padded[feature], mode="lines", name="Test"),
-            row=2,
-            col=1,
-        )
-
-        fig_separate.update_layout(title=f"{label} - Separate Views", showlegend=True)
-
-        # Save separate view plot
-        separate_path = os.path.join(save_path, f"{label}_separate.html")
-        fig_separate.write_html(separate_path)
-
-        # Second plot: Overlapped actual and reconstructed
-        fig_overlap = go.Figure()
-        fig_overlap.add_trace(
-            go.Scatter(y=actual[feature], mode="lines", name="Actual")
-        )
-        fig_overlap.add_trace(
-            go.Scatter(
-                y=reconstructed_train_padded[feature],
-                mode="lines",
-                name="Reconstructed - Train",
+        # Add traces for each feature - both actual and reconstructed
+        for feature, label in enumerate(feature_labels):
+            # Add actual values
+            fig_all.add_trace(
+                go.Scatter(
+                    y=actual[feature],
+                    mode="lines",
+                    name=f"{label} - Actual",
+                    line=dict(dash="solid"),
+                )
             )
-        )
-        fig_overlap.add_trace(
-            go.Scatter(
-                y=reconstructed_val_padded[feature],
-                mode="lines",
-                name="Reconstructed - Validation",
+            # Add reconstructed values
+            fig_all.add_trace(
+                go.Scatter(
+                    y=reconstructed[feature],
+                    mode="lines",
+                    name=f"{label} - Reconstructed",
+                    line=dict(dash="dash"),
+                )
             )
-        )
-        fig_overlap.add_trace(
-            go.Scatter(
-                y=reconstructed_test_padded[feature],
-                mode="lines",
-                name="Reconstructed - Test",
-            )
-        )
 
-        fig_overlap.update_layout(
-            title=f"{label} - Overlapped View",
+        # Update layout
+        fig_all.update_layout(
+            title="All Features - Actual vs Reconstructed",
             xaxis_title="Time Step",
             yaxis_title="Value",
             showlegend=True,
+            hovermode="x unified",
         )
 
-        # Save overlapped view plot
-        overlap_path = os.path.join(save_path, f"{label}_overlap.html")
-        fig_overlap.write_html(overlap_path)
-
-    fig_all = go.Figure()
-
-    # Add traces for each feature - both actual and reconstructed
-    for feature, label in enumerate(feature_labels):
-        # Add actual values
-        fig_all.add_trace(
-            go.Scatter(
-                y=actual[feature],
-                mode="lines",
-                name=f"{label} - Actual",
-                line=dict(dash="solid"),
-            )
+        # Save combined plot
+        combined_path = os.path.join(
+            save_path, "all_features_actual_vs_reconstructed.html"
         )
-        # Add reconstructed values
-        fig_all.add_trace(
-            go.Scatter(
-                y=reconstructed[feature],
-                mode="lines",
-                name=f"{label} - Reconstructed",
-                line=dict(dash="dash"),
-            )
-        )
-
-    # Update layout
-    fig_all.update_layout(
-        title="All Features - Actual vs Reconstructed",
-        xaxis_title="Time Step",
-        yaxis_title="Value",
-        showlegend=True,
-        hovermode="x unified",
-    )
-
-    # Save combined plot
-    combined_path = os.path.join(save_path, "all_features_actual_vs_reconstructed.html")
-    fig_all.write_html(combined_path)
+        fig_all.write_html(combined_path)
