@@ -1,11 +1,10 @@
 import os
-from datetime import datetime
+from typing import List, Optional
+
 import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
-
 from plotly.subplots import make_subplots
-from typing import List, Optional
 
 pio.renderers.default = "browser"
 
@@ -96,14 +95,39 @@ def plot_actual_and_reconstructed(
     elif len(feature_labels) != num_features:
         raise ValueError("Number of feature labels must match number of features")
 
+    if train_split is None or val_split is None:
+        for feature, label in enumerate(feature_labels):
+            fig = go.Figure()
+
+            # Add actual values
+            fig.add_trace(go.Scatter(y=actual[feature], mode="lines", name="Actual"))
+
+            # Add reconstructed values
+            fig.add_trace(
+                go.Scatter(
+                    y=reconstructed[feature],
+                    mode="lines",
+                    name="Reconstructed",
+                    line=dict(dash="dash"),
+                )
+            )
+
+            # Update layout
+            fig.update_layout(
+                title=f"{label} - Actual vs Reconstructed",
+                xaxis_title="Time Step",
+                yaxis_title="Value",
+                showlegend=True,
+            )
+
+            # Save plot
+            plot_path = os.path.join(save_path, f"{label}_new_data.html")
+            fig.write_html(plot_path)
+
+        return
+
     # Set default split points if not provided
     data_length = reconstructed.shape[1]
-    if train_split is None:
-        train_split = round(0.6 * data_length)
-    if val_split is None:
-        val_split = round(0.7 * data_length)
-
-    # Ensure splits are valid
     if not (0 < train_split < val_split <= data_length):
         raise ValueError(
             f"Invalid split points: train_split={train_split}, val_split={val_split}, data_length={data_length}"
@@ -381,3 +405,117 @@ def plot_actual_and_reconstructed(
     # Save combined plot
     combined_path = os.path.join(save_path, "all_features_actual_vs_reconstructed.html")
     fig_all.write_html(combined_path)
+
+
+def plot_reconstruction_iterations(
+    original_data: np.ndarray,
+    reconstructed_iterations: dict,
+    save_path: str,
+    feature_labels: Optional[List[str]] = None,
+):
+    """
+    Plots the original data with missing values, the first full reconstruction,
+    and the iterative reconstruction of NaN values.
+
+    :param original_data: 2D numpy array (features x timesteps) with the original data.
+    :param reconstructed_iterations: Dictionary {iteration: 2D numpy array}
+                                     containing reconstructions per iteration.
+    :param save_path: Path to save the plots.
+    :param feature_labels: Optional list of labels for each feature.
+    """
+    os.makedirs(save_path, exist_ok=True)
+
+    num_features, num_timesteps = original_data.shape
+    max_iterations = max(reconstructed_iterations.keys())
+
+    if feature_labels is None:
+        feature_labels = [f"Feature {i}" for i in range(num_features)]
+
+    for feature_idx in range(num_features):
+        fig = go.Figure()
+
+        # Original data (with NaNs hidden from visualization)
+        original_values = original_data[feature_idx]
+        nan_mask = np.isnan(original_values)
+        fig.add_trace(
+            go.Scatter(
+                y=np.where(nan_mask, None, original_values),
+                mode="lines",
+                name="Original data",
+                line=dict(color="black", width=2, dash="solid"),
+            )
+        )
+
+        # Iterative NaN reconstructions
+        colors = [
+            "red",
+            "orange",
+            "green",
+            "purple",
+            "pink",
+            "brown",
+            "cyan",
+            "magenta",
+        ]
+        for iter_num in range(1, max_iterations):
+            reconstructed_values = np.copy(original_values)
+            nan_x, nan_y = [], []
+
+            for t in range(num_timesteps):
+                if np.isnan(original_data[feature_idx, t]):
+                    reconstructed_values[t] = reconstructed_iterations[iter_num][
+                        feature_idx, t
+                    ]
+                    nan_x.append(t)
+                    nan_y.append(reconstructed_iterations[iter_num][feature_idx, t])
+
+            fig.add_trace(
+                go.Scatter(
+                    y=reconstructed_values,
+                    mode="lines",
+                    name=f"Iteration {iter_num}",
+                    line=dict(
+                        color=colors[(iter_num - 2) % len(colors)],
+                        width=1.5,
+                        dash="dot",
+                    ),
+                )
+            )
+
+            # Add scatter points for reconstructed NaN values
+            fig.add_trace(
+                go.Scatter(
+                    x=nan_x,
+                    y=nan_y,
+                    mode="markers",
+                    name=f"Reconstructed NaNs (Iter {iter_num})",
+                    marker=dict(
+                        color=colors[(iter_num - 2) % len(colors)],
+                        size=6,
+                        symbol="circle",
+                    ),
+                )
+            )
+
+        # Final iteration (Full dataset reconstruction)
+        fig.add_trace(
+            go.Scatter(
+                y=reconstructed_iterations[max_iterations][feature_idx],
+                mode="lines",
+                name="Final Reconstruction",
+                line=dict(color="darkblue", width=2.5, dash="solid"),
+            )
+        )
+
+        # Layout and save
+        fig.update_layout(
+            title=f"Feature: {feature_labels[feature_idx]} - Reconstruction Progress",
+            xaxis_title="Time Step",
+            yaxis_title="Value",
+            showlegend=True,
+        )
+
+        plot_path = os.path.join(
+            save_path, f"{feature_labels[feature_idx]}_iterations.html"
+        )
+        fig.write_html(plot_path)
