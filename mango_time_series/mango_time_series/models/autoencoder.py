@@ -2,6 +2,7 @@ import os
 from typing import Union, List, Tuple, Any, Optional
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
@@ -1213,6 +1214,7 @@ class AutoEncoder:
             self.model.save(os.path.join(save_path, "models", filename))
             training_params = {
                 "context_window": self.context_window,
+                "time_step_to_check": self.time_step_to_check,
             }
 
             # Solo guardamos los parámetros de normalización si normalize=True
@@ -1286,6 +1288,35 @@ class AutoEncoder:
                 f"Parameter file {params_file} not found. Make sure the model was trained and saved correctly."
             )
 
+    @staticmethod
+    def _apply_padding(data, reconstructed, context_window, time_step_to_check):
+        """
+        Apply padding dynamically based on time_step_to_check and context_window.
+
+        :param data: Original dataset shape (num_samples, num_features)
+        :param reconstructed: Predicted values shape (num_samples - context_window, num_features)
+        :param context_window: Context window size
+        :param time_step_to_check: Time step to predict within the window
+        :return: Padded reconstructed dataset
+        """
+        num_samples, num_features = data.shape
+        padded_reconstructed = np.full((num_samples, num_features), np.nan)
+
+        # Determine the offset based on time_step_to_check
+        # TODO: Improve this logic to handle multiple time steps
+        if isinstance(time_step_to_check, list):
+            time_step_to_check = time_step_to_check[0]
+        if time_step_to_check == 0:
+            padded_reconstructed[: num_samples - (context_window - 1)] = reconstructed
+        elif time_step_to_check == context_window - 1:
+            padded_reconstructed[context_window - 1 :] = reconstructed
+        else:
+            before = time_step_to_check
+            after = context_window - 1 - time_step_to_check
+            padded_reconstructed[before : num_samples - after] = reconstructed
+
+        return padded_reconstructed
+
     def reconstruct_new_data(
         self,
         data,
@@ -1301,7 +1332,6 @@ class AutoEncoder:
         :param model_path: Optional path to load a trained model if not already loaded.
         :return: Reconstructed data.
         """
-        import pandas as pd
 
         if model_path is not None:
             self.load(model_path)
@@ -1311,14 +1341,11 @@ class AutoEncoder:
             )
 
         normalization_used = self.normalization_method_model is not None
-
         data, feature_names = self._convert_data_to_numpy(data)
 
         data_original = np.copy(data)
-
         nan_positions = np.isnan(data)
         has_nans = np.any(nan_positions)
-        gap = self.context_window - 1
         reconstructed_iterations = {}
 
         # Case 1: No NaNs and no iterations (simple prediction)
@@ -1329,18 +1356,12 @@ class AutoEncoder:
                 except Exception as e:
                     raise ValueError(f"Error during normalization: {e}")
 
-            data_seq = time_series_to_sequence(data, self.context_window)
-
-            if data_seq.ndim != 3:
-                raise ValueError(
-                    f"Expected 3D input for model prediction, but got shape {data_seq.shape}"
-                )
-
-            predicted_data = self.model.predict(data_seq)
+            data_seq = time_series_to_sequence(data, self.context_window_model)
+            reconstructed_data = self.model.predict(data_seq)
 
             if normalization_used:
-                data = self._denormalize_data(
-                    data,
+                reconstructed_data = self._denormalize_data(
+                    reconstructed_data,
                     normalization_method=self.normalization_method_model,
                     min_x=self.min_x_model,
                     max_x=self.max_x_model,
@@ -1348,27 +1369,22 @@ class AutoEncoder:
                     std_=self.std_model,
                 )
 
-                predicted_data = self._denormalize_data(
-                    predicted_data,
-                    normalization_method=self.normalization_method_model,
-                    min_x=self.min_x_model,
-                    max_x=self.max_x_model,
-                    mean_=self.mean_model,
-                    std_=self.std_model,
-                )
-
-            padded_predicted = np.full((data.shape[0], data.shape[1]), np.nan)
-            padded_predicted[gap:] = predicted_data
+            padded_reconstructed = self._apply_padding(
+                data,
+                reconstructed_data,
+                self.context_window_model,
+                self.time_step_to_check,
+            )
 
             reconstructed_df = (
-                pd.DataFrame(padded_predicted, columns=feature_names)
+                pd.DataFrame(padded_reconstructed, columns=feature_names)
                 if feature_names
-                else padded_predicted
+                else padded_reconstructed
             )
 
             plot_actual_and_reconstructed(
-                actual=data.T,
-                reconstructed=padded_predicted.T,
+                actual=data_original.T,
+                reconstructed=padded_reconstructed.T,
                 save_path=os.path.join(self.save_path, "plots"),
                 feature_labels=feature_names,
                 train_split=None,
@@ -1380,7 +1396,6 @@ class AutoEncoder:
         # Case 2: Dataset with Nans (iterative prediction)
         elif has_nans and iterations is not None and iterations > 0:
             reconstruction_records = []
-
             reconstructed_iterations[0] = np.copy(data)
 
             if normalization_used:
@@ -1395,27 +1410,27 @@ class AutoEncoder:
                 else:
                     data = np.nan_to_num(data, nan=0)
 
-                data_seq = time_series_to_sequence(data, self.context_window)
+                data_seq = time_series_to_sequence(data, self.context_window_model)
 
-                predicted_data = self.model.predict(data_seq)
-                predicted_desnormalized = self._denormalize_data(
-                    predicted_data,
-                    normalization_method=self.normalization_method_model,
-                    min_x=self.min_x_model,
-                    max_x=self.max_x_model,
-                    mean_=self.mean_model,
-                    std_=self.std_model,
-                )
-                padded_predicted = np.full((data.shape[0], data.shape[1]), np.nan)
-                padded_predicted[gap:] = predicted_desnormalized[: data.shape[0] - gap]
-                reconstructed_iterations[iter_num] = np.copy(padded_predicted)
+                reconstructed_data = self.model.predict(data_seq)
 
-                padded_predicted_normalized = np.full(
-                    (data.shape[0], data.shape[1]), np.nan
+                if normalization_used:
+                    reconstructed_data = self._denormalize_data(
+                        reconstructed_data,
+                        normalization_method=self.normalization_method_model,
+                        min_x=self.min_x_model,
+                        max_x=self.max_x_model,
+                        mean_=self.mean_model,
+                        std_=self.std_model,
+                    )
+
+                padded_reconstructed = self._apply_padding(
+                    data,
+                    reconstructed_data,
+                    self.context_window_model,
+                    self.time_step_to_check,
                 )
-                padded_predicted_normalized[gap:] = predicted_data[
-                    : data.shape[0] - gap
-                ]
+                reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
 
                 for i, j in zip(*np.where(nan_positions)):
                     reconstruction_records.append(
@@ -1423,13 +1438,15 @@ class AutoEncoder:
                             "Column": j + 1,
                             "Timestep": i,
                             "Iteration": iter_num,
-                            "Reconstructed value denormalized": padded_predicted[i, j],
-                            "Reconstructed value normalized": padded_predicted_normalized[
-                                i, j
-                            ],
+                            "Reconstructed value": padded_reconstructed[i, j],
                         }
                     )
-                    data[i, j] = padded_predicted_normalized[i, j]
+                    if normalization_used:
+                        data[i, j] = self._normalize_data(data=padded_reconstructed)[
+                            i, j
+                        ]
+                    else:
+                        data[i, j] = padded_reconstructed[i, j]
 
             # Last iteration
             if self.imputer is not None:
@@ -1437,30 +1454,26 @@ class AutoEncoder:
             else:
                 data = np.nan_to_num(data, nan=0)
 
-            data_seq = time_series_to_sequence(data, self.context_window)
-            predicted_data_final = self.model.predict(data_seq)
+            data_seq = time_series_to_sequence(data, self.context_window_model)
+            reconstructed_data_final = self.model.predict(data_seq)
 
-            predicted_desnormalized_final = self._denormalize_data(
-                predicted_data_final,
-                normalization_method=self.normalization_method_model,
-                min_x=self.min_x_model,
-                max_x=self.max_x_model,
-                mean_=self.mean_model,
-                std_=self.std_model,
+            if normalization_used:
+                reconstructed_data_final = self._denormalize_data(
+                    reconstructed_data_final,
+                    normalization_method=self.normalization_method_model,
+                    min_x=self.min_x_model,
+                    max_x=self.max_x_model,
+                    mean_=self.mean_model,
+                    std_=self.std_model,
+                )
+
+            padded_reconstructed_final = self._apply_padding(
+                data,
+                reconstructed_data_final,
+                self.context_window_model,
+                self.time_step_to_check,
             )
-
-            padded_predicted_final = np.full((data.shape[0], data.shape[1]), np.nan)
-            padded_predicted_final[gap:] = predicted_desnormalized_final[
-                : data.shape[0] - gap
-            ]
-            padded_predicted_final_normalized = np.full(
-                (data.shape[0], data.shape[1]), np.nan
-            )
-            padded_predicted_final_normalized[gap:] = predicted_data_final[
-                : data.shape[0] - gap
-            ]
-
-            reconstructed_iterations[iterations] = np.copy(padded_predicted_final)
+            reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
 
             for i in range(data.shape[0]):
                 for j in range(data.shape[1]):
@@ -1470,19 +1483,14 @@ class AutoEncoder:
                                 "Column": j + 1,
                                 "Timestep": i,
                                 "Iteration": iterations,
-                                "Reconstructed value denormalized": padded_predicted_final[
-                                    i, j
-                                ],
-                                "Reconstructed value normalized": padded_predicted_final_normalized[
-                                    i, j
-                                ],
+                                "Reconstructed value": padded_reconstructed_final[i, j],
                             }
                         )
 
             reconstructed_df = (
-                pd.DataFrame(predicted_desnormalized_final, columns=feature_names)
+                pd.DataFrame(reconstructed_data_final, columns=feature_names)
                 if feature_names
-                else predicted_desnormalized_final
+                else reconstructed_data_final
             )
 
             progress_df = pd.DataFrame(reconstruction_records)
