@@ -340,17 +340,19 @@ class AutoEncoder:
             self.x_train[id_iter] = seq_x_train
             self.x_val[id_iter] = seq_x_val
             self.x_test[id_iter] = seq_x_test
-            self.mask_train[id_iter] = seq_mask_train
-            self.mask_val[id_iter] = seq_mask_val
-            self.mask_test[id_iter] = seq_mask_test
+            if self.use_mask and self.custom_mask is None:
+                self.mask_train[id_iter] = seq_mask_train
+                self.mask_val[id_iter] = seq_mask_val
+                self.mask_test[id_iter] = seq_mask_test
         else:
             self.data = (seq_x_train, seq_x_val, seq_x_test)
             self.x_train = seq_x_train
             self.x_val = seq_x_val
             self.x_test = seq_x_test
-            self.mask_train = seq_mask_train
-            self.mask_val = seq_mask_val
-            self.mask_test = seq_mask_test
+            if self.use_mask and self.custom_mask is None:
+                self.mask_train = seq_mask_train
+                self.mask_val = seq_mask_val
+                self.mask_test = seq_mask_test
 
         return True
 
