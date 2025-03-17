@@ -912,6 +912,7 @@ class AutoEncoder:
                         self.test_size,
                     )
 
+                # FIXME: time_series_to_sequence does not have an id_data parameter
                 self.mask_train = time_series_to_sequence(
                     mask_train,
                     context_window,
