@@ -463,6 +463,7 @@ def plot_actual_and_reconstructed(
         fig_all.write_html(combined_path)
 
 
+# TODO: Handle multiple ids
 def plot_reconstruction_iterations(
     original_data: np.ndarray,
     reconstructed_iterations: dict,
