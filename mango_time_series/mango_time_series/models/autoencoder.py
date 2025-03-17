@@ -1,4 +1,5 @@
 import os
+import pickle
 from typing import Union, List, Tuple, Any, Optional
 
 import numpy as np
@@ -8,7 +9,6 @@ from keras import Sequential
 from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
 from mango.logging import get_configured_logger
 from mango.processing.data_imputer import DataImputer
-from tensorflow.keras.models import load_model
 
 from mango_time_series.models.modules import encoder, decoder
 from mango_time_series.models.utils.plots import (
@@ -35,6 +35,14 @@ class AutoEncoder:
         """
 
         self.root_dir = os.path.abspath(os.getcwd())
+        self.model = None
+        self.context_window = None
+        self.time_step_to_check = None
+        self.normalization_method = None
+        self.min_x = None
+        self.max_x = None
+        self.mean_ = None
+        self.std_ = None
 
     # Class method
     @classmethod
@@ -47,18 +55,39 @@ class AutoEncoder:
         :return: AutoEncoder model
         :rtype: AutoEncoder
         """
-        # Not implemented yet
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Pickle file not found: {path}")
 
-        # 1. Load the model from the pickle file
+        try:
+            # 1. Load the model and parameters from the pickle file
+            with open(path, "rb") as f:
+                saved_data = pickle.load(f)
 
-        # 2. Create an instance of the AutoEncoder class
+            if "model" not in saved_data or "params" not in saved_data:
+                raise ValueError("Invalid pickle file format: missing required keys.")
 
-        # 3. Set the attributes of the AutoEncoder instance (Handle properties and setters)
+            model = saved_data["model"]
+            params = saved_data["params"]
 
-        # 4. Return the AutoEncoder instance
+            # 2. Create an instance of AutoEncoder
+            instance = cls()
 
-        # 5. Out of this function, call the predict method on the loaded model
-        raise NotImplementedError
+            # 3. Assign loaded parameters
+            instance.model = model
+            instance.context_window = params.get("context_window")
+            instance.time_step_to_check = params.get("time_step_to_check")
+            instance.normalization_method = params.get("normalization_method")
+            instance.min_x = params.get("min_x")
+            instance.max_x = params.get("max_x")
+            instance.mean_ = params.get("mean_")
+            instance.std_ = params.get("std_")
+
+            logger.info(f"Model successfully loaded from {path}")
+
+            return instance
+
+        except Exception as e:
+            raise RuntimeError(f"Error loading the AutoEncoder model: {e}")
 
     @staticmethod
     def create_folder_structure(folder_structure: List[str]):
@@ -197,9 +226,9 @@ class AutoEncoder:
 
     def _normalize_data(
         self,
-        x_train: np.array=None,
-        x_val: np.array=None,
-        x_test: np.array=None,
+        x_train: np.array = None,
+        x_val: np.array = None,
+        x_test: np.array = None,
         data=None,
         id_iter: Optional[Union[str, int]] = None,
     ):
@@ -251,20 +280,20 @@ class AutoEncoder:
 
         # === Prediction Mode ===
         elif data is not None:
-            if self.normalization_method_model == "minmax":
-                if self.min_x_model is None or self.max_x_model is None:
+            if self.normalization_method == "minmax":
+                if self.min_x is None or self.max_x is None:
                     raise ValueError(
                         "Min-Max normalization parameters are missing. Ensure the model was trained with normalization."
                     )
-                range_x = self.max_x_model - self.min_x_model
-                return (data - self.min_x_model) / range_x
+                range_x = self.max_x - self.min_x
+                return (data - self.min_x) / range_x
 
-            elif self.normalization_method_model == "zscore":
-                if self.mean_model is None or self.std_model is None:
+            elif self.normalization_method == "zscore":
+                if self.mean_ is None or self.std_ is None:
                     raise ValueError(
                         "Z-Score normalization parameters are missing. Ensure the model was trained with normalization."
                     )
-                return (data - self.mean_model) / self.std_model
+                return (data - self.mean_) / self.std_
 
         else:
             raise ValueError(
@@ -1338,91 +1367,58 @@ class AutoEncoder:
 
     def save(self, save_path: str = None, filename: str = None):
         """
-        Save the model to the specified path.
-        :param save_path: path to save the model
+        Save the model (Keras model + training parameters) into a single .pkl file.
+
+        :param save_path: Path to save the model.
         :type save_path: str
-        :param filename: name of the file to save the model
+        :param filename: Name of the file to save the model.
         :type filename: str
         """
         try:
             save_path = save_path or self.save_path
-            filename = filename or f"{self.last_epoch}.keras"
-            self.model.save(os.path.join(save_path, "models", filename))
+            os.makedirs(os.path.join(save_path, "models"), exist_ok=True)
+
+            filename = filename or f"{self.last_epoch}.pkl"
+            model_path = os.path.join(save_path, "models", filename)
+
+            # Preparar los parámetros a guardar
             training_params = {
                 "context_window": self.context_window,
                 "time_step_to_check": self.time_step_to_check,
+                "normalization_method": (
+                    self.normalization_method if self.normalize else None
+                ),
+                "min_x": (
+                    self.min_x.tolist()
+                    if self.normalize and self.min_x is not None
+                    else None
+                ),
+                "max_x": (
+                    self.max_x.tolist()
+                    if self.normalize and self.max_x is not None
+                    else None
+                ),
+                "mean_": (
+                    self.mean_.tolist()
+                    if self.normalize and self.mean_ is not None
+                    else None
+                ),
+                "std_": (
+                    self.std_.tolist()
+                    if self.normalize and self.std_ is not None
+                    else None
+                ),
             }
 
-            # Solo guardamos los parámetros de normalización si normalize=True
-            if self.normalize:
-                training_params["normalization_method"] = self.normalization_method
+            # Guardar el modelo Keras y los parámetros en un solo archivo pickle
+            with open(model_path, "wb") as f:
+                pickle.dump({"model": self.model, "params": training_params}, f)
 
-                if self.normalization_method == "minmax":
-                    training_params["min_x"] = (
-                        self.min_x.tolist() if self.min_x is not None else None
-                    )
-                    training_params["max_x"] = (
-                        self.max_x.tolist() if self.max_x is not None else None
-                    )
-                elif self.normalization_method == "zscore":
-                    training_params["mean_"] = (
-                        self.mean_.tolist() if self.mean_ is not None else None
-                    )
-                    training_params["std_"] = (
-                        self.std_.tolist() if self.std_ is not None else None
-                    )
+            logger.info(f"Model and parameters saved in: {model_path}")
 
-            np.save(
-                os.path.join(self.save_path, "models", "params.npy"), training_params
-            )
         except Exception as e:
             logger.error(f"Error saving the model: {e}")
             raise
-
-    def load(self, model_path: str):
-        """
-        Load the model from the specified path.
-        :param model_path: path to load the model
-        :type model_path: str
-        """
-        self.model = load_model(model_path)
-
-        params_file = os.path.join(os.path.dirname(model_path), "params.npy")
-
-        if os.path.exists(params_file):
-            params = np.load(params_file, allow_pickle=True).item()
-
-            self.min_x_model = (
-                np.array(params.get("min_x"))
-                if params.get("min_x") is not None
-                else None
-            )
-            self.max_x_model = (
-                np.array(params.get("max_x"))
-                if params.get("max_x") is not None
-                else None
-            )
-            self.mean_model = (
-                np.array(params.get("mean_"))
-                if params.get("mean_") is not None
-                else None
-            )
-            self.std_model = (
-                np.array(params.get("std_")) if params.get("std_") is not None else None
-            )
-            self.normalization_method_model = params.get("normalization_method", None)
-
-            if "context_window" not in params:
-                raise ValueError(
-                    "Missing required parameter: 'context_window' in params.npy"
-                )
-
-            self.context_window_model = params["context_window"]
-
-        else:
-            raise FileNotFoundError(
-                f"Parameter file {params_file} not found. Make sure the model was trained and saved correctly."
-            )
 
     @staticmethod
     def _apply_padding(data, reconstructed, context_window, time_step_to_check):
@@ -1457,7 +1453,6 @@ class AutoEncoder:
         self,
         data,
         iterations: int = None,
-        model_path=None,
     ):
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
@@ -1465,18 +1460,15 @@ class AutoEncoder:
 
         :param data: Input data (numpy array, pandas DataFrame, or polars DataFrame).
         :param iterations: Number of reconstruction iterations (None = no iteration).
-        :param model_path: Optional path to load a trained model if not already loaded.
         :return: Reconstructed data.
         """
 
-        if model_path is not None:
-            self.load(model_path)
-        else:
+        if self.model is None:
             raise ValueError(
-                "No trained model found in memory. Provide `model_path` to load one."
+                "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
             )
 
-        normalization_used = self.normalization_method_model is not None
+        normalization_used = self.normalization_method is not None
         data, feature_names = self._convert_data_to_numpy(data)
 
         data_original = np.copy(data)
@@ -1492,23 +1484,23 @@ class AutoEncoder:
                 except Exception as e:
                     raise ValueError(f"Error during normalization: {e}")
 
-            data_seq = time_series_to_sequence(data, self.context_window_model)
+            data_seq = time_series_to_sequence(data, self.context_window)
             reconstructed_data = self.model.predict(data_seq)
 
             if normalization_used:
                 reconstructed_data = self._denormalize_data(
                     reconstructed_data,
-                    normalization_method=self.normalization_method_model,
-                    min_x=self.min_x_model,
-                    max_x=self.max_x_model,
-                    mean_=self.mean_model,
-                    std_=self.std_model,
+                    normalization_method=self.normalization_method,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
                 )
 
             padded_reconstructed = self._apply_padding(
                 data,
                 reconstructed_data,
-                self.context_window_model,
+                self.context_window,
                 self.time_step_to_check,
             )
 
@@ -1525,7 +1517,7 @@ class AutoEncoder:
                 feature_labels=feature_names,
                 train_split=None,
                 val_split=None,
-                id_data=None,
+                length_datasets=None,
             )
             return reconstructed_df
 
@@ -1546,24 +1538,24 @@ class AutoEncoder:
                 else:
                     data = np.nan_to_num(data, nan=0)
 
-                data_seq = time_series_to_sequence(data, self.context_window_model)
+                data_seq = time_series_to_sequence(data, self.context_window)
 
                 reconstructed_data = self.model.predict(data_seq)
 
                 if normalization_used:
                     reconstructed_data = self._denormalize_data(
                         reconstructed_data,
-                        normalization_method=self.normalization_method_model,
-                        min_x=self.min_x_model,
-                        max_x=self.max_x_model,
-                        mean_=self.mean_model,
-                        std_=self.std_model,
+                        normalization_method=self.normalization_method,
+                        min_x=self.min_x,
+                        max_x=self.max_x,
+                        mean_=self.mean_,
+                        std_=self.std_,
                     )
 
                 padded_reconstructed = self._apply_padding(
                     data,
                     reconstructed_data,
-                    self.context_window_model,
+                    self.context_window,
                     self.time_step_to_check,
                 )
                 reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
@@ -1590,23 +1582,23 @@ class AutoEncoder:
             else:
                 data = np.nan_to_num(data, nan=0)
 
-            data_seq = time_series_to_sequence(data, self.context_window_model)
+            data_seq = time_series_to_sequence(data, self.context_window)
             reconstructed_data_final = self.model.predict(data_seq)
 
             if normalization_used:
                 reconstructed_data_final = self._denormalize_data(
                     reconstructed_data_final,
-                    normalization_method=self.normalization_method_model,
-                    min_x=self.min_x_model,
-                    max_x=self.max_x_model,
-                    mean_=self.mean_model,
-                    std_=self.std_model,
+                    normalization_method=self.normalization_method,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
                 )
 
             padded_reconstructed_final = self._apply_padding(
                 data,
                 reconstructed_data_final,
-                self.context_window_model,
+                self.context_window,
                 self.time_step_to_check,
             )
             reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
