@@ -29,7 +29,454 @@ class AutoEncoder:
     that quick training and profiling can be done.
     """
 
-    def __init__(
+    def __init__(self):
+        """
+        Initialize the Autoencoder model
+        """
+
+        self.root_dir = os.path.abspath(os.getcwd())
+
+    # Class method
+    @classmethod
+    def load_from_pickle(cls, path: str):
+        """
+        Load an AutoEncoder model from a pickle file.
+
+        :param path: Path to the pickle file
+        :type path: str
+        :return: AutoEncoder model
+        :rtype: AutoEncoder
+        """
+        # Not implemented yet
+
+        # 1. Load the model from the pickle file
+
+        # 2. Create an instance of the AutoEncoder class
+
+        # 3. Set the attributes of the AutoEncoder instance (Handle properties and setters)
+
+        # 4. Return the AutoEncoder instance
+
+        # 5. Out of this function, call the predict method on the loaded model
+        raise NotImplementedError
+
+    @staticmethod
+    def create_folder_structure(folder_structure: List[str]):
+        """
+        Create a folder structure if it does not exist.
+
+        :param folder_structure: List of folders to create
+        :type folder_structure: List[str]
+        :return: None
+        """
+        for path in folder_structure:
+            os.makedirs(path, exist_ok=True)
+
+    @staticmethod
+    def _time_series_split(
+        data, train_size, val_size, test_size
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Splits data into training, validation, and test sets according to the specified percentages.
+
+        :param data: array-like data to split
+        :type data: np.ndarray
+        :param train_size: float
+            Proportion of the dataset to include in the training set (0-1).
+        :param val_size: float
+            Proportion of the dataset to include in the validation set (0-1).
+        :param test_size: float
+            Proportion of the dataset to include in the test set (0-1).
+        :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
+            The training, validation, and test sets as numpy arrays.
+        """
+
+        if train_size is None or val_size is None or test_size is None:
+            raise ValueError(
+                "train_size, val_size, and test_size must be specified and not None."
+            )
+
+        if not np.isclose(train_size + val_size + test_size, 1.0):
+            raise ValueError(
+                f"The sum of train_size, val_size, and test_size must be 1.0, but got {train_size + val_size + test_size}."
+            )
+
+        # Original implementation for sequential split
+        n = len(data)
+        train_end = int(n * train_size)
+        val_end = train_end + int(n * val_size)
+
+        train_set = data[:train_end]
+        val_set = data[train_end:val_end] if val_size > 0 else None
+        test_set = data[val_end:] if test_size > 0 else None
+
+        return train_set, val_set, test_set
+
+    @staticmethod
+    def _convert_data_to_numpy(data):
+        """
+        Convert data to numpy array format.
+
+        Handles pandas and polars DataFrames, converting them to numpy arrays.
+        If data is a tuple, converts each element in the tuple.
+
+        :param data: Input data that can be pandas DataFrame, polars DataFrame,
+            numpy array, or tuple of these types
+        :type data: Any
+        :return: Data converted to numpy array(s) and feature names if available
+        :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
+        """
+        try:
+            import pandas as pd
+
+            has_pandas = True
+        except ImportError:
+            has_pandas = False
+
+        try:
+            import polars as pl
+
+            has_polars = True
+        except ImportError:
+            has_polars = False
+
+        if data is None:
+            return data, []
+
+        feature_names = []
+
+        if has_pandas and hasattr(data, "columns"):
+            feature_names = data.columns.tolist()
+        elif has_polars and hasattr(data, "columns"):
+            feature_names = data.columns
+        elif isinstance(data, tuple) and len(data) > 0:
+            # For tuple, try to get column names from first element
+            first_item = data[0]
+            if has_pandas and hasattr(first_item, "columns"):
+                feature_names = first_item.columns.tolist()
+            elif has_polars and hasattr(first_item, "columns"):
+                feature_names = first_item.columns
+
+        if isinstance(data, tuple):
+            converted_data = tuple(
+                AutoEncoder._convert_single_data_to_numpy(item, has_pandas, has_polars)
+                for item in data
+            )
+            return converted_data, feature_names
+        else:
+            converted_data = AutoEncoder._convert_single_data_to_numpy(
+                data, has_pandas, has_polars
+            )
+            return converted_data, feature_names
+
+    @staticmethod
+    def _convert_single_data_to_numpy(data_item, has_pandas, has_polars):
+        """
+        Convert a single data item to numpy array.
+
+        :param data_item: Single data item to convert
+        :type data_item: Any
+        :param has_pandas: Whether pandas is available
+        :type has_pandas: bool
+        :param has_polars: Whether polars is available
+        :type has_polars: bool
+        :return: Data converted to numpy array
+        :rtype: np.ndarray
+        """
+        if has_pandas and hasattr(data_item, "to_numpy"):
+            return data_item.to_numpy()
+        elif has_polars and hasattr(data_item, "to_numpy"):
+            return data_item.to_numpy()
+        elif isinstance(data_item, np.ndarray):
+            return data_item
+        else:
+            raise ValueError(
+                f"Unsupported data type: {type(data_item)}. "
+                f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
+            )
+
+    def _normalize_data(
+        self,
+        x_train: np.array=None,
+        x_val: np.array=None,
+        x_test: np.array=None,
+        data=None,
+        id_iter: Optional[Union[str, int]] = None,
+    ):
+        """
+        Normalize data using the specified method.
+        Can be used for training (x_train, x_val, x_test) or prediction (data).
+
+        - During training: Computes and stores normalization parameters.
+        - During prediction: Uses stored parameters.
+
+        :param x_train: Training data (for training mode)
+        :param x_val: Validation data (for training mode)
+        :param x_test: Test data (for training mode)
+        :param data: New data to normalize (for prediction mode)
+        :param id_iter: id of the iteration
+        :type id_iter: Optional[Union[str, int]]
+        :return: Normalized data in training or prediction mode
+        """
+
+        normalization_values = {}
+        # === Training Mode ===
+        if x_train is not None and x_val is not None and x_test is not None:
+
+            if self.normalization_method == "minmax":
+                min_x = np.nanmin(x_train, axis=0)
+                max_x = np.nanmax(x_train, axis=0)
+                range_x = max_x - min_x
+                x_train = (x_train - min_x) / range_x
+                x_val = (x_val - min_x) / range_x
+                x_test = (x_test - min_x) / range_x
+                normalization_values = {"min_x": min_x, "max_x": max_x}
+            elif self.normalization_method == "zscore":
+                mean_ = np.nanmean(x_train, axis=0)
+                std_ = np.nanstd(x_train, axis=0)
+                x_train = (x_train - mean_) / std_
+                x_val = (x_val - mean_) / std_
+                x_test = (x_test - mean_) / std_
+                normalization_values = {"mean_": mean_, "std_": std_}
+
+            # Initialize normalization_values attribute if it doesn't exist
+            if not hasattr(self, "normalization_values"):
+                self.normalization_values = {}
+
+            # Store normalization values by ID or globally
+            if id_iter is not None:
+                self.normalization_values[f"id_{id_iter}"] = normalization_values
+            else:
+                self.normalization_values["global"] = normalization_values
+
+        # === Prediction Mode ===
+        elif data is not None:
+            if self.normalization_method_model == "minmax":
+                if self.min_x_model is None or self.max_x_model is None:
+                    raise ValueError(
+                        "Min-Max normalization parameters are missing. Ensure the model was trained with normalization."
+                    )
+                range_x = self.max_x_model - self.min_x_model
+                return (data - self.min_x_model) / range_x
+
+            elif self.normalization_method_model == "zscore":
+                if self.mean_model is None or self.std_model is None:
+                    raise ValueError(
+                        "Z-Score normalization parameters are missing. Ensure the model was trained with normalization."
+                    )
+                return (data - self.mean_model) / self.std_model
+
+        else:
+            raise ValueError(
+                "Provide either (x_train, x_val, x_test) for training or `data` for prediction."
+            )
+        return x_train, x_val, x_test
+
+    @staticmethod
+    def _denormalize_data(
+        data, normalization_method: str, min_x=None, max_x=None, mean_=None, std_=None
+    ):
+        """
+        Denormalize data using stored normalization parameters.
+        Assumes `_normalize_data` was used during training to store min_x/max_x or mean_/std_.
+
+        :param data: Normalized data to denormalize
+        :return: Denormalized data
+        """
+        if normalization_method not in ["minmax", "zscore"]:
+            raise ValueError(
+                "Invalid normalization method. Choose 'minmax' or 'zscore'."
+            )
+
+        if min_x is None and mean_ is None:
+            raise ValueError(
+                "No normalization parameters found. Ensure the model was trained with normalization."
+            )
+
+        if normalization_method == "minmax":
+            return data * (max_x - min_x) + min_x
+        elif normalization_method == "zscore":
+            return data * std_ + mean_
+
+    def prepare_datasets(
+        self,
+        data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+        context_window: int,
+        normalize: bool,
+        id_iter: Optional[Union[str, int]] = None,
+    ):
+        """
+        Prepare the datasets for the model training and testing.
+        :param data: data to train the model. It can be a single numpy array
+            with the whole dataset from which a train, validation and test split
+            is created, or a tuple with three numpy arrays, one for
+            the train, one for the validation and one for the test.
+        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :param id_iter: id of the iteration
+        :type id_iter: Optional[Union[str, int]]
+        :return: True if the datasets are prepared successfully
+        """
+        # we need to set up two functions to prepare the datasets. One when data is a
+        # single numpy array and one when data is a tuple with three numpy arrays.
+        if isinstance(data, np.ndarray):
+            x_train, x_val, x_test = self._time_series_split(
+                data,
+                self.train_size,
+                self.val_size,
+                self.test_size,
+            )
+            data = tuple([x_train, x_val, x_test])
+        else:
+            if not isinstance(data, tuple) or len(data) != 3:
+                raise ValueError(
+                    "Data must be a numpy array or a tuple with three numpy arrays"
+                )
+
+        return self._prepare_dataset(data, context_window, normalize, id_iter=id_iter)
+
+    def _prepare_dataset(
+        self,
+        data: Tuple[np.ndarray, np.ndarray, np.ndarray],
+        context_window: int,
+        normalize: bool,
+        id_iter: Optional[Union[str, int]] = None,
+    ):
+        """
+        Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
+
+        :param data: tuple with three numpy arrays for the train, validation and test datasets
+        :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :param context_window: context window for the model
+        :type context_window: int
+        :param normalize: whether to normalize the data or not
+        :type normalize: bool
+        :param id_iter: id of the iteration
+        :type id_iter: Optional[Union[str, int]]
+        :return: True if the dataset is prepared successfully
+        """
+        x_train, x_val, x_test = data
+
+        if self.use_mask and self.custom_mask is None:
+            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
+            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
+            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
+
+            seq_mask_train = time_series_to_sequence(mask_train, context_window)
+            seq_mask_val = time_series_to_sequence(mask_val, context_window)
+            seq_mask_test = time_series_to_sequence(mask_test, context_window)
+
+        if normalize:
+            x_train, x_val, x_test = self._normalize_data(
+                x_train, x_val, x_test, id_iter=id_iter
+            )
+
+        if self.use_mask and self.imputer is not None:
+            import pandas as pd
+
+            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
+            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
+            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
+        else:
+            x_train = np.nan_to_num(x_train)
+            x_val = np.nan_to_num(x_val)
+            x_test = np.nan_to_num(x_test)
+
+        seq_x_train = time_series_to_sequence(x_train, context_window)
+        seq_x_val = time_series_to_sequence(x_val, context_window)
+        seq_x_test = time_series_to_sequence(x_test, context_window)
+
+        if id_iter is not None:
+            self.data[id_iter] = (x_train, x_val, x_test)
+            self.x_train[id_iter] = seq_x_train
+            self.x_val[id_iter] = seq_x_val
+            self.x_test[id_iter] = seq_x_test
+            self.mask_train[id_iter] = seq_mask_train
+            self.mask_val[id_iter] = seq_mask_val
+            self.mask_test[id_iter] = seq_mask_test
+        else:
+            self.data = (seq_x_train, seq_x_val, seq_x_test)
+            self.x_train = seq_x_train
+            self.x_val = seq_x_val
+            self.x_test = seq_x_test
+            self.mask_train = seq_mask_train
+            self.mask_val = seq_mask_val
+            self.mask_test = seq_mask_test
+
+        return True
+
+    def masked_weighted_mse(self, y_true, y_pred, mask=None):
+        """
+        Compute Mean Squared Error (MSE) with optional masking and feature weights.
+
+        :param y_true: Ground truth values (batch_size, seq_length, num_features)
+        :param y_pred: Predicted values (batch_size, seq_length, num_features)
+        :param mask: Optional binary mask (batch_size, seq_length, num_features), 1 for observed values, 0 for missing values
+        :return: Masked and weighted MSE loss
+        """
+        y_true = tf.cast(y_true, tf.float32)
+        y_pred = tf.cast(y_pred, tf.float32)
+
+        # Apply mask if provided
+        if mask is not None:
+            mask = tf.cast(mask, tf.float32)
+
+            # Select the same time steps and features from the mask as we're using from the data
+            # First select the time steps
+            mask_selected = tf.gather(mask, self.time_step_to_check, axis=1)
+            # Then select the features
+            mask_selected = tf.gather(mask_selected, self.feature_to_check, axis=2)
+
+            # Apply the mask to both true and predicted values
+            y_true = tf.where(mask_selected > 0, y_true, tf.zeros_like(y_true))
+            y_pred = tf.where(mask_selected > 0, y_pred, tf.zeros_like(y_pred))
+
+        squared_error = tf.square(y_true - y_pred)
+
+        # Apply feature-specific weights if provided
+        if self.feature_weights is not None:
+            feature_weights = tf.convert_to_tensor(
+                self.feature_weights, dtype=tf.float32
+            )
+            squared_error = squared_error * feature_weights
+
+        # Compute mean only over observed values if mask is provided
+        if mask is not None:
+            # Use the selected mask dimensions
+            loss = tf.reduce_sum(squared_error) / (
+                tf.reduce_sum(mask_selected + tf.keras.backend.epsilon())
+            )
+        else:
+            loss = tf.reduce_mean(squared_error)
+
+        return loss
+
+    @staticmethod
+    def _get_optimizer(optimizer_name: str):
+        """
+        Returns the optimizer based on the given name.
+        """
+        optimizers = {
+            "adam": Adam(),
+            "sgd": SGD(),
+            "rmsprop": RMSprop(),
+            "adagrad": Adagrad(),
+            "adadelta": Adadelta(),
+            "adamax": Adamax(),
+            "nadam": Nadam(),
+        }
+
+        if optimizer_name.lower() not in optimizers:
+            raise ValueError(
+                f"Invalid optimizer '{optimizer_name}'. Choose from {list(optimizers.keys())}."
+            )
+
+        return optimizers[optimizer_name.lower()]
+
+    def train(
         self,
         form: str = "dense",
         data: Any = None,
@@ -58,13 +505,13 @@ class AutoEncoder:
         use_mask: bool = False,
         custom_mask: Any = None,
         imputer: Optional[DataImputer] = None,
-        train_size: Optional[float] = None,
-        val_size: Optional[float] = None,
-        test_size: Optional[float] = None,
+        train_size: float = 0.8,
+        val_size: float = 0.1,
+        test_size: float = 0.1,
         id_columns: Union[str, int, List[str], List[int], None] = None,
     ):
         """
-        Initialize the Autoencoder model
+        Train the model using the train and validation datasets and save the best model.
 
         :param form: type of encoder, one of "dense", "rnn", "gru" or "lstm".
           Currently, these types of cells are both used on the encoder and
@@ -132,20 +579,18 @@ class AutoEncoder:
         :param imputer: optional imputer to use for missing values
         :type imputer: Optional[DataImputer]
         :param train_size: proportion of the dataset to include in the training set
-        :type train_size: Optional[float]
+        :type train_size: float
         :param val_size: proportion of the dataset to include in the validation set
-        :type val_size: Optional[float]
+        :type val_size: float
         :param test_size: proportion of the dataset to include in the test set
-        :type test_size: Optional[float]
+        :type test_size: float
         :param id_columns: optional column(s) to process the data by groups.
             If provided, the data will be grouped by this column and processed separately.
             Can be a column name (str), a column index (int), or a list of either.
         :type id_columns: Union[str, int, List[str], List[int], None]
         """
-
-        root_dir = os.path.abspath(os.getcwd())
         self.save_path = (
-            save_path if save_path else os.path.join(root_dir, "autoencoder")
+            save_path if save_path else os.path.join(self.root_dir, "autoencoder")
         )
 
         self.create_folder_structure(
@@ -167,11 +612,6 @@ class AutoEncoder:
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
-        self.use_mask = use_mask
-        self.custom_mask = custom_mask
-        if self.use_mask and self.custom_mask is not None:
-            self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
-
         # Store feature names or generate default names
         if feature_names:
             # Use user-provided feature names
@@ -194,6 +634,12 @@ class AutoEncoder:
             else:
                 self.features_name = []
 
+        # Store feature weights if provided
+        self.use_mask = use_mask
+        self.custom_mask = custom_mask
+        if self.use_mask and self.custom_mask is not None:
+            self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
+
         # Handle id_columns
         if id_columns is not None:
             if isinstance(id_columns, str) or isinstance(id_columns, int):
@@ -214,9 +660,16 @@ class AutoEncoder:
                     "id_columns must be a string, integer, or a list of strings or integers"
                 )
             if isinstance(data, tuple):
-                self.id_data = tuple(d[:, id_column_indices] for d in data)
+                self.id_data = tuple(
+                    np.array(
+                        ["__".join(map(str, row)) for row in d[:, id_column_indices]]
+                    )
+                    for d in data
+                )
             else:
-                self.id_data = data[:, id_column_indices]
+                self.id_data = np.array(
+                    ["__".join(map(str, row)) for row in data[:, id_column_indices]]
+                )
             if isinstance(data, np.ndarray):
                 data = np.delete(data, id_column_indices, axis=1)
             elif isinstance(data, tuple):
@@ -226,9 +679,24 @@ class AutoEncoder:
                 data = tuple(d.astype(np.float64) for d in data)
             else:
                 data = data.astype(np.float64)
-
         else:
             self.id_data = None
+
+        self.id_data_dict = {}
+        if self.id_data is not None:
+            if isinstance(self.id_data, tuple):
+                unique_ids = np.unique(self.id_data[0])
+                self.id_data_dict = {
+                    unique_id: (
+                        data[0][self.id_data[0] == unique_id],
+                        data[1][self.id_data[1] == unique_id],
+                        data[2][self.id_data[2] == unique_id],
+                    )
+                    for unique_id in unique_ids
+                }
+            else:
+                unique_ids = np.unique(self.id_data)
+                self.id_data_dict = {id: data[self.id_data == id] for id in unique_ids}
 
         if self.id_data is not None:
             if isinstance(self.id_data, tuple):
@@ -288,19 +756,72 @@ class AutoEncoder:
         self.val_size = val_size
         self.test_size = test_size
 
-        # if this three sizes are none, we set the default values
-        if self.train_size is None and self.val_size is None and self.test_size is None:
-            self.train_size = 0.8
-            self.val_size = 0.1
-            self.test_size = 0.1
-
         if not self.use_mask and np.isnan(data).any():
             raise ValueError(
                 "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
             )
 
         self.imputer = imputer
-        self.prepare_datasets(data, context_window, normalize)
+        if self.id_data is not None:
+            self.data = {}
+            self.x_train = {}
+            self.x_val = {}
+            self.x_test = {}
+            self.mask_train = {}
+            self.mask_val = {}
+            self.mask_test = {}
+            for id_iter in self.id_data_dict:
+                self.prepare_datasets(
+                    self.id_data_dict[id_iter],
+                    context_window,
+                    normalize,
+                    id_iter=id_iter,
+                )
+
+            # Extract the length of the datasets for each id to use it on the reconstruction
+            self.length_datasets = {}
+            for id_iter in self.id_data_dict:
+                self.length_datasets[id_iter] = {}
+                self.length_datasets[id_iter]["train"] = len(self.x_train[id_iter])
+                self.length_datasets[id_iter]["val"] = len(self.x_val[id_iter])
+                self.length_datasets[id_iter]["test"] = len(self.x_test[id_iter])
+
+            # Concat all the datasets
+            self.x_train = np.concatenate(
+                [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+                axis=0,
+            )
+            self.x_val = np.concatenate(
+                [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+                axis=0,
+            )
+            self.x_test = np.concatenate(
+                [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+                axis=0,
+            )
+            self.mask_train = np.concatenate(
+                [
+                    self.mask_train[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_val = np.concatenate(
+                [
+                    self.mask_val[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_test = np.concatenate(
+                [
+                    self.mask_test[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+        else:
+            self.prepare_datasets(data, context_window, normalize)
         self.normalize = normalize
 
         if isinstance(feature_to_check, int):
@@ -360,12 +881,23 @@ class AutoEncoder:
                         self.train_size,
                         self.val_size,
                         self.test_size,
-                        id_data=self.id_data,
                     )
 
-                self.mask_train = time_series_to_sequence(mask_train, context_window)
-                self.mask_val = time_series_to_sequence(mask_val, context_window)
-                self.mask_test = time_series_to_sequence(mask_test, context_window)
+                self.mask_train = time_series_to_sequence(
+                    mask_train,
+                    context_window,
+                    id_data=self.id_data[0] if self.id_data is not None else None,
+                )
+                self.mask_val = time_series_to_sequence(
+                    mask_val,
+                    context_window,
+                    id_data=self.id_data[1] if self.id_data is not None else None,
+                )
+                self.mask_test = time_series_to_sequence(
+                    mask_test,
+                    context_window,
+                    id_data=self.id_data[2] if self.id_data is not None else None,
+                )
 
             # Check if masks and data have the same shape
             if (
@@ -469,505 +1001,6 @@ class AutoEncoder:
         self.use_early_stopping = use_early_stopping
         self.patience = patience
         self.feature_weights = feature_weights
-
-    @staticmethod
-    def create_folder_structure(folder_structure: List[str]):
-        """
-        Create a folder structure if it does not exist.
-
-        :param folder_structure: List of folders to create
-        :type folder_structure: List[str]
-        :return: None
-        """
-        for path in folder_structure:
-            os.makedirs(path, exist_ok=True)
-
-    @staticmethod
-    def _time_series_split(
-        data, train_size=None, val_size=None, test_size=None, id_data=None
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Splits data into training, validation, and test sets according to the specified percentages.
-
-        :param data: array-like data to split
-        :type data: np.ndarray
-        :param train_size: float, optional
-            Proportion of the dataset to include in the training set (0-1).
-        :param val_size: float, optional
-            Proportion of the dataset to include in the validation set (0-1).
-        :param test_size: float, optional
-            Proportion of the dataset to include in the test set (0-1).
-        :param id_data: array of identifiers for the data, if provided split will be done by unique IDs
-        :type id_data: np.ndarray, optional
-        :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
-            The training, validation, and test sets as numpy arrays.
-        """
-
-        if train_size is None and val_size is None and test_size is None:
-            raise ValueError(
-                "At least one of train_size, val_size, or test_size must be specified."
-            )
-
-        if train_size is None:
-            train_size = 1.0 - (val_size or 0) - (test_size or 0)
-        if val_size is None:
-            val_size = 1.0 - train_size - (test_size or 0)
-        if test_size is None:
-            test_size = 1.0 - train_size - val_size
-
-        total_size = train_size + val_size + test_size
-        if not np.isclose(total_size, 1.0):
-            raise ValueError(
-                f"The sum of train_size, val_size, and test_size must be 1.0, but got {total_size}."
-            )
-
-        if id_data is not None:
-            if len(id_data) != len(data):
-                raise ValueError(
-                    f"Length of id_data ({len(id_data)}) must match length of data ({len(data)})"
-                )
-
-            # Get unique IDs
-            unique_ids = np.unique(id_data)
-
-            train_set, val_set, test_set = [], [], []
-            for id in unique_ids:
-                data_id_i = data[np.where(id_data == id)[0]]
-                n_id_i = len(data_id_i)
-                train_end_id_i = int(n_id_i * train_size)
-                val_end_id_i = train_end_id_i + int(n_id_i * val_size)
-
-                train_set_id_i = data_id_i[:train_end_id_i]
-                val_set_id_i = (
-                    data_id_i[train_end_id_i:val_end_id_i] if val_size > 0 else None
-                )
-                test_set_id_i = data_id_i[val_end_id_i:] if test_size > 0 else None
-
-                train_set.append(train_set_id_i)
-                val_set.append(val_set_id_i)
-                test_set.append(test_set_id_i)
-
-            train_set = np.concatenate(train_set)
-            val_set = np.concatenate(val_set) if val_size > 0 else None
-            test_set = np.concatenate(test_set) if test_size > 0 else None
-
-            return train_set, val_set, test_set
-        else:
-            # Original implementation for sequential split
-            n = len(data)
-            train_end = int(n * train_size)
-            val_end = train_end + int(n * val_size)
-
-            train_set = data[:train_end]
-            val_set = data[train_end:val_end] if val_size > 0 else None
-            test_set = data[val_end:] if test_size > 0 else None
-
-            return train_set, val_set, test_set
-
-    @staticmethod
-    def _convert_data_to_numpy(data):
-        """
-        Convert data to numpy array format.
-
-        Handles pandas and polars DataFrames, converting them to numpy arrays.
-        If data is a tuple, converts each element in the tuple.
-
-        :param data: Input data that can be pandas DataFrame, polars DataFrame,
-            numpy array, or tuple of these types
-        :type data: Any
-        :return: Data converted to numpy array(s) and feature names if available
-        :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
-        """
-        try:
-            import pandas as pd
-
-            has_pandas = True
-        except ImportError:
-            has_pandas = False
-
-        try:
-            import polars as pl
-
-            has_polars = True
-        except ImportError:
-            has_polars = False
-
-        if data is None:
-            return data, []
-
-        feature_names = []
-
-        if has_pandas and hasattr(data, "columns"):
-            feature_names = data.columns.tolist()
-        elif has_polars and hasattr(data, "columns"):
-            feature_names = data.columns
-        elif isinstance(data, tuple) and len(data) > 0:
-            # For tuple, try to get column names from first element
-            first_item = data[0]
-            if has_pandas and hasattr(first_item, "columns"):
-                feature_names = first_item.columns.tolist()
-            elif has_polars and hasattr(first_item, "columns"):
-                feature_names = first_item.columns
-
-        if isinstance(data, tuple):
-            converted_data = tuple(
-                AutoEncoder._convert_single_data_to_numpy(item, has_pandas, has_polars)
-                for item in data
-            )
-            return converted_data, feature_names
-        else:
-            converted_data = AutoEncoder._convert_single_data_to_numpy(
-                data, has_pandas, has_polars
-            )
-            return converted_data, feature_names
-
-    @staticmethod
-    def _convert_single_data_to_numpy(data_item, has_pandas, has_polars):
-        """
-        Convert a single data item to numpy array.
-
-        :param data_item: Single data item to convert
-        :type data_item: Any
-        :param has_pandas: Whether pandas is available
-        :type has_pandas: bool
-        :param has_polars: Whether polars is available
-        :type has_polars: bool
-        :return: Data converted to numpy array
-        :rtype: np.ndarray
-        """
-        if has_pandas and hasattr(data_item, "to_numpy"):
-            return data_item.to_numpy()
-        elif has_polars and hasattr(data_item, "to_numpy"):
-            return data_item.to_numpy()
-        elif isinstance(data_item, np.ndarray):
-            return data_item
-        else:
-            raise ValueError(
-                f"Unsupported data type: {type(data_item)}. "
-                f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
-            )
-
-    def _normalize_data(self, x_train=None, x_val=None, x_test=None, data=None):
-        """
-        Normalize data using the specified method.
-        Can be used for training (x_train, x_val, x_test) or prediction (data).
-
-        - During training: Computes and stores normalization parameters.
-        - During prediction: Uses stored parameters.
-
-        :param x_train: Training data (for training mode)
-        :param x_val: Validation data (for training mode)
-        :param x_test: Test data (for training mode)
-        :param data: New data to normalize (for prediction mode)
-        :return: Normalized data in training or prediction mode
-        """
-
-        # === Training Mode ===
-        if x_train is not None and x_val is not None and x_test is not None:
-            if self.normalization_method == "minmax":
-                self.min_x = np.nanmin(x_train, axis=0)
-                self.max_x = np.nanmax(x_train, axis=0)
-                range_x = self.max_x - self.min_x
-                x_train = (x_train - self.min_x) / range_x
-                x_val = (x_val - self.min_x) / range_x
-                x_test = (x_test - self.min_x) / range_x
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.nanmean(x_train, axis=0)
-                self.std_ = np.nanstd(x_train, axis=0)
-                x_train = (x_train - self.mean_) / self.std_
-                x_val = (x_val - self.mean_) / self.std_
-                x_test = (x_test - self.mean_) / self.std_
-            return x_train, x_val, x_test
-
-        # === Prediction Mode ===
-        elif data is not None:
-            if self.normalization_method_model == "minmax":
-                if self.min_x_model is None or self.max_x_model is None:
-                    raise ValueError(
-                        "Min-Max normalization parameters are missing. Ensure the model was trained with normalization."
-                    )
-                range_x = self.max_x_model - self.min_x_model
-                return (data - self.min_x_model) / range_x
-
-            elif self.normalization_method_model == "zscore":
-                if self.mean_model is None or self.std_model is None:
-                    raise ValueError(
-                        "Z-Score normalization parameters are missing. Ensure the model was trained with normalization."
-                    )
-                return (data - self.mean_model) / self.std_model
-
-        else:
-            raise ValueError(
-                "Provide either (x_train, x_val, x_test) for training or `data` for prediction."
-            )
-
-    @staticmethod
-    def _denormalize_data(
-        data, normalization_method: str, min_x=None, max_x=None, mean_=None, std_=None
-    ):
-        """
-        Denormalize data using stored normalization parameters.
-        Assumes `_normalize_data` was used during training to store min_x/max_x or mean_/std_.
-
-        :param data: Normalized data to denormalize
-        :return: Denormalized data
-        """
-        if normalization_method not in ["minmax", "zscore"]:
-            raise ValueError(
-                "Invalid normalization method. Choose 'minmax' or 'zscore'."
-            )
-
-        if min_x is None and mean_ is None:
-            raise ValueError(
-                "No normalization parameters found. Ensure the model was trained with normalization."
-            )
-
-        if normalization_method == "minmax":
-            return data * (max_x - min_x) + min_x
-        elif normalization_method == "zscore":
-            return data * std_ + mean_
-
-    def prepare_datasets(
-        self,
-        data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
-        context_window: int,
-        normalize: bool,
-    ):
-        """
-        Prepare the datasets for the model training and testing.
-        :param data: data to train the model. It can be a single numpy array
-            with the whole dataset from which a train, validation and test split
-            is created, or a tuple with three numpy arrays, one for
-            the train, one for the validation and one for the test.
-        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-        :param context_window: context window for the model
-        :type context_window: int
-        :param normalize: whether to normalize the data or not
-        :type normalize: bool
-        :return: True if the datasets are prepared successfully
-        """
-        # we need to set up two functions to prepare the datasets. One when data is a
-        # single numpy array and one when data is a tuple with three numpy arrays.
-        if isinstance(data, np.ndarray):
-            return self._prepare_numpy_dataset(data, context_window, normalize)
-        elif (
-            isinstance(data, tuple)
-            and len(data) == 3
-            and all(isinstance(i, np.ndarray) for i in data)
-        ):
-            return self._prepare_tuple_dataset(data, context_window, normalize)
-        else:
-            raise ValueError(
-                "Data must be a numpy array or a tuple with three numpy arrays"
-            )
-
-    def _prepare_numpy_dataset(
-        self, data: np.array, context_window: int, normalize: bool
-    ):
-        """
-        Prepare the dataset for the model training and testing when the data is a single numpy array.
-        :param data: numpy array with the data
-        :type data: np.array
-        :param context_window: context window for the model
-        :type context_window: int
-        :param normalize: whether to normalize the data or not
-        :type normalize: bool
-        :return: True if the dataset is prepared successfully
-        """
-
-        x_train, x_val, x_test = self._time_series_split(
-            data, self.train_size, self.val_size, self.test_size, id_data=self.id_data
-        )
-        if self.id_data is not None:
-            self.id_data = self._time_series_split(
-                self.id_data,
-                self.train_size,
-                self.val_size,
-                self.test_size,
-                id_data=self.id_data,
-            )
-
-        if self.use_mask and self.custom_mask is None:
-            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
-            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
-            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
-
-            self.mask_train = time_series_to_sequence(mask_train, context_window)
-            self.mask_val = time_series_to_sequence(mask_val, context_window)
-            self.mask_test = time_series_to_sequence(mask_test, context_window)
-
-        # Normalize without taking into account the NaNs or imputed values
-        if normalize:
-            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
-
-        self.data = (x_train, x_val, x_test)
-
-        if self.use_mask and self.imputer is not None:
-            import pandas as pd
-
-            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
-            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
-            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
-        else:
-            x_train = np.nan_to_num(x_train)
-            x_val = np.nan_to_num(x_val)
-            x_test = np.nan_to_num(x_test)
-
-        self.x_train = time_series_to_sequence(
-            x_train,
-            context_window,
-            id_data=self.id_data[0] if self.id_data is not None else None,
-        )
-        self.x_val = time_series_to_sequence(
-            x_val,
-            context_window,
-            id_data=self.id_data[1] if self.id_data is not None else None,
-        )
-        self.x_test = time_series_to_sequence(
-            x_test,
-            context_window,
-            id_data=self.id_data[2] if self.id_data is not None else None,
-        )
-
-        if self.x_val.shape[0] == 0 or self.x_test.shape[0] == 0:
-            raise ValueError(
-                "Validation or Test sets are empty after sequence transformation. "
-                "Consider reducing context_window or adjusting split_size."
-            )
-
-        # Update samples count
-        self.samples = (
-            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
-        )
-        return True
-
-    def _prepare_tuple_dataset(
-        self,
-        data: Tuple[np.ndarray, np.ndarray, np.ndarray],
-        context_window: int,
-        normalize: bool,
-    ):
-        """
-        Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
-        :param data: tuple with three numpy arrays for the train, validation and test datasets
-        :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
-        :param context_window: context window for the model
-        :type context_window: int
-        :param normalize: whether to normalize the data or not
-        :type normalize: bool
-        :return: True if the dataset is prepared successfully
-        """
-        x_train, x_val, x_test = data
-
-        if self.use_mask and self.custom_mask is None:
-            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
-            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
-            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
-
-            self.mask_train = time_series_to_sequence(mask_train, context_window)
-            self.mask_val = time_series_to_sequence(mask_val, context_window)
-            self.mask_test = time_series_to_sequence(mask_test, context_window)
-
-        if normalize:
-            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
-
-        self.data = (x_train, x_val, x_test)
-
-        if self.use_mask and self.imputer is not None:
-            import pandas as pd
-
-            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
-            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
-            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
-        else:
-            x_train = np.nan_to_num(x_train)
-            x_val = np.nan_to_num(x_val)
-            x_test = np.nan_to_num(x_test)
-
-        self.x_train = time_series_to_sequence(
-            x_train,
-            context_window,
-            id_data=self.id_data[0] if self.id_data is not None else None,
-        )
-        self.x_val = time_series_to_sequence(
-            x_val,
-            context_window,
-            id_data=self.id_data[1] if self.id_data is not None else None,
-        )
-        self.x_test = time_series_to_sequence(
-            x_test,
-            context_window,
-            id_data=self.id_data[2] if self.id_data is not None else None,
-        )
-        self.samples = (
-            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
-        )
-
-        return True
-
-    def masked_weighted_mse(self, y_true, y_pred, mask=None):
-        """
-        Compute Mean Squared Error (MSE) with optional masking and feature weights.
-
-        :param y_true: Ground truth values (batch_size, seq_length, num_features)
-        :param y_pred: Predicted values (batch_size, seq_length, num_features)
-        :param mask: Optional binary mask (batch_size, seq_length, num_features), 1 for observed values, 0 for missing values
-        :return: Masked and weighted MSE loss
-        """
-        y_true = tf.cast(y_true, tf.float32)
-        y_pred = tf.cast(y_pred, tf.float32)
-
-        # Apply mask if provided
-        if mask is not None:
-            mask = tf.cast(mask, tf.float32)
-            y_true = tf.where(mask > 0, y_true, tf.zeros_like(y_true))
-            y_pred = tf.where(mask > 0, y_pred, tf.zeros_like(y_pred))
-
-        squared_error = tf.square(y_true - y_pred)
-
-        # Apply feature-specific weights if provided
-        if self.feature_weights is not None:
-            feature_weights = tf.convert_to_tensor(
-                self.feature_weights, dtype=tf.float32
-            )
-            squared_error = squared_error * feature_weights
-
-        # Compute mean only over observed values if mask is provided
-        if mask is not None:
-            loss = tf.reduce_sum(squared_error) / tf.reduce_sum(
-                mask + tf.keras.backend.epsilon()
-            )
-        else:
-            loss = tf.reduce_mean(squared_error)
-
-        return loss
-
-    @staticmethod
-    def _get_optimizer(optimizer_name: str):
-        """
-        Returns the optimizer based on the given name.
-        """
-        optimizers = {
-            "adam": Adam(),
-            "sgd": SGD(),
-            "rmsprop": RMSprop(),
-            "adagrad": Adagrad(),
-            "adadelta": Adadelta(),
-            "adamax": Adamax(),
-            "nadam": Nadam(),
-        }
-
-        if optimizer_name.lower() not in optimizers:
-            raise ValueError(
-                f"Invalid optimizer '{optimizer_name}'. Choose from {list(optimizers.keys())}."
-            )
-
-        return optimizers[optimizer_name.lower()]
-
-    def train(self):
-        """
-        Train the model using the train and validation datasets and save the best model.
-        """
 
         @tf.function
         def train_step(x, mask=None):
@@ -1116,22 +1149,8 @@ class AutoEncoder:
         x_hat_train = x_hat_train.numpy()
         x_hat_val = x_hat_val.numpy()
         x_hat_test = x_hat_test.numpy()
-        if self.normalize:
-            if self.normalization_method == "minmax":
-                scale_max = self.max_x[self.feature_to_check]
-                scale_min = self.min_x[self.feature_to_check]
-                x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-                x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-                x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
-            elif self.normalization_method == "zscore":
-                scale_mean = self.mean_[self.feature_to_check]
-                scale_std = self.std_[self.feature_to_check]
-                x_hat_train = x_hat_train * scale_std + scale_mean
-                x_hat_val = x_hat_val * scale_std + scale_mean
-                x_hat_test = x_hat_test * scale_std + scale_mean
 
-        x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
-
+        # Get the original data for comparison
         x_train_converted = np.copy(
             self.x_train[:, self.time_step_to_check, self.feature_to_check]
         )
@@ -1141,20 +1160,155 @@ class AutoEncoder:
         x_test_converted = np.copy(
             self.x_test[:, self.time_step_to_check, self.feature_to_check]
         )
-        if self.normalize:
-            if self.normalization_method == "minmax":
-                x_train_converted = (
-                    x_train_converted * (scale_max - scale_min) + scale_min
-                )
-                x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-                x_test_converted = (
-                    x_test_converted * (scale_max - scale_min) + scale_min
-                )
-            elif self.normalization_method == "zscore":
-                x_train_converted = x_train_converted * scale_std + scale_mean
-                x_val_converted = x_val_converted * scale_std + scale_mean
-                x_test_converted = x_test_converted * scale_std + scale_mean
 
+        # Handle denormalization if normalization was applied
+        if self.normalize:
+            # Use the global normalization values if ID-based normalization wasn't used
+            if "global" in self.normalization_values:
+                norm_values = self.normalization_values["global"]
+
+                if self.normalization_method == "minmax":
+                    scale_min = norm_values["min_x"][self.feature_to_check]
+                    scale_max = norm_values["max_x"][self.feature_to_check]
+
+                    # Denormalize predictions
+                    x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
+                    x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
+                    x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
+
+                    # Denormalize original data
+                    x_train_converted = (
+                        x_train_converted * (scale_max - scale_min) + scale_min
+                    )
+                    x_val_converted = (
+                        x_val_converted * (scale_max - scale_min) + scale_min
+                    )
+                    x_test_converted = (
+                        x_test_converted * (scale_max - scale_min) + scale_min
+                    )
+
+                elif self.normalization_method == "zscore":
+                    scale_mean = norm_values["mean_"][self.feature_to_check]
+                    scale_std = norm_values["std_"][self.feature_to_check]
+
+                    # Denormalize predictions
+                    x_hat_train = x_hat_train * scale_std + scale_mean
+                    x_hat_val = x_hat_val * scale_std + scale_mean
+                    x_hat_test = x_hat_test * scale_std + scale_mean
+
+                    # Denormalize original data
+                    x_train_converted = x_train_converted * scale_std + scale_mean
+                    x_val_converted = x_val_converted * scale_std + scale_mean
+                    x_test_converted = x_test_converted * scale_std + scale_mean
+
+            # If we used ID-based normalization and need to reconstruct by ID
+            elif self.id_data is not None and hasattr(self, "length_datasets"):
+                logger.info("Performing ID-based denormalization")
+
+                # Initialize arrays to store denormalized data
+                denorm_x_hat_train = []
+                denorm_x_hat_val = []
+                denorm_x_hat_test = []
+                denorm_x_train = []
+                denorm_x_val = []
+                denorm_x_test = []
+
+                # Keep track of current positions in the datasets
+                train_start_idx = 0
+                val_start_idx = 0
+                test_start_idx = 0
+
+                # Process each ID separately
+                for id_key in sorted(self.length_datasets.keys()):
+                    # Get the normalization values for this ID
+                    norm_key = f"id_{id_key}"
+                    if norm_key not in self.normalization_values:
+                        logger.warning(
+                            f"No normalization values found for {norm_key}, skipping"
+                        )
+                        continue
+
+                    norm_values = self.normalization_values[norm_key]
+
+                    # Get dataset lengths for this ID
+                    train_length = self.length_datasets[id_key]["train"]
+                    val_length = self.length_datasets[id_key]["val"]
+                    test_length = self.length_datasets[id_key]["test"]
+
+                    # Extract segments for this ID
+                    train_end_idx = train_start_idx + train_length
+                    val_end_idx = val_start_idx + val_length
+                    test_end_idx = test_start_idx + test_length
+
+                    id_x_hat_train = x_hat_train[train_start_idx:train_end_idx]
+                    id_x_hat_val = x_hat_val[val_start_idx:val_end_idx]
+                    id_x_hat_test = x_hat_test[test_start_idx:test_end_idx]
+
+                    id_x_train = x_train_converted[train_start_idx:train_end_idx]
+                    id_x_val = x_val_converted[val_start_idx:val_end_idx]
+                    id_x_test = x_test_converted[test_start_idx:test_end_idx]
+
+                    # Apply denormalization based on the normalization method
+                    if self.normalization_method == "minmax":
+                        scale_min = norm_values["min_x"][self.feature_to_check]
+                        scale_max = norm_values["max_x"][self.feature_to_check]
+
+                        # Denormalize predictions
+                        id_x_hat_train = (
+                            id_x_hat_train * (scale_max - scale_min) + scale_min
+                        )
+                        id_x_hat_val = (
+                            id_x_hat_val * (scale_max - scale_min) + scale_min
+                        )
+                        id_x_hat_test = (
+                            id_x_hat_test * (scale_max - scale_min) + scale_min
+                        )
+
+                        # Denormalize original data
+                        id_x_train = id_x_train * (scale_max - scale_min) + scale_min
+                        id_x_val = id_x_val * (scale_max - scale_min) + scale_min
+                        id_x_test = id_x_test * (scale_max - scale_min) + scale_min
+
+                    elif self.normalization_method == "zscore":
+                        scale_mean = norm_values["mean_"][self.feature_to_check]
+                        scale_std = norm_values["std_"][self.feature_to_check]
+
+                        # Denormalize predictions
+                        id_x_hat_train = id_x_hat_train * scale_std + scale_mean
+                        id_x_hat_val = id_x_hat_val * scale_std + scale_mean
+                        id_x_hat_test = id_x_hat_test * scale_std + scale_mean
+
+                        # Denormalize original data
+                        id_x_train = id_x_train * scale_std + scale_mean
+                        id_x_val = id_x_val * scale_std + scale_mean
+                        id_x_test = id_x_test * scale_std + scale_mean
+
+                    # Store denormalized data
+                    denorm_x_hat_train.append(id_x_hat_train)
+                    denorm_x_hat_val.append(id_x_hat_val)
+                    denorm_x_hat_test.append(id_x_hat_test)
+                    denorm_x_train.append(id_x_train)
+                    denorm_x_val.append(id_x_val)
+                    denorm_x_test.append(id_x_test)
+
+                    # Update indices for next iteration
+                    train_start_idx += train_length
+                    val_start_idx += val_length
+                    test_start_idx += test_length
+
+                # Concatenate all denormalized data
+                if denorm_x_hat_train:
+                    x_hat_train = np.concatenate(denorm_x_hat_train, axis=0)
+                    x_hat_val = np.concatenate(denorm_x_hat_val, axis=0)
+                    x_hat_test = np.concatenate(denorm_x_hat_test, axis=0)
+                    x_train_converted = np.concatenate(denorm_x_train, axis=0)
+                    x_val_converted = np.concatenate(denorm_x_val, axis=0)
+                    x_test_converted = np.concatenate(denorm_x_test, axis=0)
+                else:
+                    logger.warning("No IDs were successfully denormalized")
+
+        # Combine the datasets
+        x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
         x_converted = np.concatenate(
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
         )
@@ -1170,24 +1324,6 @@ class AutoEncoder:
         train_split = self.x_train.shape[0]
         val_split = train_split + self.x_val.shape[0]
 
-        # Remove the context window lenght from the beginning of the id_data for each id
-        id_data_sequences = []
-        if self.id_data is not None:
-            for i, id_data_i in enumerate(self.id_data):
-                # Get the unique IDs
-                unique_ids = np.unique(id_data_i)
-                for id in unique_ids:
-                    # Remove the context window length from the beginning of the id_data
-                    id_data_i[
-                        np.where(id_data_i == id)[0][: self.context_window - 1]
-                    ] = None
-
-                # Remove rows with None
-                id_data_i = id_data_i[~np.all(id_data_i == None, axis=1)]
-
-                id_data_sequences.append(id_data_i)
-            id_data_sequences = tuple(id_data_sequences)
-
         plot_actual_and_reconstructed(
             actual=x_converted,
             reconstructed=x_hat,
@@ -1195,7 +1331,7 @@ class AutoEncoder:
             feature_labels=feature_labels,
             train_split=train_split,
             val_split=val_split,
-            id_data=id_data_sequences if self.id_data is not None else None,
+            length_datasets=self.length_datasets if self.id_data_dict != {} else None,
         )
 
         return True
