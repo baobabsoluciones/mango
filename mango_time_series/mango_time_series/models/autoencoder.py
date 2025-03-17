@@ -518,6 +518,95 @@ class AutoEncoder:
 
         return optimizers[optimizer_name.lower()]
 
+    def _handle_id_columns(self, data, id_columns):
+        """
+        Handle id_columns
+
+        :param data: data to train the model
+        :type data: Any
+        :param id_columns: column(s) to process the data by groups
+        :type id_columns: Union[str, int, List[str], List[int], None]
+
+        :return: None
+        """
+        # Handle id_columns
+        if id_columns is not None:
+            if isinstance(id_columns, str) or isinstance(id_columns, int):
+                id_columns = [id_columns]
+            if isinstance(id_columns, list):
+                if all(isinstance(i, str) for i in id_columns):
+                    id_column_indices = [
+                        i
+                        for i, value in enumerate(self.features_name)
+                        if value in id_columns
+                    ]
+                elif all(isinstance(i, int) for i in id_columns):
+                    id_column_indices = id_columns
+                else:
+                    raise ValueError("id_columns must be a list of strings or integers")
+            else:
+                raise ValueError(
+                    "id_columns must be a string, integer, or a list of strings or integers"
+                )
+            if isinstance(data, tuple):
+                self.id_data = tuple(
+                    np.array(
+                        ["__".join(map(str, row)) for row in d[:, id_column_indices]]
+                    )
+                    for d in data
+                )
+            else:
+                self.id_data = np.array(
+                    ["__".join(map(str, row)) for row in data[:, id_column_indices]]
+                )
+            if isinstance(data, np.ndarray):
+                data = np.delete(data, id_column_indices, axis=1)
+            elif isinstance(data, tuple):
+                data = tuple(np.delete(d, id_column_indices, axis=1) for d in data)
+
+            if isinstance(data, tuple):
+                data = tuple(d.astype(np.float64) for d in data)
+            else:
+                data = data.astype(np.float64)
+        else:
+            self.id_data = None
+
+        self.id_data_dict = {}
+        if self.id_data is not None:
+            if isinstance(self.id_data, tuple):
+                unique_ids = np.unique(self.id_data[0])
+                self.id_data_dict = {
+                    unique_id: (
+                        data[0][self.id_data[0] == unique_id],
+                        data[1][self.id_data[1] == unique_id],
+                        data[2][self.id_data[2] == unique_id],
+                    )
+                    for unique_id in unique_ids
+                }
+            else:
+                unique_ids = np.unique(self.id_data)
+                self.id_data_dict = {id: data[self.id_data == id] for id in unique_ids}
+
+        if self.id_data is not None:
+            if isinstance(self.id_data, tuple):
+                min_samples_all_ids = min(
+                    [
+                        np.min(np.unique(id_data, return_counts=True)[1])
+                        for id_data in self.id_data
+                    ]
+                )
+            else:
+                min_samples_all_ids = np.min(
+                    np.unique(self.id_data, return_counts=True)[1]
+                )
+
+            if min_samples_all_ids < self.context_window:
+                raise ValueError(
+                    f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
+                    f"but the context_window is {self.context_window}. "
+                    "Reduce the context_window or ensure each ID has enough data."
+                )
+
     def train(
         self,
         form: str = "dense",
@@ -682,83 +771,7 @@ class AutoEncoder:
         if self.use_mask and self.custom_mask is not None:
             self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
 
-        # Handle id_columns
-        if id_columns is not None:
-            if isinstance(id_columns, str) or isinstance(id_columns, int):
-                id_columns = [id_columns]
-            if isinstance(id_columns, list):
-                if all(isinstance(i, str) for i in id_columns):
-                    id_column_indices = [
-                        i
-                        for i, value in enumerate(self.features_name)
-                        if value in id_columns
-                    ]
-                elif all(isinstance(i, int) for i in id_columns):
-                    id_column_indices = id_columns
-                else:
-                    raise ValueError("id_columns must be a list of strings or integers")
-            else:
-                raise ValueError(
-                    "id_columns must be a string, integer, or a list of strings or integers"
-                )
-            if isinstance(data, tuple):
-                self.id_data = tuple(
-                    np.array(
-                        ["__".join(map(str, row)) for row in d[:, id_column_indices]]
-                    )
-                    for d in data
-                )
-            else:
-                self.id_data = np.array(
-                    ["__".join(map(str, row)) for row in data[:, id_column_indices]]
-                )
-            if isinstance(data, np.ndarray):
-                data = np.delete(data, id_column_indices, axis=1)
-            elif isinstance(data, tuple):
-                data = tuple(np.delete(d, id_column_indices, axis=1) for d in data)
-
-            if isinstance(data, tuple):
-                data = tuple(d.astype(np.float64) for d in data)
-            else:
-                data = data.astype(np.float64)
-        else:
-            self.id_data = None
-
-        self.id_data_dict = {}
-        if self.id_data is not None:
-            if isinstance(self.id_data, tuple):
-                unique_ids = np.unique(self.id_data[0])
-                self.id_data_dict = {
-                    unique_id: (
-                        data[0][self.id_data[0] == unique_id],
-                        data[1][self.id_data[1] == unique_id],
-                        data[2][self.id_data[2] == unique_id],
-                    )
-                    for unique_id in unique_ids
-                }
-            else:
-                unique_ids = np.unique(self.id_data)
-                self.id_data_dict = {id: data[self.id_data == id] for id in unique_ids}
-
-        if self.id_data is not None:
-            if isinstance(self.id_data, tuple):
-                min_samples_all_ids = min(
-                    [
-                        np.min(np.unique(id_data, return_counts=True)[1])
-                        for id_data in self.id_data
-                    ]
-                )
-            else:
-                min_samples_all_ids = np.min(
-                    np.unique(self.id_data, return_counts=True)[1]
-                )
-
-            if min_samples_all_ids < context_window:
-                raise ValueError(
-                    f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
-                    f"but the context_window is {context_window}. "
-                    "Reduce the context_window or ensure each ID has enough data."
-                )
+        self._handle_id_columns(data, id_columns)
 
         # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
@@ -1443,6 +1456,7 @@ class AutoEncoder:
         self,
         data,
         iterations: int = None,
+        id_columns: Union[str, int, List[str], List[int], None] = None,
     ):
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
@@ -1465,6 +1479,13 @@ class AutoEncoder:
         nan_positions = np.isnan(data)
         has_nans = np.any(nan_positions)
         reconstructed_iterations = {}
+
+        if id_columns is not None:
+            self._handle_id_columns(data, id_columns)
+
+            for id_iter in self.id_data_dict:
+                # TODO
+                pass
 
         # Case 1: No NaNs and no iterations (simple prediction)
         if not has_nans:
