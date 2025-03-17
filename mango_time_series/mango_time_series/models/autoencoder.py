@@ -609,7 +609,7 @@ class AutoEncoder:
 
     def build_model(
         self,
-        form: str = "dense",
+        form: str = "lstm",
         data: Any = None,
         context_window: int = None,
         time_step_to_check: Union[int, List[int]] = 0,
@@ -709,7 +709,11 @@ class AutoEncoder:
             If provided, the data will be grouped by this column and processed separately.
             Can be a column name (str), a column index (int), or a list of either.
         :type id_columns: Union[str, int, List[str], List[int], None]
+        :raises NotImplementedError: If the model type is 'dense'
         """
+        if form == "dense":
+            raise NotImplementedError("Dense model type is not yet implemented")
+
         self.save_path = (
             save_path if save_path else os.path.join(self.root_dir, "autoencoder")
         )
@@ -1439,7 +1443,7 @@ class AutoEncoder:
         context_window: int = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
-        form: str = "dense",
+        form: str = "lstm",
         hidden_dim: Union[int, List[int]] = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,

@@ -379,14 +379,14 @@ class TestAutoEncoderBidirectional(unittest.TestCase):
         """
         hidden_dims = [32, 16]
 
-        model = AutoEncoder(
+        model = AutoEncoder()
+        model.build_model(
             form="lstm",
             data=np.random.rand(500, 5),
             context_window=10,
             hidden_dim=hidden_dims,
             bidirectional_encoder=True,
             bidirectional_decoder=True,
-            epochs=1,
         )
 
         encoder = model.model.get_layer("lstm_encoder")
@@ -412,51 +412,19 @@ class TestAutoEncoderBidirectional(unittest.TestCase):
         output = model.model(test_input)
         self.assertEqual(output.shape, (batch_size, len(model.feature_to_check)))
 
-    def test_bidirectional_not_allowed_for_dense(self):
+    def test_not_implemented_for_dense(self):
         """
-        Ensure AutoEncoder raises an error when bidirectional is used with 'dense'
+        Test that NotImplementedError is raised for dense model type
         """
-
         data = np.random.rand(500, 5)
-        with self.assertRaises(ValueError) as context:
-            AutoEncoder(
-                form="dense",
-                data=data,
-                context_window=10,
-                hidden_dim=[32, 16],
-                bidirectional_encoder=True,
-            )
-        self.assertIn(
-            "Bidirectional is not supported for encoder type 'dense'",
-            str(context.exception),
-        )
 
-        with self.assertRaises(ValueError) as context:
-            AutoEncoder(
+        with self.assertRaises(NotImplementedError):
+            model = AutoEncoder()
+            model.build_model(
                 form="dense",
                 data=data,
                 context_window=10,
-                hidden_dim=[32, 16],
-                bidirectional_decoder=True,
             )
-        self.assertIn(
-            "Bidirectional is not supported for decoder type 'dense'",
-            str(context.exception),
-        )
-
-        with self.assertRaises(ValueError) as context:
-            AutoEncoder(
-                form="dense",
-                data=data,
-                context_window=10,
-                hidden_dim=[32, 16],
-                bidirectional_encoder=True,
-                bidirectional_decoder=True,
-            )
-        self.assertIn(
-            "Bidirectional is not supported for encoder and decoder type 'dense'",
-            str(context.exception),
-        )
 
 
 class TestAutoEncoderLoss(unittest.TestCase):
@@ -525,12 +493,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test loss calculation without mask and without feature weights.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data_no_nans,
             context_window=10,
             hidden_dim=[32, 16],
-            epochs=1,
             use_mask=False,
         )
 
@@ -543,13 +511,13 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test loss calculation with feature weights but without mask.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data_no_nans,
             context_window=10,
             hidden_dim=[32, 16],
             feature_weights=self.feature_weights,
-            epochs=1,
             use_mask=False,
         )
 
@@ -562,12 +530,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test loss calculation with mask but without feature weights.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data,
             context_window=10,
             hidden_dim=[32, 16],
-            epochs=1,
             use_mask=True,
         )
 
@@ -580,13 +548,13 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test loss calculation with both mask and feature weights.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data,
             context_window=10,
             hidden_dim=[32, 16],
             feature_weights=self.feature_weights,
-            epochs=1,
             use_mask=True,
         )
 
@@ -600,12 +568,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         Test that an error is raised when NaNs are present and no mask is used.
         """
         with self.assertRaises(ValueError) as context:
-            AutoEncoder(
+            autoencoder = AutoEncoder()
+            autoencoder.build_model(
                 form="lstm",
                 data=self.data,
                 context_window=10,
                 hidden_dim=[32, 16],
-                epochs=1,
                 use_mask=False,
             )
         self.assertIn(
@@ -622,12 +590,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         custom_mask[self.data > np.nanpercentile(self.data, 75)] = 0.5
         context_window = 10
 
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data,
             context_window=context_window,
             hidden_dim=[32, 16],
-            epochs=1,
             normalize=True,
             use_mask=True,
             custom_mask=custom_mask,
@@ -652,12 +620,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         custom_mask_wrong_shape = np.random.choice([0, 1], size=(50, 4), p=[0.2, 0.8])
 
         with self.assertRaises(ValueError) as context:
-            AutoEncoder(
+            autoencoder = AutoEncoder()
+            autoencoder.build_model(
                 form="lstm",
                 data=self.data,
                 context_window=10,
                 hidden_dim=[32, 16],
-                epochs=1,
                 use_mask=True,
                 custom_mask=custom_mask_wrong_shape,
             )
@@ -675,12 +643,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         custom_mask_val = np.random.randint(0, 2, size=(50, self.features))
         custom_mask_test = np.random.randint(0, 2, size=(50, self.features))
 
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=(self.data[:400], self.data[400:450], self.data[450:]),
             context_window=context_window,
             hidden_dim=[32, 16],
-            epochs=1,
             normalize=True,
             use_mask=True,
             custom_mask=(custom_mask_train, custom_mask_val, custom_mask_test),
@@ -710,12 +678,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         custom_mask_test = np.random.randint(0, 2, size=(50, self.features))
 
         with self.assertRaises(ValueError) as context:
-            AutoEncoder(
+            autoencoder = AutoEncoder()
+            autoencoder.build_model(
                 form="lstm",
                 data=self.data,
                 context_window=context_window,
                 hidden_dim=[32, 16],
-                epochs=1,
                 normalize=True,
                 use_mask=True,
                 custom_mask=(custom_mask_train, custom_mask_val, custom_mask_test),
@@ -733,12 +701,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         custom_mask = np.random.randint(0, 2, size=(500, self.features))
 
         with self.assertRaises(ValueError) as context:
-            AutoEncoder(
+            autoencoder = AutoEncoder()
+            autoencoder.build_model(
                 form="lstm",
                 data=(self.data[:400], self.data[400:450], self.data[450:]),
                 context_window=context_window,
                 hidden_dim=[32, 16],
-                epochs=1,
                 normalize=True,
                 use_mask=True,
                 custom_mask=custom_mask,
@@ -757,12 +725,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         custom_mask_val = np.random.randint(0, 2, size=(50, self.features))
 
         with self.assertRaises(ValueError) as context:
-            AutoEncoder(
+            autoencoder = AutoEncoder()
+            autoencoder.build_model(
                 form="lstm",
                 data=(self.data[:400], self.data[400:450], self.data[450:]),
                 context_window=context_window,
                 hidden_dim=[32, 16],
-                epochs=1,
                 normalize=True,
                 use_mask=True,
                 custom_mask=(custom_mask_train, custom_mask_val),
@@ -776,12 +744,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test that when no split sizes are provided, the default 80-10-10 split is applied.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data,
             context_window=10,
             hidden_dim=[32, 16],
-            epochs=1,
             use_mask=True,
             normalize=False,
         )
@@ -798,12 +766,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test that if only two sizes are provided, the third is inferred correctly.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data,
             context_window=10,
             hidden_dim=[32, 16],
-            epochs=1,
             use_mask=True,
             normalize=True,
             train_size=0.7,
@@ -822,12 +790,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test that normalization does not consider NaNs when use_mask=True and custom_mask=None.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data,
             context_window=10,
             hidden_dim=[32, 16],
-            epochs=1,
             normalize=True,
             use_mask=True,
             custom_mask=None,
@@ -842,12 +810,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         context_window = 10
 
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data_df,
             context_window=context_window,
             hidden_dim=[32, 16],
-            epochs=1,
             normalize=True,
             use_mask=True,
             custom_mask=self.mask_df,
@@ -874,12 +842,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         imputer = DataImputer(strategy="mean")
 
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data,
             context_window=10,
             hidden_dim=[32, 16],
-            epochs=1,
             use_mask=True,
             imputer=imputer,
         )
@@ -890,12 +858,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         """
         Test that shuffling behaves as expected.
         """
-        autoencoder = AutoEncoder(
+        autoencoder = AutoEncoder()
+        autoencoder.build_model(
             form="lstm",
             data=self.data_no_nans,
             context_window=10,
             hidden_dim=[32, 16],
-            epochs=1,
             use_mask=False,
             shuffle=True,
             shuffle_buffer_size=50,
@@ -908,12 +876,12 @@ class TestAutoEncoderLoss(unittest.TestCase):
         Test that an invalid shuffle buffer size raises an error.
         """
         with self.assertRaises(ValueError) as context:
-            AutoEncoder(
+            AutoEncoder()
+            AutoEncoder().build_model(
                 form="lstm",
                 data=self.data_no_nans,
                 context_window=10,
                 hidden_dim=[32, 16],
-                epochs=1,
                 use_mask=False,
                 shuffle=True,
                 shuffle_buffer_size=-10,
