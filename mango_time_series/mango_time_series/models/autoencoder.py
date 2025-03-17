@@ -34,6 +34,30 @@ class AutoEncoder:
 
         self.root_dir = os.path.abspath(os.getcwd())
 
+    # Class method
+    @classmethod
+    def load_from_pickle(cls, path: str):
+        """
+        Load an AutoEncoder model from a pickle file.
+
+        :param path: Path to the pickle file
+        :type path: str
+        :return: AutoEncoder model
+        :rtype: AutoEncoder
+        """
+        # Not implemented yet
+
+        # 1. Load the model from the pickle file
+
+        # 2. Create an instance of the AutoEncoder class
+
+        # 3. Set the attributes of the AutoEncoder instance (Handle properties and setters)
+
+        # 4. Return the AutoEncoder instance
+
+        # 5. Out of this function, call the predict method on the loaded model
+        raise NotImplementedError
+
     @staticmethod
     def create_folder_structure(folder_structure: List[str]):
         """
@@ -48,39 +72,31 @@ class AutoEncoder:
 
     @staticmethod
     def _time_series_split(
-        data, train_size=None, val_size=None, test_size=None
+        data, train_size, val_size, test_size
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Splits data into training, validation, and test sets according to the specified percentages.
 
         :param data: array-like data to split
         :type data: np.ndarray
-        :param train_size: float, optional
+        :param train_size: float
             Proportion of the dataset to include in the training set (0-1).
-        :param val_size: float, optional
+        :param val_size: float
             Proportion of the dataset to include in the validation set (0-1).
-        :param test_size: float, optional
+        :param test_size: float
             Proportion of the dataset to include in the test set (0-1).
         :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
             The training, validation, and test sets as numpy arrays.
         """
 
-        if train_size is None and val_size is None and test_size is None:
+        if train_size is None or val_size is None or test_size is None:
             raise ValueError(
-                "At least one of train_size, val_size, or test_size must be specified."
+                "train_size, val_size, and test_size must be specified and not None."
             )
 
-        if train_size is None:
-            train_size = 1.0 - (val_size or 0) - (test_size or 0)
-        if val_size is None:
-            val_size = 1.0 - train_size - (test_size or 0)
-        if test_size is None:
-            test_size = 1.0 - train_size - val_size
-
-        total_size = train_size + val_size + test_size
-        if not np.isclose(total_size, 1.0):
+        if not np.isclose(train_size + val_size + test_size, 1.0):
             raise ValueError(
-                f"The sum of train_size, val_size, and test_size must be 1.0, but got {total_size}."
+                f"The sum of train_size, val_size, and test_size must be 1.0, but got {train_size + val_size + test_size}."
             )
 
         # Original implementation for sequential split
@@ -542,11 +558,6 @@ class AutoEncoder:
         # Convert data to numpy arrays if it's a pandas or polars DataFrame
         # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
-        self.use_mask = use_mask
-        self.custom_mask = custom_mask
-        if self.use_mask and self.custom_mask is not None:
-            self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
-
         # Store feature names or generate default names
         if feature_names:
             # Use user-provided feature names
@@ -568,6 +579,12 @@ class AutoEncoder:
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
             else:
                 self.features_name = []
+
+        # Store feature weights if provided
+        self.use_mask = use_mask
+        self.custom_mask = custom_mask
+        if self.use_mask and self.custom_mask is not None:
+            self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
 
         # Handle id_columns
         if id_columns is not None:
