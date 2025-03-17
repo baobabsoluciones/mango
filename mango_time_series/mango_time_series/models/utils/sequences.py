@@ -8,7 +8,6 @@ import polars as pl
 def time_series_to_sequence(
     data: Union[np.ndarray, pd.DataFrame, pl.DataFrame],
     context_window: int,
-    id_data: Union[np.ndarray, pd.DataFrame, pl.DataFrame] = None,
 ) -> np.ndarray:
     """
     Convert a time series to a sequence of context_window length to be used with recurrent neural networks.
@@ -23,8 +22,6 @@ def time_series_to_sequence(
     :type data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]
     :param context_window: length of the sequence
     :type context_window: int
-    :param id_data: id data
-    :type id_data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]
     :return: reshaped data
     :rtype: np.ndarray
     """
@@ -44,44 +41,10 @@ def time_series_to_sequence(
     if len(data) <= context_window:
         raise ValueError("Data length must be greater than context_window")
 
-    sequences = []
-    if id_data is not None:
-        if isinstance(id_data, pd.DataFrame):
-            id_data = id_data.values
-        elif isinstance(id_data, pl.DataFrame):
-            id_data = id_data.to_numpy()
-        elif not isinstance(id_data, np.ndarray):
-            raise ValueError(
-                "id_data must be a numpy array, pandas DataFrame, or polars DataFrame"
-            )
-
-        # FIXME: This has changed base on the split made in the data
-        # extract the unique ids from id_data
-        unique_ids = np.unique(id_data)
-        for uid in unique_ids:
-            id_index = np.where(id_data == uid)[0]
-            data_i = data[id_index]
-
-            if len(data_i) < context_window:
-                continue
-
-            sequences_i = np.array(
-                [
-                    data_i[t - context_window : t]
-                    for t in range(context_window, len(data_i) + 1)
-                ]
-            )
-
-            sequences.append(sequences_i)
-
-        # Concatenar todas las secuencias
-        sequences = np.concatenate(sequences, axis=0)
-
-    else:
-        sequences = np.array(
-            [
-                data[t - context_window : t]
-                for t in range(context_window, len(data) + 1, 1)
-            ]
-        )
+    sequences = np.array(
+        [
+            data[t - context_window : t]
+            for t in range(context_window, len(data) + 1, 1)
+        ]
+    )
     return sequences
