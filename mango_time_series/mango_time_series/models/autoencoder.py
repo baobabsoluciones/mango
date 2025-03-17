@@ -607,7 +607,7 @@ class AutoEncoder:
                     "Reduce the context_window or ensure each ID has enough data."
                 )
 
-    def train(
+    def build_model(
         self,
         form: str = "dense",
         data: Any = None,
@@ -623,11 +623,7 @@ class AutoEncoder:
         normalization_method: str = "minmax",
         optimizer: str = "adam",
         batch_size: int = 32,
-        epochs: int = 100,
         save_path: str = None,
-        checkpoint: int = 10,
-        use_early_stopping: bool = True,
-        patience: int = 10,
         verbose: bool = False,
         feature_names: Optional[List[str]] = None,
         feature_weights: Optional[List[float]] = None,
@@ -642,7 +638,7 @@ class AutoEncoder:
         id_columns: Union[str, int, List[str], List[int], None] = None,
     ):
         """
-        Train the model using the train and validation datasets and save the best model.
+        Build the Autoencoder model.
 
         :param form: type of encoder, one of "dense", "rnn", "gru" or "lstm".
           Currently, these types of cells are both used on the encoder and
@@ -685,14 +681,8 @@ class AutoEncoder:
         :type normalization_method: str
         :param batch_size: batch size for the model
         :type batch_size: int
-        :param epochs: number of epochs to train the model
-        :type epochs: int
         :param save_path: folder path to save the model checkpoints
         :type save_path: str
-        :param checkpoint: number of epochs to save the model checkpoints.
-        :type checkpoint: int
-        :param patience: number of epochs to wait before early stopping
-        :type patience: int
         :param verbose: whether to log model summary and model training.
         :type verbose: bool
         :param feature_names: optional list of feature names to use for the model.
@@ -730,6 +720,7 @@ class AutoEncoder:
                 os.path.join(self.save_path, "plots"),
             ]
         )
+        self.context_window = context_window
 
         if isinstance(hidden_dim, list):
             self.hidden_dim = hidden_dim
@@ -1006,7 +997,6 @@ class AutoEncoder:
         self.optimizer_name = optimizer
         self.model_optimizer = self._get_optimizer(optimizer)
 
-        self.context_window = context_window
         if isinstance(time_step_to_check, int):
             time_step_to_check = [time_step_to_check]
         self.time_step_to_check = time_step_to_check
@@ -1019,20 +1009,40 @@ class AutoEncoder:
 
         self.hidden_dim = hidden_dim
 
-        self.last_epoch = 0
-        self.epochs = epochs
-
         self.save_path = save_path
-        self.checkpoint = checkpoint
-
         self.verbose = verbose
-
         self.train_loss_history = None
         self.val_loss_history = None
+        self.feature_weights = feature_weights
 
+    def train(
+        self,
+        epochs: int = 100,
+        checkpoint: int = 10,
+        use_early_stopping: bool = True,
+        patience: int = 10,
+    ):
+        """
+        Train the model using the train and validation datasets and save the best model.
+
+        :param epochs: number of epochs to train the model
+        :type epochs: int
+        :param checkpoint: number of epochs to save a checkpoint
+        :type checkpoint: int
+        :param use_early_stopping: whether to use early stopping or not
+        :type use_early_stopping: bool
+        :param patience: number of epochs to wait before stopping the training
+        :type patience: int
+
+        :return: None
+        """
+        self.last_epoch = 0
+        self.epochs = epochs
+        self.checkpoint = checkpoint
+        self.train_loss_history = None
+        self.val_loss_history = None
         self.use_early_stopping = use_early_stopping
         self.patience = patience
-        self.feature_weights = feature_weights
 
         @tf.function
         def train_step(x, mask=None):
@@ -1422,6 +1432,156 @@ class AutoEncoder:
         except Exception as e:
             logger.error(f"Error saving the model: {e}")
             raise
+
+    def build_and_train(
+        self,
+        data: Any = None,
+        context_window: int = None,
+        time_step_to_check: Union[int, List[int]] = 0,
+        feature_to_check: Union[int, List[int]] = 0,
+        form: str = "dense",
+        hidden_dim: Union[int, List[int]] = None,
+        bidirectional_encoder: bool = False,
+        bidirectional_decoder: bool = False,
+        activation_encoder: str = None,
+        activation_decoder: str = None,
+        normalize: bool = False,
+        normalization_method: str = "minmax",
+        optimizer: str = "adam",
+        batch_size: int = 32,
+        save_path: str = None,
+        verbose: bool = False,
+        feature_names: Optional[List[str]] = None,
+        feature_weights: Optional[List[float]] = None,
+        shuffle: bool = False,
+        shuffle_buffer_size: Optional[int] = None,
+        use_mask: bool = False,
+        custom_mask: Any = None,
+        imputer: Optional[DataImputer] = None,
+        train_size: float = 0.8,
+        val_size: float = 0.1,
+        test_size: float = 0.1,
+        id_columns: Union[str, int, List[str], List[int], None] = None,
+        epochs: int = 100,
+        checkpoint: int = 10,
+        use_early_stopping: bool = True,
+        patience: int = 10,
+    ):
+        """
+        Build and train the Autoencoder model in a single step.
+
+        This method combines the functionality of `build_model` and `train` methods,
+        allowing for a more streamlined workflow.
+
+        :param data: Data to train the model. It can be:
+          - A single numpy array, pandas DataFrame, or polars DataFrame
+            from which train, validation and test splits are created
+          - A tuple with three numpy arrays, pandas DataFrames, or polars DataFrames
+            for train, validation, and test sets respectively
+        :type data: Any
+        :param context_window: Context window for the model used to transform
+            tabular data into sequence data (2D tensor to 3D tensor)
+        :type context_window: int
+        :param time_step_to_check: Time steps to check for the autoencoder
+        :type time_step_to_check: Union[int, List[int]]
+        :param feature_to_check: Features to check in the autoencoder
+        :type feature_to_check: Union[int, List[int]]
+        :param form: Type of encoder, one of "dense", "rnn", "gru" or "lstm"
+        :type form: str
+        :param hidden_dim: Number of hidden dimensions in the internal layers
+        :type hidden_dim: Union[int, List[int]]
+        :param bidirectional_encoder: Whether to use bidirectional LSTM in encoder
+        :type bidirectional_encoder: bool
+        :param bidirectional_decoder: Whether to use bidirectional LSTM in decoder
+        :type bidirectional_decoder: bool
+        :param activation_encoder: Activation function for the encoder layers
+        :type activation_encoder: str
+        :param activation_decoder: Activation function for the decoder layers
+        :type activation_decoder: str
+        :param normalize: Whether to normalize the data
+        :type normalize: bool
+        :param normalization_method: Method to normalize the data "minmax" or "zscore"
+        :type normalization_method: str
+        :param optimizer: Optimizer to use for training
+        :type optimizer: str
+        :param batch_size: Batch size for training
+        :type batch_size: int
+        :param save_path: Folder path to save model checkpoints
+        :type save_path: str
+        :param verbose: Whether to log model summary and training progress
+        :type verbose: bool
+        :param feature_names: List of feature names to use
+        :type feature_names: Optional[List[str]]
+        :param feature_weights: List of feature weights for loss scaling
+        :type feature_weights: Optional[List[float]]
+        :param shuffle: Whether to shuffle the training dataset
+        :type shuffle: bool
+        :param shuffle_buffer_size: Buffer size for shuffling
+        :type shuffle_buffer_size: Optional[int]
+        :param use_mask: Whether to use a mask for missing values
+        :type use_mask: bool
+        :param custom_mask: Custom mask to use for missing values
+        :type custom_mask: Any
+        :param imputer: Imputer to use for missing values
+        :type imputer: Optional[DataImputer]
+        :param train_size: Proportion of dataset for training
+        :type train_size: float
+        :param val_size: Proportion of dataset for validation
+        :type val_size: float
+        :param test_size: Proportion of dataset for testing
+        :type test_size: float
+        :param id_columns: Column(s) to process data by groups
+        :type id_columns: Union[str, int, List[str], List[int], None]
+        :param epochs: Number of epochs for training
+        :type epochs: int
+        :param checkpoint: Number of epochs between model checkpoints
+        :type checkpoint: int
+        :param use_early_stopping: Whether to use early stopping
+        :type use_early_stopping: bool
+        :param patience: Number of epochs to wait before early stopping
+        :type patience: int
+        :return: Self for method chaining
+        :rtype: AutoEncoder
+        """
+
+        self.build_model(
+            form=form,
+            data=data,
+            context_window=context_window,
+            time_step_to_check=time_step_to_check,
+            feature_to_check=feature_to_check,
+            hidden_dim=hidden_dim,
+            bidirectional_encoder=bidirectional_encoder,
+            bidirectional_decoder=bidirectional_decoder,
+            activation_encoder=activation_encoder,
+            activation_decoder=activation_decoder,
+            normalize=normalize,
+            normalization_method=normalization_method,
+            optimizer=optimizer,
+            batch_size=batch_size,
+            save_path=save_path,
+            verbose=verbose,
+            feature_names=feature_names,
+            feature_weights=feature_weights,
+            shuffle=shuffle,
+            shuffle_buffer_size=shuffle_buffer_size,
+            use_mask=use_mask,
+            custom_mask=custom_mask,
+            imputer=imputer,
+            train_size=train_size,
+            val_size=val_size,
+            test_size=test_size,
+            id_columns=id_columns,
+        )
+
+        self.train(
+            epochs=epochs,
+            checkpoint=checkpoint,
+            use_early_stopping=use_early_stopping,
+            patience=patience,
+        )
+
+        return self
 
     @staticmethod
     def _apply_padding(data, reconstructed, context_window, time_step_to_check):
