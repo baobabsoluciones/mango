@@ -697,31 +697,55 @@ class AutoEncoder:
                 f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
             )
 
-    def _normalize_data(self, x_train: np.array, x_val: np.array, x_test: np.array):
+    def _normalize_data(
+        self,
+        x_train: np.array,
+        x_val: np.array,
+        x_test: np.array,
+        id_iter: Optional[Union[str, int]] = None,
+    ):
         """
         Normalize the data using the specified method.
+
         :param x_train: training data
         :type x_train: np.array
         :param x_val: validation data
         :type x_val: np.array
         :param x_test: test data
         :type x_test: np.array
+        :param id_iter: id of the iteration
+        :type id_iter: Optional[Union[str, int]]
         :return: normalized data
+        :rtype: Tuple[np.array, np.array, np.array]
         """
-        # Normalize train for non nulls and apply the same transformation to val and test
+        normalization_values = {}
+
         if self.normalization_method == "minmax":
-            self.min_x = np.nanmin(x_train, axis=0)
-            self.max_x = np.nanmax(x_train, axis=0)
-            range_x = self.max_x - self.min_x
-            x_train = (x_train - self.min_x) / range_x
-            x_val = (x_val - self.min_x) / range_x
-            x_test = (x_test - self.min_x) / range_x
+            min_x = np.nanmin(x_train, axis=0)
+            max_x = np.nanmax(x_train, axis=0)
+            range_x = max_x - min_x
+            x_train = (x_train - min_x) / range_x
+            x_val = (x_val - min_x) / range_x
+            x_test = (x_test - min_x) / range_x
+            normalization_values = {"min_x": min_x, "max_x": max_x}
         elif self.normalization_method == "zscore":
-            self.mean_ = np.nanmean(x_train, axis=0)
-            self.std_ = np.nanstd(x_train, axis=0)
-            x_train = (x_train - self.mean_) / self.std_
-            x_val = (x_val - self.mean_) / self.std_
-            x_test = (x_test - self.mean_) / self.std_
+            mean_ = np.nanmean(x_train, axis=0)
+            std_ = np.nanstd(x_train, axis=0)
+            x_train = (x_train - mean_) / std_
+            x_val = (x_val - mean_) / std_
+            x_test = (x_test - mean_) / std_
+            normalization_values = {"mean_": mean_, "std_": std_}
+
+        # Initialize normalization_values attribute if it doesn't exist
+        if not hasattr(self, "normalization_values"):
+            self.normalization_values = {}
+
+        # Store normalization values by ID or globally
+        if id_iter is not None:
+            self.normalization_values[f"id_{id_iter}"] = normalization_values
+        else:
+            self.normalization_values["global"] = normalization_values
+
         return x_train, x_val, x_test
 
     def prepare_datasets(
@@ -796,7 +820,9 @@ class AutoEncoder:
             seq_mask_test = time_series_to_sequence(mask_test, context_window)
 
         if normalize:
-            x_train, x_val, x_test = self._normalize_data(x_train, x_val, x_test)
+            x_train, x_val, x_test = self._normalize_data(
+                x_train, x_val, x_test, id_iter=id_iter
+            )
 
         if self.use_mask and self.imputer is not None:
             import pandas as pd
@@ -1052,22 +1078,8 @@ class AutoEncoder:
         x_hat_train = x_hat_train.numpy()
         x_hat_val = x_hat_val.numpy()
         x_hat_test = x_hat_test.numpy()
-        if self.normalize:
-            if self.normalization_method == "minmax":
-                scale_max = self.max_x[self.feature_to_check]
-                scale_min = self.min_x[self.feature_to_check]
-                x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-                x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-                x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
-            elif self.normalization_method == "zscore":
-                scale_mean = self.mean_[self.feature_to_check]
-                scale_std = self.std_[self.feature_to_check]
-                x_hat_train = x_hat_train * scale_std + scale_mean
-                x_hat_val = x_hat_val * scale_std + scale_mean
-                x_hat_test = x_hat_test * scale_std + scale_mean
 
-        x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
-
+        # Get the original data for comparison
         x_train_converted = np.copy(
             self.x_train[:, self.time_step_to_check, self.feature_to_check]
         )
@@ -1077,20 +1089,155 @@ class AutoEncoder:
         x_test_converted = np.copy(
             self.x_test[:, self.time_step_to_check, self.feature_to_check]
         )
-        if self.normalize:
-            if self.normalization_method == "minmax":
-                x_train_converted = (
-                    x_train_converted * (scale_max - scale_min) + scale_min
-                )
-                x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-                x_test_converted = (
-                    x_test_converted * (scale_max - scale_min) + scale_min
-                )
-            elif self.normalization_method == "zscore":
-                x_train_converted = x_train_converted * scale_std + scale_mean
-                x_val_converted = x_val_converted * scale_std + scale_mean
-                x_test_converted = x_test_converted * scale_std + scale_mean
 
+        # Handle denormalization if normalization was applied
+        if self.normalize:
+            # Use the global normalization values if ID-based normalization wasn't used
+            if "global" in self.normalization_values:
+                norm_values = self.normalization_values["global"]
+
+                if self.normalization_method == "minmax":
+                    scale_min = norm_values["min_x"][self.feature_to_check]
+                    scale_max = norm_values["max_x"][self.feature_to_check]
+
+                    # Denormalize predictions
+                    x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
+                    x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
+                    x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
+
+                    # Denormalize original data
+                    x_train_converted = (
+                        x_train_converted * (scale_max - scale_min) + scale_min
+                    )
+                    x_val_converted = (
+                        x_val_converted * (scale_max - scale_min) + scale_min
+                    )
+                    x_test_converted = (
+                        x_test_converted * (scale_max - scale_min) + scale_min
+                    )
+
+                elif self.normalization_method == "zscore":
+                    scale_mean = norm_values["mean_"][self.feature_to_check]
+                    scale_std = norm_values["std_"][self.feature_to_check]
+
+                    # Denormalize predictions
+                    x_hat_train = x_hat_train * scale_std + scale_mean
+                    x_hat_val = x_hat_val * scale_std + scale_mean
+                    x_hat_test = x_hat_test * scale_std + scale_mean
+
+                    # Denormalize original data
+                    x_train_converted = x_train_converted * scale_std + scale_mean
+                    x_val_converted = x_val_converted * scale_std + scale_mean
+                    x_test_converted = x_test_converted * scale_std + scale_mean
+
+            # If we used ID-based normalization and need to reconstruct by ID
+            elif self.id_data is not None and hasattr(self, "length_datasets"):
+                logger.info("Performing ID-based denormalization")
+
+                # Initialize arrays to store denormalized data
+                denorm_x_hat_train = []
+                denorm_x_hat_val = []
+                denorm_x_hat_test = []
+                denorm_x_train = []
+                denorm_x_val = []
+                denorm_x_test = []
+
+                # Keep track of current positions in the datasets
+                train_start_idx = 0
+                val_start_idx = 0
+                test_start_idx = 0
+
+                # Process each ID separately
+                for id_key in sorted(self.length_datasets.keys()):
+                    # Get the normalization values for this ID
+                    norm_key = f"id_{id_key}"
+                    if norm_key not in self.normalization_values:
+                        logger.warning(
+                            f"No normalization values found for {norm_key}, skipping"
+                        )
+                        continue
+
+                    norm_values = self.normalization_values[norm_key]
+
+                    # Get dataset lengths for this ID
+                    train_length = self.length_datasets[id_key]["train"]
+                    val_length = self.length_datasets[id_key]["val"]
+                    test_length = self.length_datasets[id_key]["test"]
+
+                    # Extract segments for this ID
+                    train_end_idx = train_start_idx + train_length
+                    val_end_idx = val_start_idx + val_length
+                    test_end_idx = test_start_idx + test_length
+
+                    id_x_hat_train = x_hat_train[train_start_idx:train_end_idx]
+                    id_x_hat_val = x_hat_val[val_start_idx:val_end_idx]
+                    id_x_hat_test = x_hat_test[test_start_idx:test_end_idx]
+
+                    id_x_train = x_train_converted[train_start_idx:train_end_idx]
+                    id_x_val = x_val_converted[val_start_idx:val_end_idx]
+                    id_x_test = x_test_converted[test_start_idx:test_end_idx]
+
+                    # Apply denormalization based on the normalization method
+                    if self.normalization_method == "minmax":
+                        scale_min = norm_values["min_x"][self.feature_to_check]
+                        scale_max = norm_values["max_x"][self.feature_to_check]
+
+                        # Denormalize predictions
+                        id_x_hat_train = (
+                            id_x_hat_train * (scale_max - scale_min) + scale_min
+                        )
+                        id_x_hat_val = (
+                            id_x_hat_val * (scale_max - scale_min) + scale_min
+                        )
+                        id_x_hat_test = (
+                            id_x_hat_test * (scale_max - scale_min) + scale_min
+                        )
+
+                        # Denormalize original data
+                        id_x_train = id_x_train * (scale_max - scale_min) + scale_min
+                        id_x_val = id_x_val * (scale_max - scale_min) + scale_min
+                        id_x_test = id_x_test * (scale_max - scale_min) + scale_min
+
+                    elif self.normalization_method == "zscore":
+                        scale_mean = norm_values["mean_"][self.feature_to_check]
+                        scale_std = norm_values["std_"][self.feature_to_check]
+
+                        # Denormalize predictions
+                        id_x_hat_train = id_x_hat_train * scale_std + scale_mean
+                        id_x_hat_val = id_x_hat_val * scale_std + scale_mean
+                        id_x_hat_test = id_x_hat_test * scale_std + scale_mean
+
+                        # Denormalize original data
+                        id_x_train = id_x_train * scale_std + scale_mean
+                        id_x_val = id_x_val * scale_std + scale_mean
+                        id_x_test = id_x_test * scale_std + scale_mean
+
+                    # Store denormalized data
+                    denorm_x_hat_train.append(id_x_hat_train)
+                    denorm_x_hat_val.append(id_x_hat_val)
+                    denorm_x_hat_test.append(id_x_hat_test)
+                    denorm_x_train.append(id_x_train)
+                    denorm_x_val.append(id_x_val)
+                    denorm_x_test.append(id_x_test)
+
+                    # Update indices for next iteration
+                    train_start_idx += train_length
+                    val_start_idx += val_length
+                    test_start_idx += test_length
+
+                # Concatenate all denormalized data
+                if denorm_x_hat_train:
+                    x_hat_train = np.concatenate(denorm_x_hat_train, axis=0)
+                    x_hat_val = np.concatenate(denorm_x_hat_val, axis=0)
+                    x_hat_test = np.concatenate(denorm_x_hat_test, axis=0)
+                    x_train_converted = np.concatenate(denorm_x_train, axis=0)
+                    x_val_converted = np.concatenate(denorm_x_val, axis=0)
+                    x_test_converted = np.concatenate(denorm_x_test, axis=0)
+                else:
+                    logger.warning("No IDs were successfully denormalized")
+
+        # Combine the datasets
+        x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
         x_converted = np.concatenate(
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
         )
