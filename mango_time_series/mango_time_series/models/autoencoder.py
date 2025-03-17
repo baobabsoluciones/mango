@@ -389,10 +389,21 @@ class AutoEncoder:
         """
         x_train, x_val, x_test = data
 
-        if self.use_mask and self.custom_mask is None:
-            mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
-            mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
-            mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
+        if self.use_mask:
+            if self.custom_mask is None:
+                mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
+                mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
+                mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
+            else:
+                if isinstance(self.custom_mask, tuple):
+                    mask_train, mask_val, mask_test = self.custom_mask
+                else:
+                    mask_train, mask_val, mask_test = self._time_series_split(
+                        self.custom_mask,
+                        self.train_size,
+                        self.val_size,
+                        self.test_size,
+                    )
 
             seq_mask_train = time_series_to_sequence(mask_train, context_window)
             seq_mask_val = time_series_to_sequence(mask_val, context_window)
@@ -423,17 +434,19 @@ class AutoEncoder:
             self.x_train[id_iter] = seq_x_train
             self.x_val[id_iter] = seq_x_val
             self.x_test[id_iter] = seq_x_test
-            self.mask_train[id_iter] = seq_mask_train
-            self.mask_val[id_iter] = seq_mask_val
-            self.mask_test[id_iter] = seq_mask_test
+            if self.use_mask:
+                self.mask_train[id_iter] = seq_mask_train
+                self.mask_val[id_iter] = seq_mask_val
+                self.mask_test[id_iter] = seq_mask_test
         else:
             self.data = (seq_x_train, seq_x_val, seq_x_test)
             self.x_train = seq_x_train
             self.x_val = seq_x_val
             self.x_test = seq_x_test
-            self.mask_train = seq_mask_train
-            self.mask_val = seq_mask_val
-            self.mask_test = seq_mask_test
+            if self.use_mask:
+                self.mask_train = seq_mask_train
+                self.mask_val = seq_mask_val
+                self.mask_test = seq_mask_test
 
         return True
 
@@ -890,11 +903,10 @@ class AutoEncoder:
                     )
 
                 if isinstance(self.custom_mask, tuple):
-                    mask_train, mask_val, mask_test = self.custom_mask
                     if (
-                        mask_train.shape != self.data[0].shape
-                        or mask_val.shape != self.data[1].shape
-                        or mask_test.shape != self.data[2].shape
+                        self.custom_mask[0].shape != self.data[0].shape
+                        or self.custom_mask[1].shape != self.data[1].shape
+                        or self.custom_mask[2].shape != self.data[2].shape
                     ):
                         raise ValueError(
                             "Each element of custom_mask must have the same shape as its corresponding dataset "
@@ -905,29 +917,6 @@ class AutoEncoder:
                         raise ValueError(
                             "custom_mask must have the same shape as the original input data before transformation"
                         )
-                    mask_train, mask_val, mask_test = self._time_series_split(
-                        self.custom_mask,
-                        self.train_size,
-                        self.val_size,
-                        self.test_size,
-                    )
-
-                # FIXME: time_series_to_sequence does not have an id_data parameter
-                self.mask_train = time_series_to_sequence(
-                    mask_train,
-                    context_window,
-                    id_data=self.id_data[0] if self.id_data is not None else None,
-                )
-                self.mask_val = time_series_to_sequence(
-                    mask_val,
-                    context_window,
-                    id_data=self.id_data[1] if self.id_data is not None else None,
-                )
-                self.mask_test = time_series_to_sequence(
-                    mask_test,
-                    context_window,
-                    id_data=self.id_data[2] if self.id_data is not None else None,
-                )
 
             # Check if masks and data have the same shape
             if (
