@@ -1608,12 +1608,7 @@ class AutoEncoder:
 
         return padded_reconstructed
 
-    def reconstruct_new_data_before(
-        self,
-        data,
-        iterations: int = None,
-        id_columns: Union[str, int, List[str], List[int], None] = None,
-    ):
+    def reconstruct_new_data_before(self, data, iterations: int = None):
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
         Uses stored `context_window`, normalization parameters, and the trained model.
@@ -1636,15 +1631,6 @@ class AutoEncoder:
         nan_positions = np.isnan(data)
         has_nans = np.any(nan_positions)
         reconstructed_iterations = {}
-
-        if id_columns is not None:
-            id_data_dict = self._handle_id_columns(data, id_columns)
-        else:
-            id_data_dict = {"global": data}
-
-            for id_iter in self.id_data_dict:
-                # TODO
-                pass
 
         # Case 1: No NaNs and no iterations (simple prediction)
         if not has_nans:
@@ -1864,7 +1850,6 @@ class AutoEncoder:
 
         return reconstructed_results
 
-
     def _reconstruct_single_dataset(
         self,
         data,
@@ -1889,11 +1874,53 @@ class AutoEncoder:
         data_original = np.copy(data)
         reconstructed_iterations = {}
 
+        normalization_values = (
+            self.normalization_values.get(f"{id_iter}")
+            if id_iter
+            else self.normalization_values.get("global")
+        )
+
+        if normalization_values is None and self.normalization_method is not None:
+            error_msg = (
+                f"Normalization parameters missing for ID {id_iter}"
+                if id_iter
+                else "Global normalization parameters missing"
+            )
+            raise ValueError(error_msg)
+
+        self.min_x = normalization_values.get("min_x")
+        self.max_x = normalization_values.get("max_x")
+        self.mean_ = normalization_values.get("mean_")
+        self.std_ = normalization_values.get("std_")
+
         # 1. If no Nand: simple prediction
         if not has_nans:
-            reconstructed_data = self._predict_and_reconstruct(data, id_iter)
+            if self.normalization_method:
+                try:
+                    data = self._normalize_data(data=data)
+                except Exception as e:
+                    raise ValueError(f"Error during normalization: {e}")
+            data_seq = time_series_to_sequence(data, self.context_window)
+            reconstructed_data = self.model.predict(data_seq)
 
-            reconstructed_df = pd.DataFrame(reconstructed_data, columns=feature_names)
+            if self.normalization_method:
+                reconstructed_data = self._denormalize_data(
+                    reconstructed_data,
+                    normalization_method=self.normalization_method,
+                    min_x=normalization_values.get("min_x"),
+                    max_x=normalization_values.get("max_x"),
+                    mean_=normalization_values.get("mean_"),
+                    std_=normalization_values.get("std_"),
+                )
+
+            padded_reconstructed = self._apply_padding(
+                data,
+                reconstructed_data,
+                self.context_window,
+                self.time_step_to_check,
+            )
+
+            reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
 
             plot_path = os.path.join(
                 self.save_path,
@@ -1903,7 +1930,7 @@ class AutoEncoder:
 
             plot_actual_and_reconstructed(
                 actual=data_original.T,
-                reconstructed=reconstructed_data.T,
+                reconstructed=padded_reconstructed.T,
                 save_path=plot_path,
                 feature_labels=feature_names,
                 train_split=None,
@@ -1916,15 +1943,6 @@ class AutoEncoder:
         # If NaNs iterative mode
         reconstruction_records = []
         reconstructed_iterations[0] = np.copy(data)
-
-        normalization_values = (
-            self.normalization_values.get(f"{id_iter}")
-            if id_iter
-            else self.normalization_values.get("global")
-        )
-
-        if normalization_values is None and self.normalization_method is not None:
-            raise ValueError(f"Normalization parameters missing for ID: {id_iter}")
 
         if self.normalization_method:
             try:
@@ -2029,7 +2047,9 @@ class AutoEncoder:
 
         plot_reconstruction_iterations(
             original_data=data_original.T,
-            reconstructed_iterations={k: v.T for k, v in reconstructed_iterations.items()},
+            reconstructed_iterations={
+                k: v.T for k, v in reconstructed_iterations.items()
+            },
             save_path=os.path.join(self.save_path, "plots"),
             feature_labels=feature_names,
             id_iter=id_iter,

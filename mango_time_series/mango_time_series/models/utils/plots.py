@@ -463,12 +463,12 @@ def plot_actual_and_reconstructed(
         fig_all.write_html(combined_path)
 
 
-# TODO: Handle multiple ids
 def plot_reconstruction_iterations(
     original_data: np.ndarray,
     reconstructed_iterations: dict,
     save_path: str,
     feature_labels: Optional[List[str]] = None,
+    id_iter: Optional[str] = None,
 ):
     """
     Plots the original data with missing values, the first full reconstruction,
@@ -479,6 +479,7 @@ def plot_reconstruction_iterations(
                                      containing reconstructions per iteration.
     :param save_path: Path to save the plots.
     :param feature_labels: Optional list of labels for each feature.
+    :param id_iter: Optional ID to distinguish plots if working with multiple IDs.
     """
     os.makedirs(save_path, exist_ok=True)
 
@@ -498,7 +499,7 @@ def plot_reconstruction_iterations(
             go.Scatter(
                 y=np.where(nan_mask, None, original_values),
                 mode="lines",
-                name="Original data",
+                name=f"Original data {id_iter}" if id_iter else "Original data",
                 line=dict(color="black", width=2, dash="solid"),
             )
         )
@@ -530,7 +531,11 @@ def plot_reconstruction_iterations(
                 go.Scatter(
                     y=reconstructed_values,
                     mode="lines",
-                    name=f"Iteration {iter_num}",
+                    name=(
+                        f"Iteration {iter_num} {id_iter}"
+                        if id_iter
+                        else f"Iteration {iter_num}"
+                    ),
                     line=dict(
                         color=colors[(iter_num - 2) % len(colors)],
                         width=1.5,
@@ -545,7 +550,11 @@ def plot_reconstruction_iterations(
                     x=nan_x,
                     y=nan_y,
                     mode="markers",
-                    name=f"Reconstructed NaNs (Iter {iter_num})",
+                    name=(
+                        f"Reconstructed NaNs (Iter {iter_num}) {id_iter}"
+                        if id_iter
+                        else f"Reconstructed NaNs (Iter {iter_num})"
+                    ),
                     marker=dict(
                         color=colors[(iter_num - 2) % len(colors)],
                         size=6,
@@ -559,20 +568,32 @@ def plot_reconstruction_iterations(
             go.Scatter(
                 y=reconstructed_iterations[max_iterations][feature_idx],
                 mode="lines",
-                name="Final Reconstruction",
+                name=(
+                    f"Final reconstruction {id_iter}"
+                    if id_iter
+                    else "Final reconstruction"
+                ),
                 line=dict(color="darkblue", width=2.5, dash="solid"),
             )
         )
 
         # Layout and save
         fig.update_layout(
-            title=f"Feature: {feature_labels[feature_idx]} - Reconstruction Progress",
+            title=(
+                f"Feature: {feature_labels[feature_idx]} - Reconstruction Progress {id_iter}"
+                if id_iter
+                else f"Feature: {feature_labels[feature_idx]} - Reconstruction Progress"
+            ),
             xaxis_title="Time Step",
             yaxis_title="Value",
             showlegend=True,
         )
 
-        plot_path = os.path.join(
-            save_path, f"{feature_labels[feature_idx]}_iterations.html"
+        plot_filename = (
+            f"{feature_labels[feature_idx]}_iterations_{id_iter}.html"
+            if id_iter
+            else f"{feature_labels[feature_idx]}_iterations.html"
         )
+
+        plot_path = os.path.join(save_path, plot_filename)
         fig.write_html(plot_path)
