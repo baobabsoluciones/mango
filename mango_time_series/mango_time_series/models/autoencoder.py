@@ -35,11 +35,13 @@ class AutoEncoder:
         """
 
         self.root_dir = os.path.abspath(os.getcwd())
+        self.save_path = None
         self.model = None
         self.context_window = None
         self.time_step_to_check = None
         self.normalization_method = None
         self.normalization_values = {}
+        self.imputer = None
 
     @classmethod
     def load_from_pickle(cls, path: str):
@@ -73,6 +75,8 @@ class AutoEncoder:
             instance.context_window = params.get("context_window")
             instance.time_step_to_check = params.get("time_step_to_check")
             instance.normalization_method = params.get("normalization_method")
+            instance.features_name = params.get("features_name", None)
+            instance.feature_to_check = params.get("feature_to_check", 0)
 
             # 4. Cargar los valores de normalización (global y por ID)
             instance.normalization_values = params.get("normalization_values", {})
@@ -219,82 +223,150 @@ class AutoEncoder:
                 f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
             )
 
+    def _normalize_data_for_training(
+        self,
+        x_train: np.ndarray,
+        x_val: np.ndarray,
+        x_test: np.ndarray,
+        id_iter: Optional[Union[str, int]] = None,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Normalize training, validation and test data using the specified method.
+        Computes and stores normalization parameters during training.
+
+        :param x_train: Training data to normalize
+        :type x_train: np.ndarray
+        :param x_val: Validation data to normalize
+        :type x_val: np.ndarray
+        :param x_test: Test data to normalize
+        :type x_test: np.ndarray
+        :param id_iter: ID of the iteration for group-specific normalization, defaults to None
+        :type id_iter: Optional[Union[str, int]]
+        :return: Tuple containing normalized training, validation and test data
+        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
+
+        :note: The method stores normalization parameters either globally or per ID
+               in the instance's normalization_values dictionary.
+        """
+        normalization_values = {}
+
+        if self.normalization_method == "minmax":
+            min_x = np.nanmin(x_train, axis=0)
+            max_x = np.nanmax(x_train, axis=0)
+            range_x = max_x - min_x
+            x_train = (x_train - min_x) / range_x
+            x_val = (x_val - min_x) / range_x
+            x_test = (x_test - min_x) / range_x
+            normalization_values = {"min_x": min_x, "max_x": max_x}
+        elif self.normalization_method == "zscore":
+            mean_ = np.nanmean(x_train, axis=0)
+            std_ = np.nanstd(x_train, axis=0)
+            x_train = (x_train - mean_) / std_
+            x_val = (x_val - mean_) / std_
+            x_test = (x_test - mean_) / std_
+            normalization_values = {"mean_": mean_, "std_": std_}
+
+        # Initialize normalization_values attribute if it doesn't exist
+        if not hasattr(self, "normalization_values"):
+            self.normalization_values = {}
+
+        # Store normalization values by ID or globally
+        if id_iter is not None:
+            self.normalization_values[f"{id_iter}"] = normalization_values
+        else:
+            self.normalization_values["global"] = normalization_values
+
+        return x_train, x_val, x_test
+
+    def _normalize_data_for_prediction(
+        self, data: np.ndarray, feature_to_check_filter: bool = False
+    ) -> np.ndarray:
+        """
+        Normalize new data using stored normalization parameters.
+        If parameters are not available, computes them from input data.
+
+        :param data: New data to normalize
+        :type data: np.ndarray
+        :return: Normalized data
+        :rtype: np.ndarray
+        """
+        if self.normalization_method == "minmax":
+            if self.min_x is None or self.max_x is None:
+                min_x = np.nanmin(data, axis=0)
+                max_x = np.nanmax(data, axis=0)
+                range_x = max_x - min_x
+                self.min_x = min_x
+                self.max_x = max_x
+                return (data - min_x) / range_x
+            else:
+                if feature_to_check_filter:
+                    range_x = (
+                        self.max_x[self.feature_to_check]
+                        - self.min_x[self.feature_to_check]
+                    )
+                    return (data - self.min_x[self.feature_to_check]) / range_x
+                else:
+                    range_x = self.max_x - self.min_x
+                    return (data - self.min_x) / range_x
+
+        elif self.normalization_method == "zscore":
+            if self.mean_ is None or self.std_ is None:
+                mean_ = np.nanmean(data, axis=0)
+                std_ = np.nanstd(data, axis=0)
+                self.mean_ = mean_
+                self.std_ = std_
+                return (data - mean_) / std_
+            else:
+                if feature_to_check_filter:
+                    return (data - self.mean_[self.feature_to_check]) / self.std_[
+                        self.feature_to_check
+                    ]
+                else:
+                    return (data - self.mean_) / self.std_
+
     def _normalize_data(
         self,
-        x_train: np.array = None,
-        x_val: np.array = None,
-        x_test: np.array = None,
-        data=None,
+        x_train: np.ndarray = None,
+        x_val: np.ndarray = None,
+        x_test: np.ndarray = None,
+        data: np.ndarray = None,
         id_iter: Optional[Union[str, int]] = None,
-    ):
+        feature_to_check_filter: bool = False,
+    ) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
         """
         Normalize data using the specified method.
         Can be used for training (x_train, x_val, x_test) or prediction (data).
 
-        - During training: Computes and stores normalization parameters.
-        - During prediction: Uses stored parameters.
-
-        :param x_train: Training data (for training mode)
-        :param x_val: Validation data (for training mode)
-        :param x_test: Test data (for training mode)
-        :param data: New data to normalize (for prediction mode)
-        :param id_iter: id of the iteration
-        :type id_iter: Optional[Union[str, int]]
+        :param x_train: Training data for training mode
+        :type x_train: np.ndarray, optional
+        :param x_val: Validation data for training mode
+        :type x_val: np.ndarray, optional
+        :param x_test: Test data for training mode
+        :type x_test: np.ndarray, optional
+        :param data: New data to normalize for prediction mode
+        :type data: np.ndarray, optional
+        :param id_iter: ID of the iteration for group-specific normalization
+        :type id_iter: Optional[Union[str, int]], optional
         :return: Normalized data in training or prediction mode
+        :rtype: Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]
+        :raises ValueError: If neither training nor prediction data is provided
         """
-
-        normalization_values = {}
-        # === Training Mode ===
+        # Training mode
         if x_train is not None and x_val is not None and x_test is not None:
+            return self._normalize_data_for_training(
+                x_train, x_val, x_test, id_iter=id_iter
+            )
 
-            if self.normalization_method == "minmax":
-                min_x = np.nanmin(x_train, axis=0)
-                max_x = np.nanmax(x_train, axis=0)
-                range_x = max_x - min_x
-                x_train = (x_train - min_x) / range_x
-                x_val = (x_val - min_x) / range_x
-                x_test = (x_test - min_x) / range_x
-                normalization_values = {"min_x": min_x, "max_x": max_x}
-            elif self.normalization_method == "zscore":
-                mean_ = np.nanmean(x_train, axis=0)
-                std_ = np.nanstd(x_train, axis=0)
-                x_train = (x_train - mean_) / std_
-                x_val = (x_val - mean_) / std_
-                x_test = (x_test - mean_) / std_
-                normalization_values = {"mean_": mean_, "std_": std_}
-
-            # Initialize normalization_values attribute if it doesn't exist
-            if not hasattr(self, "normalization_values"):
-                self.normalization_values = {}
-
-            # Store normalization values by ID or globally
-            if id_iter is not None:
-                self.normalization_values[f"{id_iter}"] = normalization_values
-            else:
-                self.normalization_values["global"] = normalization_values
-
-        # === Prediction Mode ===
+        # Prediction mode
         elif data is not None:
-            if self.normalization_method == "minmax":
-                if self.min_x is None or self.max_x is None:
-                    raise ValueError(
-                        "Min-Max normalization parameters are missing. Ensure the model was trained with normalization."
-                    )
-                range_x = self.max_x - self.min_x
-                return (data - self.min_x) / range_x
-
-            elif self.normalization_method == "zscore":
-                if self.mean_ is None or self.std_ is None:
-                    raise ValueError(
-                        "Z-Score normalization parameters are missing. Ensure the model was trained with normalization."
-                    )
-                return (data - self.mean_) / self.std_
+            return self._normalize_data_for_prediction(
+                data, feature_to_check_filter=feature_to_check_filter
+            )
 
         else:
             raise ValueError(
                 "Provide either (x_train, x_val, x_test) for training or `data` for prediction."
             )
-        return x_train, x_val, x_test
 
     @staticmethod
     def _denormalize_data(
@@ -1399,6 +1471,8 @@ class AutoEncoder:
                     self.normalization_method if self.normalize else None
                 ),
                 "normalization_values": {},
+                "features_name": self.features_name,
+                "feature_to_check": self.feature_to_check,
             }
 
             if self.normalize:
@@ -1608,194 +1682,194 @@ class AutoEncoder:
 
         return padded_reconstructed
 
-    def reconstruct_new_data_before(self, data, iterations: int = None):
-        """
-        Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
-        Uses stored `context_window`, normalization parameters, and the trained model.
+    # def reconstruct_new_data_before(self, data, iterations: int = None):
+    #     """
+    #     Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
+    #     Uses stored `context_window`, normalization parameters, and the trained model.
 
-        :param data: Input data (numpy array, pandas DataFrame, or polars DataFrame).
-        :param iterations: Number of reconstruction iterations (None = no iteration).
-        :param id_columns: Column(s) to process data by groups.
-        :return: Reconstructed data.
-        """
+    #     :param data: Input data (numpy array, pandas DataFrame, or polars DataFrame).
+    #     :param iterations: Number of reconstruction iterations (None = no iteration).
+    #     :param id_columns: Column(s) to process data by groups.
+    #     :return: Reconstructed data.
+    #     """
 
-        if self.model is None:
-            raise ValueError(
-                "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
-            )
+    #     if self.model is None:
+    #         raise ValueError(
+    #             "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
+    #         )
 
-        normalization_used = self.normalization_method is not None
-        data, feature_names = self._convert_data_to_numpy(data)
+    #     normalization_used = self.normalization_method is not None
+    #     data, feature_names = self._convert_data_to_numpy(data)
 
-        data_original = np.copy(data)
-        nan_positions = np.isnan(data)
-        has_nans = np.any(nan_positions)
-        reconstructed_iterations = {}
+    #     data_original = np.copy(data)
+    #     nan_positions = np.isnan(data)
+    #     has_nans = np.any(nan_positions)
+    #     reconstructed_iterations = {}
 
-        # Case 1: No NaNs and no iterations (simple prediction)
-        if not has_nans:
-            if normalization_used:
-                try:
-                    data = self._normalize_data(data=data)
-                except Exception as e:
-                    raise ValueError(f"Error during normalization: {e}")
+    #     # Case 1: No NaNs and no iterations (simple prediction)
+    #     if not has_nans:
+    #         if normalization_used:
+    #             try:
+    #                 data = self._normalize_data(data=data)
+    #             except Exception as e:
+    #                 raise ValueError(f"Error during normalization: {e}")
 
-            data_seq = time_series_to_sequence(data, self.context_window)
-            reconstructed_data = self.model.predict(data_seq)
+    #         data_seq = time_series_to_sequence(data, self.context_window)
+    #         reconstructed_data = self.model.predict(data_seq)
 
-            if normalization_used:
-                reconstructed_data = self._denormalize_data(
-                    reconstructed_data,
-                    normalization_method=self.normalization_method,
-                    min_x=self.min_x,
-                    max_x=self.max_x,
-                    mean_=self.mean_,
-                    std_=self.std_,
-                )
+    #         if normalization_used:
+    #             reconstructed_data = self._denormalize_data(
+    #                 reconstructed_data,
+    #                 normalization_method=self.normalization_method,
+    #                 min_x=self.min_x,
+    #                 max_x=self.max_x,
+    #                 mean_=self.mean_,
+    #                 std_=self.std_,
+    #             )
 
-            padded_reconstructed = self._apply_padding(
-                data,
-                reconstructed_data,
-                self.context_window,
-                self.time_step_to_check,
-            )
+    #         padded_reconstructed = self._apply_padding(
+    #             data,
+    #             reconstructed_data,
+    #             self.context_window,
+    #             self.time_step_to_check,
+    #         )
 
-            reconstructed_df = (
-                pd.DataFrame(padded_reconstructed, columns=feature_names)
-                if feature_names
-                else padded_reconstructed
-            )
+    #         reconstructed_df = (
+    #             pd.DataFrame(padded_reconstructed, columns=feature_names)
+    #             if feature_names
+    #             else padded_reconstructed
+    #         )
 
-            plot_actual_and_reconstructed(
-                actual=data_original.T,
-                reconstructed=padded_reconstructed.T,
-                save_path=os.path.join(self.save_path, "plots"),
-                feature_labels=feature_names,
-                train_split=None,
-                val_split=None,
-                length_datasets=None,
-            )
-            return reconstructed_df
+    #         plot_actual_and_reconstructed(
+    #             actual=data_original.T,
+    #             reconstructed=padded_reconstructed.T,
+    #             save_path=os.path.join(self.save_path, "plots"),
+    #             feature_labels=feature_names,
+    #             train_split=None,
+    #             val_split=None,
+    #             length_datasets=None,
+    #         )
+    #         return reconstructed_df
 
-        # Case 2: Dataset with Nans (iterative prediction)
-        elif has_nans and iterations is not None and iterations > 0:
-            reconstruction_records = []
-            reconstructed_iterations[0] = np.copy(data)
+    #     # Case 2: Dataset with Nans (iterative prediction)
+    #     elif has_nans and iterations is not None and iterations > 0:
+    #         reconstruction_records = []
+    #         reconstructed_iterations[0] = np.copy(data)
 
-            if normalization_used:
-                try:
-                    data = self._normalize_data(data=data)
-                except Exception as e:
-                    raise ValueError(f"Error during normalization: {e}")
+    #         if normalization_used:
+    #             try:
+    #                 data = self._normalize_data(data=data)
+    #             except Exception as e:
+    #                 raise ValueError(f"Error during normalization: {e}")
 
-            for iter_num in range(1, iterations):
-                if self.imputer is not None:
-                    data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
-                else:
-                    data = np.nan_to_num(data, nan=0)
+    #         for iter_num in range(1, iterations):
+    #             if self.imputer is not None:
+    #                 data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
+    #             else:
+    #                 data = np.nan_to_num(data, nan=0)
 
-                data_seq = time_series_to_sequence(data, self.context_window)
+    #             data_seq = time_series_to_sequence(data, self.context_window)
 
-                reconstructed_data = self.model.predict(data_seq)
+    #             reconstructed_data = self.model.predict(data_seq)
 
-                if normalization_used:
-                    reconstructed_data = self._denormalize_data(
-                        reconstructed_data,
-                        normalization_method=self.normalization_method,
-                        min_x=self.min_x,
-                        max_x=self.max_x,
-                        mean_=self.mean_,
-                        std_=self.std_,
-                    )
+    #             if normalization_used:
+    #                 reconstructed_data = self._denormalize_data(
+    #                     reconstructed_data,
+    #                     normalization_method=self.normalization_method,
+    #                     min_x=self.min_x,
+    #                     max_x=self.max_x,
+    #                     mean_=self.mean_,
+    #                     std_=self.std_,
+    #                 )
 
-                padded_reconstructed = self._apply_padding(
-                    data,
-                    reconstructed_data,
-                    self.context_window,
-                    self.time_step_to_check,
-                )
-                reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
+    #             padded_reconstructed = self._apply_padding(
+    #                 data,
+    #                 reconstructed_data,
+    #                 self.context_window,
+    #                 self.time_step_to_check,
+    #             )
+    #             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
 
-                for i, j in zip(*np.where(nan_positions)):
-                    reconstruction_records.append(
-                        {
-                            "Column": j + 1,
-                            "Timestep": i,
-                            "Iteration": iter_num,
-                            "Reconstructed value": padded_reconstructed[i, j],
-                        }
-                    )
-                    if normalization_used:
-                        data[i, j] = self._normalize_data(data=padded_reconstructed)[
-                            i, j
-                        ]
-                    else:
-                        data[i, j] = padded_reconstructed[i, j]
+    #             for i, j in zip(*np.where(nan_positions)):
+    #                 reconstruction_records.append(
+    #                     {
+    #                         "Column": j + 1,
+    #                         "Timestep": i,
+    #                         "Iteration": iter_num,
+    #                         "Reconstructed value": padded_reconstructed[i, j],
+    #                     }
+    #                 )
+    #                 if normalization_used:
+    #                     data[i, j] = self._normalize_data(data=padded_reconstructed)[
+    #                         i, j
+    #                     ]
+    #                 else:
+    #                     data[i, j] = padded_reconstructed[i, j]
 
-            # Last iteration
-            if self.imputer is not None:
-                data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
-            else:
-                data = np.nan_to_num(data, nan=0)
+    #         # Last iteration
+    #         if self.imputer is not None:
+    #             data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
+    #         else:
+    #             data = np.nan_to_num(data, nan=0)
 
-            data_seq = time_series_to_sequence(data, self.context_window)
-            reconstructed_data_final = self.model.predict(data_seq)
+    #         data_seq = time_series_to_sequence(data, self.context_window)
+    #         reconstructed_data_final = self.model.predict(data_seq)
 
-            if normalization_used:
-                reconstructed_data_final = self._denormalize_data(
-                    reconstructed_data_final,
-                    normalization_method=self.normalization_method,
-                    min_x=self.min_x,
-                    max_x=self.max_x,
-                    mean_=self.mean_,
-                    std_=self.std_,
-                )
+    #         if normalization_used:
+    #             reconstructed_data_final = self._denormalize_data(
+    #                 reconstructed_data_final,
+    #                 normalization_method=self.normalization_method,
+    #                 min_x=self.min_x,
+    #                 max_x=self.max_x,
+    #                 mean_=self.mean_,
+    #                 std_=self.std_,
+    #             )
 
-            padded_reconstructed_final = self._apply_padding(
-                data,
-                reconstructed_data_final,
-                self.context_window,
-                self.time_step_to_check,
-            )
-            reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
+    #         padded_reconstructed_final = self._apply_padding(
+    #             data,
+    #             reconstructed_data_final,
+    #             self.context_window,
+    #             self.time_step_to_check,
+    #         )
+    #         reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
 
-            for i in range(data.shape[0]):
-                for j in range(data.shape[1]):
-                    if nan_positions[i, j]:
-                        reconstruction_records.append(
-                            {
-                                "Column": j + 1,
-                                "Timestep": i,
-                                "Iteration": iterations,
-                                "Reconstructed value": padded_reconstructed_final[i, j],
-                            }
-                        )
+    #         for i in range(data.shape[0]):
+    #             for j in range(data.shape[1]):
+    #                 if nan_positions[i, j]:
+    #                     reconstruction_records.append(
+    #                         {
+    #                             "Column": j + 1,
+    #                             "Timestep": i,
+    #                             "Iteration": iterations,
+    #                             "Reconstructed value": padded_reconstructed_final[i, j],
+    #                         }
+    #                     )
 
-            reconstructed_df = (
-                pd.DataFrame(reconstructed_data_final, columns=feature_names)
-                if feature_names
-                else reconstructed_data_final
-            )
+    #         reconstructed_df = (
+    #             pd.DataFrame(reconstructed_data_final, columns=feature_names)
+    #             if feature_names
+    #             else reconstructed_data_final
+    #         )
 
-            progress_df = pd.DataFrame(reconstruction_records)
-            file_path = os.path.join(self.save_path, "reconstruction_progress.xlsx")
-            progress_df.to_excel(file_path, index=False)
+    #         progress_df = pd.DataFrame(reconstruction_records)
+    #         file_path = os.path.join(self.save_path, "reconstruction_progress.xlsx")
+    #         progress_df.to_excel(file_path, index=False)
 
-            plot_reconstruction_iterations(
-                original_data=data_original.T,
-                reconstructed_iterations={
-                    k: v.T for k, v in reconstructed_iterations.items()
-                },
-                save_path=os.path.join(self.save_path, "plots"),
-                feature_labels=feature_names,
-            )
+    #         plot_reconstruction_iterations(
+    #             original_data=data_original.T,
+    #             reconstructed_iterations={
+    #                 k: v.T for k, v in reconstructed_iterations.items()
+    #             },
+    #             save_path=os.path.join(self.save_path, "plots"),
+    #             feature_labels=feature_names,
+    #         )
 
-            return reconstructed_df
+    #         return reconstructed_df
 
     def reconstruct_new_data(
         self,
         data,
-        iterations: int = None,
+        iterations: int = 1,
         id_columns: Union[str, int, List[str], List[int], None] = None,
     ):
         """
@@ -1813,18 +1887,18 @@ class AutoEncoder:
             )
 
         data, feature_names = self._convert_data_to_numpy(data)
+        features_names_to_check = (
+            [feature_names[i] for i in self.feature_to_check] if feature_names else None
+        )
 
-        nan_positions = np.isnan(data)
-        has_nans = np.any(nan_positions)
-
-        reconstructed_results = {}
-
+        # Handle ID columns
         if id_columns is not None:
             self._handle_id_columns(data, id_columns)
             id_data_dict = self.id_data_dict
         else:
             id_data_dict = {"global": data}
 
+        reconstructed_results = {}
         if id_columns is not None:
             for id_iter, data_id in id_data_dict.items():
                 nan_positions_id = np.isnan(data_id)
@@ -1832,17 +1906,19 @@ class AutoEncoder:
 
                 reconstructed_results[id_iter] = self._reconstruct_single_dataset(
                     data=data_id,
-                    feature_names=feature_names,
-                    nan_positions=nan_positions_id,
+                    feature_names=features_names_to_check,
+                    nan_positions=nan_positions_id[:, self.feature_to_check],
                     has_nans=has_nans_id,
                     iterations=iterations,
                     id_iter=id_iter,
                 )
         else:
+            nan_positions = np.isnan(data)
+            has_nans = np.any(nan_positions)
             reconstructed_results["global"] = self._reconstruct_single_dataset(
                 data=data,
-                feature_names=feature_names,
-                nan_positions=nan_positions,
+                feature_names=features_names_to_check,
+                nan_positions=nan_positions[:, self.feature_to_check],
                 has_nans=has_nans,
                 iterations=iterations,
                 id_iter=None,
@@ -1856,7 +1932,7 @@ class AutoEncoder:
         feature_names,
         nan_positions,
         has_nans,
-        iterations: int,
+        iterations: int = 1,
         id_iter: Optional[str] = None,
     ):
         """
@@ -1878,20 +1954,11 @@ class AutoEncoder:
             self.normalization_values.get(f"{id_iter}")
             if id_iter
             else self.normalization_values.get("global")
-        )
-
-        if normalization_values is None and self.normalization_method is not None:
-            error_msg = (
-                f"Normalization parameters missing for ID {id_iter}"
-                if id_iter
-                else "Global normalization parameters missing"
-            )
-            raise ValueError(error_msg)
-
-        self.min_x = normalization_values.get("min_x")
-        self.max_x = normalization_values.get("max_x")
-        self.mean_ = normalization_values.get("mean_")
-        self.std_ = normalization_values.get("std_")
+        ) or {}
+        self.min_x = normalization_values.get("min_x", None)
+        self.max_x = normalization_values.get("max_x", None)
+        self.mean_ = normalization_values.get("mean_", None)
+        self.std_ = normalization_values.get("std_", None)
 
         # 1. If no Nand: simple prediction
         if not has_nans:
@@ -1907,14 +1974,30 @@ class AutoEncoder:
                 reconstructed_data = self._denormalize_data(
                     reconstructed_data,
                     normalization_method=self.normalization_method,
-                    min_x=normalization_values.get("min_x"),
-                    max_x=normalization_values.get("max_x"),
-                    mean_=normalization_values.get("mean_"),
-                    std_=normalization_values.get("std_"),
+                    min_x=(
+                        self.min_x[self.feature_to_check]
+                        if self.min_x is not None
+                        else None
+                    ),
+                    max_x=(
+                        self.max_x[self.feature_to_check]
+                        if self.max_x is not None
+                        else None
+                    ),
+                    mean_=(
+                        self.mean_[self.feature_to_check]
+                        if self.mean_ is not None
+                        else None
+                    ),
+                    std_=(
+                        self.std_[self.feature_to_check]
+                        if self.std_ is not None
+                        else None
+                    ),
                 )
 
             padded_reconstructed = self._apply_padding(
-                data,
+                data[:, self.feature_to_check],
                 reconstructed_data,
                 self.context_window,
                 self.time_step_to_check,
@@ -1923,13 +2006,13 @@ class AutoEncoder:
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
 
             plot_path = os.path.join(
-                self.save_path,
+                self.save_path if self.save_path else self.root_dir,
                 "plots",
                 f"{id_iter}_new_data.html" if id_iter else "global_new_data.html",
             )
 
             plot_actual_and_reconstructed(
-                actual=data_original.T,
+                actual=data_original[:, self.feature_to_check].T,
                 reconstructed=padded_reconstructed.T,
                 save_path=plot_path,
                 feature_labels=feature_names,
@@ -1942,7 +2025,7 @@ class AutoEncoder:
 
         # If NaNs iterative mode
         reconstruction_records = []
-        reconstructed_iterations[0] = np.copy(data)
+        reconstructed_iterations[0] = np.copy(data[:, self.feature_to_check])
 
         if self.normalization_method:
             try:
@@ -1964,19 +2047,34 @@ class AutoEncoder:
                 reconstructed_data = self._denormalize_data(
                     reconstructed_data,
                     normalization_method=self.normalization_method,
-                    min_x=normalization_values.get("min_x"),
-                    max_x=normalization_values.get("max_x"),
-                    mean_=normalization_values.get("mean_"),
-                    std_=normalization_values.get("std_"),
+                    min_x=(
+                        self.min_x[self.feature_to_check]
+                        if self.min_x is not None
+                        else None
+                    ),
+                    max_x=(
+                        self.max_x[self.feature_to_check]
+                        if self.max_x is not None
+                        else None
+                    ),
+                    mean_=(
+                        self.mean_[self.feature_to_check]
+                        if self.mean_ is not None
+                        else None
+                    ),
+                    std_=(
+                        self.std_[self.feature_to_check]
+                        if self.std_ is not None
+                        else None
+                    ),
                 )
 
             padded_reconstructed = self._apply_padding(
-                data,
+                data[:, self.feature_to_check],
                 reconstructed_data,
                 self.context_window,
                 self.time_step_to_check,
             )
-
             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
 
             for i, j in zip(*np.where(nan_positions)):
@@ -1990,11 +2088,13 @@ class AutoEncoder:
                     }
                 )
                 if self.normalization_method:
-                    data[i, j] = self._normalize_data(
-                        data=padded_reconstructed, id_iter=id_iter
+                    data[i, self.feature_to_check[j]] = self._normalize_data(
+                        data=padded_reconstructed,
+                        id_iter=id_iter,
+                        feature_to_check_filter=True,
                     )[i, j]
                 else:
-                    data[i, j] = padded_reconstructed[i, j]
+                    data[i, self.feature_to_check[j]] = padded_reconstructed[i, j]
 
         # === 3. Última iteración: reconstrucción total ===
         if self.imputer is not None:
@@ -2009,14 +2109,28 @@ class AutoEncoder:
             reconstructed_data_final = self._denormalize_data(
                 reconstructed_data_final,
                 normalization_method=self.normalization_method,
-                min_x=normalization_values.get("min_x"),
-                max_x=normalization_values.get("max_x"),
-                mean_=normalization_values.get("mean_"),
-                std_=normalization_values.get("std_"),
+                min_x=(
+                    self.min_x[self.feature_to_check]
+                    if self.min_x is not None
+                    else None
+                ),
+                max_x=(
+                    self.max_x[self.feature_to_check]
+                    if self.max_x is not None
+                    else None
+                ),
+                mean_=(
+                    self.mean_[self.feature_to_check]
+                    if self.mean_ is not None
+                    else None
+                ),
+                std_=(
+                    self.std_[self.feature_to_check] if self.std_ is not None else None
+                ),
             )
 
         padded_reconstructed_final = self._apply_padding(
-            data,
+            data[:, self.feature_to_check],
             reconstructed_data_final,
             self.context_window,
             self.time_step_to_check,
@@ -2039,18 +2153,22 @@ class AutoEncoder:
 
         progress_df = pd.DataFrame(reconstruction_records)
         file_path = os.path.join(
-            self.save_path,
+            self.save_path if self.save_path else self.root_dir,
             "reconstruction_progress",
             f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
         )
+        # Make dirs if they don't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         progress_df.to_excel(file_path, index=False)
 
         plot_reconstruction_iterations(
-            original_data=data_original.T,
+            original_data=data_original[:, self.feature_to_check].T,
             reconstructed_iterations={
                 k: v.T for k, v in reconstructed_iterations.items()
             },
-            save_path=os.path.join(self.save_path, "plots"),
+            save_path=os.path.join(
+                self.save_path if self.save_path else self.root_dir, "plots"
+            ),
             feature_labels=feature_names,
             id_iter=id_iter,
         )
