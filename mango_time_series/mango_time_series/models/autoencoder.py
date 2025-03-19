@@ -820,9 +820,9 @@ class AutoEncoder:
                 num_features = data.shape[1]
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
             elif (
-                isinstance(data, tuple)
-                and all(isinstance(d, np.ndarray) for d in data)
-                and data[0].ndim >= 2
+                    isinstance(data, tuple)
+                    and all(isinstance(d, np.ndarray) for d in data)
+                    and data[0].ndim >= 2
             ):
                 num_features = data[0].shape[1]
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
@@ -836,6 +836,10 @@ class AutoEncoder:
             self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
 
         data = self._handle_id_columns(data, id_columns)
+        if not self.use_mask and np.isnan(data).any():
+            raise ValueError(
+                "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
+            )
 
         # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
@@ -875,10 +879,6 @@ class AutoEncoder:
         self.val_size = val_size
         self.test_size = test_size
 
-        if not self.use_mask and np.isnan(data).any():
-            raise ValueError(
-                "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
-            )
 
         self.imputer = imputer
         if self.id_data is not None:
@@ -918,27 +918,28 @@ class AutoEncoder:
                 [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
             )
-            self.mask_train = np.concatenate(
-                [
-                    self.mask_train[id_iter]
-                    for id_iter in sorted(self.id_data_dict.keys())
-                ],
-                axis=0,
-            )
-            self.mask_val = np.concatenate(
-                [
-                    self.mask_val[id_iter]
-                    for id_iter in sorted(self.id_data_dict.keys())
-                ],
-                axis=0,
-            )
-            self.mask_test = np.concatenate(
-                [
-                    self.mask_test[id_iter]
-                    for id_iter in sorted(self.id_data_dict.keys())
-                ],
-                axis=0,
-            )
+            if self.use_mask:
+                self.mask_train = np.concatenate(
+                    [
+                        self.mask_train[id_iter]
+                        for id_iter in sorted(self.id_data_dict.keys())
+                    ],
+                    axis=0,
+                )
+                self.mask_val = np.concatenate(
+                    [
+                        self.mask_val[id_iter]
+                        for id_iter in sorted(self.id_data_dict.keys())
+                    ],
+                    axis=0,
+                )
+                self.mask_test = np.concatenate(
+                    [
+                        self.mask_test[id_iter]
+                        for id_iter in sorted(self.id_data_dict.keys())
+                    ],
+                    axis=0,
+                )
         else:
             self.prepare_datasets(data, context_window, normalize)
         self.normalize = normalize
@@ -967,8 +968,8 @@ class AutoEncoder:
         if self.use_mask:
             if self.custom_mask is not None:
                 if isinstance(data, tuple) and (
-                    not isinstance(self.custom_mask, tuple)
-                    or len(self.custom_mask) != 3
+                        not isinstance(self.custom_mask, tuple)
+                        or len(self.custom_mask) != 3
                 ):
                     raise ValueError(
                         "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
@@ -981,9 +982,9 @@ class AutoEncoder:
 
                 if isinstance(self.custom_mask, tuple):
                     if (
-                        self.custom_mask[0].shape != self.data[0].shape
-                        or self.custom_mask[1].shape != self.data[1].shape
-                        or self.custom_mask[2].shape != self.data[2].shape
+                            self.custom_mask[0].shape != self.data[0].shape
+                            or self.custom_mask[1].shape != self.data[1].shape
+                            or self.custom_mask[2].shape != self.data[2].shape
                     ):
                         raise ValueError(
                             "Each element of custom_mask must have the same shape as its corresponding dataset "
@@ -997,9 +998,9 @@ class AutoEncoder:
 
             # Check if masks and data have the same shape
             if (
-                self.mask_train.shape != self.x_train.shape
-                or self.mask_val.shape != self.x_val.shape
-                or self.mask_test.shape != self.x_test.shape
+                    self.mask_train.shape != self.x_train.shape
+                    or self.mask_val.shape != self.x_val.shape
+                    or self.mask_test.shape != self.x_test.shape
             ):
                 raise ValueError(
                     "Masks must have the same shape as the data after transformation."
