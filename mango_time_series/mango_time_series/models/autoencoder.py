@@ -674,6 +674,8 @@ class AutoEncoder:
                     "Reduce the context_window or ensure each ID has enough data."
                 )
 
+        return data
+
     def build_model(
         self,
         form: str = "lstm",
@@ -833,7 +835,7 @@ class AutoEncoder:
         if self.use_mask and self.custom_mask is not None:
             self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
 
-        self._handle_id_columns(data, id_columns)
+        data = self._handle_id_columns(data, id_columns)
 
         # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
@@ -1078,12 +1080,7 @@ class AutoEncoder:
                 f"time_step_to_check contains invalid indices. Must be between 0 and {max_time_step}."
             )
 
-        self.hidden_dim = hidden_dim
-
-        self.save_path = save_path
         self.verbose = verbose
-        self.train_loss_history = None
-        self.val_loss_history = None
         self.feature_weights = feature_weights
 
     def train(
