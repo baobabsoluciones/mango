@@ -466,7 +466,11 @@ class AutoEncoder:
                     mask_train, mask_val, mask_test = self.custom_mask
                 else:
                     mask_train, mask_val, mask_test = self._time_series_split(
-                        self.id_data_dict_mask[id_iter],
+                        (
+                            self.id_data_dict_mask[id_iter]
+                            if id_iter is not None
+                            else self.custom_mask
+                        ),
                         self.train_size,
                         self.val_size,
                         self.test_size,
@@ -842,7 +846,7 @@ class AutoEncoder:
             data, id_columns
         )
 
-        if self.use_mask and self.custom_mask is not None:
+        if self.use_mask and self.custom_mask is not None and self.id_data is not None:
             if (self.id_data_mask != self.id_data).all():
                 raise ValueError("The mask must have the same IDs as the data.")
 
