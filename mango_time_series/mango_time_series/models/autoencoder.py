@@ -611,6 +611,7 @@ class AutoEncoder:
                     id_column_indices = id_columns
                 else:
                     raise ValueError("id_columns must be a list of strings or integers")
+                self.id_columns_indices = id_column_indices
             else:
                 raise ValueError(
                     "id_columns must be a string, integer, or a list of strings or integers"
