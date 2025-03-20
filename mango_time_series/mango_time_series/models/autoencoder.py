@@ -611,6 +611,7 @@ class AutoEncoder:
                     id_column_indices = id_columns
                 else:
                     raise ValueError("id_columns must be a list of strings or integers")
+                self.id_columns_indices = id_column_indices
             else:
                 raise ValueError(
                     "id_columns must be a string, integer, or a list of strings or integers"
@@ -820,9 +821,9 @@ class AutoEncoder:
                 num_features = data.shape[1]
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
             elif (
-                    isinstance(data, tuple)
-                    and all(isinstance(d, np.ndarray) for d in data)
-                    and data[0].ndim >= 2
+                isinstance(data, tuple)
+                and all(isinstance(d, np.ndarray) for d in data)
+                and data[0].ndim >= 2
             ):
                 num_features = data[0].shape[1]
                 self.features_name = [f"feature_{i}" for i in range(num_features)]
@@ -878,7 +879,6 @@ class AutoEncoder:
         self.train_size = train_size
         self.val_size = val_size
         self.test_size = test_size
-
 
         self.imputer = imputer
         if self.id_data is not None:
@@ -968,8 +968,8 @@ class AutoEncoder:
         if self.use_mask:
             if self.custom_mask is not None:
                 if isinstance(data, tuple) and (
-                        not isinstance(self.custom_mask, tuple)
-                        or len(self.custom_mask) != 3
+                    not isinstance(self.custom_mask, tuple)
+                    or len(self.custom_mask) != 3
                 ):
                     raise ValueError(
                         "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
@@ -982,9 +982,9 @@ class AutoEncoder:
 
                 if isinstance(self.custom_mask, tuple):
                     if (
-                            self.custom_mask[0].shape != self.data[0].shape
-                            or self.custom_mask[1].shape != self.data[1].shape
-                            or self.custom_mask[2].shape != self.data[2].shape
+                        self.custom_mask[0].shape != self.data[0].shape
+                        or self.custom_mask[1].shape != self.data[1].shape
+                        or self.custom_mask[2].shape != self.data[2].shape
                     ):
                         raise ValueError(
                             "Each element of custom_mask must have the same shape as its corresponding dataset "
@@ -998,9 +998,9 @@ class AutoEncoder:
 
             # Check if masks and data have the same shape
             if (
-                    self.mask_train.shape != self.x_train.shape
-                    or self.mask_val.shape != self.x_val.shape
-                    or self.mask_test.shape != self.x_test.shape
+                self.mask_train.shape != self.x_train.shape
+                or self.mask_val.shape != self.x_val.shape
+                or self.mask_test.shape != self.x_test.shape
             ):
                 raise ValueError(
                     "Masks must have the same shape as the data after transformation."
@@ -1425,8 +1425,13 @@ class AutoEncoder:
         )
 
         # Get feature labels for the selected features, if we have feature names, extract only those that correspond to feature_to_check
+        features_names_without_id = [
+            feature
+            for i, feature in enumerate(self.features_name)
+            if i not in self.id_columns_indices
+        ]
         feature_labels = (
-            [self.features_name[i] for i in self.feature_to_check]
+            [features_names_without_id[i] for i in self.feature_to_check]
             if hasattr(self, "features_name")
             else None
         )

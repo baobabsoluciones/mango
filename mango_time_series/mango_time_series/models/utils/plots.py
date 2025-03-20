@@ -164,12 +164,12 @@ def plot_actual_and_reconstructed(
 
     # If ID data is provided, process per ID
     if length_datasets is not None:
-        # Create a separate directory for ID-based plots
-        id_save_path = os.path.join(save_path, "by_id")
-        os.makedirs(id_save_path, exist_ok=True)
 
         # Process each ID separately
         for id_value in sorted(length_datasets.keys()):
+            # Create a separate directory for ID-based plots
+            id_save_path = os.path.join(save_path, id_value)
+            os.makedirs(id_save_path, exist_ok=True)
             # Get the length of the datasets for this id
             train_len = length_datasets[id_value]["train"]
             val_len = length_datasets[id_value]["val"]
@@ -231,19 +231,6 @@ def plot_actual_and_reconstructed(
                     )
                 )
 
-                # Define masks for train, validation, and test
-                train_mask = np.arange(id_actual_train.shape[1])
-                val_mask = np.arange(
-                    id_actual_train.shape[1],
-                    id_actual_train.shape[1] + id_actual_val.shape[1],
-                )
-                test_mask = np.arange(
-                    id_actual_train.shape[1] + id_actual_val.shape[1],
-                    id_actual_train.shape[1]
-                    + id_actual_val.shape[1]
-                    + id_actual_test.shape[1],
-                )
-
                 # Add reconstructed values with split coloring
                 if id_reconstructed_train_padded.shape[1] > 0:
                     fig_id.add_trace(
@@ -266,8 +253,8 @@ def plot_actual_and_reconstructed(
                     )
 
                 if (
-                    id_reconstructed_test_padded.shape[1]
-                    > id_actual_train.shape[1] + id_actual_val.shape[1]
+                        id_reconstructed_test_padded.shape[1]
+                        > id_actual_train.shape[1] + id_actual_val.shape[1]
                 ):
                     fig_id.add_trace(
                         go.Scatter(
@@ -289,7 +276,7 @@ def plot_actual_and_reconstructed(
 
                 # Save ID-specific plot
                 id_plot_path = os.path.join(
-                    save_path, "by_id", f"{label}_id_{id_value}.html"
+                    save_path, id_value, f"{label}_id_{id_value}.html"
                 )
                 fig_id.write_html(id_plot_path)
 
@@ -333,7 +320,7 @@ def plot_actual_and_reconstructed(
                 )
 
                 id_plot_path = os.path.join(
-                    save_path, "by_id", f"all_features_id_{id_value}.html"
+                    save_path, id_value, f"all_features_id_{id_value}.html"
                 )
                 fig_all_id.write_html(id_plot_path)
 
