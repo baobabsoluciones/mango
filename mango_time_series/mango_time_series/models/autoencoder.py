@@ -466,7 +466,7 @@ class AutoEncoder:
                     mask_train, mask_val, mask_test = self.custom_mask
                 else:
                     mask_train, mask_val, mask_test = self._time_series_split(
-                        self.custom_mask,
+                        self.id_data_dict_mask[id_iter],
                         self.train_size,
                         self.val_size,
                         self.test_size,
@@ -611,20 +611,19 @@ class AutoEncoder:
                     id_column_indices = id_columns
                 else:
                     raise ValueError("id_columns must be a list of strings or integers")
-                self.id_columns_indices = id_column_indices
             else:
                 raise ValueError(
                     "id_columns must be a string, integer, or a list of strings or integers"
                 )
             if isinstance(data, tuple):
-                self.id_data = tuple(
+                id_data = tuple(
                     np.array(
                         ["__".join(map(str, row)) for row in d[:, id_column_indices]]
                     )
                     for d in data
                 )
             else:
-                self.id_data = np.array(
+                id_data = np.array(
                     ["__".join(map(str, row)) for row in data[:, id_column_indices]]
                 )
             if isinstance(data, np.ndarray):
@@ -637,36 +636,34 @@ class AutoEncoder:
             else:
                 data = data.astype(np.float64)
         else:
-            self.id_data = None
+            id_data = None
 
-        self.id_data_dict = {}
-        if self.id_data is not None:
-            if isinstance(self.id_data, tuple):
-                unique_ids = np.unique(self.id_data[0])
-                self.id_data_dict = {
+        id_data_dict = {}
+        if id_data is not None:
+            if isinstance(id_data, tuple):
+                unique_ids = np.unique(id_data[0])
+                id_data_dict = {
                     unique_id: (
-                        data[0][self.id_data[0] == unique_id],
-                        data[1][self.id_data[1] == unique_id],
-                        data[2][self.id_data[2] == unique_id],
+                        data[0][id_data[0] == unique_id],
+                        data[1][id_data[1] == unique_id],
+                        data[2][id_data[2] == unique_id],
                     )
                     for unique_id in unique_ids
                 }
             else:
-                unique_ids = np.unique(self.id_data)
-                self.id_data_dict = {id: data[self.id_data == id] for id in unique_ids}
+                unique_ids = np.unique(id_data)
+                id_data_dict = {id: data[id_data == id] for id in unique_ids}
 
-        if self.id_data is not None:
-            if isinstance(self.id_data, tuple):
+        if id_data is not None:
+            if isinstance(id_data, tuple):
                 min_samples_all_ids = min(
                     [
                         np.min(np.unique(id_data, return_counts=True)[1])
-                        for id_data in self.id_data
+                        for id_data in id_data
                     ]
                 )
             else:
-                min_samples_all_ids = np.min(
-                    np.unique(self.id_data, return_counts=True)[1]
-                )
+                min_samples_all_ids = np.min(np.unique(id_data, return_counts=True)[1])
 
             if min_samples_all_ids < self.context_window:
                 raise ValueError(
@@ -675,7 +672,7 @@ class AutoEncoder:
                     "Reduce the context_window or ensure each ID has enough data."
                 )
 
-        return data
+        return data, id_data, id_data_dict
 
     def build_model(
         self,
@@ -835,8 +832,18 @@ class AutoEncoder:
         self.custom_mask = custom_mask
         if self.use_mask and self.custom_mask is not None:
             self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
+            mask, self.id_data_mask, self.id_data_dict_mask = self._handle_id_columns(
+                self.custom_mask, id_columns
+            )
 
-        data = self._handle_id_columns(data, id_columns)
+        data, self.id_data, self.id_data_dict = self._handle_id_columns(
+            data, id_columns
+        )
+
+        if self.use_mask and self.custom_mask is not None:
+            if (self.id_data_mask != self.id_data).all():
+                raise ValueError("The mask must have the same IDs as the data.")
+
         if not self.use_mask and np.isnan(data).any():
             raise ValueError(
                 "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
@@ -991,7 +998,7 @@ class AutoEncoder:
                             "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
                         )
                 else:
-                    if self.custom_mask.shape != data.shape:
+                    if mask.shape != data.shape:
                         raise ValueError(
                             "custom_mask must have the same shape as the original input data before transformation"
                         )
@@ -1896,8 +1903,7 @@ class AutoEncoder:
 
         # Handle ID columns
         if id_columns is not None:
-            self._handle_id_columns(data, id_columns)
-            id_data_dict = self.id_data_dict
+            _, _, id_data_dict = self._handle_id_columns(data, id_columns)
         else:
             id_data_dict = {"global": data}
 
