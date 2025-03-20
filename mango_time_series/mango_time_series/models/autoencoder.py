@@ -591,92 +591,75 @@ class AutoEncoder:
 
     def _handle_id_columns(self, data, id_columns):
         """
-        Handle id_columns
+        Handle id_columns.
 
-        :param data: data to train the model
+        :param data: Data to train the model.
         :type data: Any
-        :param id_columns: column(s) to process the data by groups
+        :param id_columns: Column(s) to process the data by groups.
         :type id_columns: Union[str, int, List[str], List[int], None]
 
-        :return: None
+        :return: Processed data, ID mapping, and a dictionary with grouped data by ID.
+        :rtype: Tuple[np.ndarray, np.ndarray, dict]
         """
-        # Handle id_columns
-        if id_columns is not None:
-            if isinstance(id_columns, str) or isinstance(id_columns, int):
-                id_columns = [id_columns]
-            if isinstance(id_columns, list):
-                if all(isinstance(i, str) for i in id_columns):
-                    id_column_indices = [
-                        i
-                        for i, value in enumerate(self.features_name)
-                        if value in id_columns
-                    ]
-                elif all(isinstance(i, int) for i in id_columns):
-                    id_column_indices = id_columns
-                else:
-                    raise ValueError("id_columns must be a list of strings or integers")
-                self.id_columns_indices = id_column_indices
-            else:
-                raise ValueError(
-                    "id_columns must be a string, integer, or a list of strings or integers"
-                )
-            if isinstance(data, tuple):
-                id_data = tuple(
-                    np.array(
-                        ["__".join(map(str, row)) for row in d[:, id_column_indices]]
-                    )
-                    for d in data
-                )
-            else:
-                id_data = np.array(
-                    ["__".join(map(str, row)) for row in data[:, id_column_indices]]
-                )
-            if isinstance(data, np.ndarray):
-                data = np.delete(data, id_column_indices, axis=1)
-            elif isinstance(data, tuple):
-                data = tuple(np.delete(d, id_column_indices, axis=1) for d in data)
+        self.id_columns_indices = []
 
-            if isinstance(data, tuple):
-                data = tuple(d.astype(np.float64) for d in data)
-            else:
-                data = data.astype(np.float64)
+        if id_columns is None:
+            return data, None, {}
+
+        id_columns = [id_columns] if isinstance(id_columns, (str, int)) else id_columns
+
+        if all(isinstance(i, str) for i in id_columns):
+            id_column_indices = [
+                i for i, value in enumerate(self.features_name) if value in id_columns
+            ]
+        elif all(isinstance(i, int) for i in id_columns):
+            id_column_indices = id_columns
         else:
-            id_data = None
-            self.id_columns_indices = []
+            raise ValueError("id_columns must be a list of strings or integers")
 
-        id_data_dict = {}
-        if id_data is not None:
-            if isinstance(id_data, tuple):
-                unique_ids = np.unique(id_data[0])
-                id_data_dict = {
-                    unique_id: (
-                        data[0][id_data[0] == unique_id],
-                        data[1][id_data[1] == unique_id],
-                        data[2][id_data[2] == unique_id],
-                    )
-                    for unique_id in unique_ids
-                }
-            else:
-                unique_ids = np.unique(id_data)
-                id_data_dict = {id: data[id_data == id] for id in unique_ids}
+        self.id_columns_indices = id_column_indices
 
-        if id_data is not None:
-            if isinstance(id_data, tuple):
-                min_samples_all_ids = min(
-                    [
-                        np.min(np.unique(id_data, return_counts=True)[1])
-                        for id_data in id_data
-                    ]
+        if isinstance(data, tuple):
+            id_data = tuple(
+                np.array(["__".join(map(str, row)) for row in d[:, id_column_indices]])
+                for d in data
+            )
+            data = tuple(
+                np.delete(d, id_column_indices, axis=1).astype(np.float64) for d in data
+            )
+        else:
+            id_data = np.array(
+                ["__".join(map(str, row)) for row in data[:, id_column_indices]]
+            )
+            data = np.delete(data, id_column_indices, axis=1).astype(np.float64)
+
+        if isinstance(id_data, tuple):
+            unique_ids = np.unique(id_data[0])
+            id_data_dict = {
+                unique_id: (
+                    data[0][id_data[0] == unique_id],
+                    data[1][id_data[1] == unique_id],
+                    data[2][id_data[2] == unique_id],
                 )
-            else:
-                min_samples_all_ids = np.min(np.unique(id_data, return_counts=True)[1])
+                for unique_id in unique_ids
+            }
+            min_samples_all_ids = min(
+                [
+                    np.min(np.unique(id_data, return_counts=True)[1])
+                    for id_data in id_data
+                ]
+            )
+        else:
+            unique_ids = np.unique(id_data)
+            id_data_dict = {uid: data[id_data == uid] for uid in unique_ids}
+            min_samples_all_ids = np.min(np.unique(id_data, return_counts=True)[1])
 
-            if min_samples_all_ids < self.context_window:
-                raise ValueError(
-                    f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
-                    f"but the context_window is {self.context_window}. "
-                    "Reduce the context_window or ensure each ID has enough data."
-                )
+        if min_samples_all_ids < self.context_window:
+            raise ValueError(
+                f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
+                f"but the context_window is {self.context_window}. "
+                "Reduce the context_window or ensure each ID has enough data."
+            )
 
         return data, id_data, id_data_dict
 
@@ -847,13 +830,12 @@ class AutoEncoder:
         )
 
         if self.use_mask and self.custom_mask is not None and self.id_data is not None:
-            if (self.id_data_mask != self.id_data).all():
-                raise ValueError("The mask must have the same IDs as the data.")
-
-        if not self.use_mask and np.isnan(data).any():
-            raise ValueError(
-                "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
-            )
+            if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
+                if any((id_d != id_m).all() for id_d, id_m in zip(self.id_data, self.id_data_mask)):
+                    raise ValueError("The mask must have the same IDs as the data.")
+            else:
+                if (self.id_data_mask != self.id_data).all():
+                    raise ValueError("The mask must have the same IDs as the data.")
 
         # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
@@ -865,6 +847,19 @@ class AutoEncoder:
             raise ValueError(
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
+
+        if not self.use_mask:
+            if isinstance(data, tuple):
+                if any(np.isnan(d).any() for d in data):
+                    raise ValueError(
+                        "Data contains NaNs in one or more splits (train, val, test), "
+                        "but use_mask is False. Please preprocess data to remove or impute NaNs."
+                    )
+            else:
+                if np.isnan(data).any():
+                    raise ValueError(
+                        "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
+                    )
 
         bidirectional_allowed = {"lstm", "gru", "rnn"}
 
@@ -995,9 +990,9 @@ class AutoEncoder:
 
                 if isinstance(self.custom_mask, tuple):
                     if (
-                        self.custom_mask[0].shape != self.data[0].shape
-                        or self.custom_mask[1].shape != self.data[1].shape
-                        or self.custom_mask[2].shape != self.data[2].shape
+                        mask[0].shape != data[0].shape
+                        or mask[1].shape != data[1].shape
+                        or mask[2].shape != data[2].shape
                     ):
                         raise ValueError(
                             "Each element of custom_mask must have the same shape as its corresponding dataset "
@@ -1345,14 +1340,13 @@ class AutoEncoder:
                 # Process each ID separately
                 for id_key in sorted(self.length_datasets.keys()):
                     # Get the normalization values for this ID
-                    norm_key = f"id_{id_key}"
-                    if norm_key not in self.normalization_values:
+                    if id_key not in self.normalization_values:
                         logger.warning(
-                            f"No normalization values found for {norm_key}, skipping"
+                            f"No normalization values found for {id_key}, skipping"
                         )
                         continue
 
-                    norm_values = self.normalization_values[norm_key]
+                    norm_values = self.normalization_values[id_key]
 
                     # Get dataset lengths for this ID
                     train_length = self.length_datasets[id_key]["train"]
