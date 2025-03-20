@@ -638,6 +638,7 @@ class AutoEncoder:
                 data = data.astype(np.float64)
         else:
             id_data = None
+            self.id_columns_indices = []
 
         id_data_dict = {}
         if id_data is not None:
