@@ -253,8 +253,8 @@ def plot_actual_and_reconstructed(
                     )
 
                 if (
-                        id_reconstructed_test_padded.shape[1]
-                        > id_actual_train.shape[1] + id_actual_val.shape[1]
+                    id_reconstructed_test_padded.shape[1]
+                    > id_actual_train.shape[1] + id_actual_val.shape[1]
                 ):
                     fig_id.add_trace(
                         go.Scatter(
@@ -275,9 +275,7 @@ def plot_actual_and_reconstructed(
                 )
 
                 # Save ID-specific plot
-                id_plot_path = os.path.join(
-                    save_path, id_value, f"{label}_id_{id_value}.html"
-                )
+                id_plot_path = os.path.join(save_path, id_value, f"{label}.html")
                 fig_id.write_html(id_plot_path)
 
             # Plot all features for this ID
@@ -319,9 +317,7 @@ def plot_actual_and_reconstructed(
                     hovermode="x unified",
                 )
 
-                id_plot_path = os.path.join(
-                    save_path, id_value, f"all_features_id_{id_value}.html"
-                )
+                id_plot_path = os.path.join(save_path, id_value, f"all_features.html")
                 fig_all_id.write_html(id_plot_path)
 
     else:
@@ -576,11 +572,9 @@ def plot_reconstruction_iterations(
             showlegend=True,
         )
 
-        plot_filename = (
-            f"{feature_labels[feature_idx]}_iterations_{id_iter}.html"
-            if id_iter
-            else f"{feature_labels[feature_idx]}_iterations.html"
-        )
+        plot_filename = f"{feature_labels[feature_idx]}_iterations.html"
+        plot_dir = os.path.join(save_path, str(id_iter)) if id_iter else save_path
+        os.makedirs(plot_dir, exist_ok=True)
 
-        plot_path = os.path.join(save_path, plot_filename)
+        plot_path = os.path.join(plot_dir, plot_filename)
         fig.write_html(plot_path)

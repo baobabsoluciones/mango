@@ -721,6 +721,10 @@ class AutoEncoder:
           indices to check. For taking only the last timestep of the context
           window this should be set to -1.
         :type time_step_to_check: Union[int, List[int]]
+        :param feature_to_check: feature to check for the autoencoder.
+            Currently only int value is supported and it should be the index
+            of the feature to check.
+        :type feature_to_check: Union[int, List[int]]
         :param hidden_dim: number of hidden dimensions in the internal layers.
           It can be a single integer (same for all layers) or a list of
           dimensions for each layer.
@@ -1722,13 +1726,29 @@ class AutoEncoder:
             )
 
         data, feature_names = self._convert_data_to_numpy(data)
+
+        if id_columns is not None:
+            if isinstance(id_columns, (str, int)):
+                id_columns = [id_columns]
+
+            if all(isinstance(i, str) for i in id_columns):
+                feature_names = [
+                    name for name in feature_names if name not in id_columns
+                ]
+            elif all(isinstance(i, int) for i in id_columns):
+                feature_names = [
+                    name for i, name in enumerate(feature_names) if i not in id_columns
+                ]
+            else:
+                raise ValueError("id_columns must be a list of strings or integers")
+
         features_names_to_check = (
             [feature_names[i] for i in self.feature_to_check] if feature_names else None
         )
 
         # Handle ID columns
         if id_columns is not None:
-            _, _, id_data_dict = self._handle_id_columns(data, id_columns)
+            data, _, id_data_dict = self._handle_id_columns(data, id_columns)
         else:
             id_data_dict = {"global": data}
 
@@ -1843,10 +1863,10 @@ class AutoEncoder:
 
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
 
-            plot_path = os.path.join(
-                self.save_path if self.save_path else self.root_dir,
-                "plots",
-                f"{id_iter}_new_data.html" if id_iter else "global_new_data.html",
+            plot_path = (
+                os.path.join(save_path or self.root_dir, "plots", str(id_iter))
+                if id_iter
+                else os.path.join(save_path or self.root_dir, "plots")
             )
 
             plot_actual_and_reconstructed(
