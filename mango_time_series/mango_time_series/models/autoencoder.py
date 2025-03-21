@@ -463,7 +463,12 @@ class AutoEncoder:
                 mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
             else:
                 if isinstance(self.custom_mask, tuple):
-                    mask_train, mask_val, mask_test = self.custom_mask
+                    if id_iter is not None:
+                        mask_train = self.id_data_dict_mask[id_iter][0]
+                        mask_val = self.id_data_dict_mask[id_iter][1]
+                        mask_test = self.id_data_dict_mask[id_iter][2]
+                    else:
+                        mask_train, mask_val, mask_test = self.custom_mask
                 else:
                     mask_train, mask_val, mask_test = self._time_series_split(
                         (
@@ -837,7 +842,6 @@ class AutoEncoder:
                 if (self.id_data_mask != self.id_data).all():
                     raise ValueError("The mask must have the same IDs as the data.")
 
-        # Now we check if data is a single numpy array or a tuple with three numpy arrays
         if isinstance(data, tuple):
             if len(data) != 3:
                 raise ValueError("Data must be a tuple with three numpy arrays")
