@@ -836,7 +836,10 @@ class AutoEncoder:
 
         if self.use_mask and self.custom_mask is not None and self.id_data is not None:
             if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
-                if any((id_d != id_m).all() for id_d, id_m in zip(self.id_data, self.id_data_mask)):
+                if any(
+                    (id_d != id_m).all()
+                    for id_d, id_m in zip(self.id_data, self.id_data_mask)
+                ):
                     raise ValueError("The mask must have the same IDs as the data.")
             else:
                 if (self.id_data_mask != self.id_data).all():
@@ -1696,195 +1699,12 @@ class AutoEncoder:
 
         return padded_reconstructed
 
-    # def reconstruct_new_data_before(self, data, iterations: int = None):
-    #     """
-    #     Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
-    #     Uses stored `context_window`, normalization parameters, and the trained model.
-
-    #     :param data: Input data (numpy array, pandas DataFrame, or polars DataFrame).
-    #     :param iterations: Number of reconstruction iterations (None = no iteration).
-    #     :param id_columns: Column(s) to process data by groups.
-    #     :return: Reconstructed data.
-    #     """
-
-    #     if self.model is None:
-    #         raise ValueError(
-    #             "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
-    #         )
-
-    #     normalization_used = self.normalization_method is not None
-    #     data, feature_names = self._convert_data_to_numpy(data)
-
-    #     data_original = np.copy(data)
-    #     nan_positions = np.isnan(data)
-    #     has_nans = np.any(nan_positions)
-    #     reconstructed_iterations = {}
-
-    #     # Case 1: No NaNs and no iterations (simple prediction)
-    #     if not has_nans:
-    #         if normalization_used:
-    #             try:
-    #                 data = self._normalize_data(data=data)
-    #             except Exception as e:
-    #                 raise ValueError(f"Error during normalization: {e}")
-
-    #         data_seq = time_series_to_sequence(data, self.context_window)
-    #         reconstructed_data = self.model.predict(data_seq)
-
-    #         if normalization_used:
-    #             reconstructed_data = self._denormalize_data(
-    #                 reconstructed_data,
-    #                 normalization_method=self.normalization_method,
-    #                 min_x=self.min_x,
-    #                 max_x=self.max_x,
-    #                 mean_=self.mean_,
-    #                 std_=self.std_,
-    #             )
-
-    #         padded_reconstructed = self._apply_padding(
-    #             data,
-    #             reconstructed_data,
-    #             self.context_window,
-    #             self.time_step_to_check,
-    #         )
-
-    #         reconstructed_df = (
-    #             pd.DataFrame(padded_reconstructed, columns=feature_names)
-    #             if feature_names
-    #             else padded_reconstructed
-    #         )
-
-    #         plot_actual_and_reconstructed(
-    #             actual=data_original.T,
-    #             reconstructed=padded_reconstructed.T,
-    #             save_path=os.path.join(self.save_path, "plots"),
-    #             feature_labels=feature_names,
-    #             train_split=None,
-    #             val_split=None,
-    #             length_datasets=None,
-    #         )
-    #         return reconstructed_df
-
-    #     # Case 2: Dataset with Nans (iterative prediction)
-    #     elif has_nans and iterations is not None and iterations > 0:
-    #         reconstruction_records = []
-    #         reconstructed_iterations[0] = np.copy(data)
-
-    #         if normalization_used:
-    #             try:
-    #                 data = self._normalize_data(data=data)
-    #             except Exception as e:
-    #                 raise ValueError(f"Error during normalization: {e}")
-
-    #         for iter_num in range(1, iterations):
-    #             if self.imputer is not None:
-    #                 data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
-    #             else:
-    #                 data = np.nan_to_num(data, nan=0)
-
-    #             data_seq = time_series_to_sequence(data, self.context_window)
-
-    #             reconstructed_data = self.model.predict(data_seq)
-
-    #             if normalization_used:
-    #                 reconstructed_data = self._denormalize_data(
-    #                     reconstructed_data,
-    #                     normalization_method=self.normalization_method,
-    #                     min_x=self.min_x,
-    #                     max_x=self.max_x,
-    #                     mean_=self.mean_,
-    #                     std_=self.std_,
-    #                 )
-
-    #             padded_reconstructed = self._apply_padding(
-    #                 data,
-    #                 reconstructed_data,
-    #                 self.context_window,
-    #                 self.time_step_to_check,
-    #             )
-    #             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
-
-    #             for i, j in zip(*np.where(nan_positions)):
-    #                 reconstruction_records.append(
-    #                     {
-    #                         "Column": j + 1,
-    #                         "Timestep": i,
-    #                         "Iteration": iter_num,
-    #                         "Reconstructed value": padded_reconstructed[i, j],
-    #                     }
-    #                 )
-    #                 if normalization_used:
-    #                     data[i, j] = self._normalize_data(data=padded_reconstructed)[
-    #                         i, j
-    #                     ]
-    #                 else:
-    #                     data[i, j] = padded_reconstructed[i, j]
-
-    #         # Last iteration
-    #         if self.imputer is not None:
-    #             data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
-    #         else:
-    #             data = np.nan_to_num(data, nan=0)
-
-    #         data_seq = time_series_to_sequence(data, self.context_window)
-    #         reconstructed_data_final = self.model.predict(data_seq)
-
-    #         if normalization_used:
-    #             reconstructed_data_final = self._denormalize_data(
-    #                 reconstructed_data_final,
-    #                 normalization_method=self.normalization_method,
-    #                 min_x=self.min_x,
-    #                 max_x=self.max_x,
-    #                 mean_=self.mean_,
-    #                 std_=self.std_,
-    #             )
-
-    #         padded_reconstructed_final = self._apply_padding(
-    #             data,
-    #             reconstructed_data_final,
-    #             self.context_window,
-    #             self.time_step_to_check,
-    #         )
-    #         reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
-
-    #         for i in range(data.shape[0]):
-    #             for j in range(data.shape[1]):
-    #                 if nan_positions[i, j]:
-    #                     reconstruction_records.append(
-    #                         {
-    #                             "Column": j + 1,
-    #                             "Timestep": i,
-    #                             "Iteration": iterations,
-    #                             "Reconstructed value": padded_reconstructed_final[i, j],
-    #                         }
-    #                     )
-
-    #         reconstructed_df = (
-    #             pd.DataFrame(reconstructed_data_final, columns=feature_names)
-    #             if feature_names
-    #             else reconstructed_data_final
-    #         )
-
-    #         progress_df = pd.DataFrame(reconstruction_records)
-    #         file_path = os.path.join(self.save_path, "reconstruction_progress.xlsx")
-    #         progress_df.to_excel(file_path, index=False)
-
-    #         plot_reconstruction_iterations(
-    #             original_data=data_original.T,
-    #             reconstructed_iterations={
-    #                 k: v.T for k, v in reconstructed_iterations.items()
-    #             },
-    #             save_path=os.path.join(self.save_path, "plots"),
-    #             feature_labels=feature_names,
-    #         )
-
-    #         return reconstructed_df
-
     def reconstruct_new_data(
         self,
         data,
         iterations: int = 1,
         id_columns: Union[str, int, List[str], List[int], None] = None,
+        save_path: str = None,
     ):
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
@@ -1893,6 +1713,7 @@ class AutoEncoder:
         :param data: Input data (numpy array, pandas DataFrame, or polars DataFrame).
         :param iterations: Number of reconstruction iterations (None = no iteration).
         :param id_columns: Column(s) that define IDs to process reconstruction separately.
+        :param save_path: Path to save the reconstructed data plots.
         :return: Dictionary with reconstructed data per ID (or "global" if no ID).
         """
         if self.model is None:
@@ -1924,6 +1745,7 @@ class AutoEncoder:
                     has_nans=has_nans_id,
                     iterations=iterations,
                     id_iter=id_iter,
+                    save_path=save_path,
                 )
         else:
             nan_positions = np.isnan(data)
@@ -1935,6 +1757,7 @@ class AutoEncoder:
                 has_nans=has_nans,
                 iterations=iterations,
                 id_iter=None,
+                save_path=save_path,
             )
 
         return reconstructed_results
@@ -1947,6 +1770,7 @@ class AutoEncoder:
         has_nans,
         iterations: int = 1,
         id_iter: Optional[str] = None,
+        save_path: str = None,
     ):
         """
         Reconstruct missing values for a single dataset (either global or for a specific ID).
@@ -1957,6 +1781,7 @@ class AutoEncoder:
         :param has_nans: Boolean flag indicating if the dataset contains NaNs.
         :param iterations: Number of iterations for reconstruction.
         :param id_iter: ID of the subset being reconstructed (or None for global).
+        :param save_path: Path to save the reconstructed data plots.
         :return: Reconstructed dataset.
         """
 
@@ -2109,7 +1934,7 @@ class AutoEncoder:
                 else:
                     data[i, self.feature_to_check[j]] = padded_reconstructed[i, j]
 
-        # === 3. Última iteración: reconstrucción total ===
+        # === 3. Last Iteration: Total reconstruction ===
         if self.imputer is not None:
             data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
         else:
@@ -2166,7 +1991,7 @@ class AutoEncoder:
 
         progress_df = pd.DataFrame(reconstruction_records)
         file_path = os.path.join(
-            self.save_path if self.save_path else self.root_dir,
+            save_path if save_path else self.root_dir,
             "reconstruction_progress",
             f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
         )
@@ -2179,9 +2004,7 @@ class AutoEncoder:
             reconstructed_iterations={
                 k: v.T for k, v in reconstructed_iterations.items()
             },
-            save_path=os.path.join(
-                self.save_path if self.save_path else self.root_dir, "plots"
-            ),
+            save_path=os.path.join(save_path if save_path else self.root_dir, "plots"),
             feature_labels=feature_names,
             id_iter=id_iter,
         )
