@@ -20,9 +20,6 @@ SETUP_DICT = {
     "autowrite": True, 
 }
 
-AT_EXIT = False
-
-
 def decodoc(inputs, outputs):
     """
     Decorator to log information about the function
@@ -72,15 +69,18 @@ def decodoc(inputs, outputs):
     - If a function does not have a docstring, a warning will be issued.
     - If any input or output variable names are missing or invalid, a warning will be generated.
     """
-
-    global AT_EXIT
-    if not AT_EXIT:
-        atexit.register(_write)
-        AT_EXIT = True
+    # Create a closure to maintain state
+    at_exit_registered = False
 
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            nonlocal at_exit_registered
+            if not at_exit_registered:
+                atexit.register(_write)
+                print("Registered at exit")
+                at_exit_registered = True
+
             # Get the function ID and the arguments ID to obtain an unique ID
             args_id = [id(arg) for arg in args]
             args_id = "_".join(map(str, args_id))
