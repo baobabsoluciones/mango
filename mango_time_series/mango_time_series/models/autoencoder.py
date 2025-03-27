@@ -9,6 +9,7 @@ from keras import Sequential
 from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
 from mango.logging import get_configured_logger
 from mango.processing.data_imputer import DataImputer
+from tensorflow.keras.layers import Dense
 
 from mango_time_series.models.modules import encoder, decoder
 from mango_time_series.models.utils.plots import (
@@ -697,6 +698,7 @@ class AutoEncoder:
         val_size: float = 0.1,
         test_size: float = 0.1,
         id_columns: Union[str, int, List[str], List[int], None] = None,
+        use_post_decoder_dense: bool = False,
     ):
         """
         Build the Autoencoder model.
@@ -778,6 +780,8 @@ class AutoEncoder:
             If provided, the data will be grouped by this column and processed separately.
             Can be a column name (str), a column index (int), or a list of either.
         :type id_columns: Union[str, int, List[str], List[int], None]
+        :param use_post_decoder_dense: whether to use a dense layer after the decoder
+        :type use_post_decoder_dense: bool
         :raises NotImplementedError: If the model type is 'dense'
         """
         if form == "dense":
@@ -1058,31 +1062,34 @@ class AutoEncoder:
         self.activation_encoder = activation_encoder
         self.activation_decoder = activation_decoder
 
-        model = Sequential(
-            [
-                encoder(
-                    form=form,
-                    context_window=context_window,
-                    features=self.input_features,
-                    hidden_dim=hidden_dim,
-                    num_layers=num_layers,
-                    use_bidirectional=self.bidirectional_encoder,
-                    activation=self.activation_encoder,
-                    verbose=verbose,
-                ),
-                decoder(
-                    form=form,
-                    context_window=context_window,
-                    features=self.output_features,
-                    hidden_dim=hidden_dim,
-                    num_layers=num_layers,
-                    use_bidirectional=self.bidirectional_decoder,
-                    activation=self.activation_decoder,
-                    verbose=verbose,
-                ),
-            ],
-            name="autoencoder",
-        )
+        layers = [
+            encoder(
+                form=form,
+                context_window=context_window,
+                features=self.input_features,
+                hidden_dim=hidden_dim,
+                num_layers=num_layers,
+                use_bidirectional=self.bidirectional_encoder,
+                activation=self.activation_encoder,
+                verbose=verbose,
+            ),
+            decoder(
+                form=form,
+                context_window=context_window,
+                features=self.output_features,
+                hidden_dim=hidden_dim,
+                num_layers=num_layers,
+                use_bidirectional=self.bidirectional_decoder,
+                activation=self.activation_decoder,
+                verbose=verbose,
+            ),
+        ]
+
+        if use_post_decoder_dense:
+            layers.append(Dense(self.output_features, name="post_decoder_dense"))
+
+        model = Sequential(layers, name="autoencoder")
+
         model.build()
 
         if verbose:
@@ -1159,6 +1166,9 @@ class AutoEncoder:
                 hx = self.model.get_layer(f"{self.form}_encoder")(x)
                 x_hat = self.model.get_layer(f"{self.form}_decoder")(hx)
 
+                if "post_decoder_dense" in [layer.name for layer in self.model.layers]:
+                    x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
+
                 # Gather all required time steps
                 x_real = tf.gather(x, self.time_step_to_check, axis=1)
                 x_real = tf.gather(x_real, self.feature_to_check, axis=2)
@@ -1189,6 +1199,9 @@ class AutoEncoder:
 
             hx = self.model.get_layer(f"{self.form}_encoder")(x)
             x_hat = self.model.get_layer(f"{self.form}_decoder")(hx)
+
+            if "post_decoder_dense" in [layer.name for layer in self.model.layers]:
+                x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
 
             # Gather all required time steps
             x_real = tf.gather(x, self.time_step_to_check, axis=1)
@@ -1571,6 +1584,7 @@ class AutoEncoder:
         checkpoint: int = 10,
         use_early_stopping: bool = True,
         patience: int = 10,
+        use_post_decoder_dense: bool = False,
     ):
         """
         Build and train the Autoencoder model in a single step.
@@ -1645,6 +1659,8 @@ class AutoEncoder:
         :type use_early_stopping: bool
         :param patience: Number of epochs to wait before early stopping
         :type patience: int
+        :param use_post_decoder_dense: Whether to use a dense layer after the decoder
+        :type use_post_decoder_dense: bool
         :return: Self for method chaining
         :rtype: AutoEncoder
         """
@@ -1677,6 +1693,7 @@ class AutoEncoder:
             val_size=val_size,
             test_size=test_size,
             id_columns=id_columns,
+            use_post_decoder_dense=use_post_decoder_dense,
         )
 
         self.train(
