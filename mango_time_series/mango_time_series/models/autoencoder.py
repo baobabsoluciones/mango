@@ -577,6 +577,9 @@ class AutoEncoder:
     def _get_optimizer(optimizer_name: str):
         """
         Returns the optimizer based on the given name.
+        :optimizer_name: Name of the optimizer
+        :type optimizer_name: str
+        :return: Optimizer
         """
         optimizers = {
             "adam": Adam(),
