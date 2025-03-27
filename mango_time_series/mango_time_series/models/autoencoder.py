@@ -1,9 +1,10 @@
 import os
 import pickle
-from typing import Union, List, Tuple, Any, Optional
+from typing import Union, List, Tuple, Any, Optional, Dict
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
@@ -30,11 +31,16 @@ class AutoEncoder:
     that quick training and profiling can be done.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
-        Initialize the Autoencoder model
+        Initialize the Autoencoder model with default parameters.
+        
+        Initializes internal state variables including paths, model configuration,
+        and normalization settings.
+        
+        :return: None
+        :rtype: None
         """
-
         self.root_dir = os.path.abspath(os.getcwd())
         self.save_path = None
         self.model = None
@@ -45,14 +51,17 @@ class AutoEncoder:
         self.imputer = None
 
     @classmethod
-    def load_from_pickle(cls, path: str):
+    def load_from_pickle(cls, path: str) -> 'AutoEncoder':
         """
         Load an AutoEncoder model from a pickle file.
 
-        :param path: Path to the pickle file
+        :param path: Path to the pickle file containing the saved model
         :type path: str
-        :return: AutoEncoder model
+        :return: An instance of AutoEncoder with loaded parameters
         :rtype: AutoEncoder
+        :raises FileNotFoundError: If the pickle file does not exist
+        :raises ValueError: If the pickle file format is invalid
+        :raises RuntimeError: If there's an error loading the model
         """
         if not os.path.exists(path):
             raise FileNotFoundError(f"Pickle file not found: {path}")
@@ -90,36 +99,40 @@ class AutoEncoder:
             raise RuntimeError(f"Error loading the AutoEncoder model: {e}")
 
     @staticmethod
-    def create_folder_structure(folder_structure: List[str]):
+    def create_folder_structure(folder_structure: List[str]) -> None:
         """
         Create a folder structure if it does not exist.
 
-        :param folder_structure: List of folders to create
+        :param folder_structure: List of folder paths to create
         :type folder_structure: List[str]
         :return: None
+        :rtype: None
         """
         for path in folder_structure:
             os.makedirs(path, exist_ok=True)
 
     @staticmethod
     def _time_series_split(
-        data, train_size, val_size, test_size
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        data: np.ndarray,
+        train_size: float,
+        val_size: float,
+        test_size: float
+    ) -> Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
         """
         Splits data into training, validation, and test sets according to the specified percentages.
 
-        :param data: array-like data to split
+        :param data: Array-like data to split
         :type data: np.ndarray
-        :param train_size: float
-            Proportion of the dataset to include in the training set (0-1).
-        :param val_size: float
-            Proportion of the dataset to include in the validation set (0-1).
-        :param test_size: float
-            Proportion of the dataset to include in the test set (0-1).
-        :return: Tuple[np.ndarray, np.ndarray, np.ndarray]
-            The training, validation, and test sets as numpy arrays.
+        :param train_size: Proportion of the dataset to include in the training set (0-1)
+        :type train_size: float
+        :param val_size: Proportion of the dataset to include in the validation set (0-1)
+        :type val_size: float
+        :param test_size: Proportion of the dataset to include in the test set (0-1)
+        :type test_size: float
+        :return: The training, validation, and test sets as numpy arrays
+        :rtype: Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]
+        :raises ValueError: If train_size, val_size, or test_size are None or their sum is not 1.0
         """
-
         if train_size is None or val_size is None or test_size is None:
             raise ValueError(
                 "train_size, val_size, and test_size must be specified and not None."
@@ -142,7 +155,9 @@ class AutoEncoder:
         return train_set, val_set, test_set
 
     @staticmethod
-    def _convert_data_to_numpy(data):
+    def _convert_data_to_numpy(
+        data: Any
+    ) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]:
         """
         Convert data to numpy array format.
 
@@ -154,17 +169,16 @@ class AutoEncoder:
         :type data: Any
         :return: Data converted to numpy array(s) and feature names if available
         :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
+        :raises ValueError: If data type is not supported
         """
         try:
             import pandas as pd
-
             has_pandas = True
         except ImportError:
             has_pandas = False
 
         try:
             import polars as pl
-
             has_polars = True
         except ImportError:
             has_polars = False
@@ -199,7 +213,11 @@ class AutoEncoder:
             return converted_data, feature_names
 
     @staticmethod
-    def _convert_single_data_to_numpy(data_item, has_pandas, has_polars):
+    def _convert_single_data_to_numpy(
+        data_item: Any,
+        has_pandas: bool,
+        has_polars: bool
+    ) -> np.ndarray:
         """
         Convert a single data item to numpy array.
 
@@ -211,6 +229,7 @@ class AutoEncoder:
         :type has_polars: bool
         :return: Data converted to numpy array
         :rtype: np.ndarray
+        :raises ValueError: If data type is not supported
         """
         if has_pandas and hasattr(data_item, "to_numpy"):
             return data_item.to_numpy()
@@ -229,7 +248,7 @@ class AutoEncoder:
         x_train: np.ndarray,
         x_val: np.ndarray,
         x_test: np.ndarray,
-        id_iter: Optional[Union[str, int]] = None,
+        id_iter: Optional[Union[str, int]] = None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Normalize training, validation and test data using the specified method.
@@ -241,11 +260,10 @@ class AutoEncoder:
         :type x_val: np.ndarray
         :param x_test: Test data to normalize
         :type x_test: np.ndarray
-        :param id_iter: ID of the iteration for group-specific normalization, defaults to None
+        :param id_iter: ID of the iteration for group-specific normalization
         :type id_iter: Optional[Union[str, int]]
         :return: Tuple containing normalized training, validation and test data
         :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
-
         :note: The method stores normalization parameters either globally or per ID
                in the instance's normalization_values dictionary.
         """
@@ -280,7 +298,9 @@ class AutoEncoder:
         return x_train, x_val, x_test
 
     def _normalize_data_for_prediction(
-        self, data: np.ndarray, feature_to_check_filter: bool = False
+        self,
+        data: np.ndarray,
+        feature_to_check_filter: bool = False
     ) -> np.ndarray:
         """
         Normalize new data using stored normalization parameters.
@@ -288,6 +308,8 @@ class AutoEncoder:
 
         :param data: New data to normalize
         :type data: np.ndarray
+        :param feature_to_check_filter: Whether to filter features for checking
+        :type feature_to_check_filter: bool
         :return: Normalized data
         :rtype: np.ndarray
         """
@@ -327,27 +349,29 @@ class AutoEncoder:
 
     def _normalize_data(
         self,
-        x_train: np.ndarray = None,
-        x_val: np.ndarray = None,
-        x_test: np.ndarray = None,
-        data: np.ndarray = None,
+        x_train: Optional[np.ndarray] = None,
+        x_val: Optional[np.ndarray] = None,
+        x_test: Optional[np.ndarray] = None,
+        data: Optional[np.ndarray] = None,
         id_iter: Optional[Union[str, int]] = None,
-        feature_to_check_filter: bool = False,
+        feature_to_check_filter: bool = False
     ) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
         """
         Normalize data using the specified method.
         Can be used for training (x_train, x_val, x_test) or prediction (data).
 
         :param x_train: Training data for training mode
-        :type x_train: np.ndarray, optional
+        :type x_train: Optional[np.ndarray]
         :param x_val: Validation data for training mode
-        :type x_val: np.ndarray, optional
+        :type x_val: Optional[np.ndarray]
         :param x_test: Test data for training mode
-        :type x_test: np.ndarray, optional
+        :type x_test: Optional[np.ndarray]
         :param data: New data to normalize for prediction mode
-        :type data: np.ndarray, optional
+        :type data: Optional[np.ndarray]
         :param id_iter: ID of the iteration for group-specific normalization
-        :type id_iter: Optional[Union[str, int]], optional
+        :type id_iter: Optional[Union[str, int]]
+        :param feature_to_check_filter: Whether to filter features for checking
+        :type feature_to_check_filter: bool
         :return: Normalized data in training or prediction mode
         :rtype: Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]
         :raises ValueError: If neither training nor prediction data is provided
@@ -371,14 +395,32 @@ class AutoEncoder:
 
     @staticmethod
     def _denormalize_data(
-        data, normalization_method: str, min_x=None, max_x=None, mean_=None, std_=None
-    ):
+        data: np.ndarray,
+        normalization_method: str,
+        min_x: Optional[np.ndarray] = None,
+        max_x: Optional[np.ndarray] = None,
+        mean_: Optional[np.ndarray] = None,
+        std_: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         """
         Denormalize data using stored normalization parameters.
         Assumes `_normalize_data` was used during training to store min_x/max_x or mean_/std_.
 
         :param data: Normalized data to denormalize
+        :type data: np.ndarray
+        :param normalization_method: Method used for normalization ('minmax' or 'zscore')
+        :type normalization_method: str
+        :param min_x: Minimum values for minmax normalization
+        :type min_x: Optional[np.ndarray]
+        :param max_x: Maximum values for minmax normalization
+        :type max_x: Optional[np.ndarray]
+        :param mean_: Mean values for zscore normalization
+        :type mean_: Optional[np.ndarray]
+        :param std_: Standard deviation values for zscore normalization
+        :type std_: Optional[np.ndarray]
         :return: Denormalized data
+        :rtype: np.ndarray
+        :raises ValueError: If normalization method is invalid or parameters are missing
         """
         if normalization_method not in ["minmax", "zscore"]:
             raise ValueError(
@@ -400,22 +442,25 @@ class AutoEncoder:
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
         context_window: int,
         normalize: bool,
-        id_iter: Optional[Union[str, int]] = None,
-    ):
+        id_iter: Optional[Union[str, int]] = None
+    ) -> bool:
         """
         Prepare the datasets for the model training and testing.
-        :param data: data to train the model. It can be a single numpy array
+
+        :param data: Data to train the model. It can be a single numpy array
             with the whole dataset from which a train, validation and test split
             is created, or a tuple with three numpy arrays, one for
             the train, one for the validation and one for the test.
         :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-        :param context_window: context window for the model
+        :param context_window: Context window for the model
         :type context_window: int
-        :param normalize: whether to normalize the data or not
+        :param normalize: Whether to normalize the data or not
         :type normalize: bool
-        :param id_iter: id of the iteration
+        :param id_iter: ID of the iteration
         :type id_iter: Optional[Union[str, int]]
         :return: True if the datasets are prepared successfully
+        :rtype: bool
+        :raises ValueError: If data format is invalid or if NaNs are present when use_mask is False
         """
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
@@ -440,20 +485,22 @@ class AutoEncoder:
         data: Tuple[np.ndarray, np.ndarray, np.ndarray],
         context_window: int,
         normalize: bool,
-        id_iter: Optional[Union[str, int]] = None,
-    ):
+        id_iter: Optional[Union[str, int]] = None
+    ) -> bool:
         """
         Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
 
-        :param data: tuple with three numpy arrays for the train, validation and test datasets
+        :param data: Tuple with three numpy arrays for the train, validation and test datasets
         :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
-        :param context_window: context window for the model
+        :param context_window: Context window for the model
         :type context_window: int
-        :param normalize: whether to normalize the data or not
+        :param normalize: Whether to normalize the data or not
         :type normalize: bool
-        :param id_iter: id of the iteration
+        :param id_iter: ID of the iteration
         :type id_iter: Optional[Union[str, int]]
         :return: True if the dataset is prepared successfully
+        :rtype: bool
+        :raises ValueError: If mask shapes do not match data shapes or if custom mask format is invalid
         """
         x_train, x_val, x_test = data
 
@@ -527,14 +574,24 @@ class AutoEncoder:
 
         return True
 
-    def masked_weighted_mse(self, y_true, y_pred, mask=None):
+    def masked_weighted_mse(
+        self,
+        y_true: tf.Tensor,
+        y_pred: tf.Tensor,
+        mask: Optional[tf.Tensor] = None
+    ) -> tf.Tensor:
         """
         Compute Mean Squared Error (MSE) with optional masking and feature weights.
 
-        :param y_true: Ground truth values (batch_size, seq_length, num_features)
-        :param y_pred: Predicted values (batch_size, seq_length, num_features)
-        :param mask: Optional binary mask (batch_size, seq_length, num_features), 1 for observed values, 0 for missing values
-        :return: Masked and weighted MSE loss
+        :param y_true: Ground truth values with shape (batch_size, seq_length, num_features)
+        :type y_true: tf.Tensor
+        :param y_pred: Predicted values with shape (batch_size, seq_length, num_features)
+        :type y_pred: tf.Tensor
+        :param mask: Optional binary mask with shape (batch_size, seq_length, num_features)
+                    1 for observed values, 0 for missing values
+        :type mask: Optional[tf.Tensor]
+        :return: Masked and weighted MSE loss value
+        :rtype: tf.Tensor
         """
         y_true = tf.cast(y_true, tf.float32)
         y_pred = tf.cast(y_pred, tf.float32)
@@ -574,12 +631,15 @@ class AutoEncoder:
         return loss
 
     @staticmethod
-    def _get_optimizer(optimizer_name: str):
+    def _get_optimizer(optimizer_name: str) -> Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]:
         """
         Returns the optimizer based on the given name.
-        :optimizer_name: Name of the optimizer
+
+        :param optimizer_name: Name of the optimizer to use
         :type optimizer_name: str
-        :return: Optimizer
+        :return: The requested optimizer instance
+        :rtype: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]
+        :raises ValueError: If optimizer_name is not a valid optimizer
         """
         optimizers = {
             "adam": Adam(),
@@ -598,17 +658,24 @@ class AutoEncoder:
 
         return optimizers[optimizer_name.lower()]
 
-    def _handle_id_columns(self, data, id_columns):
+    def _handle_id_columns(
+        self,
+        data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+        id_columns: Union[str, int, List[str], List[int], None]
+    ) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], Optional[np.ndarray], Dict[str, np.ndarray]]:
         """
-        Handle id_columns.
+        Handle id_columns processing for data grouping.
 
-        :param data: Data to train the model.
-        :type data: Any
-        :param id_columns: Column(s) to process the data by groups.
+        :param data: Data to process, can be single array or tuple of arrays
+        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param id_columns: Column(s) to process the data by groups
         :type id_columns: Union[str, int, List[str], List[int], None]
-
-        :return: Processed data, ID mapping, and a dictionary with grouped data by ID.
-        :rtype: Tuple[np.ndarray, np.ndarray, dict]
+        :return: Tuple containing:
+            - Processed data (with ID columns removed)
+            - ID mapping array
+            - Dictionary with grouped data by ID
+        :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], Optional[np.ndarray], Dict[str, np.ndarray]]
+        :raises ValueError: If id_columns format is invalid or if minimum samples per ID is less than context_window
         """
         self.id_columns_indices = []
 
@@ -675,20 +742,20 @@ class AutoEncoder:
     def build_model(
         self,
         form: str = "lstm",
-        data: Any = None,
-        context_window: int = None,
+        data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]] = None,
+        context_window: Optional[int] = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
         hidden_dim: Union[int, List[int]] = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
-        activation_encoder: str = None,
-        activation_decoder: str = None,
+        activation_encoder: Optional[str] = None,
+        activation_decoder: Optional[str] = None,
         normalize: bool = False,
         normalization_method: str = "minmax",
         optimizer: str = "adam",
         batch_size: int = 32,
-        save_path: str = None,
+        save_path: Optional[str] = None,
         verbose: bool = False,
         feature_names: Optional[List[str]] = None,
         feature_weights: Optional[List[float]] = None,
@@ -701,91 +768,74 @@ class AutoEncoder:
         val_size: float = 0.1,
         test_size: float = 0.1,
         id_columns: Union[str, int, List[str], List[int], None] = None,
-        use_post_decoder_dense: bool = False,
-    ):
+        use_post_decoder_dense: bool = False
+    ) -> None:
         """
-        Build the Autoencoder model.
+        Build the Autoencoder model with specified configuration.
 
-        :param form: type of encoder, one of "dense", "rnn", "gru" or "lstm".
-          Currently, these types of cells are both used on the encoder and
-          decoder. In the future each part could have a different structure?
+        :param form: Type of encoder architecture to use
         :type form: str
-        :param data: data to train the model. It can be:
-          - A single numpy array, pandas DataFrame, or polars DataFrame
-            from which train, validation and test splits are created
-          - A tuple with three numpy arrays, pandas DataFrames, or polars DataFrames
-            for train, validation, and test sets respectively
-        :type data: Any
-        :param context_window: context window for the model. This is used
-          to transform the tabular data into a sequence of data
-          (from 2D tensor to 3D tensor)
-        :type context_window: int
-        :param time_step_to_check: time steps to check for the autoencoder.
-          Currently only int value is supported and it should be the index
-          of the context window to check. In the future this could be a list of
-          indices to check. For taking only the last timestep of the context
-          window this should be set to -1.
+        :param data: Input data for model training. Can be:
+            * A single numpy array/pandas DataFrame for automatic train/val/test split
+            * A tuple of three arrays/DataFrames for predefined splits
+        :type data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param context_window: Size of the context window for sequence transformation
+        :type context_window: Optional[int]
+        :param time_step_to_check: Index or indices of time steps to check in prediction
         :type time_step_to_check: Union[int, List[int]]
-        :param feature_to_check: feature to check for the autoencoder.
-            Currently only int value is supported and it should be the index
-            of the feature to check.
+        :param feature_to_check: Index or indices of features to check in prediction
         :type feature_to_check: Union[int, List[int]]
-        :param hidden_dim: number of hidden dimensions in the internal layers.
-          It can be a single integer (same for all layers) or a list of
-          dimensions for each layer.
+        :param hidden_dim: Dimensions of hidden layers. Can be single int or list of ints
         :type hidden_dim: Union[int, List[int]]
-        :param bidirectional_encoder: whether to use bidirectional LSTM in the
-            encoder part of the model.
+        :param bidirectional_encoder: Whether to use bidirectional layers in encoder
         :type bidirectional_encoder: bool
-        :param bidirectional_decoder: whether to use bidirectional LSTM in the
-            decoder part of the model.
+        :param bidirectional_decoder: Whether to use bidirectional layers in decoder
         :type bidirectional_decoder: bool
-        :param activation_encoder: activation function for the encoder layers.
-        :type activation_encoder: str
-        :param activation_decoder: activation function for the decoder layers.
-        :type activation_decoder: str
-        :param normalize: whether to normalize the data or not.
+        :param activation_encoder: Activation function for encoder layers
+        :type activation_encoder: Optional[str]
+        :param activation_decoder: Activation function for decoder layers
+        :type activation_decoder: Optional[str]
+        :param normalize: Whether to normalize input data
         :type normalize: bool
-        :param normalization_method: method to normalize the data. It can be
-            "minmax" or "zscore".
+        :param normalization_method: Method for data normalization ('minmax' or 'zscore')
         :type normalization_method: str
-        :param optimizer: optimizer to use for the model training.
+        :param optimizer: Name of optimizer to use for training
         :type optimizer: str
-        :param batch_size: batch size for the model
+        :param batch_size: Size of batches for training
         :type batch_size: int
-        :param save_path: folder path to save the model checkpoints
-        :type save_path: str
-        :param verbose: whether to log model summary and model training.
+        :param save_path: Directory path to save model checkpoints
+        :type save_path: Optional[str]
+        :param verbose: Whether to print detailed information during training
         :type verbose: bool
-        :param feature_names: optional list of feature names to use for the model.
-            If provided, these names will be used instead of automatically extracted ones.
+        :param feature_names: Custom names for features
         :type feature_names: Optional[List[str]]
-        :param feature_weights: optional list of feature weights to use for the model.
-            If provided, these weights will be used to scale the loss for each feature.
+        :param feature_weights: Weights for each feature in loss calculation
         :type feature_weights: Optional[List[float]]
-        :param shuffle: whether to shuffle the training dataset
+        :param shuffle: Whether to shuffle training data
         :type shuffle: bool
-        :param shuffle_buffer_size: size of the buffer to shuffle the training dataset
+        :param shuffle_buffer_size: Size of buffer for shuffling
         :type shuffle_buffer_size: Optional[int]
-        :param use_mask: whether to use a mask for missing values
+        :param use_mask: Whether to use masking for missing values
         :type use_mask: bool
-        :param custom_mask: optional custom mask to use for missing values
-        :type custom_mask: Optional[np.array]
-        :param imputer: optional imputer to use for missing values
+        :param custom_mask: Custom mask for missing values
+        :type custom_mask: Any
+        :param imputer: Instance of DataImputer for handling missing values
         :type imputer: Optional[DataImputer]
-        :param train_size: proportion of the dataset to include in the training set
+        :param train_size: Proportion of data for training (0-1)
         :type train_size: float
-        :param val_size: proportion of the dataset to include in the validation set
+        :param val_size: Proportion of data for validation (0-1)
         :type val_size: float
-        :param test_size: proportion of the dataset to include in the test set
+        :param test_size: Proportion of data for testing (0-1)
         :type test_size: float
-        :param id_columns: optional column(s) to process the data by groups.
-            If provided, the data will be grouped by this column and processed separately.
-            Can be a column name (str), a column index (int), or a list of either.
+        :param id_columns: Column(s) to use for grouping data
         :type id_columns: Union[str, int, List[str], List[int], None]
-        :param use_post_decoder_dense: whether to use a dense layer after the decoder
+        :param use_post_decoder_dense: Whether to add dense layer after decoder
         :type use_post_decoder_dense: bool
-        :raises NotImplementedError: If the model type is 'dense'
+
+        :raises NotImplementedError: If form='dense' is specified
+        :raises ValueError: If invalid parameters are provided
+        :return: None
+        :rtype: None
         """
         if form == "dense":
             raise NotImplementedError("Dense model type is not yet implemented")
@@ -927,49 +977,49 @@ class AutoEncoder:
                     id_iter=id_iter,
                 )
 
-            # Extract the length of the datasets for each id to use it on the reconstruction
-            self.length_datasets = {}
-            for id_iter in self.id_data_dict:
-                self.length_datasets[id_iter] = {}
-                self.length_datasets[id_iter]["train"] = len(self.x_train[id_iter])
-                self.length_datasets[id_iter]["val"] = len(self.x_val[id_iter])
-                self.length_datasets[id_iter]["test"] = len(self.x_test[id_iter])
+        # Extract the length of the datasets for each id to use it on the reconstruction
+        self.length_datasets = {}
+        for id_iter in self.id_data_dict:
+            self.length_datasets[id_iter] = {}
+            self.length_datasets[id_iter]["train"] = len(self.x_train[id_iter])
+            self.length_datasets[id_iter]["val"] = len(self.x_val[id_iter])
+            self.length_datasets[id_iter]["test"] = len(self.x_test[id_iter])
 
-            # Concat all the datasets
-            self.x_train = np.concatenate(
-                [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+        # Concat all the datasets
+        self.x_train = np.concatenate(
+            [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        self.x_val = np.concatenate(
+            [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        self.x_test = np.concatenate(
+            [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        if self.use_mask:
+            self.mask_train = np.concatenate(
+                [
+                    self.mask_train[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
                 axis=0,
             )
-            self.x_val = np.concatenate(
-                [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            self.mask_val = np.concatenate(
+                [
+                    self.mask_val[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
                 axis=0,
             )
-            self.x_test = np.concatenate(
-                [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            self.mask_test = np.concatenate(
+                [
+                    self.mask_test[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
                 axis=0,
             )
-            if self.use_mask:
-                self.mask_train = np.concatenate(
-                    [
-                        self.mask_train[id_iter]
-                        for id_iter in sorted(self.id_data_dict.keys())
-                    ],
-                    axis=0,
-                )
-                self.mask_val = np.concatenate(
-                    [
-                        self.mask_val[id_iter]
-                        for id_iter in sorted(self.id_data_dict.keys())
-                    ],
-                    axis=0,
-                )
-                self.mask_test = np.concatenate(
-                    [
-                        self.mask_test[id_iter]
-                        for id_iter in sorted(self.id_data_dict.keys())
-                    ],
-                    axis=0,
-                )
         else:
             self.prepare_datasets(data, context_window, normalize)
         self.normalize = normalize
@@ -1132,21 +1182,21 @@ class AutoEncoder:
         epochs: int = 100,
         checkpoint: int = 10,
         use_early_stopping: bool = True,
-        patience: int = 10,
-    ):
+        patience: int = 10
+    ) -> None:
         """
         Train the model using the train and validation datasets and save the best model.
 
-        :param epochs: number of epochs to train the model
+        :param epochs: Number of epochs to train the model
         :type epochs: int
-        :param checkpoint: number of epochs to save a checkpoint
+        :param checkpoint: Number of epochs to save a checkpoint
         :type checkpoint: int
-        :param use_early_stopping: whether to use early stopping or not
+        :param use_early_stopping: Whether to use early stopping or not
         :type use_early_stopping: bool
-        :param patience: number of epochs to wait before stopping the training
+        :param patience: Number of epochs to wait before stopping the training
         :type patience: int
-
         :return: None
+        :rtype: None
         """
         self.last_epoch = 0
         self.epochs = epochs
@@ -1157,11 +1207,16 @@ class AutoEncoder:
         self.patience = patience
 
         @tf.function
-        def train_step(x, mask=None):
+        def train_step(x: tf.Tensor, mask: Optional[tf.Tensor] = None) -> tf.Tensor:
             """
             Training step for the model.
-            :param x: input data
-            :param mask: optional binary mask for missing
+
+            :param x: Input data
+            :type x: tf.Tensor
+            :param mask: Optional binary mask for missing values
+            :type mask: Optional[tf.Tensor]
+            :return: Training loss value
+            :rtype: tf.Tensor
             """
             with tf.GradientTape() as autoencoder_tape:
                 x = tf.cast(x, tf.float32)
@@ -1192,11 +1247,16 @@ class AutoEncoder:
             return train_loss
 
         @tf.function
-        def validation_step(x, mask=None):
+        def validation_step(x: tf.Tensor, mask: Optional[tf.Tensor] = None) -> tf.Tensor:
             """
             Validation step for the model.
-            :param x: input data
-            :param mask: optional binary mask for missing
+
+            :param x: Input data
+            :type x: tf.Tensor
+            :param mask: Optional binary mask for missing values
+            :type mask: Optional[tf.Tensor]
+            :return: Validation loss value
+            :rtype: tf.Tensor
             """
             x = tf.cast(x, tf.float32)
 
@@ -1295,9 +1355,12 @@ class AutoEncoder:
 
         self.save(filename=f"{self.last_epoch}.pkl")
 
-    def reconstruct(self):
+    def reconstruct(self) -> bool:
         """
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
+
+        :return: True if reconstruction was successful
+        :rtype: bool
         """
         # Calculate fitted values for each dataset
         # We use the original data for the training set to avoid shuffling in reconstruction step
@@ -1500,14 +1563,17 @@ class AutoEncoder:
 
         return True
 
-    def save(self, save_path: str = None, filename: str = "model.pkl"):
+    def save(self, save_path: Optional[str] = None, filename: str = "model.pkl") -> None:
         """
         Save the model (Keras model + training parameters) into a single .pkl file.
 
-        :param save_path: Path to save the model.
-        :type save_path: str
-        :param filename: Name of the file to save the model.
+        :param save_path: Path to save the model
+        :type save_path: Optional[str]
+        :param filename: Name of the file to save the model
         :type filename: str
+        :raises Exception: If there's an error saving the model
+        :return: None
+        :rtype: None
         """
         try:
             save_path = save_path or self.save_path
@@ -1556,21 +1622,21 @@ class AutoEncoder:
 
     def build_and_train(
         self,
-        data: Any = None,
-        context_window: int = None,
+        data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]] = None,
+        context_window: Optional[int] = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
         form: str = "lstm",
         hidden_dim: Union[int, List[int]] = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
-        activation_encoder: str = None,
-        activation_decoder: str = None,
+        activation_encoder: Optional[str] = None,
+        activation_decoder: Optional[str] = None,
         normalize: bool = False,
         normalization_method: str = "minmax",
         optimizer: str = "adam",
         batch_size: int = 32,
-        save_path: str = None,
+        save_path: Optional[str] = None,
         verbose: bool = False,
         feature_names: Optional[List[str]] = None,
         feature_weights: Optional[List[float]] = None,
@@ -1587,8 +1653,8 @@ class AutoEncoder:
         checkpoint: int = 10,
         use_early_stopping: bool = True,
         patience: int = 10,
-        use_post_decoder_dense: bool = False,
-    ):
+        use_post_decoder_dense: bool = False
+    ) -> 'AutoEncoder':
         """
         Build and train the Autoencoder model in a single step.
 
@@ -1596,14 +1662,12 @@ class AutoEncoder:
         allowing for a more streamlined workflow.
 
         :param data: Data to train the model. It can be:
-          - A single numpy array, pandas DataFrame, or polars DataFrame
-            from which train, validation and test splits are created
-          - A tuple with three numpy arrays, pandas DataFrames, or polars DataFrames
-            for train, validation, and test sets respectively
-        :type data: Any
+            * A single numpy array/pandas DataFrame for automatic train/val/test split
+            * A tuple of three arrays/DataFrames for predefined splits
+        :type data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
         :param context_window: Context window for the model used to transform
             tabular data into sequence data (2D tensor to 3D tensor)
-        :type context_window: int
+        :type context_window: Optional[int]
         :param time_step_to_check: Time steps to check for the autoencoder
         :type time_step_to_check: Union[int, List[int]]
         :param feature_to_check: Features to check in the autoencoder
@@ -1617,9 +1681,9 @@ class AutoEncoder:
         :param bidirectional_decoder: Whether to use bidirectional LSTM in decoder
         :type bidirectional_decoder: bool
         :param activation_encoder: Activation function for the encoder layers
-        :type activation_encoder: str
+        :type activation_encoder: Optional[str]
         :param activation_decoder: Activation function for the decoder layers
-        :type activation_decoder: str
+        :type activation_decoder: Optional[str]
         :param normalize: Whether to normalize the data
         :type normalize: bool
         :param normalization_method: Method to normalize the data "minmax" or "zscore"
@@ -1629,7 +1693,7 @@ class AutoEncoder:
         :param batch_size: Batch size for training
         :type batch_size: int
         :param save_path: Folder path to save model checkpoints
-        :type save_path: str
+        :type save_path: Optional[str]
         :param verbose: Whether to log model summary and training progress
         :type verbose: bool
         :param feature_names: List of feature names to use
@@ -1667,7 +1731,6 @@ class AutoEncoder:
         :return: Self for method chaining
         :rtype: AutoEncoder
         """
-
         self.build_model(
             form=form,
             data=data,
@@ -1709,15 +1772,29 @@ class AutoEncoder:
         return self
 
     @staticmethod
-    def _apply_padding(data, reconstructed, context_window, time_step_to_check):
+    def _apply_padding(
+        data: np.ndarray,
+        reconstructed: np.ndarray,
+        context_window: int,
+        time_step_to_check: Union[int, List[int]]
+    ) -> np.ndarray:
         """
         Apply padding dynamically based on time_step_to_check and context_window.
 
-        :param data: Original dataset shape (num_samples, num_features)
-        :param reconstructed: Predicted values shape (num_samples - context_window, num_features)
-        :param context_window: Context window size
+        This method handles the padding of reconstructed data to match the original data shape,
+        taking into account the context window and the specific time step being predicted.
+
+        :param data: Original dataset with shape (num_samples, num_features)
+        :type data: np.ndarray
+        :param reconstructed: Predicted values with shape (num_samples - context_window, num_features)
+        :type reconstructed: np.ndarray
+        :param context_window: Size of the context window used for prediction
+        :type context_window: int
         :param time_step_to_check: Time step to predict within the window
-        :return: Padded reconstructed dataset
+        :type time_step_to_check: Union[int, List[int]]
+        :return: Padded reconstructed dataset with shape matching the original data
+        :rtype: np.ndarray
+        :raises ValueError: If time_step_to_check is not within valid range
         """
         num_samples, num_features = data.shape
         padded_reconstructed = np.full((num_samples, num_features), np.nan)
@@ -1725,6 +1802,13 @@ class AutoEncoder:
         # Determine the offset based on time_step_to_check
         if isinstance(time_step_to_check, list):
             time_step_to_check = time_step_to_check[0]
+            
+        if time_step_to_check < 0 or time_step_to_check >= context_window:
+            raise ValueError(
+                f"time_step_to_check must be between 0 and {context_window - 1}, "
+                f"but got {time_step_to_check}"
+            )
+
         if time_step_to_check == 0:
             padded_reconstructed[: num_samples - (context_window - 1)] = reconstructed
         elif time_step_to_check == context_window - 1:
@@ -1738,20 +1822,26 @@ class AutoEncoder:
 
     def reconstruct_new_data(
         self,
-        data,
+        data: Union[np.ndarray, pd.DataFrame, pl.DataFrame],
         iterations: int = 1,
-        id_columns: Union[str, int, List[str], List[int], None] = None,
-        save_path: str = None,
-    ):
+        id_columns: Optional[Union[str, int, List[str], List[int]]] = None,
+        save_path: Optional[str] = None
+    ) -> Dict[str, pd.DataFrame]:
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
         Uses stored `context_window`, normalization parameters, and the trained model.
 
-        :param data: Input data (numpy array, pandas DataFrame, or polars DataFrame).
-        :param iterations: Number of reconstruction iterations (None = no iteration).
-        :param id_columns: Column(s) that define IDs to process reconstruction separately.
-        :param save_path: Path to save the reconstructed data plots.
-        :return: Dictionary with reconstructed data per ID (or "global" if no ID).
+        :param data: Input data (numpy array or pandas DataFrame or polars DataFrame)
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param iterations: Number of reconstruction iterations (None = no iteration)
+        :type iterations: int
+        :param id_columns: Column(s) that define IDs to process reconstruction separately
+        :type id_columns: Optional[Union[str, int, List[str], List[int]]]
+        :param save_path: Path to save the reconstructed data plots
+        :type save_path: Optional[str]
+        :return: Dictionary with reconstructed data per ID (or "global" if no ID)
+        :rtype: Dict[str, pd.DataFrame]
+        :raises ValueError: If no model is loaded or if id_columns format is invalid
         """
         if self.model is None:
             raise ValueError(
@@ -1817,27 +1907,35 @@ class AutoEncoder:
 
     def _reconstruct_single_dataset(
         self,
-        data,
-        feature_names,
-        nan_positions,
-        has_nans,
+        data: np.ndarray,
+        feature_names: Optional[List[str]],
+        nan_positions: np.ndarray,
+        has_nans: bool,
         iterations: int = 1,
         id_iter: Optional[str] = None,
-        save_path: str = None,
-    ):
+        save_path: Optional[str] = None
+    ) -> pd.DataFrame:
         """
         Reconstruct missing values for a single dataset (either global or for a specific ID).
 
-        :param data: Subset of data to reconstruct (global dataset or per ID).
-        :param feature_names: Feature labels.
-        :param nan_positions: Boolean mask indicating NaN positions.
-        :param has_nans: Boolean flag indicating if the dataset contains NaNs.
-        :param iterations: Number of iterations for reconstruction.
-        :param id_iter: ID of the subset being reconstructed (or None for global).
-        :param save_path: Path to save the reconstructed data plots.
-        :return: Reconstructed dataset.
+        :param data: Subset of data to reconstruct (global dataset or per ID)
+        :type data: np.ndarray
+        :param feature_names: Feature labels
+        :type feature_names: Optional[List[str]]
+        :param nan_positions: Boolean mask indicating NaN positions
+        :type nan_positions: np.ndarray
+        :param has_nans: Boolean flag indicating if the dataset contains NaNs
+        :type has_nans: bool
+        :param iterations: Number of iterations for reconstruction
+        :type iterations: int
+        :param id_iter: ID of the subset being reconstructed (or None for global)
+        :type id_iter: Optional[str]
+        :param save_path: Path to save the reconstructed data plots
+        :type save_path: Optional[str]
+        :return: Reconstructed dataset as a pandas DataFrame
+        :rtype: pd.DataFrame
+        :raises ValueError: If normalization fails or if there are issues with the reconstruction process
         """
-
         data_original = np.copy(data)
         reconstructed_iterations = {}
 
@@ -1851,7 +1949,7 @@ class AutoEncoder:
         self.mean_ = normalization_values.get("mean_", None)
         self.std_ = normalization_values.get("std_", None)
 
-        # 1. If no Nand: simple prediction
+        # 1. If no NaNs: simple prediction
         if not has_nans:
             if self.normalization_method:
                 try:
