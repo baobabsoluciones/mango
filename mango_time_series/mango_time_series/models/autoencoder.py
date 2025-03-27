@@ -977,49 +977,49 @@ class AutoEncoder:
                     id_iter=id_iter,
                 )
 
-        # Extract the length of the datasets for each id to use it on the reconstruction
-        self.length_datasets = {}
-        for id_iter in self.id_data_dict:
-            self.length_datasets[id_iter] = {}
-            self.length_datasets[id_iter]["train"] = len(self.x_train[id_iter])
-            self.length_datasets[id_iter]["val"] = len(self.x_val[id_iter])
-            self.length_datasets[id_iter]["test"] = len(self.x_test[id_iter])
+            # Extract the length of the datasets for each id to use it on the reconstruction
+            self.length_datasets = {}
+            for id_iter in self.id_data_dict:
+                self.length_datasets[id_iter] = {}
+                self.length_datasets[id_iter]["train"] = len(self.x_train[id_iter])
+                self.length_datasets[id_iter]["val"] = len(self.x_val[id_iter])
+                self.length_datasets[id_iter]["test"] = len(self.x_test[id_iter])
 
-        # Concat all the datasets
-        self.x_train = np.concatenate(
-            [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
-            axis=0,
-        )
-        self.x_val = np.concatenate(
-            [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
-            axis=0,
-        )
-        self.x_test = np.concatenate(
-            [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
-            axis=0,
-        )
-        if self.use_mask:
-            self.mask_train = np.concatenate(
-                [
-                    self.mask_train[id_iter]
-                    for id_iter in sorted(self.id_data_dict.keys())
-                ],
+            # Concat all the datasets
+            self.x_train = np.concatenate(
+                [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
             )
-            self.mask_val = np.concatenate(
-                [
-                    self.mask_val[id_iter]
-                    for id_iter in sorted(self.id_data_dict.keys())
-                ],
+            self.x_val = np.concatenate(
+                [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
             )
-            self.mask_test = np.concatenate(
-                [
-                    self.mask_test[id_iter]
-                    for id_iter in sorted(self.id_data_dict.keys())
-                ],
+            self.x_test = np.concatenate(
+                [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
             )
+            if self.use_mask:
+                self.mask_train = np.concatenate(
+                    [
+                        self.mask_train[id_iter]
+                        for id_iter in sorted(self.id_data_dict.keys())
+                    ],
+                    axis=0,
+                )
+                self.mask_val = np.concatenate(
+                    [
+                        self.mask_val[id_iter]
+                        for id_iter in sorted(self.id_data_dict.keys())
+                    ],
+                    axis=0,
+                )
+                self.mask_test = np.concatenate(
+                    [
+                        self.mask_test[id_iter]
+                        for id_iter in sorted(self.id_data_dict.keys())
+                    ],
+                    axis=0,
+                )
         else:
             self.prepare_datasets(data, context_window, normalize)
         self.normalize = normalize
