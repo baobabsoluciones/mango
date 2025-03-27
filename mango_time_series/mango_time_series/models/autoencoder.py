@@ -57,7 +57,7 @@ class AutoEncoder:
             raise FileNotFoundError(f"Pickle file not found: {path}")
 
         try:
-            # 1. Load the model and parameters from the pickle file
+            # Load the model and parameters from the pickle file
             with open(path, "rb") as f:
                 saved_data = pickle.load(f)
 
@@ -67,10 +67,10 @@ class AutoEncoder:
             model = saved_data["model"]
             params = saved_data["params"]
 
-            # 2. Create an instance of AutoEncoder
+            # Create an instance of AutoEncoder
             instance = cls()
 
-            # 3. Assign loaded parameters
+            # Assign loaded parameters
             instance.model = model
             instance.context_window = params.get("context_window")
             instance.time_step_to_check = params.get("time_step_to_check")
@@ -78,7 +78,7 @@ class AutoEncoder:
             instance.features_name = params.get("features_name", None)
             instance.feature_to_check = params.get("feature_to_check", 0)
 
-            # 4. Cargar los valores de normalización (global y por ID)
+            # Load normalization values
             instance.normalization_values = params.get("normalization_values", {})
 
             logger.info(f"Model successfully loaded from {path}")
@@ -744,6 +744,8 @@ class AutoEncoder:
         :param normalization_method: method to normalize the data. It can be
             "minmax" or "zscore".
         :type normalization_method: str
+        :param optimizer: optimizer to use for the model training.
+        :type optimizer: str
         :param batch_size: batch size for the model
         :type batch_size: int
         :param save_path: folder path to save the model checkpoints
@@ -758,6 +760,8 @@ class AutoEncoder:
         :type feature_weights: Optional[List[float]]
         :param shuffle: whether to shuffle the training dataset
         :type shuffle: bool
+        :param shuffle_buffer_size: size of the buffer to shuffle the training dataset
+        :type shuffle_buffer_size: Optional[int]
         :param use_mask: whether to use a mask for missing values
         :type use_mask: bool
         :param custom_mask: optional custom mask to use for missing values
@@ -1092,6 +1096,16 @@ class AutoEncoder:
 
         if isinstance(time_step_to_check, int):
             time_step_to_check = [time_step_to_check]
+        elif isinstance(time_step_to_check, list):
+            if len(time_step_to_check) != 1:
+                raise ValueError(
+                    "time_step_to_check must be a list with a single element. Not implemented yet."
+                )
+        else:
+            raise TypeError(
+                "time_step_to_check must be an int or a list with a single int."
+            )
+
         self.time_step_to_check = time_step_to_check
 
         max_time_step = self.context_window - 1
@@ -1689,7 +1703,6 @@ class AutoEncoder:
         padded_reconstructed = np.full((num_samples, num_features), np.nan)
 
         # Determine the offset based on time_step_to_check
-        # TODO: Improve this logic to handle multiple time steps
         if isinstance(time_step_to_check, list):
             time_step_to_check = time_step_to_check[0]
         if time_step_to_check == 0:
