@@ -34,10 +34,10 @@ class AutoEncoder:
     def __init__(self) -> None:
         """
         Initialize the Autoencoder model with default parameters.
-        
+
         Initializes internal state variables including paths, model configuration,
         and normalization settings.
-        
+
         :return: None
         :rtype: None
         """
@@ -51,7 +51,7 @@ class AutoEncoder:
         self.imputer = None
 
     @classmethod
-    def load_from_pickle(cls, path: str) -> 'AutoEncoder':
+    def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
         Load an AutoEncoder model from a pickle file.
 
@@ -113,10 +113,7 @@ class AutoEncoder:
 
     @staticmethod
     def _time_series_split(
-        data: np.ndarray,
-        train_size: float,
-        val_size: float,
-        test_size: float
+        data: np.ndarray, train_size: float, val_size: float, test_size: float
     ) -> Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
         """
         Splits data into training, validation, and test sets according to the specified percentages.
@@ -156,7 +153,7 @@ class AutoEncoder:
 
     @staticmethod
     def _convert_data_to_numpy(
-        data: Any
+        data: Any,
     ) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]:
         """
         Convert data to numpy array format.
@@ -173,12 +170,14 @@ class AutoEncoder:
         """
         try:
             import pandas as pd
+
             has_pandas = True
         except ImportError:
             has_pandas = False
 
         try:
             import polars as pl
+
             has_polars = True
         except ImportError:
             has_polars = False
@@ -214,9 +213,7 @@ class AutoEncoder:
 
     @staticmethod
     def _convert_single_data_to_numpy(
-        data_item: Any,
-        has_pandas: bool,
-        has_polars: bool
+        data_item: Any, has_pandas: bool, has_polars: bool
     ) -> np.ndarray:
         """
         Convert a single data item to numpy array.
@@ -248,7 +245,7 @@ class AutoEncoder:
         x_train: np.ndarray,
         x_val: np.ndarray,
         x_test: np.ndarray,
-        id_iter: Optional[Union[str, int]] = None
+        id_iter: Optional[Union[str, int]] = None,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Normalize training, validation and test data using the specified method.
@@ -298,9 +295,7 @@ class AutoEncoder:
         return x_train, x_val, x_test
 
     def _normalize_data_for_prediction(
-        self,
-        data: np.ndarray,
-        feature_to_check_filter: bool = False
+        self, data: np.ndarray, feature_to_check_filter: bool = False
     ) -> np.ndarray:
         """
         Normalize new data using stored normalization parameters.
@@ -354,7 +349,7 @@ class AutoEncoder:
         x_test: Optional[np.ndarray] = None,
         data: Optional[np.ndarray] = None,
         id_iter: Optional[Union[str, int]] = None,
-        feature_to_check_filter: bool = False
+        feature_to_check_filter: bool = False,
     ) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
         """
         Normalize data using the specified method.
@@ -400,7 +395,7 @@ class AutoEncoder:
         min_x: Optional[np.ndarray] = None,
         max_x: Optional[np.ndarray] = None,
         mean_: Optional[np.ndarray] = None,
-        std_: Optional[np.ndarray] = None
+        std_: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
         Denormalize data using stored normalization parameters.
@@ -442,7 +437,7 @@ class AutoEncoder:
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
         context_window: int,
         normalize: bool,
-        id_iter: Optional[Union[str, int]] = None
+        id_iter: Optional[Union[str, int]] = None,
     ) -> bool:
         """
         Prepare the datasets for the model training and testing.
@@ -485,7 +480,7 @@ class AutoEncoder:
         data: Tuple[np.ndarray, np.ndarray, np.ndarray],
         context_window: int,
         normalize: bool,
-        id_iter: Optional[Union[str, int]] = None
+        id_iter: Optional[Union[str, int]] = None,
     ) -> bool:
         """
         Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
@@ -575,10 +570,7 @@ class AutoEncoder:
         return True
 
     def masked_weighted_mse(
-        self,
-        y_true: tf.Tensor,
-        y_pred: tf.Tensor,
-        mask: Optional[tf.Tensor] = None
+        self, y_true: tf.Tensor, y_pred: tf.Tensor, mask: Optional[tf.Tensor] = None
     ) -> tf.Tensor:
         """
         Compute Mean Squared Error (MSE) with optional masking and feature weights.
@@ -631,7 +623,9 @@ class AutoEncoder:
         return loss
 
     @staticmethod
-    def _get_optimizer(optimizer_name: str) -> Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]:
+    def _get_optimizer(
+        optimizer_name: str,
+    ) -> Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]:
         """
         Returns the optimizer based on the given name.
 
@@ -661,8 +655,12 @@ class AutoEncoder:
     def _handle_id_columns(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
-        id_columns: Union[str, int, List[str], List[int], None]
-    ) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], Optional[np.ndarray], Dict[str, np.ndarray]]:
+        id_columns: Union[str, int, List[str], List[int], None],
+    ) -> Tuple[
+        Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+        Optional[np.ndarray],
+        Dict[str, np.ndarray],
+    ]:
         """
         Handle id_columns processing for data grouping.
 
@@ -742,7 +740,9 @@ class AutoEncoder:
     def build_model(
         self,
         form: str = "lstm",
-        data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]] = None,
+        data: Union[
+            np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]
+        ] = None,
         context_window: Optional[int] = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
@@ -768,7 +768,7 @@ class AutoEncoder:
         val_size: float = 0.1,
         test_size: float = 0.1,
         id_columns: Union[str, int, List[str], List[int], None] = None,
-        use_post_decoder_dense: bool = False
+        use_post_decoder_dense: bool = False,
     ) -> None:
         """
         Build the Autoencoder model with specified configuration.
@@ -1182,7 +1182,7 @@ class AutoEncoder:
         epochs: int = 100,
         checkpoint: int = 10,
         use_early_stopping: bool = True,
-        patience: int = 10
+        patience: int = 10,
     ) -> None:
         """
         Train the model using the train and validation datasets and save the best model.
@@ -1247,7 +1247,9 @@ class AutoEncoder:
             return train_loss
 
         @tf.function
-        def validation_step(x: tf.Tensor, mask: Optional[tf.Tensor] = None) -> tf.Tensor:
+        def validation_step(
+            x: tf.Tensor, mask: Optional[tf.Tensor] = None
+        ) -> tf.Tensor:
             """
             Validation step for the model.
 
@@ -1563,7 +1565,9 @@ class AutoEncoder:
 
         return True
 
-    def save(self, save_path: Optional[str] = None, filename: str = "model.pkl") -> None:
+    def save(
+        self, save_path: Optional[str] = None, filename: str = "model.pkl"
+    ) -> None:
         """
         Save the model (Keras model + training parameters) into a single .pkl file.
 
@@ -1622,7 +1626,9 @@ class AutoEncoder:
 
     def build_and_train(
         self,
-        data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]] = None,
+        data: Union[
+            np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]
+        ] = None,
         context_window: Optional[int] = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
@@ -1653,8 +1659,8 @@ class AutoEncoder:
         checkpoint: int = 10,
         use_early_stopping: bool = True,
         patience: int = 10,
-        use_post_decoder_dense: bool = False
-    ) -> 'AutoEncoder':
+        use_post_decoder_dense: bool = False,
+    ) -> "AutoEncoder":
         """
         Build and train the Autoencoder model in a single step.
 
@@ -1776,7 +1782,7 @@ class AutoEncoder:
         data: np.ndarray,
         reconstructed: np.ndarray,
         context_window: int,
-        time_step_to_check: Union[int, List[int]]
+        time_step_to_check: Union[int, List[int]],
     ) -> np.ndarray:
         """
         Apply padding dynamically based on time_step_to_check and context_window.
@@ -1802,7 +1808,7 @@ class AutoEncoder:
         # Determine the offset based on time_step_to_check
         if isinstance(time_step_to_check, list):
             time_step_to_check = time_step_to_check[0]
-            
+
         if time_step_to_check < 0 or time_step_to_check >= context_window:
             raise ValueError(
                 f"time_step_to_check must be between 0 and {context_window - 1}, "
@@ -1825,7 +1831,7 @@ class AutoEncoder:
         data: Union[np.ndarray, pd.DataFrame, pl.DataFrame],
         iterations: int = 1,
         id_columns: Optional[Union[str, int, List[str], List[int]]] = None,
-        save_path: Optional[str] = None
+        save_path: Optional[str] = None,
     ) -> Dict[str, pd.DataFrame]:
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
@@ -1876,6 +1882,7 @@ class AutoEncoder:
             id_data_dict = {"global": data}
 
         reconstructed_results = {}
+
         if id_columns is not None:
             for id_iter, data_id in id_data_dict.items():
                 nan_positions_id = np.isnan(data_id)
@@ -1913,7 +1920,7 @@ class AutoEncoder:
         has_nans: bool,
         iterations: int = 1,
         id_iter: Optional[str] = None,
-        save_path: Optional[str] = None
+        save_path: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Reconstruct missing values for a single dataset (either global or for a specific ID).
@@ -1939,23 +1946,27 @@ class AutoEncoder:
         data_original = np.copy(data)
         reconstructed_iterations = {}
 
+        # Get normalization values for the current ID or global
         normalization_values = (
             self.normalization_values.get(f"{id_iter}")
             if id_iter
             else self.normalization_values.get("global")
         ) or {}
+
+        # Set normalization parameters
         self.min_x = normalization_values.get("min_x", None)
         self.max_x = normalization_values.get("max_x", None)
         self.mean_ = normalization_values.get("mean_", None)
         self.std_ = normalization_values.get("std_", None)
 
-        # 1. If no NaNs: simple prediction
+        # Case 1: No NaNs - Simple prediction
         if not has_nans:
             if self.normalization_method:
                 try:
                     data = self._normalize_data(data=data)
                 except Exception as e:
                     raise ValueError(f"Error during normalization: {e}")
+
             data_seq = time_series_to_sequence(data, self.context_window)
             reconstructed_data = self.model.predict(data_seq)
 
@@ -1994,12 +2005,14 @@ class AutoEncoder:
 
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
 
+            # Generate plot path based on ID
             plot_path = (
                 os.path.join(save_path or self.root_dir, "plots", str(id_iter))
                 if id_iter
                 else os.path.join(save_path or self.root_dir, "plots")
             )
 
+            # Plot actual vs reconstructed data
             plot_actual_and_reconstructed(
                 actual=data_original[:, self.feature_to_check].T,
                 reconstructed=padded_reconstructed.T,
@@ -2012,7 +2025,7 @@ class AutoEncoder:
 
             return reconstructed_df
 
-        # If NaNs iterative mode
+        # Case 2: With NaNs - Iterative reconstruction
         reconstruction_records = []
         reconstructed_iterations[0] = np.copy(data[:, self.feature_to_check])
 
@@ -2022,14 +2035,16 @@ class AutoEncoder:
             except Exception as e:
                 raise ValueError(f"Error during normalization for ID {id_iter}: {e}")
 
+        # Iterative reconstruction loop
         for iter_num in range(1, iterations):
+            # Handle missing values
             if self.imputer is not None:
                 data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
             else:
                 data = np.nan_to_num(data, nan=0)
 
+            # Generate sequence and predict
             data_seq = time_series_to_sequence(data, self.context_window)
-
             reconstructed_data = self.model.predict(data_seq)
 
             if self.normalization_method:
@@ -2058,6 +2073,7 @@ class AutoEncoder:
                     ),
                 )
 
+            # Apply padding and store results
             padded_reconstructed = self._apply_padding(
                 data[:, self.feature_to_check],
                 reconstructed_data,
@@ -2066,6 +2082,7 @@ class AutoEncoder:
             )
             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
 
+            # Record reconstruction progress
             for i, j in zip(*np.where(nan_positions)):
                 reconstruction_records.append(
                     {
@@ -2076,6 +2093,8 @@ class AutoEncoder:
                         "Reconstructed value": padded_reconstructed[i, j],
                     }
                 )
+
+                # Update data with reconstructed values
                 if self.normalization_method:
                     data[i, self.feature_to_check[j]] = self._normalize_data(
                         data=padded_reconstructed,
@@ -2085,7 +2104,7 @@ class AutoEncoder:
                 else:
                     data[i, self.feature_to_check[j]] = padded_reconstructed[i, j]
 
-        # === 3. Last Iteration: Total reconstruction ===
+        # Final reconstruction step
         if self.imputer is not None:
             data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
         else:
@@ -2127,6 +2146,7 @@ class AutoEncoder:
 
         reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
 
+        # Record final reconstruction results
         for i, j in zip(*np.where(nan_positions)):
             reconstruction_records.append(
                 {
@@ -2140,16 +2160,17 @@ class AutoEncoder:
 
         reconstructed_df = pd.DataFrame(reconstructed_data_final, columns=feature_names)
 
+        # Save reconstruction progress
         progress_df = pd.DataFrame(reconstruction_records)
         file_path = os.path.join(
             save_path if save_path else self.root_dir,
             "reconstruction_progress",
             f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
         )
-        # Make dirs if they don't exist
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         progress_df.to_excel(file_path, index=False)
 
+        # Plot reconstruction iterations
         plot_reconstruction_iterations(
             original_data=data_original[:, self.feature_to_check].T,
             reconstructed_iterations={
