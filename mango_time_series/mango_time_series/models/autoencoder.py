@@ -837,12 +837,60 @@ class AutoEncoder:
         :return: None
         :rtype: None
         """
+
         if form == "dense":
             raise NotImplementedError("Dense model type is not yet implemented")
 
-        self.save_path = (
-            save_path if save_path else os.path.join(self.root_dir, "autoencoder")
+        if normalization_method not in ["minmax", "zscore"]:
+            raise ValueError(
+                "Invalid normalization method. Choose 'minmax' or 'zscore'."
+            )
+
+        if isinstance(hidden_dim, list):
+            self.hidden_dim = hidden_dim
+        elif isinstance(hidden_dim, int):
+            self.hidden_dim = [hidden_dim]
+        else:
+            raise ValueError("hidden_dim must be an int or list of ints")
+
+        bidirectional_allowed = {"lstm", "gru", "rnn"}
+        if form not in bidirectional_allowed:
+            if bidirectional_encoder or bidirectional_decoder:
+                raise ValueError(
+                    f"Bidirectional not supported for encoder/decoder type '{form}'"
+                )
+
+        if isinstance(time_step_to_check, int):
+            time_step_to_check = [time_step_to_check]
+        elif isinstance(time_step_to_check, list):
+            if len(time_step_to_check) != 1:
+                raise ValueError(
+                    "time_step_to_check must be a list with a single element. Not implemented yet."
+                )
+        else:
+            raise TypeError(
+                "time_step_to_check must be an int or a list with a single int."
+            )
+
+            # Store configuration
+        self.context_window = context_window
+        self.time_step_to_check = time_step_to_check
+        self.feature_to_check = (
+            [feature_to_check]
+            if isinstance(feature_to_check, int)
+            else feature_to_check
         )
+        self.normalization_method = normalization_method
+        self.normalize = normalize
+        self.verbose = verbose
+        self.feature_weights = feature_weights
+        self.use_mask = use_mask
+        self.custom_mask = custom_mask
+        self.imputer = imputer
+        self.train_size = train_size
+        self.val_size = val_size
+        self.test_size = test_size
+        self.save_path = save_path or os.path.join(self.root_dir, "autoencoder")
 
         self.create_folder_structure(
             [
@@ -850,45 +898,29 @@ class AutoEncoder:
                 os.path.join(self.save_path, "plots"),
             ]
         )
-        self.context_window = context_window
 
-        if isinstance(hidden_dim, list):
-            self.hidden_dim = hidden_dim
-        elif isinstance(hidden_dim, int):
-            self.hidden_dim = [hidden_dim]
-        else:
-            raise ValueError("hidden_dim must be a list of integers or an integer")
-
-        num_layers = len(self.hidden_dim)
-
-        # Convert data to numpy arrays if it's a pandas or polars DataFrame
-        # and extract feature names if available
         data, extracted_feature_names = self._convert_data_to_numpy(data)
-        # Store feature names or generate default names
-        if feature_names:
-            # Use user-provided feature names
-            self.features_name = feature_names
-        elif extracted_feature_names and len(extracted_feature_names) > 0:
-            # Use extracted feature names from DataFrame
-            self.features_name = extracted_feature_names
-        else:
-            # If data is provided, create generic feature names based on the number of features
-            if isinstance(data, np.ndarray) and data.ndim >= 2:
-                num_features = data.shape[1]
-                self.features_name = [f"feature_{i}" for i in range(num_features)]
-            elif (
-                isinstance(data, tuple)
-                and all(isinstance(d, np.ndarray) for d in data)
-                and data[0].ndim >= 2
-            ):
-                num_features = data[0].shape[1]
-                self.features_name = [f"feature_{i}" for i in range(num_features)]
-            else:
-                self.features_name = []
 
-        # Store feature weights if provided
-        self.use_mask = use_mask
-        self.custom_mask = custom_mask
+        # Validate that data is a single array or a tuple of three arrays
+        if isinstance(data, tuple):
+            if len(data) != 3:
+                raise ValueError("Data must be a tuple with three numpy arrays")
+        elif not isinstance(data, np.ndarray):
+            raise ValueError(
+                "Data must be a numpy array or a tuple with three numpy arrays"
+            )
+
+        self.features_name = (
+            feature_names
+            or extracted_feature_names
+            or [
+                f"feature_{i}"
+                for i in range(
+                    data[0].shape[1] if isinstance(data, tuple) else data.shape[1]
+                )
+            ]
+        )
+
         if self.use_mask and self.custom_mask is not None:
             self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
             mask, self.id_data_mask, self.id_data_dict_mask = self._handle_id_columns(
@@ -901,67 +933,20 @@ class AutoEncoder:
 
         if self.use_mask and self.custom_mask is not None and self.id_data is not None:
             if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
-                if any(
-                    (id_d != id_m).all()
-                    for id_d, id_m in zip(self.id_data, self.id_data_mask)
-                ):
-                    raise ValueError("The mask must have the same IDs as the data.")
-            else:
-                if (self.id_data_mask != self.id_data).all():
-                    raise ValueError("The mask must have the same IDs as the data.")
-
-        if isinstance(data, tuple):
-            if len(data) != 3:
-                raise ValueError("Data must be a tuple with three numpy arrays")
-        elif isinstance(data, np.ndarray):
-            pass
-        else:
-            raise ValueError(
-                "Data must be a numpy array or a tuple with three numpy arrays"
-            )
+                for id_d, id_m in zip(self.id_data, self.id_data_mask):
+                    if (id_d != id_m).any():
+                        raise ValueError("The mask must have the same IDs as the data.")
+            elif (self.id_data_mask != self.id_data).any():
+                raise ValueError("The mask must have the same IDs as the data.")
 
         if not self.use_mask:
-            if isinstance(data, tuple):
-                if any(np.isnan(d).any() for d in data):
-                    raise ValueError(
-                        "Data contains NaNs in one or more splits (train, val, test), "
-                        "but use_mask is False. Please preprocess data to remove or impute NaNs."
-                    )
-            else:
-                if np.isnan(data).any():
-                    raise ValueError(
-                        "Data contains NaNs, but use_mask is False. Please preprocess data to remove or impute NaNs."
-                    )
-
-        bidirectional_allowed = {"lstm", "gru", "rnn"}
-
-        if form not in bidirectional_allowed:
-            if bidirectional_encoder and bidirectional_decoder:
+            arrays_to_check = data if isinstance(data, tuple) else [data]
+            if any(np.isnan(arr).any() for arr in arrays_to_check):
                 raise ValueError(
-                    f"Bidirectional is not supported for encoder and decoder type '{form}'."
-                )
-            elif bidirectional_encoder:
-                raise ValueError(
-                    f"Bidirectional is not supported for encoder type '{form}'."
-                )
-            elif bidirectional_decoder:
-                raise ValueError(
-                    f"Bidirectional is not supported for decoder type '{form}'."
+                    "Data contains NaNs but use_mask is False. Clean or impute data."
                 )
 
-        if normalization_method not in ["minmax", "zscore"]:
-            raise ValueError(
-                "Invalid normalization method. Choose 'minmax' or 'zscore'."
-            )
-
-        self.normalization_method = normalization_method
-
-        self.train_size = train_size
-        self.val_size = val_size
-        self.test_size = test_size
-
-        self.imputer = imputer
-        if self.id_data is not None:
+        if self.id_data_dict:
             self.data = {}
             self.x_train = {}
             self.x_val = {}
@@ -969,23 +954,16 @@ class AutoEncoder:
             self.mask_train = {}
             self.mask_val = {}
             self.mask_test = {}
-            for id_iter in self.id_data_dict:
-                self.prepare_datasets(
-                    self.id_data_dict[id_iter],
-                    context_window,
-                    normalize,
-                    id_iter=id_iter,
-                )
-
-            # Extract the length of the datasets for each id to use it on the reconstruction
             self.length_datasets = {}
-            for id_iter in self.id_data_dict:
-                self.length_datasets[id_iter] = {}
-                self.length_datasets[id_iter]["train"] = len(self.x_train[id_iter])
-                self.length_datasets[id_iter]["val"] = len(self.x_val[id_iter])
-                self.length_datasets[id_iter]["test"] = len(self.x_test[id_iter])
+            for id_iter, d in self.id_data_dict.items():
+                self.prepare_datasets(d, context_window, normalize, id_iter=id_iter)
+                self.length_datasets[id_iter] = {
+                    "train": len(self.x_train[id_iter]),
+                    "val": len(self.x_val[id_iter]),
+                    "test": len(self.x_test[id_iter]),
+                }
 
-            # Concat all the datasets
+                # Concat all the datasets
             self.x_train = np.concatenate(
                 [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
@@ -998,7 +976,7 @@ class AutoEncoder:
                 [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
             )
-            if self.use_mask:
+            if use_mask:
                 self.mask_train = np.concatenate(
                     [
                         self.mask_train[id_iter]
@@ -1022,18 +1000,8 @@ class AutoEncoder:
                 )
         else:
             self.prepare_datasets(data, context_window, normalize)
-        self.normalize = normalize
 
-        if isinstance(feature_to_check, int):
-            feature_to_check = [feature_to_check]
-        self.feature_to_check = feature_to_check
-
-        self.input_features = self.x_train.shape[2]
-        self.output_features = len(self.feature_to_check)
-
-        self.shuffle = shuffle
-
-        if self.shuffle:
+        if shuffle:
             if shuffle_buffer_size is not None:
                 if not isinstance(shuffle_buffer_size, int) or shuffle_buffer_size <= 0:
                     raise ValueError("shuffle_buffer_size must be a positive integer.")
@@ -1044,39 +1012,45 @@ class AutoEncoder:
             self.shuffle_buffer_size = None
 
         self.x_train_no_shuffle = np.copy(self.x_train)
+        self.input_features = self.x_train.shape[2]
+        self.output_features = len(self.feature_to_check)
 
-        if self.use_mask:
-            if self.custom_mask is not None:
-                if isinstance(data, tuple) and (
-                    not isinstance(self.custom_mask, tuple)
-                    or len(self.custom_mask) != 3
+        if any(t > (self.context_window - 1) for t in self.time_step_to_check):
+            raise ValueError(
+                f"time_step_to_check contains invalid indices. Must be between 0 and {self.context_window - 1}."
+            )
+
+        if self.use_mask and self.custom_mask is not None:
+            if isinstance(data, tuple) and (
+                not isinstance(self.custom_mask, tuple) or len(self.custom_mask) != 3
+            ):
+                raise ValueError(
+                    "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
+                )
+
+            if not isinstance(data, tuple) and isinstance(self.custom_mask, tuple):
+                raise ValueError(
+                    "If data is a single array, custom_mask cannot be a tuple."
+                )
+
+            if isinstance(self.custom_mask, tuple):
+                if (
+                    mask[0].shape != data[0].shape
+                    or mask[1].shape != data[1].shape
+                    or mask[2].shape != data[2].shape
                 ):
                     raise ValueError(
-                        "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
+                        "Each element of custom_mask must have the same shape as its corresponding dataset "
+                        "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
                     )
-
-                if not isinstance(data, tuple) and isinstance(self.custom_mask, tuple):
+            else:
+                if mask.shape != data.shape:
                     raise ValueError(
-                        "If data is a single array, custom_mask cannot be a tuple."
+                        "custom_mask must have the same shape as the original input data before transformation"
                     )
 
-                if isinstance(self.custom_mask, tuple):
-                    if (
-                        mask[0].shape != data[0].shape
-                        or mask[1].shape != data[1].shape
-                        or mask[2].shape != data[2].shape
-                    ):
-                        raise ValueError(
-                            "Each element of custom_mask must have the same shape as its corresponding dataset "
-                            "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
-                        )
-                else:
-                    if mask.shape != data.shape:
-                        raise ValueError(
-                            "custom_mask must have the same shape as the original input data before transformation"
-                        )
-
-            # Check if masks and data have the same shape
+                    # Check if masks and data have the same shape
+        if self.use_mask:
             if (
                 self.mask_train.shape != self.x_train.shape
                 or self.mask_val.shape != self.x_val.shape
@@ -1086,6 +1060,43 @@ class AutoEncoder:
                     "Masks must have the same shape as the data after transformation."
                 )
 
+        # Build model
+        num_layers = len(self.hidden_dim)
+        layers = [
+            encoder(
+                form=form,
+                context_window=context_window,
+                features=self.input_features,
+                hidden_dim=self.hidden_dim,
+                num_layers=num_layers,
+                use_bidirectional=bidirectional_encoder,
+                activation=activation_encoder,
+                verbose=verbose,
+            ),
+            decoder(
+                form=form,
+                context_window=context_window,
+                features=self.output_features,
+                hidden_dim=self.hidden_dim,
+                num_layers=num_layers,
+                use_bidirectional=bidirectional_decoder,
+                activation=activation_decoder,
+                verbose=verbose,
+            ),
+        ]
+
+        if use_post_decoder_dense:
+            layers.append(Dense(self.output_features, name="post_decoder_dense"))
+
+        self.model = Sequential(layers, name="autoencoder")
+        self.model.build()
+
+        if self.verbose:
+            logger.info(f"Model structure:\n{self.model.summary()}")
+
+        self.model_optimizer = self._get_optimizer(optimizer)
+
+        if use_mask:
             train_dataset = tf.data.Dataset.from_tensor_slices(
                 (self.x_train, self.mask_train)
             )
@@ -1095,13 +1106,12 @@ class AutoEncoder:
             test_dataset = tf.data.Dataset.from_tensor_slices(
                 (self.x_test, self.mask_test)
             )
-
         else:
             train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
             val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
             test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
 
-        if self.shuffle:
+        if shuffle:
             self.train_dataset = train_dataset.shuffle(
                 buffer_size=self.shuffle_buffer_size
             )
@@ -1109,73 +1119,7 @@ class AutoEncoder:
         self.val_dataset = val_dataset.cache().batch(batch_size)
         self.test_dataset = test_dataset.cache().batch(batch_size)
 
-        self.bidirectional_encoder = bidirectional_encoder
-        self.bidirectional_decoder = bidirectional_decoder
-
-        self.activation_encoder = activation_encoder
-        self.activation_decoder = activation_decoder
-
-        layers = [
-            encoder(
-                form=form,
-                context_window=context_window,
-                features=self.input_features,
-                hidden_dim=hidden_dim,
-                num_layers=num_layers,
-                use_bidirectional=self.bidirectional_encoder,
-                activation=self.activation_encoder,
-                verbose=verbose,
-            ),
-            decoder(
-                form=form,
-                context_window=context_window,
-                features=self.output_features,
-                hidden_dim=hidden_dim,
-                num_layers=num_layers,
-                use_bidirectional=self.bidirectional_decoder,
-                activation=self.activation_decoder,
-                verbose=verbose,
-            ),
-        ]
-
-        if use_post_decoder_dense:
-            layers.append(Dense(self.output_features, name="post_decoder_dense"))
-
-        model = Sequential(layers, name="autoencoder")
-
-        model.build()
-
-        if verbose:
-            logger.info(f"The model has the following structure: {model.summary()}")
-
         self.form = form
-        self.model = model
-
-        self.optimizer_name = optimizer
-        self.model_optimizer = self._get_optimizer(optimizer)
-
-        if isinstance(time_step_to_check, int):
-            time_step_to_check = [time_step_to_check]
-        elif isinstance(time_step_to_check, list):
-            if len(time_step_to_check) != 1:
-                raise ValueError(
-                    "time_step_to_check must be a list with a single element. Not implemented yet."
-                )
-        else:
-            raise TypeError(
-                "time_step_to_check must be an int or a list with a single int."
-            )
-
-        self.time_step_to_check = time_step_to_check
-
-        max_time_step = self.context_window - 1
-        if any(t > max_time_step for t in self.time_step_to_check):
-            raise ValueError(
-                f"time_step_to_check contains invalid indices. Must be between 0 and {max_time_step}."
-            )
-
-        self.verbose = verbose
-        self.feature_weights = feature_weights
 
     def train(
         self,
