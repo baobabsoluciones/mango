@@ -244,7 +244,7 @@ def load_csv_light(path, sep=None, encoding=None):
             reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
             data = [row for row in reader]
         except ValueError:
-            print("csv loading failed, trying other quote option")
+            warnings.warn("csv loading failed, trying other quote option")
             dialect.quoting = csv.QUOTE_MINIMAL
             reader = csv.DictReader(f, dialect=dialect, fieldnames=headers)
             data = [row for row in reader]
