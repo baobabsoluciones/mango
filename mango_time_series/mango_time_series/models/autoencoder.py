@@ -42,13 +42,40 @@ class AutoEncoder:
         :rtype: None
         """
         self.root_dir = os.path.abspath(os.getcwd())
-        self.save_path = None
+        self._save_path = None
         self.model = None
         self.context_window = None
         self.time_step_to_check = None
         self.normalization_method = None
         self.normalization_values = {}
         self.imputer = None
+
+    @property
+    def save_path(self) -> Optional[str]:
+        """
+        Get the path where model artifacts will be saved.
+
+        :return: Path to save model or None if not set
+        :rtype: Optional[str]
+        """
+        return self._save_path or os.path.join(self.root_dir, "autoencoder")
+
+    @save_path.setter
+    def save_path(self, path: Optional[str]) -> None:
+        """
+        Set the path where model artifacts will be saved.
+
+        :param path: Directory path for saving model artifacts
+        :type path: Optional[str]
+        :return: None
+        :rtype: None
+        """
+        self._save_path = path
+
+        if path is not None:
+            self.create_folder_structure(
+                [os.path.join(path, "models"), os.path.join(path, "plots")]
+            )
 
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
@@ -890,14 +917,7 @@ class AutoEncoder:
         self.train_size = train_size
         self.val_size = val_size
         self.test_size = test_size
-        self.save_path = save_path or os.path.join(self.root_dir, "autoencoder")
-
-        self.create_folder_structure(
-            [
-                os.path.join(self.save_path, "models"),
-                os.path.join(self.save_path, "plots"),
-            ]
-        )
+        self.save_path = save_path
 
         data, extracted_feature_names = self._convert_data_to_numpy(data)
 
