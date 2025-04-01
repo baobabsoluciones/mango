@@ -44,12 +44,14 @@ class AutoEncoder:
         self.root_dir = os.path.abspath(os.getcwd())
         self._save_path = None
         self._form = "lstm"
+        self._time_step_to_check = [0]
         self.model = None
         self.context_window = None
-        self.time_step_to_check = None
         self.normalization_method = None
         self.normalization_values = {}
         self.imputer = None
+        self.data = None
+        self.x_train = None
 
     @property
     def save_path(self) -> Optional[str]:
@@ -114,6 +116,57 @@ class AutoEncoder:
             )
 
         self._form = value
+
+    @property
+    def time_step_to_check(self) -> Union[int, List[int]]:
+        """
+        Get the time step indices to check during reconstruction.
+
+        :return: Time step indices
+        :rtype: Union[int, List[int]]
+        """
+        if len(self._time_step_to_check) == 1:
+            return self._time_step_to_check[0]
+        return self._time_step_to_check
+
+    @time_step_to_check.setter
+    def time_step_to_check(self, value: Union[int, List[int]]) -> None:
+        """
+        Set the time step indices to check during reconstruction.
+
+        :param value: Time step indices to check
+        :type value: Union[int, List[int]]
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not valid or if attempting to change after model is built
+        """
+        # Convert single integer to list
+        if isinstance(value, int):
+            value = [value]
+        elif not isinstance(value, list):
+            raise ValueError(
+                "time_step_to_check must be an integer or list of integers"
+            )
+
+        # Validate all values are integers
+        if not all(isinstance(t, int) for t in value):
+            raise ValueError("All elements in time_step_to_check must be integers")
+
+        # If context_window is set, validate indices are in range
+        if self.context_window is not None:
+            if any(t < 0 or t >= self.context_window for t in value):
+                raise ValueError(
+                    f"time_step_to_check contains invalid indices. Must be between 0 and {self.context_window - 1}."
+                )
+
+        # If model is built, don't allow changes
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError(
+                "Cannot change time_step_to_check after model is built. "
+                "Call build_model() with the new time_step_to_check instead."
+            )
+
+        self._time_step_to_check = value
 
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
@@ -659,7 +712,7 @@ class AutoEncoder:
 
             # Select the same time steps and features from the mask as we're using from the data
             # First select the time steps
-            mask_selected = tf.gather(mask, self.time_step_to_check, axis=1)
+            mask_selected = tf.gather(mask, self._time_step_to_check, axis=1)
             # Then select the features
             mask_selected = tf.gather(mask_selected, self.feature_to_check, axis=2)
 
@@ -905,11 +958,19 @@ class AutoEncoder:
         """
         self.form = form
         self.save_path = save_path
+        self.context_window = context_window
+        self.time_step_to_check = time_step_to_check
 
         if normalization_method not in ["minmax", "zscore"]:
             raise ValueError(
                 "Invalid normalization method. Choose 'minmax' or 'zscore'."
             )
+
+        feature_to_check = (
+            [feature_to_check]
+            if isinstance(feature_to_check, int)
+            else feature_to_check
+        )
 
         if isinstance(hidden_dim, list):
             self.hidden_dim = hidden_dim
@@ -939,12 +1000,7 @@ class AutoEncoder:
 
             # Store configuration
         self.context_window = context_window
-        self.time_step_to_check = time_step_to_check
-        self.feature_to_check = (
-            [feature_to_check]
-            if isinstance(feature_to_check, int)
-            else feature_to_check
-        )
+        self.feature_to_check = feature_to_check
         self.normalization_method = normalization_method
         self.normalize = normalize
         self.verbose = verbose
@@ -1072,7 +1128,7 @@ class AutoEncoder:
         self.input_features = self.x_train.shape[2]
         self.output_features = len(self.feature_to_check)
 
-        if any(t > (self.context_window - 1) for t in self.time_step_to_check):
+        if any(t > (self.context_window - 1) for t in self._time_step_to_check):
             raise ValueError(
                 f"time_step_to_check contains invalid indices. Must be between 0 and {self.context_window - 1}."
             )
@@ -1227,7 +1283,7 @@ class AutoEncoder:
                     x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
 
                 # Gather all required time steps
-                x_real = tf.gather(x, self.time_step_to_check, axis=1)
+                x_real = tf.gather(x, self._time_step_to_check, axis=1)
                 x_real = tf.gather(x_real, self.feature_to_check, axis=2)
 
                 x_pred = tf.expand_dims(x_hat, axis=1)
@@ -1268,7 +1324,7 @@ class AutoEncoder:
                 x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
 
             # Gather all required time steps
-            x_real = tf.gather(x, self.time_step_to_check, axis=1)
+            x_real = tf.gather(x, self._time_step_to_check, axis=1)
             x_real = tf.gather(x_real, self.feature_to_check, axis=2)
 
             x_pred = tf.expand_dims(x_hat, axis=1)
@@ -1376,13 +1432,13 @@ class AutoEncoder:
 
         # Get the original data for comparison
         x_train_converted = np.copy(
-            self.x_train[:, self.time_step_to_check, self.feature_to_check]
+            self.x_train[:, self._time_step_to_check, self.feature_to_check]
         )
         x_val_converted = np.copy(
-            self.x_val[:, self.time_step_to_check, self.feature_to_check]
+            self.x_val[:, self._time_step_to_check, self.feature_to_check]
         )
         x_test_converted = np.copy(
-            self.x_test[:, self.time_step_to_check, self.feature_to_check]
+            self.x_test[:, self._time_step_to_check, self.feature_to_check]
         )
 
         # Handle denormalization if normalization was applied
@@ -1586,7 +1642,7 @@ class AutoEncoder:
 
             training_params = {
                 "context_window": self.context_window,
-                "time_step_to_check": self.time_step_to_check,
+                "time_step_to_check": self._time_step_to_check,
                 "normalization_method": (
                     self.normalization_method if self.normalize else None
                 ),
@@ -1999,7 +2055,7 @@ class AutoEncoder:
                 data[:, self.feature_to_check],
                 reconstructed_data,
                 self.context_window,
-                self.time_step_to_check,
+                self._time_step_to_check,
             )
 
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
@@ -2077,7 +2133,7 @@ class AutoEncoder:
                 data[:, self.feature_to_check],
                 reconstructed_data,
                 self.context_window,
-                self.time_step_to_check,
+                self._time_step_to_check,
             )
             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
 
@@ -2140,7 +2196,7 @@ class AutoEncoder:
             data[:, self.feature_to_check],
             reconstructed_data_final,
             self.context_window,
-            self.time_step_to_check,
+            self._time_step_to_check,
         )
 
         reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
