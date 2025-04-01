@@ -12,7 +12,12 @@ Welcome to mango's documentation!
 
    readme
    changelog/index
-   genetic/index
    code_mango/index
    code_mango_time_series/index
    bib
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Theory and Algorithms:
+
+   genetic/index

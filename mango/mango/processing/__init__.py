@@ -17,6 +17,27 @@ from .file_functions import (
     is_excel_file,
     is_json_file,
 )
+
+try:
+    from .data_imputer import DataImputer
+except ImportError:
+
+    class DataImputer:
+        """
+        Placeholder for DataImputer when dependencies are missing.
+
+        :raises ImportError: When instantiated without required dependencies
+        """
+
+        def __init__(self, *args, **kwargs):
+            raise ImportError(
+                f"""
+                DataImputer requires 'sklearn' and 'polars'.
+                Install them with `pip install mango[data]` to use this module.
+                """
+            )
+
+
 from .object_functions import (
     pickle_copy,
     unique,
