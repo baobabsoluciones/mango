@@ -43,6 +43,7 @@ class AutoEncoder:
         """
         self.root_dir = os.path.abspath(os.getcwd())
         self._save_path = None
+        self._form = "lstm"
         self.model = None
         self.context_window = None
         self.time_step_to_check = None
@@ -76,6 +77,43 @@ class AutoEncoder:
             self.create_folder_structure(
                 [os.path.join(path, "models"), os.path.join(path, "plots")]
             )
+
+    @property
+    def form(self) -> str:
+        """
+        Get the encoder/decoder architecture type.
+
+        :return: Architecture type ('lstm', 'gru', 'rnn', or 'dense')
+        :rtype: str
+        """
+        return self._form
+
+    @form.setter
+    def form(self, value: str) -> None:
+        """
+        Set the encoder/decoder architecture type.
+
+        :param value: Architecture type ('lstm', 'gru', 'rnn', or 'dense')
+        :type value: str
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not one of the supported architectures or if
+                           attempting to change after model is built
+        """
+        valid_forms = ["lstm", "gru", "rnn", "dense"]
+        if value not in valid_forms:
+            raise ValueError(f"Form must be one of {valid_forms}")
+
+        if value == "dense":
+            raise NotImplementedError("Dense model type is not yet implemented")
+
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError(
+                "Cannot change form after model is built. "
+                "Call build_model() with the new form instead."
+            )
+
+        self._form = value
 
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
@@ -767,13 +805,14 @@ class AutoEncoder:
     def build_model(
         self,
         form: str = "lstm",
-        data: Union[
-            np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]
-        ] = None,
+        data: (
+            Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+            | None
+        ) = None,
         context_window: Optional[int] = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
-        hidden_dim: Union[int, List[int]] = None,
+        hidden_dim: Union[int, List[int]] | None = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
         activation_encoder: Optional[str] = None,
@@ -864,9 +903,8 @@ class AutoEncoder:
         :return: None
         :rtype: None
         """
-
-        if form == "dense":
-            raise NotImplementedError("Dense model type is not yet implemented")
+        self.form = form
+        self.save_path = save_path
 
         if normalization_method not in ["minmax", "zscore"]:
             raise ValueError(
@@ -917,7 +955,6 @@ class AutoEncoder:
         self.train_size = train_size
         self.val_size = val_size
         self.test_size = test_size
-        self.save_path = save_path
 
         data, extracted_feature_names = self._convert_data_to_numpy(data)
 
@@ -1084,7 +1121,7 @@ class AutoEncoder:
         num_layers = len(self.hidden_dim)
         layers = [
             encoder(
-                form=form,
+                form=self._form,
                 context_window=context_window,
                 features=self.input_features,
                 hidden_dim=self.hidden_dim,
@@ -1094,7 +1131,7 @@ class AutoEncoder:
                 verbose=verbose,
             ),
             decoder(
-                form=form,
+                form=self._form,
                 context_window=context_window,
                 features=self.output_features,
                 hidden_dim=self.hidden_dim,
@@ -1138,8 +1175,6 @@ class AutoEncoder:
         self.train_dataset = train_dataset.cache().batch(batch_size)
         self.val_dataset = val_dataset.cache().batch(batch_size)
         self.test_dataset = test_dataset.cache().batch(batch_size)
-
-        self.form = form
 
     def train(
         self,
@@ -1185,8 +1220,8 @@ class AutoEncoder:
             with tf.GradientTape() as autoencoder_tape:
                 x = tf.cast(x, tf.float32)
 
-                hx = self.model.get_layer(f"{self.form}_encoder")(x)
-                x_hat = self.model.get_layer(f"{self.form}_decoder")(hx)
+                hx = self.model.get_layer(f"{self._form}_encoder")(x)
+                x_hat = self.model.get_layer(f"{self._form}_decoder")(hx)
 
                 if "post_decoder_dense" in [layer.name for layer in self.model.layers]:
                     x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
@@ -1226,8 +1261,8 @@ class AutoEncoder:
             """
             x = tf.cast(x, tf.float32)
 
-            hx = self.model.get_layer(f"{self.form}_encoder")(x)
-            x_hat = self.model.get_layer(f"{self.form}_decoder")(hx)
+            hx = self.model.get_layer(f"{self._form}_encoder")(x)
+            x_hat = self.model.get_layer(f"{self._form}_decoder")(hx)
 
             if "post_decoder_dense" in [layer.name for layer in self.model.layers]:
                 x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
