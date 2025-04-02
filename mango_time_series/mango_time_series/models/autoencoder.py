@@ -188,10 +188,10 @@ class AutoEncoder:
         Set the context window size.
 
         :param value: Context window size
-        :type value: Optional[int]
+        :type value: int
         :return: None
         :rtype: None
-        :raises ValueError: If value is not a positive integer
+        :raises ValueError: If value is not a positive integer or if attempting to change after model is built
         """
         if not isinstance(value, int) or value <= 0:
             raise ValueError("Context window must be a positive integer")
@@ -926,14 +926,14 @@ class AutoEncoder:
         """
         Build the Autoencoder model with specified configuration.
 
+        :param context_window: Size of the context window for sequence transformation
+        :type context_window: int
         :param form: Type of encoder architecture to use
         :type form: str
         :param data: Input data for model training. Can be:
             * A single numpy array/pandas DataFrame for automatic train/val/test split
             * A tuple of three arrays/DataFrames for predefined splits
         :type data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-        :param context_window: Size of the context window for sequence transformation
-        :type context_window: Optional[int]
         :param time_step_to_check: Index or indices of time steps to check in prediction
         :type time_step_to_check: Union[int, List[int]]
         :param feature_to_check: Index or indices of features to check in prediction
@@ -1751,13 +1751,13 @@ class AutoEncoder:
         This method combines the functionality of `build_model` and `train` methods,
         allowing for a more streamlined workflow.
 
+        :param context_window: Context window for the model used to transform
+            tabular data into sequence data (2D tensor to 3D tensor)
+        :type context_window: int
         :param data: Data to train the model. It can be:
             * A single numpy array/pandas DataFrame for automatic train/val/test split
             * A tuple of three arrays/DataFrames for predefined splits
         :type data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-        :param context_window: Context window for the model used to transform
-            tabular data into sequence data (2D tensor to 3D tensor)
-        :type context_window: Optional[int]
         :param time_step_to_check: Time steps to check for the autoencoder
         :type time_step_to_check: Union[int, List[int]]
         :param feature_to_check: Features to check in the autoencoder
