@@ -204,12 +204,12 @@ class AutoEncoder:
             instance = cls()
 
             # Assign loaded parameters
-            instance.model = model
             instance.context_window = params.get("context_window")
             instance.time_step_to_check = params.get("time_step_to_check")
             instance.normalization_method = params.get("normalization_method")
             instance.features_name = params.get("features_name", None)
             instance.feature_to_check = params.get("feature_to_check", 0)
+            instance.model = model
 
             # Load normalization values
             instance.normalization_values = params.get("normalization_values", {})
