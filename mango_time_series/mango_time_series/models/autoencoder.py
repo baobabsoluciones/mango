@@ -161,11 +161,11 @@ class AutoEncoder:
             raise ValueError("All elements in time_step_to_check must be integers")
 
         # If context_window is set, validate indices are in range
-        if self.context_window is not None:
-            if any(t < 0 or t >= self.context_window for t in value):
+        if self._context_window is not None:
+            if any(t < 0 or t >= self._context_window for t in value):
                 raise ValueError(
                     "time_step_to_check contains invalid indices. "
-                    f"Must be between 0 and {self.context_window - 1}."
+                    f"Must be between 0 and {self._context_window - 1}."
                 )
 
         # If model is built, don't allow changes
@@ -1086,7 +1086,7 @@ class AutoEncoder:
             model_path = os.path.join(save_path, "models", filename)
 
             training_params = {
-                "context_window": self.context_window,
+                "context_window": self._context_window,
                 "time_step_to_check": self._time_step_to_check,
                 "normalization_method": (
                     self.normalization_method if self.normalize else None
@@ -1834,50 +1834,6 @@ class AutoEncoder:
                 "Provide either (x_train, x_val, x_test) for training or `data` for prediction."
             )
 
-    @staticmethod
-    def _denormalize_data(
-        data: np.ndarray,
-        normalization_method: str,
-        min_x: Optional[np.ndarray] = None,
-        max_x: Optional[np.ndarray] = None,
-        mean_: Optional[np.ndarray] = None,
-        std_: Optional[np.ndarray] = None,
-    ) -> np.ndarray:
-        """
-        Denormalize data using stored normalization parameters.
-        Assumes `_normalize_data` was used during training to store min_x/max_x or mean_/std_.
-
-        :param data: Normalized data to denormalize
-        :type data: np.ndarray
-        :param normalization_method: Method used for normalization ('minmax' or 'zscore')
-        :type normalization_method: str
-        :param min_x: Minimum values for minmax normalization
-        :type min_x: Optional[np.ndarray]
-        :param max_x: Maximum values for minmax normalization
-        :type max_x: Optional[np.ndarray]
-        :param mean_: Mean values for zscore normalization
-        :type mean_: Optional[np.ndarray]
-        :param std_: Standard deviation values for zscore normalization
-        :type std_: Optional[np.ndarray]
-        :return: Denormalized data
-        :rtype: np.ndarray
-        :raises ValueError: If normalization method is invalid or parameters are missing
-        """
-        if normalization_method not in ["minmax", "zscore"]:
-            raise ValueError(
-                "Invalid normalization method. Choose 'minmax' or 'zscore'."
-            )
-
-        if min_x is None and mean_ is None:
-            raise ValueError(
-                "No normalization parameters found. Ensure the model was trained with normalization."
-            )
-
-        if normalization_method == "minmax":
-            return data * (max_x - min_x) + min_x
-        elif normalization_method == "zscore":
-            return data * std_ + mean_
-
     def prepare_datasets(
         self,
         data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
@@ -2171,10 +2127,10 @@ class AutoEncoder:
             id_data_dict = {uid: data[id_data == uid] for uid in unique_ids}
             min_samples_all_ids = np.min(np.unique(id_data, return_counts=True)[1])
 
-        if min_samples_all_ids < self.context_window:
+        if min_samples_all_ids < self._context_window:
             raise ValueError(
                 f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
-                f"but the context_window is {self.context_window}. "
+                f"but the context_window is {self._context_window}. "
                 "Reduce the context_window or ensure each ID has enough data."
             )
 
