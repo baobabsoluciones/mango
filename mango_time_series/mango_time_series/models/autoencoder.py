@@ -21,7 +21,8 @@ from mango_time_series.models.utils.plots import (
 from mango_time_series.models.utils.processing import (
     time_series_split,
     convert_data_to_numpy,
-    convert_single_data_to_numpy,
+    denormalize_data,
+    apply_padding,
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
@@ -54,7 +55,6 @@ class AutoEncoder:
         self.normalization_values = {}
         self.imputer = None
         self.x_train = None
-
         self.feature_to_check = None
 
     @property
@@ -1474,7 +1474,7 @@ class AutoEncoder:
             reconstructed_data = self.model.predict(data_seq)
 
             if self.normalization_method:
-                reconstructed_data = self._denormalize_data(
+                reconstructed_data = denormalize_data(
                     reconstructed_data,
                     normalization_method=self.normalization_method,
                     min_x=(
@@ -1499,7 +1499,7 @@ class AutoEncoder:
                     ),
                 )
 
-            padded_reconstructed = self._apply_padding(
+            padded_reconstructed = apply_padding(
                 data[:, self.feature_to_check],
                 reconstructed_data,
                 self._context_window,
@@ -1551,7 +1551,7 @@ class AutoEncoder:
             reconstructed_data = self.model.predict(data_seq)
 
             if self.normalization_method:
-                reconstructed_data = self._denormalize_data(
+                reconstructed_data = denormalize_data(
                     reconstructed_data,
                     normalization_method=self.normalization_method,
                     min_x=(
@@ -1577,7 +1577,7 @@ class AutoEncoder:
                 )
 
             # Apply padding and store results
-            padded_reconstructed = self._apply_padding(
+            padded_reconstructed = apply_padding(
                 data[:, self.feature_to_check],
                 reconstructed_data,
                 self._context_window,
@@ -1617,7 +1617,7 @@ class AutoEncoder:
         reconstructed_data_final = self.model.predict(data_seq)
 
         if self.normalization_method:
-            reconstructed_data_final = self._denormalize_data(
+            reconstructed_data_final = denormalize_data(
                 reconstructed_data_final,
                 normalization_method=self.normalization_method,
                 min_x=(
@@ -1640,7 +1640,7 @@ class AutoEncoder:
                 ),
             )
 
-        padded_reconstructed_final = self._apply_padding(
+        padded_reconstructed_final = apply_padding(
             data[:, self.feature_to_check],
             reconstructed_data_final,
             self._context_window,
