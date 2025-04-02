@@ -42,9 +42,6 @@ def time_series_to_sequence(
         raise ValueError("Data length must be greater than context_window")
 
     sequences = np.array(
-        [
-            data[t - context_window : t]
-            for t in range(context_window, len(data) + 1, 1)
-        ]
+        [data[t - context_window : t] for t in range(context_window, len(data) + 1, 1)]
     )
     return sequences
