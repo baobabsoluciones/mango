@@ -52,6 +52,8 @@ class AutoEncoder:
         self.imputer = None
         self.data = None
         self.x_train = None
+        self.features_name = None
+        self.feature_to_check = None
 
     @property
     def save_path(self) -> Optional[str]:
@@ -61,7 +63,7 @@ class AutoEncoder:
         :return: Path to save model or None if not set
         :rtype: Optional[str]
         """
-        return self._save_path or os.path.join(self.root_dir, "autoencoder")
+        return self._save_path
 
     @save_path.setter
     def save_path(self, path: Optional[str]) -> None:
@@ -73,12 +75,14 @@ class AutoEncoder:
         :return: None
         :rtype: None
         """
-        self._save_path = path
+        self._save_path = path or os.path.join(self.root_dir, "autoencoder")
 
-        if path is not None:
-            self.create_folder_structure(
-                [os.path.join(path, "models"), os.path.join(path, "plots")]
-            )
+        self.create_folder_structure(
+            [
+                os.path.join(self._save_path, "models"),
+                os.path.join(self._save_path, "plots"),
+            ]
+        )
 
     @property
     def form(self) -> str:
@@ -156,7 +160,8 @@ class AutoEncoder:
         if self.context_window is not None:
             if any(t < 0 or t >= self.context_window for t in value):
                 raise ValueError(
-                    f"time_step_to_check contains invalid indices. Must be between 0 and {self.context_window - 1}."
+                    "time_step_to_check contains invalid indices. "
+                    f"Must be between 0 and {self.context_window - 1}."
                 )
 
         # If model is built, don't allow changes
@@ -214,7 +219,7 @@ class AutoEncoder:
             return instance
 
         except Exception as e:
-            raise RuntimeError(f"Error loading the AutoEncoder model: {e}")
+            raise RuntimeError(f"Error loading the AutoEncoder model: {e}") from e
 
     @staticmethod
     def create_folder_structure(folder_structure: List[str]) -> None:
@@ -255,7 +260,8 @@ class AutoEncoder:
 
         if not np.isclose(train_size + val_size + test_size, 1.0):
             raise ValueError(
-                f"The sum of train_size, val_size, and test_size must be 1.0, but got {train_size + val_size + test_size}."
+                "The sum of train_size, val_size, and test_size must be 1.0, "
+                f"but got {train_size + val_size + test_size}."
             )
 
         # Original implementation for sequential split
@@ -414,7 +420,7 @@ class AutoEncoder:
 
     def _normalize_data_for_prediction(
         self, data: np.ndarray, feature_to_check_filter: bool = False
-    ) -> np.ndarray:
+    ) -> np.ndarray | None:
         """
         Normalize new data using stored normalization parameters.
         If parameters are not available, computes them from input data.
@@ -468,7 +474,7 @@ class AutoEncoder:
         data: Optional[np.ndarray] = None,
         id_iter: Optional[Union[str, int]] = None,
         feature_to_check_filter: bool = False,
-    ) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
+    ) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray] | None:
         """
         Normalize data using the specified method.
         Can be used for training (x_train, x_val, x_test) or prediction (data).
@@ -1407,7 +1413,7 @@ class AutoEncoder:
         plot_loss_history(
             train_loss=train_loss_history,
             val_loss=val_loss_history,
-            save_path=os.path.join(self.save_path, "plots"),
+            save_path=os.path.join(self._save_path, "plots"),
         )
 
         self.save(filename=f"{self.last_epoch}.pkl")
@@ -1611,7 +1617,7 @@ class AutoEncoder:
         plot_actual_and_reconstructed(
             actual=x_converted,
             reconstructed=x_hat,
-            save_path=os.path.join(self.save_path, "plots"),
+            save_path=os.path.join(self._save_path, "plots"),
             feature_labels=feature_labels,
             train_split=train_split,
             val_split=val_split,
@@ -1635,7 +1641,7 @@ class AutoEncoder:
         :rtype: None
         """
         try:
-            save_path = save_path or self.save_path
+            save_path = save_path or self._save_path
             os.makedirs(os.path.join(save_path, "models"), exist_ok=True)
 
             model_path = os.path.join(save_path, "models", filename)
