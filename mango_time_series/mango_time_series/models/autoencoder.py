@@ -45,8 +45,8 @@ class AutoEncoder:
         self._save_path = None
         self._form = "lstm"
         self._time_step_to_check = [0]
+        self._context_window = None
         self.model = None
-        self.context_window = None
         self.normalization_method = None
         self.normalization_values = {}
         self.imputer = None
@@ -172,6 +172,35 @@ class AutoEncoder:
             )
 
         self._time_step_to_check = value
+
+    @property
+    def context_window(self) -> int:
+        """
+        Get the context window size.
+
+        :return: Context window size
+        :rtype: int
+        """
+        return self._context_window
+
+    @context_window.setter
+    def context_window(self, value: Optional[int]) -> None:
+        """
+        Set the context window size.
+
+        :param value: Context window size
+        :type value: Optional[int]
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not a positive integer
+        """
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError("Context window must be a positive integer")
+
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change context_window after model is built")
+
+        self._context_window = value
 
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
@@ -1004,8 +1033,6 @@ class AutoEncoder:
                 "time_step_to_check must be an int or a list with a single int."
             )
 
-            # Store configuration
-        self.context_window = context_window
         self.feature_to_check = feature_to_check
         self.normalization_method = normalization_method
         self.normalize = normalize
@@ -1075,7 +1102,9 @@ class AutoEncoder:
             self.mask_test = {}
             self.length_datasets = {}
             for id_iter, d in self.id_data_dict.items():
-                self.prepare_datasets(d, context_window, normalize, id_iter=id_iter)
+                self.prepare_datasets(
+                    d, self._context_window, normalize, id_iter=id_iter
+                )
                 self.length_datasets[id_iter] = {
                     "train": len(self.x_train[id_iter]),
                     "val": len(self.x_val[id_iter]),
@@ -1118,7 +1147,7 @@ class AutoEncoder:
                     axis=0,
                 )
         else:
-            self.prepare_datasets(data, context_window, normalize)
+            self.prepare_datasets(data, self._context_window, normalize)
 
         if shuffle:
             if shuffle_buffer_size is not None:
@@ -1133,11 +1162,6 @@ class AutoEncoder:
         self.x_train_no_shuffle = np.copy(self.x_train)
         self.input_features = self.x_train.shape[2]
         self.output_features = len(self.feature_to_check)
-
-        if any(t > (self.context_window - 1) for t in self._time_step_to_check):
-            raise ValueError(
-                f"time_step_to_check contains invalid indices. Must be between 0 and {self.context_window - 1}."
-            )
 
         if self.use_mask and self.custom_mask is not None:
             if isinstance(data, tuple) and (
@@ -1184,7 +1208,7 @@ class AutoEncoder:
         layers = [
             encoder(
                 form=self._form,
-                context_window=context_window,
+                context_window=self._context_window,
                 features=self.input_features,
                 hidden_dim=self.hidden_dim,
                 num_layers=num_layers,
@@ -1194,7 +1218,7 @@ class AutoEncoder:
             ),
             decoder(
                 form=self._form,
-                context_window=context_window,
+                context_window=self._context_window,
                 features=self.output_features,
                 hidden_dim=self.hidden_dim,
                 num_layers=num_layers,
@@ -2028,7 +2052,7 @@ class AutoEncoder:
                 except Exception as e:
                     raise ValueError(f"Error during normalization: {e}")
 
-            data_seq = time_series_to_sequence(data, self.context_window)
+            data_seq = time_series_to_sequence(data, self._context_window)
             reconstructed_data = self.model.predict(data_seq)
 
             if self.normalization_method:
@@ -2060,7 +2084,7 @@ class AutoEncoder:
             padded_reconstructed = self._apply_padding(
                 data[:, self.feature_to_check],
                 reconstructed_data,
-                self.context_window,
+                self._context_window,
                 self._time_step_to_check,
             )
 
@@ -2105,7 +2129,7 @@ class AutoEncoder:
                 data = np.nan_to_num(data, nan=0)
 
             # Generate sequence and predict
-            data_seq = time_series_to_sequence(data, self.context_window)
+            data_seq = time_series_to_sequence(data, self._context_window)
             reconstructed_data = self.model.predict(data_seq)
 
             if self.normalization_method:
@@ -2138,7 +2162,7 @@ class AutoEncoder:
             padded_reconstructed = self._apply_padding(
                 data[:, self.feature_to_check],
                 reconstructed_data,
-                self.context_window,
+                self._context_window,
                 self._time_step_to_check,
             )
             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
@@ -2171,7 +2195,7 @@ class AutoEncoder:
         else:
             data = np.nan_to_num(data, nan=0)
 
-        data_seq = time_series_to_sequence(data, self.context_window)
+        data_seq = time_series_to_sequence(data, self._context_window)
         reconstructed_data_final = self.model.predict(data_seq)
 
         if self.normalization_method:
@@ -2201,7 +2225,7 @@ class AutoEncoder:
         padded_reconstructed_final = self._apply_padding(
             data[:, self.feature_to_check],
             reconstructed_data_final,
-            self.context_window,
+            self._context_window,
             self._time_step_to_check,
         )
 
