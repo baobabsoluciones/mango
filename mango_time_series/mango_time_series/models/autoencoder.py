@@ -1280,55 +1280,6 @@ class AutoEncoder:
 
         return self
 
-    @staticmethod
-    def _apply_padding(
-        data: np.ndarray,
-        reconstructed: np.ndarray,
-        context_window: int,
-        time_step_to_check: Union[int, List[int]],
-    ) -> np.ndarray:
-        """
-        Apply padding dynamically based on time_step_to_check and context_window.
-
-        This method handles the padding of reconstructed data to match the original data shape,
-        taking into account the context window and the specific time step being predicted.
-
-        :param data: Original dataset with shape (num_samples, num_features)
-        :type data: np.ndarray
-        :param reconstructed: Predicted values with shape (num_samples - context_window, num_features)
-        :type reconstructed: np.ndarray
-        :param context_window: Size of the context window used for prediction
-        :type context_window: int
-        :param time_step_to_check: Time step to predict within the window
-        :type time_step_to_check: Union[int, List[int]]
-        :return: Padded reconstructed dataset with shape matching the original data
-        :rtype: np.ndarray
-        :raises ValueError: If time_step_to_check is not within valid range
-        """
-        num_samples, num_features = data.shape
-        padded_reconstructed = np.full((num_samples, num_features), np.nan)
-
-        # Determine the offset based on time_step_to_check
-        if isinstance(time_step_to_check, list):
-            time_step_to_check = time_step_to_check[0]
-
-        if time_step_to_check < 0 or time_step_to_check >= context_window:
-            raise ValueError(
-                f"time_step_to_check must be between 0 and {context_window - 1}, "
-                f"but got {time_step_to_check}"
-            )
-
-        if time_step_to_check == 0:
-            padded_reconstructed[: num_samples - (context_window - 1)] = reconstructed
-        elif time_step_to_check == context_window - 1:
-            padded_reconstructed[context_window - 1 :] = reconstructed
-        else:
-            before = time_step_to_check
-            after = context_window - 1 - time_step_to_check
-            padded_reconstructed[before : num_samples - after] = reconstructed
-
-        return padded_reconstructed
-
     def reconstruct_new_data(
         self,
         data: Union[np.ndarray, pd.DataFrame, pl.DataFrame],
