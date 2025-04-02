@@ -18,7 +18,11 @@ from mango_time_series.models.utils.plots import (
     plot_loss_history,
     plot_reconstruction_iterations,
 )
-from mango_time_series.models.utils.processing import time_series_split
+from mango_time_series.models.utils.processing import (
+    time_series_split,
+    convert_data_to_numpy,
+    convert_single_data_to_numpy,
+)
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
 logger = get_configured_logger()
@@ -456,7 +460,7 @@ class AutoEncoder:
         self.val_size = val_size
         self.test_size = test_size
 
-        data, extracted_feature_names = self._convert_data_to_numpy(data)
+        data, extracted_feature_names = convert_data_to_numpy(data)
 
         # Validate that data is a single array or a tuple of three arrays
         if isinstance(data, tuple):
@@ -479,7 +483,7 @@ class AutoEncoder:
         )
 
         if self.use_mask and self.custom_mask is not None:
-            self.custom_mask, _ = self._convert_data_to_numpy(self.custom_mask)
+            self.custom_mask, _ = convert_data_to_numpy(self.custom_mask)
             mask, self.id_data_mask, self.id_data_dict_mask = self._handle_id_columns(
                 self.custom_mask, id_columns
             )
@@ -1353,7 +1357,7 @@ class AutoEncoder:
                 "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
             )
 
-        data, feature_names = self._convert_data_to_numpy(data)
+        data, feature_names = convert_data_to_numpy(data)
 
         if id_columns is not None:
             if isinstance(id_columns, (str, int)):
@@ -1681,95 +1685,6 @@ class AutoEncoder:
         )
 
         return reconstructed_df
-
-    @staticmethod
-    def _convert_data_to_numpy(
-        data: Any,
-    ) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]:
-        """
-        Convert data to numpy array format.
-
-        Handles pandas and polars DataFrames, converting them to numpy arrays.
-        If data is a tuple, converts each element in the tuple.
-
-        :param data: Input data that can be pandas DataFrame, polars DataFrame,
-            numpy array, or tuple of these types
-        :type data: Any
-        :return: Data converted to numpy array(s) and feature names if available
-        :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
-        :raises ValueError: If data type is not supported
-        """
-        try:
-            import pandas as pd
-
-            has_pandas = True
-        except ImportError:
-            has_pandas = False
-
-        try:
-            import polars as pl
-
-            has_polars = True
-        except ImportError:
-            has_polars = False
-
-        if data is None:
-            return data, []
-
-        feature_names = []
-
-        if has_pandas and hasattr(data, "columns"):
-            feature_names = data.columns.tolist()
-        elif has_polars and hasattr(data, "columns"):
-            feature_names = data.columns
-        elif isinstance(data, tuple) and len(data) > 0:
-            # For tuple, try to get column names from first element
-            first_item = data[0]
-            if has_pandas and hasattr(first_item, "columns"):
-                feature_names = first_item.columns.tolist()
-            elif has_polars and hasattr(first_item, "columns"):
-                feature_names = first_item.columns
-
-        if isinstance(data, tuple):
-            converted_data = tuple(
-                AutoEncoder._convert_single_data_to_numpy(item, has_pandas, has_polars)
-                for item in data
-            )
-            return converted_data, feature_names
-        else:
-            converted_data = AutoEncoder._convert_single_data_to_numpy(
-                data, has_pandas, has_polars
-            )
-            return converted_data, feature_names
-
-    @staticmethod
-    def _convert_single_data_to_numpy(
-        data_item: Any, has_pandas: bool, has_polars: bool
-    ) -> np.ndarray:
-        """
-        Convert a single data item to numpy array.
-
-        :param data_item: Single data item to convert
-        :type data_item: Any
-        :param has_pandas: Whether pandas is available
-        :type has_pandas: bool
-        :param has_polars: Whether polars is available
-        :type has_polars: bool
-        :return: Data converted to numpy array
-        :rtype: np.ndarray
-        :raises ValueError: If data type is not supported
-        """
-        if has_pandas and hasattr(data_item, "to_numpy"):
-            return data_item.to_numpy()
-        elif has_polars and hasattr(data_item, "to_numpy"):
-            return data_item.to_numpy()
-        elif isinstance(data_item, np.ndarray):
-            return data_item
-        else:
-            raise ValueError(
-                f"Unsupported data type: {type(data_item)}. "
-                f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
-            )
 
     def _normalize_data_for_training(
         self,

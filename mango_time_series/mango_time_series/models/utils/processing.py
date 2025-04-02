@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -42,3 +42,89 @@ def time_series_split(
     test_set = data[val_end:] if test_size > 0 else None
 
     return train_set, val_set, test_set
+
+
+def convert_data_to_numpy(
+    data: Any,
+) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]:
+    """
+    Convert data to numpy array format.
+
+    Handles pandas and polars DataFrames, converting them to numpy arrays.
+    If data is a tuple, converts each element in the tuple.
+
+    :param data: Input data that can be pandas DataFrame, polars DataFrame,
+        numpy array, or tuple of these types
+    :type data: Any
+    :return: Data converted to numpy array(s) and feature names if available
+    :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
+    :raises ValueError: If data type is not supported
+    """
+    try:
+        import pandas as pd
+
+        has_pandas = True
+    except ImportError:
+        has_pandas = False
+
+    try:
+        import polars as pl
+
+        has_polars = True
+    except ImportError:
+        has_polars = False
+
+    if data is None:
+        return data, []
+
+    feature_names = []
+
+    if has_pandas and hasattr(data, "columns"):
+        feature_names = data.columns.tolist()
+    elif has_polars and hasattr(data, "columns"):
+        feature_names = data.columns
+    elif isinstance(data, tuple) and len(data) > 0:
+        # For tuple, try to get column names from first element
+        first_item = data[0]
+        if has_pandas and hasattr(first_item, "columns"):
+            feature_names = first_item.columns.tolist()
+        elif has_polars and hasattr(first_item, "columns"):
+            feature_names = first_item.columns
+
+    if isinstance(data, tuple):
+        converted_data = tuple(
+            convert_single_data_to_numpy(item, has_pandas, has_polars) for item in data
+        )
+        return converted_data, feature_names
+    else:
+        converted_data = convert_single_data_to_numpy(data, has_pandas, has_polars)
+        return converted_data, feature_names
+
+
+def convert_single_data_to_numpy(
+    data_item: Any, has_pandas: bool, has_polars: bool
+) -> np.ndarray:
+    """
+    Convert a single data item to numpy array.
+
+    :param data_item: Single data item to convert
+    :type data_item: Any
+    :param has_pandas: Whether pandas is available
+    :type has_pandas: bool
+    :param has_polars: Whether polars is available
+    :type has_polars: bool
+    :return: Data converted to numpy array
+    :rtype: np.ndarray
+    :raises ValueError: If data type is not supported
+    """
+    if has_pandas and hasattr(data_item, "to_numpy"):
+        return data_item.to_numpy()
+    elif has_polars and hasattr(data_item, "to_numpy"):
+        return data_item.to_numpy()
+    elif isinstance(data_item, np.ndarray):
+        return data_item
+    else:
+        raise ValueError(
+            f"Unsupported data type: {type(data_item)}. "
+            f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
+        )
