@@ -45,7 +45,6 @@ class AutoEncoder:
         self.root_dir = os.path.abspath(os.getcwd())
         self._save_path = None
         self._form = "lstm"
-        self._time_step_to_check = [0]
         self.model = None
         self.normalization_method = None
         self.normalization_values = {}
@@ -121,13 +120,15 @@ class AutoEncoder:
         self._form = value
 
     @property
-    def time_step_to_check(self) -> Union[int, List[int]]:
+    def time_step_to_check(self) -> Optional[Union[int, List[int]]]:
         """
         Get the time step indices to check during reconstruction.
 
         :return: Time step indices
-        :rtype: Union[int, List[int]]
+        :rtype: Optional[Union[int, List[int]]]
         """
+        if not hasattr(self, "_time_step_to_check"):
+            return None
         if len(self._time_step_to_check) == 1:
             return self._time_step_to_check[0]
         return self._time_step_to_check
@@ -307,8 +308,8 @@ class AutoEncoder:
             pl.DataFrame,
             Tuple[np.ndarray, np.ndarray, np.ndarray],
         ],
+        time_step_to_check: Union[int, List[int]],
         form: str = "lstm",
-        time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
         hidden_dim: Union[int, List[int]] | None = None,
         bidirectional_encoder: bool = False,
@@ -1128,7 +1129,7 @@ class AutoEncoder:
             pl.DataFrame,
             Tuple[np.ndarray, np.ndarray, np.ndarray],
         ],
-        time_step_to_check: Union[int, List[int]] = 0,
+        time_step_to_check: Union[int, List[int]],
         feature_to_check: Union[int, List[int]] = 0,
         form: str = "lstm",
         hidden_dim: Union[int, List[int]] = None,
