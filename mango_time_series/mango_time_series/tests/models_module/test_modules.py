@@ -11,6 +11,7 @@ from mango.processing.data_imputer import DataImputer
 from mango_time_series.models.autoencoder import AutoEncoder
 from mango_time_series.models.modules import encoder, decoder
 from mango_time_series.models.utils.sequences import time_series_to_sequence
+from mango_time_series.models.utils.processing import time_series_split
 
 
 class TestEncoder(unittest.TestCase):
@@ -602,7 +603,7 @@ class TestAutoEncoderLoss(unittest.TestCase):
         )
 
         # Ensure mask is correctly stored
-        expected_mask_train, _, _ = autoencoder._time_series_split(
+        expected_mask_train, _, _ = time_series_split(
             custom_mask,
             autoencoder.train_size,
             autoencoder.val_size,
@@ -820,7 +821,7 @@ class TestAutoEncoderLoss(unittest.TestCase):
             use_mask=True,
             custom_mask=self.mask_df,
         )
-        expected_mask_train, _, _ = autoencoder._time_series_split(
+        expected_mask_train, _, _ = time_series_split(
             self.mask_df.to_numpy(),
             autoencoder.train_size,
             autoencoder.val_size,

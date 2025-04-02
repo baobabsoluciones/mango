@@ -18,6 +18,7 @@ from mango_time_series.models.utils.plots import (
     plot_loss_history,
     plot_reconstruction_iterations,
 )
+from mango_time_series.models.utils.processing import time_series_split
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
 logger = get_configured_logger()
@@ -1681,47 +1682,6 @@ class AutoEncoder:
         return reconstructed_df
 
     @staticmethod
-    def _time_series_split(
-        data: np.ndarray, train_size: float, val_size: float, test_size: float
-    ) -> Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
-        """
-        Splits data into training, validation, and test sets according to the specified percentages.
-
-        :param data: Array-like data to split
-        :type data: np.ndarray
-        :param train_size: Proportion of the dataset to include in the training set (0-1)
-        :type train_size: float
-        :param val_size: Proportion of the dataset to include in the validation set (0-1)
-        :type val_size: float
-        :param test_size: Proportion of the dataset to include in the test set (0-1)
-        :type test_size: float
-        :return: The training, validation, and test sets as numpy arrays
-        :rtype: Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]
-        :raises ValueError: If train_size, val_size, or test_size are None or their sum is not 1.0
-        """
-        if train_size is None or val_size is None or test_size is None:
-            raise ValueError(
-                "train_size, val_size, and test_size must be specified and not None."
-            )
-
-        if not np.isclose(train_size + val_size + test_size, 1.0):
-            raise ValueError(
-                "The sum of train_size, val_size, and test_size must be 1.0, "
-                f"but got {train_size + val_size + test_size}."
-            )
-
-        # Original implementation for sequential split
-        n = len(data)
-        train_end = int(n * train_size)
-        val_end = train_end + int(n * val_size)
-
-        train_set = data[:train_end]
-        val_set = data[train_end:val_end] if val_size > 0 else None
-        test_set = data[val_end:] if test_size > 0 else None
-
-        return train_set, val_set, test_set
-
-    @staticmethod
     def _convert_data_to_numpy(
         data: Any,
     ) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]:
@@ -2030,11 +1990,8 @@ class AutoEncoder:
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
-            x_train, x_val, x_test = self._time_series_split(
-                data,
-                self.train_size,
-                self.val_size,
-                self.test_size,
+            x_train, x_val, x_test = time_series_split(
+                data, self.train_size, self.val_size, self.test_size
             )
             data = tuple([x_train, x_val, x_test])
         else:
@@ -2083,7 +2040,7 @@ class AutoEncoder:
                     else:
                         mask_train, mask_val, mask_test = self.custom_mask
                 else:
-                    mask_train, mask_val, mask_test = self._time_series_split(
+                    mask_train, mask_val, mask_test = time_series_split(
                         (
                             self.id_data_dict_mask[id_iter]
                             if id_iter is not None
