@@ -45,7 +45,6 @@ class AutoEncoder:
         self._save_path = None
         self._form = "lstm"
         self._time_step_to_check = [0]
-        self._context_window = None
         self.model = None
         self.normalization_method = None
         self.normalization_values = {}
@@ -174,17 +173,17 @@ class AutoEncoder:
         self._time_step_to_check = value
 
     @property
-    def context_window(self) -> int:
+    def context_window(self) -> Optional[int]:
         """
         Get the context window size.
 
-        :return: Context window size
-        :rtype: int
+        :return: Context window size or None if not initialized
+        :rtype: Optional[int]
         """
-        return self._context_window
+        return getattr(self, "_context_window", None)
 
     @context_window.setter
-    def context_window(self, value: Optional[int]) -> None:
+    def context_window(self, value: int) -> None:
         """
         Set the context window size.
 
@@ -892,12 +891,12 @@ class AutoEncoder:
 
     def build_model(
         self,
+        context_window: int,
         form: str = "lstm",
         data: (
             Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
             | None
         ) = None,
-        context_window: Optional[int] = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
         hidden_dim: Union[int, List[int]] | None = None,
@@ -1711,10 +1710,10 @@ class AutoEncoder:
 
     def build_and_train(
         self,
+        context_window: int,
         data: Union[
             np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]
         ] = None,
-        context_window: Optional[int] = None,
         time_step_to_check: Union[int, List[int]] = 0,
         feature_to_check: Union[int, List[int]] = 0,
         form: str = "lstm",
