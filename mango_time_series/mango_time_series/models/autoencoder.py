@@ -56,6 +56,7 @@ class AutoEncoder:
         self.imputer = None
         self.x_train = None
         self._normalize = False
+        self._verbose = False
 
     @property
     def save_path(self) -> Optional[str]:
@@ -408,6 +409,88 @@ class AutoEncoder:
 
         self._bidirectional_decoder = value
 
+    @property
+    def activation_encoder(self) -> Optional[str]:
+        """
+        Get the activation function for the encoder.
+
+        :return: Activation function
+        :rtype: Optional[str]
+        """
+        return getattr(self, "_activation_encoder", None)
+
+    @activation_encoder.setter
+    def activation_encoder(self, value: Optional[str]) -> None:
+        """
+        Set the activation function for the encoder.
+
+        :param value: Activation function
+        :type value: str
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change activation_encoder after model is built")
+
+        self._activation_encoder = value
+
+    @property
+    def activation_decoder(self) -> Optional[str]:
+        """
+        Get the activation function for the decoder.
+
+        :return: Activation function
+        :rtype: Optional[str]
+        """
+        return getattr(self, "_activation_decoder", None)
+
+    @activation_decoder.setter
+    def activation_decoder(self, value: Optional[str]) -> None:
+        """
+        Set the activation function for the decoder.
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change activation_decoder after model is built")
+
+        self._activation_decoder = value
+
+    @property
+    def verbose(self) -> bool:
+        """
+        Get the verbose flag.
+
+        :return: Verbose flag
+        :rtype: bool
+        """
+        return self._verbose
+
+    @verbose.setter
+    def verbose(self, value: bool) -> None:
+        """
+        Set the verbose flag.
+
+        :param value: Verbose flag
+        :type value: bool
+        :return: None
+        :rtype: None
+        """
+        self._verbose = value
+
+    @property
+    def feature_weights(self) -> Optional[List[float]]:
+        """
+        Get the feature weights.
+
+        :return: Feature weights
+        :rtype: Optional[List[float]]
+        """
+        return self._feature_weights
+
+    @feature_weights.setter
+    def feature_weights(self, value: Optional[List[float]]) -> None:
+        """
+        Set the feature weights.
+        """
+        self._feature_weights = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -582,9 +665,11 @@ class AutoEncoder:
         self.hidden_dim = hidden_dim
         self.bidirectional_encoder = bidirectional_encoder
         self.bidirectional_decoder = bidirectional_decoder
-
+        self.activation_encoder = activation_encoder
+        self.activation_decoder = activation_decoder
         self.verbose = verbose
         self.feature_weights = feature_weights
+
         self.use_mask = use_mask
         self.custom_mask = custom_mask
         self.imputer = imputer
@@ -760,8 +845,8 @@ class AutoEncoder:
                 hidden_dim=self._hidden_dim,
                 num_layers=num_layers,
                 use_bidirectional=self._bidirectional_encoder,
-                activation=activation_encoder,
-                verbose=verbose,
+                activation=self._activation_encoder,
+                verbose=self._verbose,
             ),
             decoder(
                 form=self._form,
@@ -770,8 +855,8 @@ class AutoEncoder:
                 hidden_dim=self._hidden_dim,
                 num_layers=num_layers,
                 use_bidirectional=self._bidirectional_decoder,
-                activation=activation_decoder,
-                verbose=verbose,
+                activation=self._activation_decoder,
+                verbose=self._verbose,
             ),
         ]
 
@@ -781,7 +866,7 @@ class AutoEncoder:
         self.model = Sequential(layers, name="autoencoder")
         self.model.build()
 
-        if self.verbose:
+        if self._verbose:
             logger.info(f"Model structure:\n{self.model.summary()}")
 
         self.model_optimizer = self._get_optimizer(optimizer)
@@ -967,7 +1052,7 @@ class AutoEncoder:
                     break
 
             if epoch % self.checkpoint == 0:
-                if self.verbose:
+                if self._verbose:
                     logger.info(
                         f"Epoch {epoch:4d} | "
                         f"Training Loss: {avg_train_loss:.6f} | "
@@ -988,6 +1073,14 @@ class AutoEncoder:
         )
 
         self.save(filename=f"{self.last_epoch}.pkl")
+
+        # Plot results
+        if self._verbose:
+            plot_learning_curve(
+                train_loss=train_loss_history,
+                val_loss=val_loss_history,
+                save_path=os.path.join(self._save_path, "plots"),
+            )
 
     def reconstruct(self) -> bool:
         """
@@ -2089,9 +2182,9 @@ class AutoEncoder:
         squared_error = tf.square(y_true - y_pred)
 
         # Apply feature-specific weights if provided
-        if self.feature_weights is not None:
+        if self._feature_weights is not None:
             feature_weights = tf.convert_to_tensor(
-                self.feature_weights, dtype=tf.float32
+                self._feature_weights, dtype=tf.float32
             )
             squared_error = squared_error * feature_weights
 
