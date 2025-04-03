@@ -37,6 +37,10 @@ class AutoEncoder:
     that quick training and profiling can be done.
     """
 
+    TRAIN_SIZE = 0.8
+    VAL_SIZE = 0.1
+    TEST_SIZE = 0.1
+
     def __init__(self) -> None:
         """
         Initialize the Autoencoder model with default parameters.
@@ -500,6 +504,84 @@ class AutoEncoder:
         """
         self._feature_weights = value
 
+    @property
+    def train_size(self) -> float:
+        """
+        Get the training set size proportion.
+
+        :return: Training set size (0.0-1.0)
+        :rtype: float
+        """
+        return getattr(self, "_train_size", self.TRAIN_SIZE)
+
+    @train_size.setter
+    def train_size(self, value: float) -> None:
+        """
+        Set the training set size proportion.
+
+        :param value: Training set size (0.0-1.0)
+        :type value: float
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not between 0 and 1
+        """
+        if not 0 <= value <= 1:
+            raise ValueError("train_size must be between 0 and 1")
+
+        self._train_size = value
+
+    @property
+    def val_size(self) -> float:
+        """
+        Get the validation set size proportion.
+
+        :return: Validation set size (0.0-1.0)
+        :rtype: float
+        """
+        return getattr(self, "_val_size", self.VAL_SIZE)
+
+    @val_size.setter
+    def val_size(self, value: float) -> None:
+        """
+        Set the validation set size proportion.
+
+        :param value: Validation set size (0.0-1.0)
+        :type value: float
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not between 0 and 1
+        """
+        if not 0 <= value <= 1:
+            raise ValueError("val_size must be between 0 and 1")
+
+        self._val_size = value
+
+    @property
+    def test_size(self) -> float:
+        """
+        Get the test set size proportion.
+
+        :return: Test set size (0.0-1.0)
+        :rtype: float
+        """
+        return getattr(self, "_test_size", self.TEST_SIZE)
+
+    @test_size.setter
+    def test_size(self, value: float) -> None:
+        """
+        Set the test set size proportion.
+
+        :param value: Test set size (0.0-1.0)
+        :type value: float
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not between 0 and 1
+        """
+        if not 0 <= value <= 1:
+            raise ValueError("test_size must be between 0 and 1")
+
+        self._test_size = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -591,9 +673,9 @@ class AutoEncoder:
         use_mask: bool = False,
         custom_mask: Any = None,
         imputer: Optional[DataImputer] = None,
-        train_size: float = 0.8,
-        val_size: float = 0.1,
-        test_size: float = 0.1,
+        train_size: float = TRAIN_SIZE,
+        val_size: float = VAL_SIZE,
+        test_size: float = TEST_SIZE,
         id_columns: Union[str, int, List[str], List[int], None] = None,
         use_post_decoder_dense: bool = False,
     ) -> None:
@@ -678,13 +760,13 @@ class AutoEncoder:
         self.activation_decoder = activation_decoder
         self.verbose = verbose
         self.feature_weights = feature_weights
+        self.train_size = train_size
+        self.val_size = val_size
+        self.test_size = test_size
 
         self.use_mask = use_mask
         self.custom_mask = custom_mask
         self.imputer = imputer
-        self.train_size = train_size
-        self.val_size = val_size
-        self.test_size = test_size
 
         # Extract names and convert data to numpy
         self.data, extracted_feature_names = convert_data_to_numpy(data)
@@ -720,7 +802,9 @@ class AutoEncoder:
                 raise ValueError("The mask must have the same IDs as the data.")
 
         if not self.use_mask:
-            arrays_to_check = self._data if isinstance(self._data, tuple) else [self._data]
+            arrays_to_check = (
+                self._data if isinstance(self._data, tuple) else [self._data]
+            )
             if any(np.isnan(arr).any() for arr in arrays_to_check):
                 raise ValueError(
                     "Data contains NaNs but use_mask is False. Clean or impute data."
@@ -781,7 +865,7 @@ class AutoEncoder:
                     axis=0,
                 )
         else:
-            self.prepare_datasets(data, self._context_window, normalize)
+            self.prepare_datasets(self._data, self._context_window, normalize)
 
         if shuffle:
             if shuffle_buffer_size is not None:
@@ -797,34 +881,37 @@ class AutoEncoder:
         self.input_features = self.x_train.shape[2]
         self.output_features = len(self._feature_to_check)
 
-        if self.use_mask and self.custom_mask is not None:
-            if isinstance(self._data, tuple) and (
-                not isinstance(self.custom_mask, tuple) or len(self.custom_mask) != 3
-            ):
-                raise ValueError(
-                    "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
-                )
-
-            if not isinstance(self._data, tuple) and isinstance(self.custom_mask, tuple):
-                raise ValueError(
-                    "If data is a single array, custom_mask cannot be a tuple."
-                )
-
-            if isinstance(self.custom_mask, tuple):
-                if (
-                    mask[0].shape != self._data[0].shape
-                    or mask[1].shape != self._data[1].shape
-                    or mask[2].shape != self._data[2].shape
-                ):
-                    raise ValueError(
-                        "Each element of custom_mask must have the same shape as its corresponding dataset "
-                        "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
-                    )
-            else:
-                if mask.shape != self._data.shape:
-                    raise ValueError(
-                        "custom_mask must have the same shape as the original input data before transformation"
-                    )
+        # TODO: make this checks correct
+        # if self.use_mask and self.custom_mask is not None:
+        #     if isinstance(self._data, tuple) and (
+        #         not isinstance(self.custom_mask, tuple) or len(self.custom_mask) != 3
+        #     ):
+        #         raise ValueError(
+        #             "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
+        #         )
+        #
+        #     if not isinstance(self._data, tuple) and isinstance(
+        #         self.custom_mask, tuple
+        #     ):
+        #         raise ValueError(
+        #             "If data is a single array, custom_mask cannot be a tuple."
+        #         )
+        #
+        #     if isinstance(self.custom_mask, tuple):
+        #         if (
+        #             mask[0].shape != self._data[0].shape
+        #             or mask[1].shape != self._data[1].shape
+        #             or mask[2].shape != self._data[2].shape
+        #         ):
+        #             raise ValueError(
+        #                 "Each element of custom_mask must have the same shape as its corresponding dataset "
+        #                 "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
+        #             )
+        #     else:
+        #         if mask.shape != self._data.shape:
+        #             raise ValueError(
+        #                 "custom_mask must have the same shape as the original input data before transformation"
+        #             )
 
         # Check if masks and data have the same shape
         if self.use_mask:
@@ -2035,7 +2122,7 @@ class AutoEncoder:
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
             x_train, x_val, x_test = time_series_split(
-                data, self.train_size, self.val_size, self.test_size
+                data, self._train_size, self._val_size, self._test_size
             )
             data = tuple([x_train, x_val, x_test])
         else:
@@ -2090,9 +2177,9 @@ class AutoEncoder:
                             if id_iter is not None
                             else self.custom_mask
                         ),
-                        self.train_size,
-                        self.val_size,
-                        self.test_size,
+                        self._train_size,
+                        self._val_size,
+                        self._test_size,
                     )
 
             seq_mask_train = time_series_to_sequence(mask_train, context_window)
