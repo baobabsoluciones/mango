@@ -109,18 +109,18 @@ class AutoEncoder:
         :raises ValueError: If value is not one of the supported architectures or if
                            attempting to change after model is built
         """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError(
+                "Cannot change form after model is built. "
+                "Call build_model() with the new form instead."
+            )
+
         valid_forms = ["lstm", "gru", "rnn", "dense"]
         if value not in valid_forms:
             raise ValueError(f"Form must be one of {valid_forms}")
 
         if value == "dense":
             raise NotImplementedError("Dense model type is not yet implemented")
-
-        if hasattr(self, "model") and self.model is not None:
-            raise ValueError(
-                "Cannot change form after model is built. "
-                "Call build_model() with the new form instead."
-            )
 
         self._form = value
 
@@ -149,6 +149,13 @@ class AutoEncoder:
         :rtype: None
         :raises ValueError: If value is not valid or if attempting to change after model is built
         """
+        # If model is built, don't allow changes
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError(
+                "Cannot change time_step_to_check after model is built. "
+                "Call build_model() with the new time_step_to_check instead."
+            )
+
         # Convert single integer to list
         if isinstance(value, int):
             value = [value]
@@ -169,24 +176,7 @@ class AutoEncoder:
                     f"Must be between 0 and {self._context_window - 1}."
                 )
 
-        # If model is built, don't allow changes
-        if hasattr(self, "model") and self.model is not None:
-            raise ValueError(
-                "Cannot change time_step_to_check after model is built. "
-                "Call build_model() with the new time_step_to_check instead."
-            )
-
         self._time_step_to_check = value
-
-    @property
-    def context_window(self) -> Optional[int]:
-        """
-        Get the context window size.
-
-        :return: Context window size or None if not initialized
-        :rtype: Optional[int]
-        """
-        return getattr(self, "_context_window", None)
 
     @context_window.setter
     def context_window(self, value: int) -> None:
@@ -199,11 +189,11 @@ class AutoEncoder:
         :rtype: None
         :raises ValueError: If value is not a positive integer or if attempting to change after model is built
         """
-        if not isinstance(value, int) or value <= 0:
-            raise ValueError("Context window must be a positive integer")
-
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change context_window after model is built")
+
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError("Context window must be a positive integer")
 
         self._context_window = value
 
@@ -216,6 +206,16 @@ class AutoEncoder:
         :rtype: Optional[np.ndarray]
         """
         return getattr(self, "_data", None)
+
+    @property
+    def context_window(self) -> Optional[int]:
+        """
+        Get the context window size.
+
+        :return: Context window size or None if not initialized
+        :rtype: Optional[int]
+        """
+        return getattr(self, "_context_window", None)
 
     @data.setter
     def data(self, value: Optional[np.ndarray]) -> None:
@@ -264,11 +264,11 @@ class AutoEncoder:
         :rtype: None
         :raises ValueError: If value is not valid or if attempting to change after model is built
         """
-        if not isinstance(value, (int, list)):
-            raise ValueError("feature_to_check must be an integer or list of integers")
-
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change feature_to_check after model is built")
+
+        if not isinstance(value, (int, list)):
+            raise ValueError("feature_to_check must be an integer or list of integers")
 
         value = [value] if isinstance(value, int) else value
 
@@ -312,13 +312,13 @@ class AutoEncoder:
         :param value: Normalization method
         :type value: str
         """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change normalization_method after model is built")
+
         if value not in ["minmax", "zscore"]:
             raise ValueError(
                 "Invalid normalization method. Choose 'minmax' or 'zscore'."
             )
-
-        if hasattr(self, "model") and self.model is not None:
-            raise ValueError("Cannot change normalization_method after model is built")
 
         self._normalization_method = value
 
@@ -340,11 +340,11 @@ class AutoEncoder:
         :param value: Hidden dimensions
         :type value: Union[int, List[int]]
         """
-        if not isinstance(value, (int, list)):
-            raise ValueError("hidden_dim must be an int or list of ints")
-
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change hidden_dim after model is built")
+
+        if not isinstance(value, (int, list)):
+            raise ValueError("hidden_dim must be an int or list of ints")
 
         if isinstance(value, int):
             value = [value]
@@ -369,14 +369,14 @@ class AutoEncoder:
         :param value: Bidirectional encoder flag
         :type value: bool
         """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change bidirectional_encoder after model is built")
+
         bidirectional_allowed = {"lstm", "gru", "rnn"}
         if getattr(self, "_form") not in bidirectional_allowed:
             raise ValueError(
                 f"Bidirectional not supported for encoder/decoder type '{self.form}'"
             )
-
-        if hasattr(self, "model") and self.model is not None:
-            raise ValueError("Cannot change bidirectional_encoder after model is built")
 
         self._bidirectional_encoder = value
 
@@ -398,14 +398,14 @@ class AutoEncoder:
         :param value: Bidirectional decoder flag
         :type value: bool
         """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change bidirectional_decoder after model is built")
+
         bidirectional_allowed = {"lstm", "gru", "rnn"}
         if getattr(self, "_form") not in bidirectional_allowed:
             raise ValueError(
                 f"Bidirectional not supported for encoder/decoder type '{self.form}'"
             )
-
-        if hasattr(self, "model") and self.model is not None:
-            raise ValueError("Cannot change bidirectional_decoder after model is built")
 
         self._bidirectional_decoder = value
 
