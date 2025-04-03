@@ -350,6 +350,64 @@ class AutoEncoder:
 
         self._hidden_dim = value
 
+    @property
+    def bidirectional_encoder(self) -> bool:
+        """
+        Get the bidirectional encoder flag.
+
+        :return: Bidirectional encoder flag
+        :rtype: bool
+        """
+        return getattr(self, "_bidirectional_encoder", False)
+
+    @bidirectional_encoder.setter
+    def bidirectional_encoder(self, value: bool) -> None:
+        """
+        Set the bidirectional encoder flag.
+
+        :param value: Bidirectional encoder flag
+        :type value: bool
+        """
+        bidirectional_allowed = {"lstm", "gru", "rnn"}
+        if getattr(self, "_form") not in bidirectional_allowed:
+            raise ValueError(
+                f"Bidirectional not supported for encoder/decoder type '{self.form}'"
+            )
+
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change bidirectional_encoder after model is built")
+
+        self._bidirectional_encoder = value
+
+    @property
+    def bidirectional_decoder(self) -> bool:
+        """
+        Get the bidirectional decoder flag.
+
+        :return: Bidirectional decoder flag
+        :rtype: bool
+        """
+        return getattr(self, "_bidirectional_decoder", False)
+
+    @bidirectional_decoder.setter
+    def bidirectional_decoder(self, value: bool) -> None:
+        """
+        Set the bidirectional decoder flag.
+
+        :param value: Bidirectional decoder flag
+        :type value: bool
+        """
+        bidirectional_allowed = {"lstm", "gru", "rnn"}
+        if getattr(self, "_form") not in bidirectional_allowed:
+            raise ValueError(
+                f"Bidirectional not supported for encoder/decoder type '{self.form}'"
+            )
+
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change bidirectional_decoder after model is built")
+
+        self._bidirectional_decoder = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -522,25 +580,8 @@ class AutoEncoder:
         self.normalize = normalize
         self.normalization_method = normalization_method
         self.hidden_dim = hidden_dim
-
-        bidirectional_allowed = {"lstm", "gru", "rnn"}
-        if form not in bidirectional_allowed:
-            if bidirectional_encoder or bidirectional_decoder:
-                raise ValueError(
-                    f"Bidirectional not supported for encoder/decoder type '{form}'"
-                )
-
-        if isinstance(time_step_to_check, int):
-            time_step_to_check = [time_step_to_check]
-        elif isinstance(time_step_to_check, list):
-            if len(time_step_to_check) != 1:
-                raise ValueError(
-                    "time_step_to_check must be a list with a single element. Not implemented yet."
-                )
-        else:
-            raise TypeError(
-                "time_step_to_check must be an int or a list with a single int."
-            )
+        self.bidirectional_encoder = bidirectional_encoder
+        self.bidirectional_decoder = bidirectional_decoder
 
         self.verbose = verbose
         self.feature_weights = feature_weights
@@ -718,7 +759,7 @@ class AutoEncoder:
                 features=self.input_features,
                 hidden_dim=self._hidden_dim,
                 num_layers=num_layers,
-                use_bidirectional=bidirectional_encoder,
+                use_bidirectional=self._bidirectional_encoder,
                 activation=activation_encoder,
                 verbose=verbose,
             ),
@@ -728,7 +769,7 @@ class AutoEncoder:
                 features=self.output_features,
                 hidden_dim=self._hidden_dim,
                 num_layers=num_layers,
-                use_bidirectional=bidirectional_decoder,
+                use_bidirectional=self._bidirectional_decoder,
                 activation=activation_decoder,
                 verbose=verbose,
             ),
