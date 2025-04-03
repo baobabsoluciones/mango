@@ -51,11 +51,11 @@ class AutoEncoder:
         self._save_path = None
         self._form = "lstm"
         self.model = None
-        self.normalization_method = None
+        self._normalization_method = None
         self.normalization_values = {}
         self.imputer = None
         self.x_train = None
-        self.feature_to_check = None
+        self._normalize = False
 
     @property
     def save_path(self) -> Optional[str]:
@@ -242,6 +242,114 @@ class AutoEncoder:
         """
         self._features_name = value
 
+    @property
+    def feature_to_check(self) -> Optional[Union[int, List[int]]]:
+        """
+        Get the feature index or indices to check during reconstruction.
+
+        :return: Feature index or indices to check
+        :rtype: Optional[Union[int, List[int]]]
+        """
+        return getattr(self, "_feature_to_check", None)
+
+    @feature_to_check.setter
+    def feature_to_check(self, value: Union[int, List[int]]) -> None:
+        """
+        Set the feature index or indices to check during reconstruction.
+
+        :param value: Feature index or indices to check
+        :type value: Union[int, List[int]]
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not valid or if attempting to change after model is built
+        """
+        if not isinstance(value, (int, list)):
+            raise ValueError("feature_to_check must be an integer or list of integers")
+
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change feature_to_check after model is built")
+
+        value = [value] if isinstance(value, int) else value
+
+        self._feature_to_check = value
+
+    @property
+    def normalize(self) -> bool:
+        """
+        Get the normalization flag.
+
+        :return: Normalization flag
+        :rtype: bool
+        """
+        return self._normalize
+
+    @normalize.setter
+    def normalize(self, value: bool) -> None:
+        """
+        Set the normalization flag.
+
+        :param value: Normalization flag
+        :type value: bool
+        """
+        self._normalize = value
+
+    @property
+    def normalization_method(self) -> Optional[str]:
+        """
+        Get the normalization method.
+
+        :return: Normalization method
+        :rtype: Optional[str]
+        """
+        return getattr(self, "_normalization_method", None)
+
+    @normalization_method.setter
+    def normalization_method(self, value: str) -> None:
+        """
+        Set the normalization method.
+
+        :param value: Normalization method
+        :type value: str
+        """
+        if value not in ["minmax", "zscore"]:
+            raise ValueError(
+                "Invalid normalization method. Choose 'minmax' or 'zscore'."
+            )
+
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change normalization_method after model is built")
+
+        self._normalization_method = value
+
+    @property
+    def hidden_dim(self) -> Optional[Union[int, List[int]]]:
+        """
+        Get the hidden dimensions.
+
+        :return: Hidden dimensions
+        :rtype: Optional[Union[int, List[int]]]
+        """
+        return getattr(self, "_hidden_dim", None)
+
+    @hidden_dim.setter
+    def hidden_dim(self, value: Union[int, List[int]]) -> None:
+        """
+        Set the hidden dimensions.
+
+        :param value: Hidden dimensions
+        :type value: Union[int, List[int]]
+        """
+        if not isinstance(value, (int, list)):
+            raise ValueError("hidden_dim must be an int or list of ints")
+
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change hidden_dim after model is built")
+
+        if isinstance(value, int):
+            value = [value]
+
+        self._hidden_dim = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -277,7 +385,7 @@ class AutoEncoder:
             instance.time_step_to_check = params.get("time_step_to_check")
             instance.normalization_method = params.get("normalization_method")
             instance.features_name = params.get("features_name", None)
-            instance.feature_to_check = params.get("feature_to_check", 0)
+            instance.feature_to_check = params.get("feature_to_check", None)
             instance.model = model
 
             # Load normalization values
@@ -313,9 +421,9 @@ class AutoEncoder:
             Tuple[np.ndarray, np.ndarray, np.ndarray],
         ],
         time_step_to_check: Union[int, List[int]],
+        feature_to_check: Union[int, List[int]],
+        hidden_dim: Union[int, List[int]],
         form: str = "lstm",
-        feature_to_check: Union[int, List[int]] = 0,
-        hidden_dim: Union[int, List[int]] | None = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
         activation_encoder: Optional[str] = None,
@@ -410,24 +518,10 @@ class AutoEncoder:
         self.save_path = save_path
         self.context_window = context_window
         self.time_step_to_check = time_step_to_check
-
-        if normalization_method not in ["minmax", "zscore"]:
-            raise ValueError(
-                "Invalid normalization method. Choose 'minmax' or 'zscore'."
-            )
-
-        feature_to_check = (
-            [feature_to_check]
-            if isinstance(feature_to_check, int)
-            else feature_to_check
-        )
-
-        if isinstance(hidden_dim, list):
-            self.hidden_dim = hidden_dim
-        elif isinstance(hidden_dim, int):
-            self.hidden_dim = [hidden_dim]
-        else:
-            raise ValueError("hidden_dim must be an int or list of ints")
+        self.feature_to_check = feature_to_check
+        self.normalize = normalize
+        self.normalization_method = normalization_method
+        self.hidden_dim = hidden_dim
 
         bidirectional_allowed = {"lstm", "gru", "rnn"}
         if form not in bidirectional_allowed:
@@ -448,9 +542,6 @@ class AutoEncoder:
                 "time_step_to_check must be an int or a list with a single int."
             )
 
-        self.feature_to_check = feature_to_check
-        self.normalization_method = normalization_method
-        self.normalize = normalize
         self.verbose = verbose
         self.feature_weights = feature_weights
         self.use_mask = use_mask
@@ -576,7 +667,7 @@ class AutoEncoder:
 
         self.x_train_no_shuffle = np.copy(self.x_train)
         self.input_features = self.x_train.shape[2]
-        self.output_features = len(self.feature_to_check)
+        self.output_features = len(self._feature_to_check)
 
         if self.use_mask and self.custom_mask is not None:
             if isinstance(data, tuple) and (
@@ -619,13 +710,13 @@ class AutoEncoder:
                 )
 
         # Build model
-        num_layers = len(self.hidden_dim)
+        num_layers = len(self._hidden_dim)
         layers = [
             encoder(
                 form=self._form,
                 context_window=self._context_window,
                 features=self.input_features,
-                hidden_dim=self.hidden_dim,
+                hidden_dim=self._hidden_dim,
                 num_layers=num_layers,
                 use_bidirectional=bidirectional_encoder,
                 activation=activation_encoder,
@@ -635,7 +726,7 @@ class AutoEncoder:
                 form=self._form,
                 context_window=self._context_window,
                 features=self.output_features,
-                hidden_dim=self.hidden_dim,
+                hidden_dim=self._hidden_dim,
                 num_layers=num_layers,
                 use_bidirectional=bidirectional_decoder,
                 activation=activation_decoder,
@@ -729,7 +820,7 @@ class AutoEncoder:
 
                 # Gather all required time steps
                 x_real = tf.gather(x, self._time_step_to_check, axis=1)
-                x_real = tf.gather(x_real, self.feature_to_check, axis=2)
+                x_real = tf.gather(x_real, self._feature_to_check, axis=2)
 
                 x_pred = tf.expand_dims(x_hat, axis=1)
 
@@ -770,7 +861,7 @@ class AutoEncoder:
 
             # Gather all required time steps
             x_real = tf.gather(x, self._time_step_to_check, axis=1)
-            x_real = tf.gather(x_real, self.feature_to_check, axis=2)
+            x_real = tf.gather(x_real, self._feature_to_check, axis=2)
 
             x_pred = tf.expand_dims(x_hat, axis=1)
             # Calculate mean loss across all selected points
@@ -877,24 +968,24 @@ class AutoEncoder:
 
         # Get the original data for comparison
         x_train_converted = np.copy(
-            self.x_train[:, self._time_step_to_check, self.feature_to_check]
+            self.x_train[:, self._time_step_to_check, self._feature_to_check]
         )
         x_val_converted = np.copy(
-            self.x_val[:, self._time_step_to_check, self.feature_to_check]
+            self.x_val[:, self._time_step_to_check, self._feature_to_check]
         )
         x_test_converted = np.copy(
-            self.x_test[:, self._time_step_to_check, self.feature_to_check]
+            self.x_test[:, self._time_step_to_check, self._feature_to_check]
         )
 
         # Handle denormalization if normalization was applied
-        if self.normalize:
+        if self._normalize:
             # Use the global normalization values if ID-based normalization wasn't used
             if "global" in self.normalization_values:
                 norm_values = self.normalization_values["global"]
 
-                if self.normalization_method == "minmax":
-                    scale_min = norm_values["min_x"][self.feature_to_check]
-                    scale_max = norm_values["max_x"][self.feature_to_check]
+                if self._normalization_method == "minmax":
+                    scale_min = norm_values["min_x"][self._feature_to_check]
+                    scale_max = norm_values["max_x"][self._feature_to_check]
 
                     # Denormalize predictions
                     x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
@@ -912,9 +1003,9 @@ class AutoEncoder:
                         x_test_converted * (scale_max - scale_min) + scale_min
                     )
 
-                elif self.normalization_method == "zscore":
-                    scale_mean = norm_values["mean_"][self.feature_to_check]
-                    scale_std = norm_values["std_"][self.feature_to_check]
+                elif self._normalization_method == "zscore":
+                    scale_mean = norm_values["mean_"][self._feature_to_check]
+                    scale_std = norm_values["std_"][self._feature_to_check]
 
                     # Denormalize predictions
                     x_hat_train = x_hat_train * scale_std + scale_mean
@@ -973,9 +1064,9 @@ class AutoEncoder:
                     id_x_test = x_test_converted[test_start_idx:test_end_idx]
 
                     # Apply denormalization based on the normalization method
-                    if self.normalization_method == "minmax":
-                        scale_min = norm_values["min_x"][self.feature_to_check]
-                        scale_max = norm_values["max_x"][self.feature_to_check]
+                    if self._normalization_method == "minmax":
+                        scale_min = norm_values["min_x"][self._feature_to_check]
+                        scale_max = norm_values["max_x"][self._feature_to_check]
 
                         # Denormalize predictions
                         id_x_hat_train = (
@@ -993,9 +1084,9 @@ class AutoEncoder:
                         id_x_val = id_x_val * (scale_max - scale_min) + scale_min
                         id_x_test = id_x_test * (scale_max - scale_min) + scale_min
 
-                    elif self.normalization_method == "zscore":
-                        scale_mean = norm_values["mean_"][self.feature_to_check]
-                        scale_std = norm_values["std_"][self.feature_to_check]
+                    elif self._normalization_method == "zscore":
+                        scale_mean = norm_values["mean_"][self._feature_to_check]
+                        scale_std = norm_values["std_"][self._feature_to_check]
 
                         # Denormalize predictions
                         id_x_hat_train = id_x_hat_train * scale_std + scale_mean
@@ -1044,7 +1135,7 @@ class AutoEncoder:
             if i not in self.id_columns_indices
         ]
         feature_labels = (
-            [features_names_without_id[i] for i in self.feature_to_check]
+            [features_names_without_id[i] for i in self._feature_to_check]
             if hasattr(self, "features_name")
             else None
         )
@@ -1089,14 +1180,14 @@ class AutoEncoder:
                 "context_window": self._context_window,
                 "time_step_to_check": self._time_step_to_check,
                 "normalization_method": (
-                    self.normalization_method if self.normalize else None
+                    self._normalization_method if self._normalize else None
                 ),
                 "normalization_values": {},
                 "features_name": self._features_name,
-                "feature_to_check": self.feature_to_check,
+                "feature_to_check": self._feature_to_check,
             }
 
-            if self.normalize:
+            if self._normalize:
                 if hasattr(self, "normalization_values") and isinstance(
                     self.normalization_values, dict
                 ):
@@ -1326,7 +1417,9 @@ class AutoEncoder:
                 raise ValueError("id_columns must be a list of strings or integers")
 
         features_names_to_check = (
-            [feature_names[i] for i in self.feature_to_check] if feature_names else None
+            [feature_names[i] for i in self._feature_to_check]
+            if feature_names
+            else None
         )
 
         # Handle ID columns
@@ -1345,7 +1438,7 @@ class AutoEncoder:
                 reconstructed_results[id_iter] = self._reconstruct_single_dataset(
                     data=data_id,
                     feature_names=features_names_to_check,
-                    nan_positions=nan_positions_id[:, self.feature_to_check],
+                    nan_positions=nan_positions_id[:, self._feature_to_check],
                     has_nans=has_nans_id,
                     iterations=iterations,
                     id_iter=id_iter,
@@ -1357,7 +1450,7 @@ class AutoEncoder:
             reconstructed_results["global"] = self._reconstruct_single_dataset(
                 data=data,
                 feature_names=features_names_to_check,
-                nan_positions=nan_positions[:, self.feature_to_check],
+                nan_positions=nan_positions[:, self._feature_to_check],
                 has_nans=has_nans,
                 iterations=iterations,
                 id_iter=None,
@@ -1415,7 +1508,7 @@ class AutoEncoder:
 
         # Case 1: No NaNs - Simple prediction
         if not has_nans:
-            if self.normalization_method:
+            if self._normalization_method:
                 try:
                     data = self._normalize_data(data=data)
                 except Exception as e:
@@ -1424,34 +1517,34 @@ class AutoEncoder:
             data_seq = time_series_to_sequence(data, self._context_window)
             reconstructed_data = self.model.predict(data_seq)
 
-            if self.normalization_method:
+            if self._normalization_method:
                 reconstructed_data = denormalize_data(
                     reconstructed_data,
-                    normalization_method=self.normalization_method,
+                    normalization_method=self._normalization_method,
                     min_x=(
-                        self.min_x[self.feature_to_check]
+                        self.min_x[self._feature_to_check]
                         if self.min_x is not None
                         else None
                     ),
                     max_x=(
-                        self.max_x[self.feature_to_check]
+                        self.max_x[self._feature_to_check]
                         if self.max_x is not None
                         else None
                     ),
                     mean_=(
-                        self.mean_[self.feature_to_check]
+                        self.mean_[self._feature_to_check]
                         if self.mean_ is not None
                         else None
                     ),
                     std_=(
-                        self.std_[self.feature_to_check]
+                        self.std_[self._feature_to_check]
                         if self.std_ is not None
                         else None
                     ),
                 )
 
             padded_reconstructed = apply_padding(
-                data[:, self.feature_to_check],
+                data[:, self._feature_to_check],
                 reconstructed_data,
                 self._context_window,
                 self._time_step_to_check,
@@ -1468,7 +1561,7 @@ class AutoEncoder:
 
             # Plot actual vs reconstructed data
             plot_actual_and_reconstructed(
-                actual=data_original[:, self.feature_to_check].T,
+                actual=data_original[:, self._feature_to_check].T,
                 reconstructed=padded_reconstructed.T,
                 save_path=plot_path,
                 feature_labels=feature_names,
@@ -1481,9 +1574,9 @@ class AutoEncoder:
 
         # Case 2: With NaNs - Iterative reconstruction
         reconstruction_records = []
-        reconstructed_iterations[0] = np.copy(data[:, self.feature_to_check])
+        reconstructed_iterations[0] = np.copy(data[:, self._feature_to_check])
 
-        if self.normalization_method:
+        if self._normalization_method:
             try:
                 data = self._normalize_data(data=data, id_iter=id_iter)
             except Exception as e:
@@ -1501,27 +1594,27 @@ class AutoEncoder:
             data_seq = time_series_to_sequence(data, self._context_window)
             reconstructed_data = self.model.predict(data_seq)
 
-            if self.normalization_method:
+            if self._normalization_method:
                 reconstructed_data = denormalize_data(
                     reconstructed_data,
-                    normalization_method=self.normalization_method,
+                    normalization_method=self._normalization_method,
                     min_x=(
-                        self.min_x[self.feature_to_check]
+                        self.min_x[self._feature_to_check]
                         if self.min_x is not None
                         else None
                     ),
                     max_x=(
-                        self.max_x[self.feature_to_check]
+                        self.max_x[self._feature_to_check]
                         if self.max_x is not None
                         else None
                     ),
                     mean_=(
-                        self.mean_[self.feature_to_check]
+                        self.mean_[self._feature_to_check]
                         if self.mean_ is not None
                         else None
                     ),
                     std_=(
-                        self.std_[self.feature_to_check]
+                        self.std_[self._feature_to_check]
                         if self.std_ is not None
                         else None
                     ),
@@ -1529,7 +1622,7 @@ class AutoEncoder:
 
             # Apply padding and store results
             padded_reconstructed = apply_padding(
-                data[:, self.feature_to_check],
+                data[:, self._feature_to_check],
                 reconstructed_data,
                 self._context_window,
                 self._time_step_to_check,
@@ -1549,14 +1642,14 @@ class AutoEncoder:
                 )
 
                 # Update data with reconstructed values
-                if self.normalization_method:
-                    data[i, self.feature_to_check[j]] = self._normalize_data(
+                if self._normalization_method:
+                    data[i, self._feature_to_check[j]] = self._normalize_data(
                         data=padded_reconstructed,
                         id_iter=id_iter,
                         feature_to_check_filter=True,
                     )[i, j]
                 else:
-                    data[i, self.feature_to_check[j]] = padded_reconstructed[i, j]
+                    data[i, self._feature_to_check[j]] = padded_reconstructed[i, j]
 
         # Final reconstruction step
         if self.imputer is not None:
@@ -1567,32 +1660,32 @@ class AutoEncoder:
         data_seq = time_series_to_sequence(data, self._context_window)
         reconstructed_data_final = self.model.predict(data_seq)
 
-        if self.normalization_method:
+        if self._normalization_method:
             reconstructed_data_final = denormalize_data(
                 reconstructed_data_final,
-                normalization_method=self.normalization_method,
+                normalization_method=self._normalization_method,
                 min_x=(
-                    self.min_x[self.feature_to_check]
+                    self.min_x[self._feature_to_check]
                     if self.min_x is not None
                     else None
                 ),
                 max_x=(
-                    self.max_x[self.feature_to_check]
+                    self.max_x[self._feature_to_check]
                     if self.max_x is not None
                     else None
                 ),
                 mean_=(
-                    self.mean_[self.feature_to_check]
+                    self.mean_[self._feature_to_check]
                     if self.mean_ is not None
                     else None
                 ),
                 std_=(
-                    self.std_[self.feature_to_check] if self.std_ is not None else None
+                    self.std_[self._feature_to_check] if self.std_ is not None else None
                 ),
             )
 
         padded_reconstructed_final = apply_padding(
-            data[:, self.feature_to_check],
+            data[:, self._feature_to_check],
             reconstructed_data_final,
             self._context_window,
             self._time_step_to_check,
@@ -1626,7 +1719,7 @@ class AutoEncoder:
 
         # Plot reconstruction iterations
         plot_reconstruction_iterations(
-            original_data=data_original[:, self.feature_to_check].T,
+            original_data=data_original[:, self._feature_to_check].T,
             reconstructed_iterations={
                 k: v.T for k, v in reconstructed_iterations.items()
             },
@@ -1663,7 +1756,7 @@ class AutoEncoder:
         """
         normalization_values = {}
 
-        if self.normalization_method == "minmax":
+        if self._normalization_method == "minmax":
             min_x = np.nanmin(x_train, axis=0)
             max_x = np.nanmax(x_train, axis=0)
             range_x = max_x - min_x
@@ -1671,7 +1764,7 @@ class AutoEncoder:
             x_val = (x_val - min_x) / range_x
             x_test = (x_test - min_x) / range_x
             normalization_values = {"min_x": min_x, "max_x": max_x}
-        elif self.normalization_method == "zscore":
+        elif self._normalization_method == "zscore":
             mean_ = np.nanmean(x_train, axis=0)
             std_ = np.nanstd(x_train, axis=0)
             x_train = (x_train - mean_) / std_
@@ -1705,7 +1798,7 @@ class AutoEncoder:
         :return: Normalized data
         :rtype: np.ndarray
         """
-        if self.normalization_method == "minmax":
+        if self._normalization_method == "minmax":
             if self.min_x is None or self.max_x is None:
                 min_x = np.nanmin(data, axis=0)
                 max_x = np.nanmax(data, axis=0)
@@ -1716,15 +1809,15 @@ class AutoEncoder:
             else:
                 if feature_to_check_filter:
                     range_x = (
-                        self.max_x[self.feature_to_check]
-                        - self.min_x[self.feature_to_check]
+                        self.max_x[self._feature_to_check]
+                        - self.min_x[self._feature_to_check]
                     )
-                    return (data - self.min_x[self.feature_to_check]) / range_x
+                    return (data - self.min_x[self._feature_to_check]) / range_x
                 else:
                     range_x = self.max_x - self.min_x
                     return (data - self.min_x) / range_x
 
-        elif self.normalization_method == "zscore":
+        elif self._normalization_method == "zscore":
             if self.mean_ is None or self.std_ is None:
                 mean_ = np.nanmean(data, axis=0)
                 std_ = np.nanstd(data, axis=0)
@@ -1733,8 +1826,8 @@ class AutoEncoder:
                 return (data - mean_) / std_
             else:
                 if feature_to_check_filter:
-                    return (data - self.mean_[self.feature_to_check]) / self.std_[
-                        self.feature_to_check
+                    return (data - self.mean_[self._feature_to_check]) / self.std_[
+                        self._feature_to_check
                     ]
                 else:
                     return (data - self.mean_) / self.std_
@@ -1946,7 +2039,7 @@ class AutoEncoder:
             # First select the time steps
             mask_selected = tf.gather(mask, self._time_step_to_check, axis=1)
             # Then select the features
-            mask_selected = tf.gather(mask_selected, self.feature_to_check, axis=2)
+            mask_selected = tf.gather(mask_selected, self._feature_to_check, axis=2)
 
             # Apply the mask to both true and predicted values
             y_true = tf.where(mask_selected > 0, y_true, tf.zeros_like(y_true))
