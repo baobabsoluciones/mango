@@ -178,6 +178,16 @@ class AutoEncoder:
 
         self._time_step_to_check = value
 
+    @property
+    def context_window(self) -> Optional[int]:
+        """
+        Get the context window size.
+
+        :return: Context window size or None if not initialized
+        :rtype: Optional[int]
+        """
+        return getattr(self, "_context_window", None)
+
     @context_window.setter
     def context_window(self, value: int) -> None:
         """
@@ -207,21 +217,20 @@ class AutoEncoder:
         """
         return getattr(self, "_data", None)
 
-    @property
-    def context_window(self) -> Optional[int]:
-        """
-        Get the context window size.
-
-        :return: Context window size or None if not initialized
-        :rtype: Optional[int]
-        """
-        return getattr(self, "_context_window", None)
-
     @data.setter
     def data(self, value: Optional[np.ndarray]) -> None:
         """
         Set the data used for training the model.
         """
+        # Validate that data is a single array or a tuple of three arrays
+        if isinstance(value, tuple):
+            if len(value) != 3:
+                raise ValueError("Data must be a tuple with three numpy arrays")
+        elif not isinstance(value, np.ndarray):
+            raise ValueError(
+                "Data must be a numpy array or a tuple with three numpy arrays"
+            )
+
         self._data = value
 
     @property
@@ -677,24 +686,17 @@ class AutoEncoder:
         self.val_size = val_size
         self.test_size = test_size
 
-        data, extracted_feature_names = convert_data_to_numpy(data)
-
-        # Validate that data is a single array or a tuple of three arrays
-        if isinstance(data, tuple):
-            if len(data) != 3:
-                raise ValueError("Data must be a tuple with three numpy arrays")
-        elif not isinstance(data, np.ndarray):
-            raise ValueError(
-                "Data must be a numpy array or a tuple with three numpy arrays"
-            )
-
+        # Extract names and convert data to numpy
+        self.data, extracted_feature_names = convert_data_to_numpy(data)
         self._features_name = (
             feature_names
             or extracted_feature_names
             or [
                 f"feature_{i}"
                 for i in range(
-                    data[0].shape[1] if isinstance(data, tuple) else data.shape[1]
+                    self._data[0].shape[1]
+                    if isinstance(self._data, tuple)
+                    else self._data.shape[1]
                 )
             ]
         )
@@ -705,8 +707,8 @@ class AutoEncoder:
                 self.custom_mask, id_columns
             )
 
-        data, self.id_data, self.id_data_dict = self._handle_id_columns(
-            data, id_columns
+        self.data, self.id_data, self.id_data_dict = self._handle_id_columns(
+            self._data, id_columns
         )
 
         if self.use_mask and self.custom_mask is not None and self.id_data is not None:
@@ -718,14 +720,14 @@ class AutoEncoder:
                 raise ValueError("The mask must have the same IDs as the data.")
 
         if not self.use_mask:
-            arrays_to_check = data if isinstance(data, tuple) else [data]
+            arrays_to_check = self._data if isinstance(self._data, tuple) else [self._data]
             if any(np.isnan(arr).any() for arr in arrays_to_check):
                 raise ValueError(
                     "Data contains NaNs but use_mask is False. Clean or impute data."
                 )
 
         if self.id_data_dict:
-            self.data = {}
+            self._data = {}
             self.x_train = {}
             self.x_val = {}
             self.x_test = {}
@@ -796,35 +798,35 @@ class AutoEncoder:
         self.output_features = len(self._feature_to_check)
 
         if self.use_mask and self.custom_mask is not None:
-            if isinstance(data, tuple) and (
+            if isinstance(self._data, tuple) and (
                 not isinstance(self.custom_mask, tuple) or len(self.custom_mask) != 3
             ):
                 raise ValueError(
                     "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
                 )
 
-            if not isinstance(data, tuple) and isinstance(self.custom_mask, tuple):
+            if not isinstance(self._data, tuple) and isinstance(self.custom_mask, tuple):
                 raise ValueError(
                     "If data is a single array, custom_mask cannot be a tuple."
                 )
 
             if isinstance(self.custom_mask, tuple):
                 if (
-                    mask[0].shape != data[0].shape
-                    or mask[1].shape != data[1].shape
-                    or mask[2].shape != data[2].shape
+                    mask[0].shape != self._data[0].shape
+                    or mask[1].shape != self._data[1].shape
+                    or mask[2].shape != self._data[2].shape
                 ):
                     raise ValueError(
                         "Each element of custom_mask must have the same shape as its corresponding dataset "
                         "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
                     )
             else:
-                if mask.shape != data.shape:
+                if mask.shape != self._data.shape:
                     raise ValueError(
                         "custom_mask must have the same shape as the original input data before transformation"
                     )
 
-                    # Check if masks and data have the same shape
+        # Check if masks and data have the same shape
         if self.use_mask:
             if (
                 self.mask_train.shape != self.x_train.shape
