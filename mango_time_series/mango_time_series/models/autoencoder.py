@@ -763,8 +763,8 @@ class AutoEncoder:
         self.train_size = train_size
         self.val_size = val_size
         self.test_size = test_size
+        self._use_mask = use_mask
 
-        self.use_mask = use_mask
         self.custom_mask = custom_mask
         self.imputer = imputer
 
@@ -783,7 +783,7 @@ class AutoEncoder:
             ]
         )
 
-        if self.use_mask and self.custom_mask is not None:
+        if self._use_mask and self.custom_mask is not None:
             self.custom_mask, _ = convert_data_to_numpy(self.custom_mask)
             mask, self.id_data_mask, self.id_data_dict_mask = self._handle_id_columns(
                 self.custom_mask, id_columns
@@ -793,7 +793,7 @@ class AutoEncoder:
             self._data, id_columns
         )
 
-        if self.use_mask and self.custom_mask is not None and self.id_data is not None:
+        if self._use_mask and self.custom_mask is not None and self.id_data is not None:
             if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
                 for id_d, id_m in zip(self.id_data, self.id_data_mask):
                     if (id_d != id_m).any():
@@ -801,7 +801,7 @@ class AutoEncoder:
             elif (self.id_data_mask != self.id_data).any():
                 raise ValueError("The mask must have the same IDs as the data.")
 
-        if not self.use_mask:
+        if not self._use_mask:
             arrays_to_check = (
                 self._data if isinstance(self._data, tuple) else [self._data]
             )
@@ -842,7 +842,7 @@ class AutoEncoder:
                 [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
             )
-            if use_mask:
+            if self._use_mask:
                 self.mask_train = np.concatenate(
                     [
                         self.mask_train[id_iter]
@@ -882,7 +882,7 @@ class AutoEncoder:
         self.output_features = len(self._feature_to_check)
 
         # TODO: make this checks correct
-        # if self.use_mask and self.custom_mask is not None:
+        # if self._use_mask and self.custom_mask is not None:
         #     if isinstance(self._data, tuple) and (
         #         not isinstance(self.custom_mask, tuple) or len(self.custom_mask) != 3
         #     ):
@@ -914,7 +914,7 @@ class AutoEncoder:
         #             )
 
         # Check if masks and data have the same shape
-        if self.use_mask:
+        if self._use_mask:
             if (
                 self.mask_train.shape != self.x_train.shape
                 or self.mask_val.shape != self.x_val.shape
@@ -960,7 +960,7 @@ class AutoEncoder:
 
         self.model_optimizer = self._get_optimizer(optimizer)
 
-        if use_mask:
+        if self._use_mask:
             train_dataset = tf.data.Dataset.from_tensor_slices(
                 (self.x_train, self.mask_train)
             )
@@ -1094,7 +1094,7 @@ class AutoEncoder:
             # Training loop
             epoch_train_losses = []
             for batch in self.train_dataset:
-                if self.use_mask:
+                if self._use_mask:
                     data, mask = batch
                 else:
                     data = batch
@@ -1110,7 +1110,7 @@ class AutoEncoder:
             # Validation loop
             epoch_val_losses = []
             for batch in self.val_dataset:
-                if self.use_mask:
+                if self._use_mask:
                     data, mask = batch
                 else:
                     data = batch
@@ -2157,7 +2157,7 @@ class AutoEncoder:
         """
         x_train, x_val, x_test = data
 
-        if self.use_mask:
+        if self._use_mask:
             if self.custom_mask is None:
                 mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
                 mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
@@ -2191,7 +2191,7 @@ class AutoEncoder:
                 x_train, x_val, x_test, id_iter=id_iter
             )
 
-        if self.use_mask and self.imputer is not None:
+        if self._use_mask and self.imputer is not None:
             import pandas as pd
 
             x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
@@ -2211,7 +2211,7 @@ class AutoEncoder:
             self.x_train[id_iter] = seq_x_train
             self.x_val[id_iter] = seq_x_val
             self.x_test[id_iter] = seq_x_test
-            if self.use_mask:
+            if self._use_mask:
                 self.mask_train[id_iter] = seq_mask_train
                 self.mask_val[id_iter] = seq_mask_val
                 self.mask_test[id_iter] = seq_mask_test
@@ -2220,7 +2220,7 @@ class AutoEncoder:
             self.x_train = seq_x_train
             self.x_val = seq_x_val
             self.x_test = seq_x_test
-            if self.use_mask:
+            if self._use_mask:
                 self.mask_train = seq_mask_train
                 self.mask_val = seq_mask_val
                 self.mask_test = seq_mask_test
