@@ -1074,14 +1074,6 @@ class AutoEncoder:
 
         self.save(filename=f"{self.last_epoch}.pkl")
 
-        # Plot results
-        if self._verbose:
-            plot_learning_curve(
-                train_loss=train_loss_history,
-                val_loss=val_loss_history,
-                save_path=os.path.join(self._save_path, "plots"),
-            )
-
     def reconstruct(self) -> bool:
         """
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
