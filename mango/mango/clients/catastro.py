@@ -101,6 +101,7 @@ class CatastroData:
                 terr_name_full = title_element.get_text(strip=True)
                 territorial_link = link_element.get("href")
                 try:
+                    # TODO: Review
                     territorial_code = str(terr_name_full[19:21]).zfill(2)
                     territorial_name = terr_name_full[22:].strip()
                 except IndexError:
@@ -372,7 +373,10 @@ class CatastroData:
             raise
 
     def get_multiple_municipalities_data(
-        self, municipality_codes: list[str], datatype, target_crs="EPSG:4326"
+        self,
+        municipality_codes: Union[str, list[str]],
+        datatype,
+        target_crs="EPSG:4326",
     ) -> gpd.GeoDataFrame or None:
         """
         Returns a combined GeoDataFrame for multiple municipalities of the same datatype.
@@ -386,14 +390,20 @@ class CatastroData:
         """
         self._ensure_index_loaded()
 
-        if not isinstance(municipality_codes, list):
-            raise TypeError("municipality_codes must be a list.")
+        if not isinstance(municipality_codes, list) and not isinstance(
+            municipality_codes, str
+        ):
+            raise TypeError(
+                "municipality_codes must be a list of strings or a single string."
+            )
         if datatype not in self.available_datatypes:
             raise ValueError(
                 f"Invalid datatype '{datatype}'. Available types: {self.available_datatypes}"
             )
 
         gdfs = []
+        if isinstance(municipality_codes, str):
+            municipality_codes = [municipality_codes]
         for code in municipality_codes:
             sleep(0.1)
             code_str = str(code).zfill(5)
@@ -434,4 +444,3 @@ class CatastroData:
             pd.concat(gdfs, ignore_index=True), crs=target_crs if gdfs else None
         )
         return combined_gdf
-
