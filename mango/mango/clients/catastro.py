@@ -7,6 +7,7 @@ from io import BytesIO
 from time import sleep
 from bs4 import BeautifulSoup
 import json
+from typing import Union, Optional, List
 
 
 class CatastroData:
@@ -29,9 +30,12 @@ class CatastroData:
         """
         Initializes the CatastroData module.
 
-        :param bool verbose: If True, prints detailed messages. Defaults to False.
-        :param bool cache: If True, loads/saves the municipality index from/to cache. Defaults to False.
-        :param int request_timeout: Timeout in seconds for network requests. Defaults to 30.
+        :param verbose: If True, prints detailed messages
+        :type verbose: bool
+        :param cache: If True, loads/saves the municipality index from/to cache
+        :type cache: bool
+        :param request_timeout: Timeout in seconds for network requests
+        :type request_timeout: int
         """
         self.verbose = verbose
         self.cache = cache
@@ -41,12 +45,25 @@ class CatastroData:
         self.available_datatypes = list(self.BASE_URLS.keys())
 
     def _log(self, message) -> None:
-        """Logs a message if verbose mode is enabled."""
+        """
+        Logs a message if verbose mode is enabled.
+
+        :param message: Message to log
+        :type message: str
+        :return: None
+        """
         if self.verbose:
             print(message)
 
-    def _fetch_content(self, url) -> bytes or None:
-        """Fetches content from a URL with error handling."""
+    def _fetch_content(self, url) -> Optional[bytes]:
+        """
+        Fetches content from a URL with error handling.
+
+        :param url: URL to fetch content from
+        :type url: str
+        :return: Content bytes or None if fetch failed
+        :rtype: bytes or None
+        """
         try:
             response = requests.get(url, timeout=self.request_timeout)
             response.raise_for_status()
@@ -57,8 +74,15 @@ class CatastroData:
             self._log(f"Error fetching {url}: {e}")
             return None
 
-    def _get_soup(self, url) -> BeautifulSoup or None:
-        """Fetches content and returns a BeautifulSoup object."""
+    def _get_soup(self, url) -> Optional[BeautifulSoup]:
+        """
+        Fetches content and returns a BeautifulSoup object.
+
+        :param url: URL to fetch content from
+        :type url: str
+        :return: BeautifulSoup object or None if fetch/parse failed
+        :rtype: BeautifulSoup or None
+        """
         content = self._fetch_content(url)
         if content:
             try:
@@ -72,6 +96,9 @@ class CatastroData:
     def _fetch_and_parse_links(self) -> pd.DataFrame:
         """
         Fetches and parses territorial and municipality links from the ATOM feeds.
+
+        :return: DataFrame with parsed municipality links
+        :rtype: pd.DataFrame
         """
         self._log("Fetching and parsing municipality .zip links...")
         municipalities_data = []
@@ -180,8 +207,11 @@ class CatastroData:
     def load_index(self) -> None:
         """
         Loads the index of available municipalities and their download links.
+
         Uses cache if enabled and available, otherwise fetches fresh data.
         Must be called before retrieving specific municipality data.
+
+        :return: None
         """
         if self._index_loaded:
             self._log("Municipality index already loaded.")
@@ -218,14 +248,30 @@ class CatastroData:
             self._log("Skipping cache save because fetched index is empty.")
 
     def _ensure_index_loaded(self) -> None:
-        """Checks if the index is loaded and raises an error if not."""
+        """
+        Checks if the index is loaded and raises an error if not.
+
+        :raises RuntimeError: If municipality index is not loaded
+        :return: None
+        """
         if not self._index_loaded or self.municipalities_links.empty:
             raise RuntimeError(
                 "Municipality index not loaded. Call load_index() first."
             )
 
     def _download_and_extract(self, municipality_code, datatype):
-        """Downloads and extracts the GML file from the zip archive."""
+        """
+        Downloads and extracts the GML file from the zip archive.
+
+        :param municipality_code: The 5-digit code of the municipality
+        :type municipality_code: str
+        :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses")
+        :type datatype: str
+        :return: File-like object containing the extracted GML file
+        :raises ValueError: If the municipality or datatype is not found
+        :raises ConnectionError: If download fails
+        :raises FileNotFoundError: If the expected file is not in the zip
+        """
         self._ensure_index_loaded()
 
         self._log(
@@ -306,10 +352,15 @@ class CatastroData:
     def available_municipalities(self, datatype: str) -> pd.DataFrame:
         """
         Returns a DataFrame of available municipalities for a given datatype.
-        Requires load_index() to be called first.
 
-        :param str datatype: The type of data ("Buildings", "CadastralParcels", "Addresses").
-        :return: pandas.DataFrame with names and codes of all available municipalities for the specified datatype
+        Requires ``load_index()`` to be called first.
+
+        :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses")
+        :type datatype: str
+        :return: DataFrame with names and codes of all available municipalities
+        :rtype: pd.DataFrame
+        :raises ValueError: If an invalid datatype is specified
+        :raises RuntimeError: If index is not loaded
         """
         self._ensure_index_loaded()
         if datatype not in self.available_datatypes:
@@ -327,12 +378,18 @@ class CatastroData:
 
     def get_municipality_data(self, municipality_code, datatype) -> gpd.GeoDataFrame:
         """
-        Main method of the class. Gets a GeoDataFrame for a single municipality and datatype.
-        Requires load_index() to be called first.
+        Gets a GeoDataFrame for a single municipality and datatype.
 
-        :param municipality_code: The 5-digit code of the municipality.
-        :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses").
-        :return: geopandas.GeoDataFrame with the loaded spatial data.
+        Main method of the class. Requires ``load_index()`` to be called first.
+
+        :param municipality_code: The 5-digit code of the municipality
+        :type municipality_code: str
+        :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses")
+        :type datatype: str
+        :return: GeoDataFrame with the loaded spatial data
+        :rtype: gpd.GeoDataFrame
+        :raises ValueError: If the municipality or datatype is not found
+        :raises RuntimeError: If index is not loaded
         """
         self._ensure_index_loaded()
         self._log(
@@ -374,19 +431,25 @@ class CatastroData:
 
     def get_multiple_municipalities_data(
         self,
-        municipality_codes: Union[str, list[str]],
+        municipality_codes: Union[str, List[str]],
         datatype,
         target_crs="EPSG:4326",
-    ) -> gpd.GeoDataFrame or None:
+    ) -> Optional[gpd.GeoDataFrame]:
         """
         Returns a combined GeoDataFrame for multiple municipalities of the same datatype.
-        Requires `load_index()` to be called first. Optionally reprojects to the specified `target_crs`,
-        or defaults to EPSG:4326 for merging all municipalities into one GeoDataFrame.
 
-        :param municipality_codes: A list of 5-digit municipality codes (str or int).
-        :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses").
-        :param target_crs: The target Coordinate Reference System (default: "EPSG:4326").
-        :returns: Combined data into a geopandas.DataFrame, or None if no data could be processed.
+        Requires ``load_index()`` to be called first. Optionally reprojects to the
+        specified ``target_crs``, or defaults to EPSG:4326 for merging all municipalities
+        into one GeoDataFrame.
+
+        :param municipality_codes: A list of 5-digit municipality codes or a single code
+        :type municipality_codes: Union[str, List[str]]
+        :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses")
+        :type datatype: str
+        :param target_crs: The target Coordinate Reference System
+        :type target_crs: str
+        :return: Combined data into a GeoDataFrame, or None if no data could be processed
+        :rtype: Optional[gpd.GeoDataFrame]
         """
         self._ensure_index_loaded()
 

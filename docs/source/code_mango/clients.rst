@@ -42,3 +42,10 @@ RESTClient
    :members:
    :undoc-members:
    :show-inheritance:
+
+CatastroData
+============
+.. autoclass:: mango.clients.catastro.CatastroData
+   :members:
+   :undoc-members:
+   :show-inheritance:
