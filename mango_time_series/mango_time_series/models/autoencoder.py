@@ -582,6 +582,20 @@ class AutoEncoder:
 
         self._test_size = value
 
+    @property
+    def num_layers(self) -> int:
+        """
+        Get the number of layers.
+        """
+        return getattr(self, "_num_layers", len(self._hidden_dim))
+
+    @num_layers.setter
+    def num_layers(self, value: int) -> None:
+        """
+        Set the number of layers.
+        """
+        self._num_layers = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -783,15 +797,15 @@ class AutoEncoder:
             ]
         )
 
+        self.data, self.id_data, self.id_data_dict = self._handle_id_columns(
+            self._data, id_columns
+        )
+
         if self._use_mask and self.custom_mask is not None:
             self.custom_mask, _ = convert_data_to_numpy(self.custom_mask)
             mask, self.id_data_mask, self.id_data_dict_mask = self._handle_id_columns(
                 self.custom_mask, id_columns
             )
-
-        self.data, self.id_data, self.id_data_dict = self._handle_id_columns(
-            self._data, id_columns
-        )
 
         if self._use_mask and self.custom_mask is not None and self.id_data is not None:
             if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
@@ -924,15 +938,17 @@ class AutoEncoder:
                     "Masks must have the same shape as the data after transformation."
                 )
 
-        # Build model
-        num_layers = len(self._hidden_dim)
-        layers = [
+        #########################################################
+        ################# BUILD MODEL ###########################
+        #########################################################
+        self.num_layers = len(self._hidden_dim)
+        self.layers = [
             encoder(
                 form=self._form,
                 context_window=self._context_window,
                 features=self.input_features,
                 hidden_dim=self._hidden_dim,
-                num_layers=num_layers,
+                num_layers=self.num_layers,
                 use_bidirectional=self._bidirectional_encoder,
                 activation=self._activation_encoder,
                 verbose=self._verbose,
@@ -942,7 +958,7 @@ class AutoEncoder:
                 context_window=self._context_window,
                 features=self.output_features,
                 hidden_dim=self._hidden_dim,
-                num_layers=num_layers,
+                num_layers=self.num_layers,
                 use_bidirectional=self._bidirectional_decoder,
                 activation=self._activation_decoder,
                 verbose=self._verbose,
@@ -950,9 +966,9 @@ class AutoEncoder:
         ]
 
         if use_post_decoder_dense:
-            layers.append(Dense(self.output_features, name="post_decoder_dense"))
+            self.layers.append(Dense(self.output_features, name="post_decoder_dense"))
 
-        self.model = Sequential(layers, name="autoencoder")
+        self.model = Sequential(self.layers, name="autoencoder")
         self.model.build()
 
         if self._verbose:
