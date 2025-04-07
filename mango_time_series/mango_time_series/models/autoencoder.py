@@ -59,9 +59,10 @@ class AutoEncoder:
         self._normalization_method = None
         self.normalization_values = {}
         self.imputer = None
-        self.x_train = None
         self._normalize = False
         self._verbose = False
+        self._shuffle_buffer_size = None
+        self._x_train_no_shuffle = None
 
     @property
     def save_path(self) -> Optional[str]:
@@ -655,6 +656,68 @@ class AutoEncoder:
                 raise ValueError("The mask must have the same IDs as the data.")
         self._custom_mask = value
 
+    @property
+    def imputer(self) -> Optional[DataImputer]:
+        """
+        Get the imputer.
+        """
+        return self._imputer
+
+    @imputer.setter
+    def imputer(self, value: Optional[DataImputer]) -> None:
+        """
+        Set the imputer.
+        """
+        self._imputer = value
+
+    @property
+    def shuffle(self) -> bool:
+        """
+        Get the shuffle flag.
+        """
+        return self._shuffle
+
+    @shuffle.setter
+    def shuffle(self, value: bool) -> None:
+        """
+        Set the shuffle flag.
+        """
+        self._shuffle = value
+
+    @property
+    def shuffle_buffer_size(self) -> Optional[int]:
+        """
+        Get the shuffle buffer size.
+        """
+        return self._shuffle_buffer_size
+
+    @shuffle_buffer_size.setter
+    def shuffle_buffer_size(self, value: Optional[int]) -> None:
+        """
+        Set the shuffle buffer size.
+        """
+        if value is not None:
+            if not isinstance(value, int) or value <= 0:
+                raise ValueError("shuffle_buffer_size must be a positive integer.")
+
+        self._shuffle_buffer_size = value
+
+    @property
+    def x_train_no_shuffle(self) -> np.ndarray:
+        """
+        Get the x_train_no_shuffle.
+        """
+        if self._x_train_no_shuffle is None:
+            return self.x_train
+        return self._x_train_no_shuffle
+
+    @x_train_no_shuffle.setter
+    def x_train_no_shuffle(self, value: np.ndarray) -> None:
+        """
+        Set the x_train_no_shuffle.
+        """
+        self._x_train_no_shuffle = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -837,6 +900,8 @@ class AutoEncoder:
         self.test_size = test_size
         self.use_mask = use_mask
         self.imputer = imputer
+        self.shuffle = shuffle
+        self.shuffle_buffer_size = shuffle_buffer_size
 
         # Extract names and convert data to numpy
         self.data, extracted_feature_names = convert_data_to_numpy(data)
@@ -871,75 +936,13 @@ class AutoEncoder:
             self.custom_mask = custom_mask
 
         if self.id_data_dict:
-            self._data = {}
-            self.x_train = {}
-            self.x_val = {}
-            self.x_test = {}
-            self.mask_train = {}
-            self.mask_val = {}
-            self.mask_test = {}
-            self.length_datasets = {}
-            for id_iter, d in self.id_data_dict.items():
-                self.prepare_datasets(
-                    d, self._context_window, normalize, id_iter=id_iter
-                )
-                self.length_datasets[id_iter] = {
-                    "train": len(self.x_train[id_iter]),
-                    "val": len(self.x_val[id_iter]),
-                    "test": len(self.x_test[id_iter]),
-                }
-
-            # Concat all the datasets
-            self.x_train = np.concatenate(
-                [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
-                axis=0,
-            )
-            self.x_val = np.concatenate(
-                [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
-                axis=0,
-            )
-            self.x_test = np.concatenate(
-                [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
-                axis=0,
-            )
-            if self._use_mask:
-                self.mask_train = np.concatenate(
-                    [
-                        self.mask_train[id_iter]
-                        for id_iter in sorted(self.id_data_dict.keys())
-                    ],
-                    axis=0,
-                )
-                self.mask_val = np.concatenate(
-                    [
-                        self.mask_val[id_iter]
-                        for id_iter in sorted(self.id_data_dict.keys())
-                    ],
-                    axis=0,
-                )
-                self.mask_test = np.concatenate(
-                    [
-                        self.mask_test[id_iter]
-                        for id_iter in sorted(self.id_data_dict.keys())
-                    ],
-                    axis=0,
-                )
+            self.concatenate_by_id()
         else:
-            self.prepare_datasets(self._data, self._context_window, normalize)
+            self.prepare_datasets(self._data, self._context_window, self._normalize)
 
-        if shuffle:
-            if shuffle_buffer_size is not None:
-                if not isinstance(shuffle_buffer_size, int) or shuffle_buffer_size <= 0:
-                    raise ValueError("shuffle_buffer_size must be a positive integer.")
-                self.shuffle_buffer_size = shuffle_buffer_size
-            else:
-                self.shuffle_buffer_size = len(self.x_train)
-        else:
-            self.shuffle_buffer_size = None
-
-        self.x_train_no_shuffle = np.copy(self.x_train)
-        self.input_features = self.x_train.shape[2]
-        self.output_features = len(self._feature_to_check)
+        if self._shuffle and self._shuffle_buffer_size is None:
+            self.shuffle_buffer_size = len(self.x_train)
+            self.x_train_no_shuffle = np.copy(self.x_train)
 
         # TODO: make this checks correct
         # if self._use_mask and self.custom_mask is not None:
@@ -992,7 +995,7 @@ class AutoEncoder:
             encoder(
                 form=self._form,
                 context_window=self._context_window,
-                features=self.input_features,
+                features=self.x_train.shape[2],
                 hidden_dim=self._hidden_dim,
                 num_layers=self.num_layers,
                 use_bidirectional=self._bidirectional_encoder,
@@ -1002,7 +1005,7 @@ class AutoEncoder:
             decoder(
                 form=self._form,
                 context_window=self._context_window,
-                features=self.output_features,
+                features=len(self._feature_to_check),
                 hidden_dim=self._hidden_dim,
                 num_layers=self.num_layers,
                 use_bidirectional=self._bidirectional_decoder,
@@ -1012,7 +1015,9 @@ class AutoEncoder:
         ]
 
         if use_post_decoder_dense:
-            self.layers.append(Dense(self.output_features, name="post_decoder_dense"))
+            self.layers.append(
+                Dense(len(self._feature_to_check), name="post_decoder_dense")
+            )
 
         self.model = Sequential(self.layers, name="autoencoder")
         self.model.build()
@@ -2304,6 +2309,70 @@ class AutoEncoder:
                 self.mask_test = seq_mask_test
 
         return True
+
+    def concatenate_by_id(self) -> None:
+        """
+        Concatenate datasets by ID.
+        This method combines the training, validation, and test datasets
+        for each ID into a single dataset.
+        It also concatenates the masks if they are used.
+
+        :return: None
+        :rtype: None
+        """
+        self._data = {}
+        self.x_train = {}
+        self.x_val = {}
+        self.x_test = {}
+        self.mask_train = {}
+        self.mask_val = {}
+        self.mask_test = {}
+        self.length_datasets = {}
+        for id_iter, d in self.id_data_dict.items():
+            self.prepare_datasets(
+                d, self._context_window, self._normalize, id_iter=id_iter
+            )
+            self.length_datasets[id_iter] = {
+                "train": len(self.x_train[id_iter]),
+                "val": len(self.x_val[id_iter]),
+                "test": len(self.x_test[id_iter]),
+            }
+
+        # Concat all the datasets
+        self.x_train = np.concatenate(
+            [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        self.x_val = np.concatenate(
+            [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        self.x_test = np.concatenate(
+            [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        if self._use_mask:
+            self.mask_train = np.concatenate(
+                [
+                    self.mask_train[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_val = np.concatenate(
+                [
+                    self.mask_val[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_test = np.concatenate(
+                [
+                    self.mask_test[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
 
     @staticmethod
     def masked_weighted_mse(
