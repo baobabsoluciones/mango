@@ -1102,7 +1102,14 @@ class AutoEncoder:
                 x_pred = tf.expand_dims(x_hat, axis=1)
 
                 # Calculate mean loss across all selected points
-                train_loss = self.masked_weighted_mse(x_real, x_pred, mask)
+                train_loss = self.masked_weighted_mse(
+                    y_true=x_real,
+                    y_pred=x_pred,
+                    feature_weights=self._feature_weights,
+                    feature_to_check=self._feature_to_check,
+                    time_step_to_check=self._time_step_to_check,
+                    mask=mask,
+                )
 
             autoencoder_gradient = autoencoder_tape.gradient(
                 train_loss, self.model.trainable_variables
@@ -1142,7 +1149,14 @@ class AutoEncoder:
 
             x_pred = tf.expand_dims(x_hat, axis=1)
             # Calculate mean loss across all selected points
-            val_loss = self.masked_weighted_mse(x_real, x_pred, mask)
+            val_loss = self.masked_weighted_mse(
+                y_true=x_real,
+                y_pred=x_pred,
+                mask=mask,
+                feature_weights=self._feature_weights,
+                feature_to_check=self._feature_to_check,
+                time_step_to_check=self._time_step_to_check,
+            )
 
             return val_loss
 
@@ -2291,8 +2305,14 @@ class AutoEncoder:
 
         return True
 
+    @staticmethod
     def masked_weighted_mse(
-        self, y_true: tf.Tensor, y_pred: tf.Tensor, mask: Optional[tf.Tensor] = None
+        y_true: tf.Tensor,
+        y_pred: tf.Tensor,
+        time_step_to_check: Union[int, List[int]],
+        feature_to_check: Union[int, List[int]],
+        feature_weights: Optional[tf.Tensor] = None,
+        mask: Optional[tf.Tensor] = None,
     ) -> tf.Tensor:
         """
         Compute Mean Squared Error (MSE) with optional masking and feature weights.
@@ -2301,6 +2321,12 @@ class AutoEncoder:
         :type y_true: tf.Tensor
         :param y_pred: Predicted values with shape (batch_size, seq_length, num_features)
         :type y_pred: tf.Tensor
+        :param time_step_to_check: Time step to check
+        :type time_step_to_check: Union[int, List[int]]
+        :param feature_to_check: Feature to check
+        :type feature_to_check: Union[int, List[int]]
+        :param feature_weights: Feature weights
+        :type feature_weights: Optional[tf.Tensor]
         :param mask: Optional binary mask with shape (batch_size, seq_length, num_features)
                     1 for observed values, 0 for missing values
         :type mask: Optional[tf.Tensor]
@@ -2316,9 +2342,25 @@ class AutoEncoder:
 
             # Select the same time steps and features from the mask as we're using from the data
             # First select the time steps
-            mask_selected = tf.gather(mask, self._time_step_to_check, axis=1)
+            mask_selected = tf.gather(
+                mask,
+                (
+                    [time_step_to_check]
+                    if isinstance(time_step_to_check, int)
+                    else time_step_to_check
+                ),
+                axis=1,
+            )
             # Then select the features
-            mask_selected = tf.gather(mask_selected, self._feature_to_check, axis=2)
+            mask_selected = tf.gather(
+                mask_selected,
+                (
+                    [feature_to_check]
+                    if isinstance(feature_to_check, int)
+                    else feature_to_check
+                ),
+                axis=2,
+            )
 
             # Apply the mask to both true and predicted values
             y_true = tf.where(mask_selected > 0, y_true, tf.zeros_like(y_true))
@@ -2327,10 +2369,8 @@ class AutoEncoder:
         squared_error = tf.square(y_true - y_pred)
 
         # Apply feature-specific weights if provided
-        if self._feature_weights is not None:
-            feature_weights = tf.convert_to_tensor(
-                self._feature_weights, dtype=tf.float32
-            )
+        if feature_weights is not None:
+            feature_weights = tf.convert_to_tensor(feature_weights, dtype=tf.float32)
             squared_error = squared_error * feature_weights
 
         # Compute mean only over observed values if mask is provided
