@@ -324,7 +324,7 @@ class CatastroData:
                     if datatype == "Addresses":
                         if (
                             filename.upper().endswith(".GML")
-                            and "_AD_" in filename.upper()
+                            and "AD" in filename.upper()
                         ):
                             gml_filename = filename
                             break
