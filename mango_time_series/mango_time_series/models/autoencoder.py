@@ -1803,15 +1803,7 @@ class AutoEncoder:
             if isinstance(id_columns, (str, int)):
                 id_columns = [id_columns]
 
-            if all(isinstance(i, str) for i in id_columns):
-                feature_names = [
-                    name for name in feature_names if name not in id_columns
-                ]
-            elif all(isinstance(i, int) for i in id_columns):
-                feature_names = [
-                    name for i, name in enumerate(feature_names) if i not in id_columns
-                ]
-            else:
+            if not isinstance(id_columns, list):
                 raise ValueError("id_columns must be a list of strings or integers")
 
         features_names_to_check = (
