@@ -599,11 +599,67 @@ class AutoEncoder:
         self._num_layers = value
 
     @property
+    def id_data(self) -> Optional[np.ndarray]:
+        """
+        Get the ID data.
+        """
+        return getattr(self, "_id_data", None)
+
+    @id_data.setter
+    def id_data(self, value: Optional[np.ndarray]) -> None:
+        """
+        Set the ID data.
+        """
+        self._id_data = value
+
+    @property
+    def id_data_dict(self) -> Optional[Dict[str, np.ndarray]]:
+        """
+        Get the ID data dictionary.
+        """
+        return getattr(self, "_id_data_dict", None)
+
+    @id_data_dict.setter
+    def id_data_dict(self, value: Optional[Dict[str, np.ndarray]]) -> None:
+        """
+        Set the ID data dictionary.
+        """
+        self._id_data_dict = value
+
+    @property
+    def id_data_mask(self) -> Optional[np.ndarray]:
+        """
+        Get the ID data mask.
+        """
+        return getattr(self, "_id_data_mask", None)
+
+    @id_data_mask.setter
+    def id_data_mask(self, value: Optional[np.ndarray]) -> None:
+        """
+        Set the ID data mask.
+        """
+        self._id_data_mask = value
+
+    @property
+    def id_data_dict_mask(self) -> Optional[Dict[str, np.ndarray]]:
+        """
+        Get the ID data mask dictionary.
+        """
+        return getattr(self, "_id_data_dict_mask", None)
+
+    @id_data_dict_mask.setter
+    def id_data_dict_mask(self, value: Optional[Dict[str, np.ndarray]]) -> None:
+        """
+        Set the ID data mask dictionary.
+        """
+        self._id_data_dict_mask = value
+
+    @property
     def id_columns_indices(self) -> List[int]:
         """
         Get the indices of the ID columns.
         """
-        return self._id_columns_indices
+        return getattr(self, "_id_columns_indices", None)
 
     @id_columns_indices.setter
     def id_columns_indices(self, value: List[int]) -> None:
@@ -640,7 +696,7 @@ class AutoEncoder:
         """
         Get the custom mask.
         """
-        return self._custom_mask
+        return getattr(self, "_custom_mask", None)
 
     @custom_mask.setter
     def custom_mask(self, value: Optional[np.ndarray]) -> None:
@@ -654,7 +710,96 @@ class AutoEncoder:
                         raise ValueError("The mask must have the same IDs as the data.")
             elif (self.id_data_mask != self.id_data).any():
                 raise ValueError("The mask must have the same IDs as the data.")
+
+        if value is not None:
+            if isinstance(self._data, tuple) and (
+                not isinstance(value, tuple) or len(value) != 3
+            ):
+                raise ValueError(
+                    "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
+                )
+
+            if not isinstance(self._data, tuple) and isinstance(
+                self.custom_mask, tuple
+            ):
+                raise ValueError(
+                    "If data is a single array, custom_mask cannot be a tuple."
+                )
+
+            if isinstance(value, tuple):
+                if (
+                    value[0].shape != self._data[0].shape
+                    or value[1].shape != self._data[1].shape
+                    or value[2].shape != self._data[2].shape
+                ):
+                    raise ValueError(
+                        "Each element of custom_mask must have the same shape as its corresponding dataset "
+                        "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
+                    )
+            else:
+                if value.shape != self._data.shape:
+                    raise ValueError(
+                        "custom_mask must have the same shape as the original input data before transformation"
+                    )
+
         self._custom_mask = value
+
+    @property
+    def mask_train(self) -> np.ndarray:
+        """
+        Get the training mask.
+        """
+        return getattr(self, "_mask_train", None)
+
+    @mask_train.setter
+    def mask_train(self, value: np.ndarray) -> None:
+        """
+        Set the training mask.
+        """
+        if hasattr(value, "shape"):
+            if value.shape != self.x_train.shape:
+                raise ValueError(
+                    "mask_train must have the same shape as x_train after transformation."
+                )
+        self._mask_train = value
+
+    @property
+    def mask_val(self) -> np.ndarray:
+        """
+        Get the validation mask.
+        """
+        return getattr(self, "_mask_val", None)
+
+    @mask_val.setter
+    def mask_val(self, value: np.ndarray) -> None:
+        """
+        Set the validation mask.
+        """
+        if hasattr(value, "shape"):
+            if value.shape != self.x_val.shape:
+                raise ValueError(
+                    "mask_val must have the same shape as x_val after transformation."
+                )
+        self._mask_val = value
+
+    @property
+    def mask_test(self) -> np.ndarray:
+        """
+        Get the test mask.
+        """
+        return getattr(self, "_mask_test", None)
+
+    @mask_test.setter
+    def mask_test(self, value: np.ndarray) -> None:
+        """
+        Set the test mask.
+        """
+        if hasattr(value, "shape"):
+            if value.shape != self.x_test.shape:
+                raise ValueError(
+                    "mask_test must have the same shape as x_test after transformation."
+                )
+        self._mask_test = value
 
     @property
     def imputer(self) -> Optional[DataImputer]:
@@ -943,49 +1088,6 @@ class AutoEncoder:
         if self._shuffle and self._shuffle_buffer_size is None:
             self.shuffle_buffer_size = len(self.x_train)
             self.x_train_no_shuffle = np.copy(self.x_train)
-
-        # TODO: make this checks correct
-        # if self._use_mask and self.custom_mask is not None:
-        #     if isinstance(self._data, tuple) and (
-        #         not isinstance(self.custom_mask, tuple) or len(self.custom_mask) != 3
-        #     ):
-        #         raise ValueError(
-        #             "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
-        #         )
-        #
-        #     if not isinstance(self._data, tuple) and isinstance(
-        #         self.custom_mask, tuple
-        #     ):
-        #         raise ValueError(
-        #             "If data is a single array, custom_mask cannot be a tuple."
-        #         )
-        #
-        #     if isinstance(self.custom_mask, tuple):
-        #         if (
-        #             mask[0].shape != self._data[0].shape
-        #             or mask[1].shape != self._data[1].shape
-        #             or mask[2].shape != self._data[2].shape
-        #         ):
-        #             raise ValueError(
-        #                 "Each element of custom_mask must have the same shape as its corresponding dataset "
-        #                 "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
-        #             )
-        #     else:
-        #         if mask.shape != self._data.shape:
-        #             raise ValueError(
-        #                 "custom_mask must have the same shape as the original input data before transformation"
-        #             )
-
-        # Check if masks and data have the same shape
-        if self._use_mask:
-            if (
-                self.mask_train.shape != self.x_train.shape
-                or self.mask_val.shape != self.x_val.shape
-                or self.mask_test.shape != self.x_test.shape
-            ):
-                raise ValueError(
-                    "Masks must have the same shape as the data after transformation."
-                )
 
         #########################################################
         ################# BUILD MODEL ###########################
@@ -2304,6 +2406,7 @@ class AutoEncoder:
             self.x_val = seq_x_val
             self.x_test = seq_x_test
             if self._use_mask:
+                self.custom_mask = (seq_mask_train, seq_mask_val, seq_mask_test)
                 self.mask_train = seq_mask_train
                 self.mask_val = seq_mask_val
                 self.mask_test = seq_mask_test
