@@ -21,8 +21,9 @@ from mango_time_series.models.utils.plots import (
 from mango_time_series.models.utils.processing import (
     time_series_split,
     convert_data_to_numpy,
-    denormalize_data,
     apply_padding,
+    denormalize_data,
+    handle_id_columns,
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
@@ -596,6 +597,20 @@ class AutoEncoder:
         """
         self._num_layers = value
 
+    @property
+    def id_columns_indices(self) -> List[int]:
+        """
+        Get the indices of the ID columns.
+        """
+        return self._id_columns_indices
+
+    @id_columns_indices.setter
+    def id_columns_indices(self, value: List[int]) -> None:
+        """
+        Set the indices of the ID columns.
+        """
+        self._id_columns_indices = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -783,7 +798,7 @@ class AutoEncoder:
 
         # Extract names and convert data to numpy
         self.data, extracted_feature_names = convert_data_to_numpy(data)
-        self._features_name = (
+        self.features_name = (
             feature_names
             or extracted_feature_names
             or [
@@ -796,14 +811,20 @@ class AutoEncoder:
             ]
         )
 
-        self.data, self.id_data, self.id_data_dict = self._handle_id_columns(
-            self._data, id_columns
+        (self.data, self.id_data, self.id_data_dict, self.id_columns_indices) = (
+            handle_id_columns(
+                self._data, id_columns, self._features_name, self._context_window
+            )
         )
 
         if self._use_mask and self.custom_mask is not None:
-            self.custom_mask, _ = convert_data_to_numpy(self.custom_mask)
-            mask, self.id_data_mask, self.id_data_dict_mask = self._handle_id_columns(
-                self.custom_mask, id_columns
+            self.custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
+                handle_id_columns(
+                    self.custom_mask,
+                    id_columns,
+                    self._features_name,
+                    self._context_window,
+                )
             )
 
         if self._use_mask and self.custom_mask is not None and self.id_data is not None:
@@ -1654,7 +1675,9 @@ class AutoEncoder:
 
         # Handle ID columns
         if id_columns is not None:
-            data, _, id_data_dict = self._handle_id_columns(data, id_columns)
+            data, _, id_data_dict, self.id_columns_indices = handle_id_columns(
+                data, id_columns, feature_names, self.context_window
+            )
         else:
             id_data_dict = {"global": data}
 
@@ -2324,88 +2347,3 @@ class AutoEncoder:
             )
 
         return optimizers[optimizer_name.lower()]
-
-    def _handle_id_columns(
-        self,
-        data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
-        id_columns: Union[str, int, List[str], List[int], None],
-    ) -> Tuple[
-        Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
-        Optional[np.ndarray],
-        Dict[str, np.ndarray],
-    ]:
-        """
-        Handle id_columns processing for data grouping.
-
-        :param data: Data to process, can be single array or tuple of arrays
-        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-        :param id_columns: Column(s) to process the data by groups
-        :type id_columns: Union[str, int, List[str], List[int], None]
-        :return: Tuple containing:
-            - Processed data (with ID columns removed)
-            - ID mapping array
-            - Dictionary with grouped data by ID
-        :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], Optional[np.ndarray], Dict[str, np.ndarray]]
-        :raises ValueError: If id_columns format is invalid or if minimum samples per ID is less than context_window
-        """
-        self.id_columns_indices = []
-
-        if id_columns is None:
-            return data, None, {}
-
-        id_columns = [id_columns] if isinstance(id_columns, (str, int)) else id_columns
-
-        if all(isinstance(i, str) for i in id_columns):
-            id_column_indices = [
-                i for i, value in enumerate(self._features_name) if value in id_columns
-            ]
-        elif all(isinstance(i, int) for i in id_columns):
-            id_column_indices = id_columns
-        else:
-            raise ValueError("id_columns must be a list of strings or integers")
-
-        self.id_columns_indices = id_column_indices
-
-        if isinstance(data, tuple):
-            id_data = tuple(
-                np.array(["__".join(map(str, row)) for row in d[:, id_column_indices]])
-                for d in data
-            )
-            data = tuple(
-                np.delete(d, id_column_indices, axis=1).astype(np.float64) for d in data
-            )
-        else:
-            id_data = np.array(
-                ["__".join(map(str, row)) for row in data[:, id_column_indices]]
-            )
-            data = np.delete(data, id_column_indices, axis=1).astype(np.float64)
-
-        if isinstance(id_data, tuple):
-            unique_ids = np.unique(id_data[0])
-            id_data_dict = {
-                unique_id: (
-                    data[0][id_data[0] == unique_id],
-                    data[1][id_data[1] == unique_id],
-                    data[2][id_data[2] == unique_id],
-                )
-                for unique_id in unique_ids
-            }
-            min_samples_all_ids = min(
-                [
-                    np.min(np.unique(id_data, return_counts=True)[1])
-                    for id_data in id_data
-                ]
-            )
-        else:
-            unique_ids = np.unique(id_data)
-            id_data_dict = {uid: data[id_data == uid] for uid in unique_ids}
-            min_samples_all_ids = np.min(np.unique(id_data, return_counts=True)[1])
-
-        if min_samples_all_ids < self._context_window:
-            raise ValueError(
-                f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
-                f"but the context_window is {self._context_window}. "
-                "Reduce the context_window or ensure each ID has enough data."
-            )
-
-        return data, id_data, id_data_dict

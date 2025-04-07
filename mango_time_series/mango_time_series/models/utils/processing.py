@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, Dict
 
 import numpy as np
 
@@ -219,3 +219,92 @@ def apply_padding(
         padded_reconstructed[before : num_samples - after] = reconstructed
 
     return padded_reconstructed
+
+
+def handle_id_columns(
+    data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+    id_columns: Union[str, int, List[str], List[int], None],
+    features_name: Optional[List[str]],
+    context_window: Optional[int],
+) -> Tuple[
+    Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+    Optional[np.ndarray],
+    Dict[str, np.ndarray],
+    List[int],
+]:
+    """
+    Handle id_columns processing for data grouping.
+
+    :param data: Data to process, can be single array or tuple of arrays
+    :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+    :param id_columns: Column(s) to process the data by groups
+    :type id_columns: Union[str, int, List[str], List[int], None]
+    :param features_name: List of feature names
+    :type features_name: Optional[List[str]]
+    :param context_window: Context window for the model
+    :type context_window: Optional[int]
+    :return: Tuple containing:
+        - Processed data (with ID columns removed)
+        - ID mapping array
+        - Dictionary with grouped data by ID
+        - List of column indices
+    :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], Optional[np.ndarray], Dict[str, np.ndarray], List[int]]
+    :raises ValueError: If id_columns format is invalid or if minimum samples per ID is less than context_window
+    """
+    if id_columns is None:
+        return data, None, {}, []
+
+    id_columns = [id_columns] if isinstance(id_columns, (str, int)) else id_columns
+
+    if all(isinstance(i, str) for i in id_columns):
+        id_column_indices = [
+            i for i, value in enumerate(features_name) if value in id_columns
+        ]
+    elif all(isinstance(i, int) for i in id_columns):
+        id_column_indices = id_columns
+    else:
+        raise ValueError("id_columns must be a list of strings or integers")
+
+    if isinstance(data, tuple):
+        id_data = tuple(
+            np.array([f"__".join(map(str, row)) for row in d[:, id_column_indices]])
+            for d in data
+        )
+        data = tuple(
+            np.delete(d, id_column_indices, axis=1).astype(np.float64) for d in data
+        )
+    else:
+        id_data = np.array(
+            [f"__".join(map(str, row)) for row in data[:, id_column_indices]]
+        )
+        data = np.delete(data, id_column_indices, axis=1).astype(np.float64)
+
+    if isinstance(id_data, tuple):
+        unique_ids = np.unique(id_data[0])
+        id_data_dict = {
+            unique_id: (
+                data[0][id_data[0] == unique_id],
+                data[1][id_data[1] == unique_id],
+                data[2][id_data[2] == unique_id],
+            )
+            for unique_id in unique_ids
+        }
+        min_samples_all_ids = min(
+            [
+                np.min(np.unique(id_data_item, return_counts=True)[1])
+                for id_data_item in id_data
+            ]
+        )
+    else:
+        unique_ids = np.unique(id_data)
+        id_data_dict = {uid: data[id_data == uid] for uid in unique_ids}
+        min_samples_all_ids = np.min(np.unique(id_data, return_counts=True)[1])
+
+    if min_samples_all_ids < context_window:
+        raise ValueError(
+            f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
+            f"but the context_window is {context_window}. "
+            "Reduce the context_window or ensure each ID has enough data."
+        )
+
+    return data, id_data, id_data_dict, id_column_indices
