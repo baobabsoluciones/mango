@@ -259,7 +259,7 @@ class CatastroData:
                 "Municipality index not loaded. Call load_index() first."
             )
 
-    def _download_and_extract(self, municipality_code, datatype):
+    def _download_and_extract(self, municipality_code, datatype, subtype=None):
         """
         Downloads and extracts the GML file from the zip archive.
 
@@ -267,6 +267,8 @@ class CatastroData:
         :type municipality_code: str
         :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses")
         :type datatype: str
+        :param subtype: Optional subtype for the datatype (e.g., "Buildings", "Building_Parts")
+        :type subtype: str
         :return: File-like object containing the extracted GML file
         :raises ValueError: If the municipality or datatype is not found
         :raises ConnectionError: If download fails
@@ -308,27 +310,40 @@ class CatastroData:
         try:
             with zipfile.ZipFile(BytesIO(zip_content), "r") as zip_ref:
                 file_suffixes = {
-                    "Addresses": ".gml",
-                    "Buildings": ".building.gml",
-                    "CadastralParcels": ".cadastralparcel.gml",
+                    "Addresses": [".gml"],
+                    "Buildings": {
+                        "Buildings": ".building.gml",
+                        "Building_Parts": ".buildingpart.gml",
+                        "Other_Buildings": ".otherconstruction.gml",
+                    },
+                    "CadastralParcels": {
+                        "CadastralParcels": ".cadastralparcel.gml",
+                        "CadastralZonings": ".cadastralzoning.gml",
+                    },
                 }
                 suffix = file_suffixes.get(datatype)
                 if not suffix:
-
                     raise ValueError(
                         f"Internal error: Invalid datatype '{datatype}' specified for suffix lookup."
                     )
 
+                if subtype:
+                    if isinstance(suffix, dict):
+                        if subtype not in suffix:
+                            raise ValueError(
+                                f"Invalid subtype '{subtype}' for datatype '{datatype}'. Available subtypes: {list(suffix.keys())}"
+                            )
+                        suffix = suffix[subtype]
+                    else:
+                        raise ValueError(
+                            f"Subtypes are not supported for datatype '{datatype}'."
+                        )
+                else:
+                    suffix = next(iter(suffix.values()))
+
                 gml_filename = None
                 for filename in zip_ref.namelist():
-                    if datatype == "Addresses":
-                        if (
-                            filename.upper().endswith(".GML")
-                            and "AD" in filename.upper()
-                        ):
-                            gml_filename = filename
-                            break
-                    elif filename.lower().endswith(suffix.lower()):
+                    if filename.lower().endswith(suffix.lower()):
                         gml_filename = filename
                         break
 
@@ -376,7 +391,9 @@ class CatastroData:
             .reset_index(drop=True)
         )
 
-    def get_municipality_data(self, municipality_code, datatype) -> gpd.GeoDataFrame:
+    def get_municipality_data(
+        self, municipality_code, datatype, subtype=None
+    ) -> gpd.GeoDataFrame:
         """
         Gets a GeoDataFrame for a single municipality and datatype.
 
@@ -386,6 +403,8 @@ class CatastroData:
         :type municipality_code: str
         :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses")
         :type datatype: str
+        :param subtype: Optional subtype for the datatype (e.g., "Buildings", "Building_Parts")
+        :type subtype: str
         :return: GeoDataFrame with the loaded spatial data
         :rtype: gpd.GeoDataFrame
         :raises ValueError: If the municipality or datatype is not found
@@ -405,7 +424,7 @@ class CatastroData:
 
         try:
             with self._download_and_extract(
-                municipality_code_str, datatype
+                municipality_code_str, datatype, subtype
             ) as gml_file:
                 gdf = gpd.read_file(gml_file)
                 self._log(
@@ -434,6 +453,7 @@ class CatastroData:
         municipality_codes: Union[str, List[str]],
         datatype,
         target_crs="EPSG:4326",
+        subtype=None,
     ) -> Optional[gpd.GeoDataFrame]:
         """
         Returns a combined GeoDataFrame for multiple municipalities of the same datatype.
@@ -448,6 +468,8 @@ class CatastroData:
         :type datatype: str
         :param target_crs: The target Coordinate Reference System
         :type target_crs: str
+        :param subtype: Optional subtype for the datatype (e.g., "Buildings", "Building_Parts")
+        :type subtype: str
         :return: Combined data into a GeoDataFrame, or None if no data could be processed
         :rtype: Optional[gpd.GeoDataFrame]
         """
@@ -465,14 +487,12 @@ class CatastroData:
             )
 
         gdfs = []
-        if isinstance(municipality_codes, str):
-            municipality_codes = [municipality_codes]
         for code in municipality_codes:
             sleep(0.1)
             code_str = str(code).zfill(5)
             try:
                 self._log(f"Processing municipality: {code_str} ({datatype})")
-                gdf = self.get_municipality_data(code_str, datatype)
+                gdf = self.get_municipality_data(code_str, datatype, subtype)
 
                 if gdf is not None and not gdf.empty:
                     if gdf.crs and gdf.crs != target_crs:
