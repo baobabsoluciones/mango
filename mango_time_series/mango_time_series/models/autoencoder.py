@@ -611,6 +611,50 @@ class AutoEncoder:
         """
         self._id_columns_indices = value
 
+    @property
+    def use_mask(self) -> bool:
+        """
+        Get the use_mask flag.
+        """
+        return self._use_mask
+
+    @use_mask.setter
+    def use_mask(self, value: bool) -> None:
+        """
+        Set the use_mask flag.
+        """
+        if not value and getattr(self, "_data", False):
+            arrays_to_check = (
+                self._data if isinstance(self._data, tuple) else [self._data]
+            )
+            if any(np.isnan(arr).any() for arr in arrays_to_check):
+                raise ValueError(
+                    "Data contains NaNs but use_mask is False. Clean or impute data."
+                )
+
+        self._use_mask = value
+
+    @property
+    def custom_mask(self) -> Optional[np.ndarray]:
+        """
+        Get the custom mask.
+        """
+        return self._custom_mask
+
+    @custom_mask.setter
+    def custom_mask(self, value: Optional[np.ndarray]) -> None:
+        """
+        Set the custom mask.
+        """
+        if self._use_mask and value is not None and self.id_data is not None:
+            if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
+                for id_d, id_m in zip(self.id_data, self.id_data_mask):
+                    if (id_d != id_m).any():
+                        raise ValueError("The mask must have the same IDs as the data.")
+            elif (self.id_data_mask != self.id_data).any():
+                raise ValueError("The mask must have the same IDs as the data.")
+        self._custom_mask = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -791,9 +835,7 @@ class AutoEncoder:
         self.train_size = train_size
         self.val_size = val_size
         self.test_size = test_size
-        self._use_mask = use_mask
-
-        self.custom_mask = custom_mask
+        self.use_mask = use_mask
         self.imputer = imputer
 
         # Extract names and convert data to numpy
@@ -817,32 +859,16 @@ class AutoEncoder:
             )
         )
 
-        if self._use_mask and self.custom_mask is not None:
-            self.custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
+        if self._use_mask and custom_mask is not None:
+            custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
                 handle_id_columns(
-                    self.custom_mask,
+                    custom_mask,
                     id_columns,
                     self._features_name,
                     self._context_window,
                 )
             )
-
-        if self._use_mask and self.custom_mask is not None and self.id_data is not None:
-            if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
-                for id_d, id_m in zip(self.id_data, self.id_data_mask):
-                    if (id_d != id_m).any():
-                        raise ValueError("The mask must have the same IDs as the data.")
-            elif (self.id_data_mask != self.id_data).any():
-                raise ValueError("The mask must have the same IDs as the data.")
-
-        if not self._use_mask:
-            arrays_to_check = (
-                self._data if isinstance(self._data, tuple) else [self._data]
-            )
-            if any(np.isnan(arr).any() for arr in arrays_to_check):
-                raise ValueError(
-                    "Data contains NaNs but use_mask is False. Clean or impute data."
-                )
+            self.custom_mask = custom_mask
 
         if self.id_data_dict:
             self._data = {}
@@ -863,7 +889,7 @@ class AutoEncoder:
                     "test": len(self.x_test[id_iter]),
                 }
 
-                # Concat all the datasets
+            # Concat all the datasets
             self.x_train = np.concatenate(
                 [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
                 axis=0,
@@ -2196,24 +2222,24 @@ class AutoEncoder:
         x_train, x_val, x_test = data
 
         if self._use_mask:
-            if self.custom_mask is None:
+            if getattr(self, "_custom_mask", None) is None:
                 mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
                 mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
                 mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
             else:
-                if isinstance(self.custom_mask, tuple):
+                if isinstance(self._custom_mask, tuple):
                     if id_iter is not None:
                         mask_train = self.id_data_dict_mask[id_iter][0]
                         mask_val = self.id_data_dict_mask[id_iter][1]
                         mask_test = self.id_data_dict_mask[id_iter][2]
                     else:
-                        mask_train, mask_val, mask_test = self.custom_mask
+                        mask_train, mask_val, mask_test = self._custom_mask
                 else:
                     mask_train, mask_val, mask_test = time_series_split(
                         (
                             self.id_data_dict_mask[id_iter]
                             if id_iter is not None
-                            else self.custom_mask
+                            else self._custom_mask
                         ),
                         self._train_size,
                         self._val_size,
