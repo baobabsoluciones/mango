@@ -175,6 +175,8 @@ class AutoEncoder:
             raise ValueError("All elements in time_step_to_check must be integers")
 
         # If context_window is set, validate indices are in range
+        if not hasattr(self, "_context_window"):
+            raise ValueError("Context window is not set")
         if self._context_window is not None:
             if any(t < 0 or t >= self._context_window for t in value):
                 raise ValueError(
