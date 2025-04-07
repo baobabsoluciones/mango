@@ -632,10 +632,9 @@ class AutoEncoder:
             instance.normalization_method = params.get("normalization_method")
             instance.features_name = params.get("features_name", None)
             instance.feature_to_check = params.get("feature_to_check", None)
-            instance.model = model
-
-            # Load normalization values
             instance.normalization_values = params.get("normalization_values", {})
+            # Model must be the last element in the saved data
+            instance.model = model
 
             logger.info(f"Model successfully loaded from {path}")
 
