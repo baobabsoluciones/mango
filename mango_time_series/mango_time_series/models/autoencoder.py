@@ -34,10 +34,15 @@ logger = get_configured_logger()
 
 class AutoEncoder:
     """
-    Autoencoder model
+    Autoencoder model for time series data reconstruction and anomaly detection.
 
-    This Autoencoder model can be highly configurable but is already set up so
-    that quick training and profiling can be done.
+    An autoencoder is a neural network that learns to compress and reconstruct data.
+    This implementation is designed specifically for time series data, allowing for
+    sequence-based encoding and decoding with various architectures (LSTM, GRU, RNN).
+
+    The model can be highly configurable but is already set up for quick training
+    and profiling. It supports data normalization, masking for missing values,
+    and various training options including early stopping and checkpointing.
     """
 
     TRAIN_SIZE = 0.8
@@ -54,14 +59,22 @@ class AutoEncoder:
         :return: None
         :rtype: None
         """
+        # Path settings
         self.root_dir = os.path.abspath(os.getcwd())
         self._save_path = None
+
+        # Model architecture settings
         self._form = "lstm"
         self.model = None
+        self.layers = []
+
+        # Data processing settings
         self._normalization_method = None
         self.normalization_values = {}
-        self.imputer = None
         self._normalize = False
+        self.imputer = None
+
+        # Training settings
         self._verbose = False
         self._shuffle_buffer_size = None
         self._x_train_no_shuffle = None
@@ -117,6 +130,17 @@ class AutoEncoder:
         :raises ValueError: If value is not one of the supported architectures or if
                            attempting to change after model is built
         """
+        self._validate_form_change(value)
+        self._form = value
+
+    def _validate_form_change(self, value: str) -> None:
+        """
+        Validate that the form can be changed to the specified value.
+
+        :param value: The new form value to validate
+        :type value: str
+        :raises ValueError: If the form cannot be changed to the specified value
+        """
         if hasattr(self, "model") and self.model is not None:
             raise ValueError(
                 "Cannot change form after model is built. "
@@ -129,8 +153,6 @@ class AutoEncoder:
 
         if value == "dense":
             raise NotImplementedError("Dense model type is not yet implemented")
-
-        self._form = value
 
     @property
     def time_step_to_check(self) -> Optional[Union[int, List[int]]]:
@@ -1238,6 +1260,7 @@ class AutoEncoder:
         self.use_early_stopping = use_early_stopping
         self.patience = patience
 
+        # Define training functions
         @tf.function
         def forward_pass(
             x: tf.Tensor, mask: Optional[tf.Tensor] = None
@@ -1317,71 +1340,71 @@ class AutoEncoder:
             loss, _ = forward_pass(x, mask)
             return loss
 
+        # Run training loop
+        self._run_training_loop(
+            train_step=train_step,
+            validation_step=validation_step,
+            epochs=epochs,
+            checkpoint=checkpoint,
+            use_early_stopping=use_early_stopping,
+            patience=patience,
+        )
+
+    def _run_training_loop(
+        self,
+        train_step: callable,
+        validation_step: callable,
+        epochs: int,
+        checkpoint: int,
+        use_early_stopping: bool,
+        patience: int,
+    ) -> None:
+        """
+        Run the training loop for the model.
+
+        :param train_step: Function to perform a training step
+        :type train_step: callable
+        :param validation_step: Function to perform a validation step
+        :type validation_step: callable
+        :param epochs: Number of epochs to train
+        :type epochs: int
+        :param checkpoint: Number of epochs between checkpoints
+        :type checkpoint: int
+        :param use_early_stopping: Whether to use early stopping
+        :type use_early_stopping: bool
+        :param patience: Number of epochs to wait before early stopping
+        :type patience: int
+        """
         # Lists to store loss history
         train_loss_history = []
         val_loss_history = []
         best_val_loss = float("inf")
         patience_counter = 0
 
-        for epoch in range(1, self.epochs + 1):
+        for epoch in range(1, epochs + 1):
             # Training loop
-            epoch_train_losses = []
-            for batch in self.train_dataset:
-                if self._use_mask:
-                    data, mask = batch
-                else:
-                    data = batch
-                    mask = None
-
-                loss = train_step(x=data, mask=mask)
-                epoch_train_losses.append(float(loss))
-
-            # Calculate average training loss for the epoch
-            avg_train_loss = sum(epoch_train_losses) / len(epoch_train_losses)
+            avg_train_loss = self._run_epoch_training(train_step)
             train_loss_history.append(avg_train_loss)
 
             # Validation loop
-            epoch_val_losses = []
-            for batch in self.val_dataset:
-                if self._use_mask:
-                    data, mask = batch
-                else:
-                    data = batch
-                    mask = None
-
-                val_loss = validation_step(x=data, mask=mask)
-                epoch_val_losses.append(float(val_loss))
-
-            # Calculate average validation loss for the epoch
-            avg_val_loss = sum(epoch_val_losses) / len(epoch_val_losses)
+            avg_val_loss = self._run_epoch_validation(validation_step)
             val_loss_history.append(avg_val_loss)
 
             self.last_epoch = epoch
 
             # Early stopping logic
-            if self.use_early_stopping:
-                if avg_val_loss < best_val_loss:
-                    best_val_loss = avg_val_loss
-                    patience_counter = 0
-                    self.save(filename="best_model.pkl")
-                else:
-                    patience_counter += 1
-
-                if patience_counter >= self.patience:
-                    logger.info(
-                        f"Early stopping at epoch {epoch} | Best Validation Loss: {best_val_loss:.6f}"
+            if use_early_stopping:
+                should_stop, best_val_loss, patience_counter = (
+                    self._check_early_stopping(
+                        epoch, avg_val_loss, best_val_loss, patience_counter, patience
                     )
+                )
+                if should_stop:
                     break
 
-            if epoch % self.checkpoint == 0:
-                if self._verbose:
-                    logger.info(
-                        f"Epoch {epoch:4d} | "
-                        f"Training Loss: {avg_train_loss:.6f} | "
-                        f"Validation Loss: {avg_val_loss:.6f}"
-                    )
-
-                self.save(filename=f"{epoch}.pkl")
+            # Checkpoint logic
+            if epoch % checkpoint == 0:
+                self._handle_checkpoint(epoch, avg_train_loss, avg_val_loss)
 
         # Store the loss history in the model instance
         self.train_loss_history = train_loss_history
@@ -1395,6 +1418,113 @@ class AutoEncoder:
         )
 
         self.save(filename=f"{self.last_epoch}.pkl")
+
+    def _run_epoch_training(self, train_step: callable) -> float:
+        """
+        Run a single epoch of training.
+
+        :param train_step: Function to perform a training step
+        :type train_step: callable
+        :return: Average training loss for the epoch
+        :rtype: float
+        """
+        epoch_train_losses = []
+        for batch in self.train_dataset:
+            if self._use_mask:
+                data, mask = batch
+            else:
+                data = batch
+                mask = None
+
+            loss = train_step(x=data, mask=mask)
+            epoch_train_losses.append(float(loss))
+
+        # Calculate average training loss for the epoch
+        return sum(epoch_train_losses) / len(epoch_train_losses)
+
+    def _run_epoch_validation(self, validation_step: callable) -> float:
+        """
+        Run a single epoch of validation.
+
+        :param validation_step: Function to perform a validation step
+        :type validation_step: callable
+        :return: Average validation loss for the epoch
+        :rtype: float
+        """
+        epoch_val_losses = []
+        for batch in self.val_dataset:
+            if self._use_mask:
+                data, mask = batch
+            else:
+                data = batch
+                mask = None
+
+            val_loss = validation_step(x=data, mask=mask)
+            epoch_val_losses.append(float(val_loss))
+
+        # Calculate average validation loss for the epoch
+        return sum(epoch_val_losses) / len(epoch_val_losses)
+
+    def _check_early_stopping(
+        self,
+        epoch: int,
+        avg_val_loss: float,
+        best_val_loss: float,
+        patience_counter: int,
+        patience: int,
+    ) -> Tuple[bool, float, int]:
+        """
+        Check if early stopping should be applied.
+
+        :param epoch: Current epoch
+        :type epoch: int
+        :param avg_val_loss: Average validation loss for the current epoch
+        :type avg_val_loss: float
+        :param best_val_loss: Best validation loss so far
+        :type best_val_loss: float
+        :param patience_counter: Counter for patience
+        :type patience_counter: int
+        :param patience: Number of epochs to wait before early stopping
+        :type patience: int
+        :return: Tuple of (should_stop, best_val_loss, patience_counter)
+        :rtype: Tuple[bool, float, int]
+        """
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            patience_counter = 0
+            self.save(filename="best_model.pkl")
+        else:
+            patience_counter += 1
+
+        if patience_counter >= patience:
+            logger.info(
+                f"Early stopping at epoch {epoch} | Best Validation Loss: {best_val_loss:.6f}"
+            )
+            return True, best_val_loss, patience_counter
+
+        return False, best_val_loss, patience_counter
+
+    def _handle_checkpoint(
+        self, epoch: int, avg_train_loss: float, avg_val_loss: float
+    ) -> None:
+        """
+        Handle checkpoint saving and logging.
+
+        :param epoch: Current epoch
+        :type epoch: int
+        :param avg_train_loss: Average training loss for the current epoch
+        :type avg_train_loss: float
+        :param avg_val_loss: Average validation loss for the current epoch
+        :type avg_val_loss: float
+        """
+        if self._verbose:
+            logger.info(
+                f"Epoch {epoch:4d} | "
+                f"Training Loss: {avg_train_loss:.6f} | "
+                f"Validation Loss: {avg_val_loss:.6f}"
+            )
+
+        self.save(filename=f"{epoch}.pkl")
 
     def reconstruct(self) -> bool:
         """
@@ -2603,7 +2733,6 @@ class AutoEncoder:
                 ),
                 axis=2,
             )
-
             # Apply the mask to both true and predicted values
             y_true = tf.where(mask_selected > 0, y_true, tf.zeros_like(y_true))
             y_pred = tf.where(mask_selected > 0, y_pred, tf.zeros_like(y_pred))
