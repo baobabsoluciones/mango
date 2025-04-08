@@ -1072,6 +1072,7 @@ class AutoEncoder:
         )
 
         if self._use_mask and custom_mask is not None:
+            custom_mask, _ = convert_data_to_numpy(custom_mask)
             custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
                 handle_id_columns(
                     custom_mask,
