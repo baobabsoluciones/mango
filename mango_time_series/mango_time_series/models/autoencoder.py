@@ -24,6 +24,8 @@ from mango_time_series.models.utils.processing import (
     apply_padding,
     denormalize_data,
     handle_id_columns,
+    normalize_data_for_training,
+    normalize_data_for_prediction,
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
@@ -865,6 +867,51 @@ class AutoEncoder:
         """
         self._x_train_no_shuffle = value
 
+    @property
+    def model_optimizer(
+        self,
+    ) -> Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]:
+        """
+        Get the model's optimizer.
+
+        :return: The optimizer instance
+        :rtype: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]
+        """
+        return getattr(self, "_model_optimizer", None)
+
+    @model_optimizer.setter
+    def model_optimizer(
+        self, value: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]
+    ) -> None:
+        """
+        Set the model's optimizer.
+
+        :param value: The optimizer instance or name
+        :type value: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam, str]
+        :return: None
+        :rtype: None
+        :raises ValueError: If optimizer_name is not a valid optimizer
+        """
+        if isinstance(value, str):
+            optimizers = {
+                "adam": Adam(),
+                "sgd": SGD(),
+                "rmsprop": RMSprop(),
+                "adagrad": Adagrad(),
+                "adadelta": Adadelta(),
+                "adamax": Adamax(),
+                "nadam": Nadam(),
+            }
+
+            if value.lower() not in optimizers:
+                raise ValueError(
+                    f"Invalid optimizer '{value}'. Choose from {list(optimizers.keys())}."
+                )
+
+            self._model_optimizer = optimizers[value.lower()]
+        else:
+            self._model_optimizer = value
+
     @classmethod
     def load_from_pickle(cls, path: str) -> "AutoEncoder":
         """
@@ -924,6 +971,37 @@ class AutoEncoder:
         """
         for path in folder_structure:
             os.makedirs(path, exist_ok=True)
+
+    def _create_datasets(self, batch_size: int) -> None:
+        """
+        Create training, validation and test datasets.
+
+        :param batch_size: Size of batches for training
+        :type batch_size: int
+        :return: None
+        :rtype: None
+        """
+        if self._use_mask:
+            train_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_train, self.mask_train)
+            )
+            val_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_val, self.mask_val)
+            )
+            test_dataset = tf.data.Dataset.from_tensor_slices(
+                (self.x_test, self.mask_test)
+            )
+        else:
+            train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
+            val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
+            test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
+
+        if self._shuffle:
+            train_dataset = train_dataset.shuffle(buffer_size=self._shuffle_buffer_size)
+
+        self.train_dataset = train_dataset.cache().batch(batch_size)
+        self.val_dataset = val_dataset.cache().batch(batch_size)
+        self.test_dataset = test_dataset.cache().batch(batch_size)
 
     def build_model(
         self,
@@ -1090,7 +1168,8 @@ class AutoEncoder:
 
         if self._shuffle and self._shuffle_buffer_size is None:
             self.shuffle_buffer_size = len(self.x_train)
-            self.x_train_no_shuffle = np.copy(self.x_train)
+
+        self.x_train_no_shuffle = np.copy(self.x_train)
 
         #########################################################
         ################# BUILD MODEL ###########################
@@ -1126,30 +1205,9 @@ class AutoEncoder:
 
         self.model = Sequential(self.layers, name="autoencoder")
         self.model.build()
-        self.model_optimizer = self._get_optimizer(optimizer)
+        self.model_optimizer = optimizer
 
-        if self._use_mask:
-            train_dataset = tf.data.Dataset.from_tensor_slices(
-                (self.x_train, self.mask_train)
-            )
-            val_dataset = tf.data.Dataset.from_tensor_slices(
-                (self.x_val, self.mask_val)
-            )
-            test_dataset = tf.data.Dataset.from_tensor_slices(
-                (self.x_test, self.mask_test)
-            )
-        else:
-            train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
-            val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
-            test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
-
-        if shuffle:
-            self.train_dataset = train_dataset.shuffle(
-                buffer_size=self.shuffle_buffer_size
-            )
-        self.train_dataset = train_dataset.cache().batch(batch_size)
-        self.val_dataset = val_dataset.cache().batch(batch_size)
-        self.test_dataset = test_dataset.cache().batch(batch_size)
+        self._create_datasets(batch_size)
 
     def train(
         self,
@@ -1373,39 +1431,105 @@ class AutoEncoder:
             if "global" in self.normalization_values:
                 norm_values = self.normalization_values["global"]
 
-                if self._normalization_method == "minmax":
-                    scale_min = norm_values["min_x"][self._feature_to_check]
-                    scale_max = norm_values["max_x"][self._feature_to_check]
+                # Denormalize predictions
+                x_hat_train = denormalize_data(
+                    x_hat_train,
+                    self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_hat_val = denormalize_data(
+                    x_hat_val,
+                    self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_hat_test = denormalize_data(
+                    x_hat_test,
+                    self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
 
-                    # Denormalize predictions
-                    x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-                    x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-                    x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
-
-                    # Denormalize original data
-                    x_train_converted = (
-                        x_train_converted * (scale_max - scale_min) + scale_min
-                    )
-                    x_val_converted = (
-                        x_val_converted * (scale_max - scale_min) + scale_min
-                    )
-                    x_test_converted = (
-                        x_test_converted * (scale_max - scale_min) + scale_min
-                    )
-
-                elif self._normalization_method == "zscore":
-                    scale_mean = norm_values["mean_"][self._feature_to_check]
-                    scale_std = norm_values["std_"][self._feature_to_check]
-
-                    # Denormalize predictions
-                    x_hat_train = x_hat_train * scale_std + scale_mean
-                    x_hat_val = x_hat_val * scale_std + scale_mean
-                    x_hat_test = x_hat_test * scale_std + scale_mean
-
-                    # Denormalize original data
-                    x_train_converted = x_train_converted * scale_std + scale_mean
-                    x_val_converted = x_val_converted * scale_std + scale_mean
-                    x_test_converted = x_test_converted * scale_std + scale_mean
+                # Denormalize original data
+                x_train_converted = denormalize_data(
+                    x_train_converted,
+                    self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_val_converted = denormalize_data(
+                    x_val_converted,
+                    self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_test_converted = denormalize_data(
+                    x_test_converted,
+                    self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
 
             # If we used ID-based normalization and need to reconstruct by ID
             elif self.id_data is not None and hasattr(self, "length_datasets"):
@@ -1453,40 +1577,104 @@ class AutoEncoder:
                     id_x_val = x_val_converted[val_start_idx:val_end_idx]
                     id_x_test = x_test_converted[test_start_idx:test_end_idx]
 
-                    # Apply denormalization based on the normalization method
-                    if self._normalization_method == "minmax":
-                        scale_min = norm_values["min_x"][self._feature_to_check]
-                        scale_max = norm_values["max_x"][self._feature_to_check]
+                    # Denormalize data for this ID
+                    id_x_hat_train = denormalize_data(
+                        id_x_hat_train,
+                        self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_hat_val = denormalize_data(
+                        id_x_hat_val,
+                        self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_hat_test = denormalize_data(
+                        id_x_hat_test,
+                        self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
 
-                        # Denormalize predictions
-                        id_x_hat_train = (
-                            id_x_hat_train * (scale_max - scale_min) + scale_min
-                        )
-                        id_x_hat_val = (
-                            id_x_hat_val * (scale_max - scale_min) + scale_min
-                        )
-                        id_x_hat_test = (
-                            id_x_hat_test * (scale_max - scale_min) + scale_min
-                        )
-
-                        # Denormalize original data
-                        id_x_train = id_x_train * (scale_max - scale_min) + scale_min
-                        id_x_val = id_x_val * (scale_max - scale_min) + scale_min
-                        id_x_test = id_x_test * (scale_max - scale_min) + scale_min
-
-                    elif self._normalization_method == "zscore":
-                        scale_mean = norm_values["mean_"][self._feature_to_check]
-                        scale_std = norm_values["std_"][self._feature_to_check]
-
-                        # Denormalize predictions
-                        id_x_hat_train = id_x_hat_train * scale_std + scale_mean
-                        id_x_hat_val = id_x_hat_val * scale_std + scale_mean
-                        id_x_hat_test = id_x_hat_test * scale_std + scale_mean
-
-                        # Denormalize original data
-                        id_x_train = id_x_train * scale_std + scale_mean
-                        id_x_val = id_x_val * scale_std + scale_mean
-                        id_x_test = id_x_test * scale_std + scale_mean
+                    id_x_train = denormalize_data(
+                        id_x_train,
+                        self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_val = denormalize_data(
+                        id_x_val,
+                        self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_test = denormalize_data(
+                        id_x_test,
+                        self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
 
                     # Store denormalized data
                     denorm_x_hat_train.append(id_x_hat_train)
@@ -1615,9 +1803,9 @@ class AutoEncoder:
             Tuple[np.ndarray, np.ndarray, np.ndarray],
         ],
         time_step_to_check: Union[int, List[int]],
-        feature_to_check: Union[int, List[int]] = 0,
+        feature_to_check: Union[int, List[int]],
+        hidden_dim: Union[int, List[int]],
         form: str = "lstm",
-        hidden_dim: Union[int, List[int]] = None,
         bidirectional_encoder: bool = False,
         bidirectional_decoder: bool = False,
         activation_encoder: Optional[str] = None,
@@ -1635,9 +1823,9 @@ class AutoEncoder:
         use_mask: bool = False,
         custom_mask: Any = None,
         imputer: Optional[DataImputer] = None,
-        train_size: float = 0.8,
-        val_size: float = 0.1,
-        test_size: float = 0.1,
+        train_size: float = TRAIN_SIZE,
+        val_size: float = VAL_SIZE,
+        test_size: float = TEST_SIZE,
         id_columns: Union[str, int, List[str], List[int], None] = None,
         epochs: int = 100,
         checkpoint: int = 10,
@@ -1791,18 +1979,36 @@ class AutoEncoder:
 
         data, feature_names = convert_data_to_numpy(data)
 
-        if id_columns is not None:
+        # Create features_names_to_check, excluding ID columns if they exist
+        if id_columns is not None and feature_names:
             if isinstance(id_columns, (str, int)):
                 id_columns = [id_columns]
 
             if not isinstance(id_columns, list):
                 raise ValueError("id_columns must be a list of strings or integers")
 
-        features_names_to_check = (
-            [feature_names[i] for i in self._feature_to_check]
-            if feature_names
-            else None
-        )
+            # Get indices of ID columns
+            id_indices = [
+                feature_names.index(col) if isinstance(col, str) else col
+                for col in id_columns
+                if isinstance(col, str) and col in feature_names or isinstance(col, int)
+            ]
+            # Remove ID columns from feature names
+            feature_names_without_id = [
+                name for i, name in enumerate(feature_names) if i not in id_indices
+            ]
+            # Filter out ID columns from features_names_to_check
+            features_names_to_check = (
+                [feature_names_without_id[i] for i in self._feature_to_check]
+                if feature_names_without_id
+                else None
+            )
+        else:
+            features_names_to_check = (
+                [feature_names[i] for i in self._feature_to_check]
+                if feature_names
+                else None
+            )
 
         # Handle ID columns
         if id_columns is not None:
@@ -1894,7 +2100,14 @@ class AutoEncoder:
         if not has_nans:
             if self._normalization_method:
                 try:
-                    data = self._normalize_data(data=data)
+                    data = normalize_data_for_prediction(
+                        normalization_method=self.normalization_method,
+                        data=data,
+                        min_x=self.min_x,
+                        max_x=self.max_x,
+                        mean_=self.mean_,
+                        std_=self.std_,
+                    )
                 except Exception as e:
                     raise ValueError(f"Error during normalization: {e}")
 
@@ -1962,7 +2175,14 @@ class AutoEncoder:
 
         if self._normalization_method:
             try:
-                data = self._normalize_data(data=data, id_iter=id_iter)
+                data = normalize_data_for_prediction(
+                    normalization_method=self.normalization_method,
+                    data=data,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
+                )
             except Exception as e:
                 raise ValueError(f"Error during normalization for ID {id_iter}: {e}")
 
@@ -2027,10 +2247,15 @@ class AutoEncoder:
 
                 # Update data with reconstructed values
                 if self._normalization_method:
-                    data[i, self._feature_to_check[j]] = self._normalize_data(
+                    data[i, self._feature_to_check[j]] = normalize_data_for_prediction(
+                        normalization_method=self.normalization_method,
                         data=padded_reconstructed,
-                        id_iter=id_iter,
                         feature_to_check_filter=True,
+                        feature_to_check=self._feature_to_check[j],
+                        min_x=self.min_x,
+                        max_x=self.max_x,
+                        mean_=self.mean_,
+                        std_=self.std_,
                     )[i, j]
                 else:
                     data[i, self._feature_to_check[j]] = padded_reconstructed[i, j]
@@ -2113,154 +2338,6 @@ class AutoEncoder:
         )
 
         return reconstructed_df
-
-    def _normalize_data_for_training(
-        self,
-        x_train: np.ndarray,
-        x_val: np.ndarray,
-        x_test: np.ndarray,
-        id_iter: Optional[Union[str, int]] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Normalize training, validation and test data using the specified method.
-        Computes and stores normalization parameters during training.
-
-        :param x_train: Training data to normalize
-        :type x_train: np.ndarray
-        :param x_val: Validation data to normalize
-        :type x_val: np.ndarray
-        :param x_test: Test data to normalize
-        :type x_test: np.ndarray
-        :param id_iter: ID of the iteration for group-specific normalization
-        :type id_iter: Optional[Union[str, int]]
-        :return: Tuple containing normalized training, validation and test data
-        :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray]
-        :note: The method stores normalization parameters either globally or per ID
-               in the instance's normalization_values dictionary.
-        """
-        normalization_values = {}
-
-        if self._normalization_method == "minmax":
-            min_x = np.nanmin(x_train, axis=0)
-            max_x = np.nanmax(x_train, axis=0)
-            range_x = max_x - min_x
-            x_train = (x_train - min_x) / range_x
-            x_val = (x_val - min_x) / range_x
-            x_test = (x_test - min_x) / range_x
-            normalization_values = {"min_x": min_x, "max_x": max_x}
-        elif self._normalization_method == "zscore":
-            mean_ = np.nanmean(x_train, axis=0)
-            std_ = np.nanstd(x_train, axis=0)
-            x_train = (x_train - mean_) / std_
-            x_val = (x_val - mean_) / std_
-            x_test = (x_test - mean_) / std_
-            normalization_values = {"mean_": mean_, "std_": std_}
-
-        # Initialize normalization_values attribute if it doesn't exist
-        if not hasattr(self, "normalization_values"):
-            self.normalization_values = {}
-
-        # Store normalization values by ID or globally
-        if id_iter is not None:
-            self.normalization_values[f"{id_iter}"] = normalization_values
-        else:
-            self.normalization_values["global"] = normalization_values
-
-        return x_train, x_val, x_test
-
-    def _normalize_data_for_prediction(
-        self, data: np.ndarray, feature_to_check_filter: bool = False
-    ) -> np.ndarray | None:
-        """
-        Normalize new data using stored normalization parameters.
-        If parameters are not available, computes them from input data.
-
-        :param data: New data to normalize
-        :type data: np.ndarray
-        :param feature_to_check_filter: Whether to filter features for checking
-        :type feature_to_check_filter: bool
-        :return: Normalized data
-        :rtype: np.ndarray
-        """
-        if self._normalization_method == "minmax":
-            if self.min_x is None or self.max_x is None:
-                min_x = np.nanmin(data, axis=0)
-                max_x = np.nanmax(data, axis=0)
-                range_x = max_x - min_x
-                self.min_x = min_x
-                self.max_x = max_x
-                return (data - min_x) / range_x
-            else:
-                if feature_to_check_filter:
-                    range_x = (
-                        self.max_x[self._feature_to_check]
-                        - self.min_x[self._feature_to_check]
-                    )
-                    return (data - self.min_x[self._feature_to_check]) / range_x
-                else:
-                    range_x = self.max_x - self.min_x
-                    return (data - self.min_x) / range_x
-
-        elif self._normalization_method == "zscore":
-            if self.mean_ is None or self.std_ is None:
-                mean_ = np.nanmean(data, axis=0)
-                std_ = np.nanstd(data, axis=0)
-                self.mean_ = mean_
-                self.std_ = std_
-                return (data - mean_) / std_
-            else:
-                if feature_to_check_filter:
-                    return (data - self.mean_[self._feature_to_check]) / self.std_[
-                        self._feature_to_check
-                    ]
-                else:
-                    return (data - self.mean_) / self.std_
-
-    def _normalize_data(
-        self,
-        x_train: Optional[np.ndarray] = None,
-        x_val: Optional[np.ndarray] = None,
-        x_test: Optional[np.ndarray] = None,
-        data: Optional[np.ndarray] = None,
-        id_iter: Optional[Union[str, int]] = None,
-        feature_to_check_filter: bool = False,
-    ) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray] | None:
-        """
-        Normalize data using the specified method.
-        Can be used for training (x_train, x_val, x_test) or prediction (data).
-
-        :param x_train: Training data for training mode
-        :type x_train: Optional[np.ndarray]
-        :param x_val: Validation data for training mode
-        :type x_val: Optional[np.ndarray]
-        :param x_test: Test data for training mode
-        :type x_test: Optional[np.ndarray]
-        :param data: New data to normalize for prediction mode
-        :type data: Optional[np.ndarray]
-        :param id_iter: ID of the iteration for group-specific normalization
-        :type id_iter: Optional[Union[str, int]]
-        :param feature_to_check_filter: Whether to filter features for checking
-        :type feature_to_check_filter: bool
-        :return: Normalized data in training or prediction mode
-        :rtype: Union[Tuple[np.ndarray, np.ndarray, np.ndarray], np.ndarray]
-        :raises ValueError: If neither training nor prediction data is provided
-        """
-        # Training mode
-        if x_train is not None and x_val is not None and x_test is not None:
-            return self._normalize_data_for_training(
-                x_train, x_val, x_test, id_iter=id_iter
-            )
-
-        # Prediction mode
-        elif data is not None:
-            return self._normalize_data_for_prediction(
-                data, feature_to_check_filter=feature_to_check_filter
-            )
-
-        else:
-            raise ValueError(
-                "Provide either (x_train, x_val, x_test) for training or `data` for prediction."
-            )
 
     def prepare_datasets(
         self,
@@ -2356,9 +2433,18 @@ class AutoEncoder:
             seq_mask_test = time_series_to_sequence(mask_test, context_window)
 
         if normalize:
-            x_train, x_val, x_test = self._normalize_data(
-                x_train, x_val, x_test, id_iter=id_iter
+            x_train, x_val, x_test, norm_values = normalize_data_for_training(
+                x_train=x_train,
+                x_val=x_val,
+                x_test=x_test,
+                normalization_method=self.normalization_method,
+                id_iter=id_iter,
             )
+
+            if id_iter is not None:
+                self.normalization_values[id_iter] = norm_values
+            else:
+                self.normalization_values = {"global": norm_values}
 
         if self._use_mask and self.imputer is not None:
             import pandas as pd
@@ -2539,33 +2625,3 @@ class AutoEncoder:
             loss = tf.reduce_mean(squared_error)
 
         return loss
-
-    @staticmethod
-    def _get_optimizer(
-        optimizer_name: str,
-    ) -> Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]:
-        """
-        Returns the optimizer based on the given name.
-
-        :param optimizer_name: Name of the optimizer to use
-        :type optimizer_name: str
-        :return: The requested optimizer instance
-        :rtype: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]
-        :raises ValueError: If optimizer_name is not a valid optimizer
-        """
-        optimizers = {
-            "adam": Adam(),
-            "sgd": SGD(),
-            "rmsprop": RMSprop(),
-            "adagrad": Adagrad(),
-            "adadelta": Adadelta(),
-            "adamax": Adamax(),
-            "nadam": Nadam(),
-        }
-
-        if optimizer_name.lower() not in optimizers:
-            raise ValueError(
-                f"Invalid optimizer '{optimizer_name}'. Choose from {list(optimizers.keys())}."
-            )
-
-        return optimizers[optimizer_name.lower()]
