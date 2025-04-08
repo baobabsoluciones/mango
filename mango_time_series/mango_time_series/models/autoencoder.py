@@ -1126,10 +1126,6 @@ class AutoEncoder:
 
         self.model = Sequential(self.layers, name="autoencoder")
         self.model.build()
-
-        if self._verbose:
-            logger.info(f"Model structure:\n{self.model.summary()}")
-
         self.model_optimizer = self._get_optimizer(optimizer)
 
         if self._use_mask:
@@ -1185,65 +1181,18 @@ class AutoEncoder:
         self.patience = patience
 
         @tf.function
-        def train_step(x: tf.Tensor, mask: Optional[tf.Tensor] = None) -> tf.Tensor:
-            """
-            Training step for the model.
-
-            :param x: Input data
-            :type x: tf.Tensor
-            :param mask: Optional binary mask for missing values
-            :type mask: Optional[tf.Tensor]
-            :return: Training loss value
-            :rtype: tf.Tensor
-            """
-            with tf.GradientTape() as autoencoder_tape:
-                x = tf.cast(x, tf.float32)
-
-                hx = self.model.get_layer(f"{self._form}_encoder")(x)
-                x_hat = self.model.get_layer(f"{self._form}_decoder")(hx)
-
-                if "post_decoder_dense" in [layer.name for layer in self.model.layers]:
-                    x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
-
-                # Gather all required time steps
-                x_real = tf.gather(x, self._time_step_to_check, axis=1)
-                x_real = tf.gather(x_real, self._feature_to_check, axis=2)
-
-                x_pred = tf.expand_dims(x_hat, axis=1)
-
-                # Calculate mean loss across all selected points
-                train_loss = self.masked_weighted_mse(
-                    y_true=x_real,
-                    y_pred=x_pred,
-                    feature_weights=self._feature_weights,
-                    feature_to_check=self._feature_to_check,
-                    time_step_to_check=self._time_step_to_check,
-                    mask=mask,
-                )
-
-            autoencoder_gradient = autoencoder_tape.gradient(
-                train_loss, self.model.trainable_variables
-            )
-
-            self.model_optimizer.apply_gradients(
-                zip(autoencoder_gradient, self.model.trainable_variables)
-            )
-
-            return train_loss
-
-        @tf.function
-        def validation_step(
+        def forward_pass(
             x: tf.Tensor, mask: Optional[tf.Tensor] = None
-        ) -> tf.Tensor:
+        ) -> Tuple[tf.Tensor, tf.Tensor]:
             """
-            Validation step for the model.
+            Perform a forward pass through the model.
 
             :param x: Input data
             :type x: tf.Tensor
             :param mask: Optional binary mask for missing values
             :type mask: Optional[tf.Tensor]
-            :return: Validation loss value
-            :rtype: tf.Tensor
+            :return: Tuple of (loss, x_hat)
+            :rtype: Tuple[tf.Tensor, tf.Tensor]
             """
             x = tf.cast(x, tf.float32)
 
@@ -1258,17 +1207,57 @@ class AutoEncoder:
             x_real = tf.gather(x_real, self._feature_to_check, axis=2)
 
             x_pred = tf.expand_dims(x_hat, axis=1)
+
             # Calculate mean loss across all selected points
-            val_loss = self.masked_weighted_mse(
+            loss = self.masked_weighted_mse(
                 y_true=x_real,
                 y_pred=x_pred,
-                mask=mask,
                 feature_weights=self._feature_weights,
                 feature_to_check=self._feature_to_check,
                 time_step_to_check=self._time_step_to_check,
+                mask=mask,
             )
 
-            return val_loss
+            return loss, x_hat
+
+        @tf.function
+        def train_step(x: tf.Tensor, mask: Optional[tf.Tensor] = None) -> tf.Tensor:
+            """
+            Single step for model training.
+
+            :param x: Input data
+            :type x: tf.Tensor
+            :param mask: Optional binary mask for missing values
+            :type mask: Optional[tf.Tensor]
+            :return: Loss value
+            :rtype: tf.Tensor
+            """
+            with tf.GradientTape() as tape:
+                loss, _ = forward_pass(x, mask)
+
+            autoencoder_gradient = tape.gradient(loss, self.model.trainable_variables)
+            self.model_optimizer.apply_gradients(
+                zip(autoencoder_gradient, self.model.trainable_variables)
+            )
+
+            return loss
+
+        @tf.function
+        def validation_step(
+            x: tf.Tensor, mask: Optional[tf.Tensor] = None
+        ) -> tf.Tensor:
+            """
+            Single step for model validation.
+
+            :param x: Input data
+            :type x: tf.Tensor
+            :param mask: Optional binary mask for missing values
+            :type mask: Optional[tf.Tensor]
+            :return: Loss value
+            :rtype: tf.Tensor
+            """
+            loss, _ = forward_pass(x, mask)
+            return loss
 
         # Lists to store loss history
         train_loss_history = []
@@ -1336,7 +1325,7 @@ class AutoEncoder:
 
                 self.save(filename=f"{epoch}.pkl")
 
-                # Store the loss history in the model instance
+        # Store the loss history in the model instance
         self.train_loss_history = train_loss_history
         self.val_loss_history = val_loss_history
 
