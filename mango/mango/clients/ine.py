@@ -2,9 +2,10 @@ import requests
 import pandas as pd
 import os
 from io import BytesIO
+import logging
 
-
-from mpl_toolkits.axisartist.angle_helper import select_step_degree
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class INEAPIClient:
@@ -16,6 +17,7 @@ class INEAPIClient:
 
     INE_CODES_URL = "https://www.ine.es/daco/daco42/codmun/diccionario25.xlsx"
     BASE_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/"
+    FULL_CENSUS_URL = "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65031.csv"
     CACHE_FILENAME = "census_data.csv"
     PROVINCE_CODES = {
         "Albacete": "69095",
@@ -72,7 +74,7 @@ class INEAPIClient:
         "Melilla": "69294",
     }
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose: bool = False):
         """
         Initialize the INEAPIClient.
         :param verbose: If True, print additional information
@@ -81,16 +83,33 @@ class INEAPIClient:
         self.verbose = verbose
         self.municipalities = self._get_municipalities()
 
-    def _log(self, message) -> None:
+    def _log(self, message: str) -> None:
         """
         Logs a message if verbose mode is enabled.
 
         :param message: Message to log
-        :type message: any
-        :return: None
+        :type message: str
         """
         if self.verbose:
-            print(message)
+            logger.info(message)
+
+    def _fetch_url(self, url: str) -> bytes:
+        """
+        Fetches content from a URL with error handling.
+
+        :param url: URL to fetch
+        :type url: str
+        :return: Content of the response
+        :rtype: bytes
+        """
+        self._log(f"Fetching data from URL: {url}")
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return response.content
+        except requests.RequestException as e:
+            logger.error(f"Error fetching data from {url}: {e}")
+            raise
 
     def _get_municipalities(self) -> pd.DataFrame:
         """
@@ -99,12 +118,11 @@ class INEAPIClient:
         :rtype: pd.DataFrame
         """
         self._log("Fetching municipalities data from INE...")
-        response = requests.get(self.INE_CODES_URL)
-        response.raise_for_status()
+        content = self._fetch_url(self.INE_CODES_URL)
 
         self._log("Municipalities data fetched successfully.")
         self._log("Reading Excel file...")
-        df = pd.read_excel(BytesIO(response.content), skiprows=1, header=0)
+        df = pd.read_excel(BytesIO(content), skiprows=1, header=0)
         df["Codigo_INE"] = df["CPRO"].astype(str).str.zfill(2) + df["CMUN"].astype(
             str
         ).str.zfill(3)
@@ -189,42 +207,41 @@ class INEAPIClient:
 
         return df
 
-    def fetch_census_by_section(self, table_id: str) -> pd.DataFrame:
+    def fetch_census_by_section(self, table_id: str | list[str]) -> pd.DataFrame:
         """
-        Get the data from a specific table in the INE API.
+        Get the data from a specific table or multiple tables in the INE API. Each table corresponds to a province.
 
-        :param table_id: ID of the table to retrieve
-        :type table_id: str
-        :return: DataFrame containing the data from the table
+        :param table_id: ID(s) of the table(s) to retrieve
+        :type table_id: str or list of str
+        :return: DataFrame containing the data from the table(s)
         :rtype: pd.DataFrame
         """
-        if not self._valid_province_code(table_id):
-            raise ValueError(
-                f"Invalid province code: {table_id}. Call list_table_codes() for valid codes."
+        if isinstance(table_id, str):
+            table_id = [table_id]
+
+        all_data = []
+        for tid in table_id:
+            if not self._valid_province_code(tid):
+                raise ValueError(
+                    f"Invalid province code: {tid}. Call list_table_codes() for valid codes."
+                )
+
+            url = f"{self.BASE_API_URL}{tid}?nult=1"
+            content = self._fetch_url(url)
+
+            data = requests.get(url).json()
+            df = pd.json_normalize(data)
+            self._log(f"Data fetched successfully for table ID {tid}.")
+
+            self._log("Adding province name...")
+            df["Provincia"] = next(
+                (k for k, v in self.PROVINCE_CODES.items() if v == tid), None
             )
 
-        url = f"{self.BASE_API_URL}{table_id}?nult=1"
-        self._log(f"Fetching data from URL: {url}")
+            df = self._clean_table(df)
+            all_data.append(df)
 
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-        except requests.RequestException as e:
-            self._log(f"Error fetching data: {e}")
-            raise
-
-        data = response.json()
-        df = pd.json_normalize(data)
-        self._log("Data fetched successfully.")
-
-        self._log("Adding province name...")
-        df["Provincia"] = next(
-            (k for k, v in self.PROVINCE_CODES.items() if v == table_id), None
-        )
-
-        df = self._clean_table(df)
-
-        return df
+        return pd.concat(all_data, ignore_index=True)
 
     def _clean_full_census(self, df: pd.DataFrame, year: int = None) -> pd.DataFrame:
         """
@@ -291,21 +308,21 @@ class INEAPIClient:
                 df = pd.read_csv(self.CACHE_FILENAME)
                 self._log("Data fetched from cache successfully.")
                 return df
-            except FileNotFoundError:
-                self._log("Cache file not found. Fetching data from the API.")
-            pass
+            except Exception as e:
+                logger.error(f"Error reading cache file: {e}")
+                self._log("Cache file not found or invalid. Fetching data from the API.")
 
-        url = f"https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65031.csv"
-        self._log(f"Fetching all census data from URL: {url}")
+        content = self._fetch_url(self.FULL_CENSUS_URL)
 
-        df = pd.read_csv(url, sep=";")
         self._log("All census data fetched successfully.")
-
+        df = pd.read_csv(BytesIO(content), sep=";")
         df = self._clean_full_census(df, year)
 
         if cache:
-            df.to_csv(self.CACHE_FILENAME, index=False)
-            self._log(f"Data cached successfully at {self.CACHE_FILENAME}.")
+            try:
+                df.to_csv(self.CACHE_FILENAME, index=False)
+                self._log(f"Data cached successfully at {self.CACHE_FILENAME}.")
+            except Exception as e:
+                logger.error(f"Error caching data: {e}")
 
         return df
-
