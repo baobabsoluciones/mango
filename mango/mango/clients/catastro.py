@@ -8,6 +8,7 @@ from time import sleep
 from bs4 import BeautifulSoup
 import json
 from typing import Union, Optional, List
+import re
 
 
 class CatastroData:
@@ -26,18 +27,18 @@ class CatastroData:
 
     CACHE_FILE = "catastro_cache.json"
 
-    def __init__(self, verbose=False, cache=False, request_timeout=30):
+    def __init__(self, debug=False, cache=False, request_timeout=30):
         """
         Initializes the CatastroData module.
 
-        :param verbose: If True, prints detailed messages
-        :type verbose: bool
+        :param debug: If True, prints detailed messages
+        :type debug: bool
         :param cache: If True, loads/saves the municipality index from/to cache
         :type cache: bool
         :param request_timeout: Timeout in seconds for network requests
         :type request_timeout: int
         """
-        self.verbose = verbose
+        self.debug = debug
         self.cache = cache
         self.request_timeout = request_timeout
         self.municipalities_links = pd.DataFrame()
@@ -52,7 +53,7 @@ class CatastroData:
         :type message: str
         :return: None
         """
-        if self.verbose:
+        if self.debug:
             print(message)
 
     def _fetch_content(self, url) -> Optional[bytes]:
@@ -112,8 +113,7 @@ class CatastroData:
                 )
                 continue
 
-            territorial_entries = base_soup.find_all("entry")
-            for terr_entry in territorial_entries:
+            for terr_entry in base_soup.find_all("entry"):
                 title_element = terr_entry.find("title")
                 link_element = terr_entry.find("link", attrs={"href": True})
 
@@ -128,18 +128,21 @@ class CatastroData:
                 terr_name_full = title_element.get_text(strip=True)
                 territorial_link = link_element.get("href")
                 try:
-                    # TODO: Review
-                    territorial_code = str(terr_name_full[19:21]).zfill(2)
-                    territorial_name = terr_name_full[22:].strip()
-                except IndexError:
-                    self._log(
-                        f"Could not parse code/name from title: '{terr_name_full}' in {dataset}. Skipping."
-                    )
-                    continue
+                    # Extract the territory code and name using regex pattern matching
+                    match = re.search(r'Territorial office (\d{2}) (.*)', terr_name_full)
+                    if match:
+                        territorial_code = match.group(1).zfill(2)
+                        territorial_name = match.group(2).strip()
+                    else:
+                        # Fallback to the position-based approach
+                        territorial_code = str(terr_name_full[19:21]).zfill(2)
+                        territorial_name = terr_name_full[22:].strip()
 
-                self._log(
-                    f"  Processing Territorial Office: {territorial_code} - {territorial_name}"
-                )
+                    self._log(f"  Processing Territorial Office: {territorial_code} - {territorial_name}")
+
+                except IndexError:
+                    self._log(f"Could not parse code/name from title: '{terr_name_full}' in {dataset}. Skipping.")
+                    continue
 
                 terr_soup = self._get_soup(territorial_link)
                 if not terr_soup:
@@ -148,8 +151,7 @@ class CatastroData:
                     )
                     continue
 
-                municipality_entries = terr_soup.find_all("entry")
-                for mun_entry in municipality_entries:
+                for mun_entry in terr_soup.find_all("entry"):
                     link_tag = mun_entry.find(
                         "link", rel="enclosure", attrs={"href": True}
                     )
@@ -188,7 +190,7 @@ class CatastroData:
                         }
                     )
                     self._log(
-                        f"    Found: {municipality_code} - {municipality_name} ({dataset})"
+                        f"Found: {municipality_code} - {municipality_name} ({dataset})"
                     )
 
         self._log(f"Finished parsing. Found {len(municipalities_data)} total links.")
@@ -431,6 +433,7 @@ class CatastroData:
             with self._download_and_extract(
                 municipality_code_str, datatype, subtype
             ) as gml_file:
+                # TODO: ADD SUPPORT FOR ALL LAYERS OF ADDRESS 'Address' (default), 'ThoroughfareName', 'PostalDescriptor', 'AdminUnitName'
                 gdf = gpd.read_file(gml_file)
                 self._log(
                     f"Successfully loaded GeoDataFrame for {municipality_code_str} ({datatype})."
