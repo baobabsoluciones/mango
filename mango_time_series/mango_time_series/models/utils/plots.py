@@ -1,6 +1,6 @@
 import os
-from typing import List, Optional
-
+from typing import List, Optional, Dict, Any, Union
+import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
@@ -57,55 +57,53 @@ def plot_loss_history(
 
 
 def plot_actual_and_reconstructed(
-    actual: np.ndarray,
-    reconstructed: np.ndarray,
+    df: pd.DataFrame,
     save_path: str,
     feature_labels: Optional[List[str]] = None,
-    train_split: Optional[int] = None,
-    val_split: Optional[int] = None,
-    length_datasets: Optional[dict] = None,
 ):
     """
     Plot actual vs reconstructed values for each feature and save to specified folder.
     Can separate plots by data ID if id_data is provided.
 
-    :param actual: numpy array of shape (F,N) where F is number of features and N is observations
-    :type actual: np.ndarray
-    :param reconstructed: numpy array of shape (F,N) where F is number of features and N is observations
-    :type reconstructed: np.ndarray
+    :param df: DataFrame containing columns: feature, time_step, value, dataset, type, and optionally id
+    :type df: pd.DataFrame
     :param save_path: path to folder where plots will be saved
     :type save_path: str
     :param feature_labels: optional list of labels for each feature
     :type feature_labels: Optional[List[str]]
-    :param train_split: index position where training data ends (exclusive)
-    :type train_split: Optional[int]
-    :param val_split: index position where validation data ends (exclusive)
-    :type val_split: Optional[int]
-    :param length_datasets: dictionary with the length of the datasets for each id
-    :type length_datasets: Optional[dict]
     """
-    # Create save directory if it doesn't exist
     os.makedirs(save_path, exist_ok=True)
 
-    num_features = actual.shape[0]
+    # Check if we have IDs in the data
+    has_ids = "id" in df.columns
 
-    # If no feature labels provided, use feature indices
-    if feature_labels is None:
-        feature_labels = [f"feature_{i}" for i in range(num_features)]
-    elif len(feature_labels) != num_features:
-        raise ValueError("Number of feature labels must match number of features")
+    # Check if we have dataset splits
+    has_splits = "dataset" in df.columns
 
-    if train_split is None or val_split is None:
-        for feature, label in enumerate(feature_labels):
+    if not has_splits:
+        # Simple case: just actual vs reconstructed without splits
+        for feature_name in feature_labels:
+            feature_df = df.copy()
+            feature_df["value"] = df[feature_name]
+
             fig = go.Figure()
 
             # Add actual values
-            fig.add_trace(go.Scatter(y=actual[feature], mode="lines", name="Actual"))
-
-            # Add reconstructed values
+            actual_df = feature_df[feature_df["type"] == "actual"]
             fig.add_trace(
                 go.Scatter(
-                    y=reconstructed[feature],
+                    y=actual_df["value"],
+                    mode="lines",
+                    name="Actual",
+                    line=dict(color="blue"),
+                )
+            )
+
+            # Add reconstructed values
+            reconstructed_df = feature_df[feature_df["type"] == "reconstructed"]
+            fig.add_trace(
+                go.Scatter(
+                    y=reconstructed_df["value"],
                     mode="lines",
                     name="Reconstructed",
                     line=dict(dash="dash"),
@@ -114,160 +112,73 @@ def plot_actual_and_reconstructed(
 
             # Update layout
             fig.update_layout(
-                title=f"{label} - Actual vs Reconstructed",
+                title=f"{feature_name} - Actual vs Reconstructed",
                 xaxis_title="Time Step",
                 yaxis_title="Value",
                 showlegend=True,
             )
 
             # Save plot
-            plot_path = os.path.join(save_path, f"{label}_new_data.html")
+            plot_path = os.path.join(save_path, f"{feature_name}_new_data.html")
             fig.write_html(plot_path)
 
         return
 
-    # Split reconstructed data into train, validation and test
-    reconstructed_train = reconstructed[:, :train_split]
-    reconstructed_val = reconstructed[:, train_split:val_split]
-    reconstructed_test = reconstructed[:, val_split:]
-
-    # Calculate the length of zeros needed for each section
-    train_len = train_split
-    val_len = val_split - train_split
-    test_len = reconstructed.shape[1] - val_split
-
-    # Create zero arrays for padding
-    # For padding after train
-    zeros_after_train = np.zeros((reconstructed.shape[0], val_len + test_len))
-    # For padding before val
-    zeros_before_val = np.zeros((reconstructed.shape[0], train_len))
-    # For padding after val
-    zeros_after_val = np.zeros((reconstructed.shape[0], test_len))
-    # For padding before test
-    zeros_before_test = np.zeros((reconstructed.shape[0], train_len + val_len))
-
-    # Pad each split with zeros in the correct positions
-    reconstructed_train_padded = np.concatenate(
-        (reconstructed_train, zeros_after_train), axis=1
-    )
-    reconstructed_val_padded = np.concatenate(
-        (zeros_before_val, reconstructed_val, zeros_after_val), axis=1
-    )
-    reconstructed_test_padded = np.concatenate(
-        (zeros_before_test, reconstructed_test), axis=1
-    )
-
-    # Actual data
-    actual_train = actual[:, :train_split]
-    actual_val = actual[:, train_split:val_split]
-    actual_test = actual[:, val_split:]
-
-    # If ID data is provided, process per ID
-    if length_datasets is not None:
-
-        # Process each ID separately
-        for id_value in sorted(length_datasets.keys()):
+    if has_ids:
+        # Create plots for each ID and feature
+        for id_value in sorted(df["id"].unique()):
             # Create a separate directory for ID-based plots
             id_save_path = os.path.join(save_path, id_value)
             os.makedirs(id_save_path, exist_ok=True)
-            # Get the length of the datasets for this id
-            train_len = length_datasets[id_value]["train"]
-            val_len = length_datasets[id_value]["val"]
-            test_len = length_datasets[id_value]["test"]
 
-            # Extract data for this ID
-            id_actual_train = actual_train[:, :train_len]
-            id_actual_val = actual_val[:, :val_len]
-            id_actual_test = actual_test[:, :test_len]
+            # Filter data for this ID
+            id_df = df[df["id"] == id_value]
 
-            # Remove from actual_train, actual_val and actual_test the data for this id
-            actual_train = actual_train[:, train_len:]
-            actual_val = actual_val[:, val_len:]
-            actual_test = actual_test[:, test_len:]
+            # Plot for each feature
+            for feature_name in feature_labels:
+                feature_df = id_df[id_df["feature"] == feature_name]
 
-            id_reconstructed_train = reconstructed_train[:, :train_len]
-            id_reconstructed_val = reconstructed_val[:, :val_len]
-            id_reconstructed_test = reconstructed_test[:, :test_len]
-
-            # Create zero arrays for padding
-            zeros_after_train = np.zeros((reconstructed.shape[0], val_len + test_len))
-            zeros_before_val = np.zeros((reconstructed.shape[0], train_len))
-            zeros_after_val = np.zeros((reconstructed.shape[0], test_len))
-            zeros_before_test = np.zeros((reconstructed.shape[0], train_len + val_len))
-
-            # Pad each split with zeros in the correct positions
-            id_reconstructed_train_padded = np.concatenate(
-                (id_reconstructed_train, zeros_after_train), axis=1
-            )
-            id_reconstructed_val_padded = np.concatenate(
-                (zeros_before_val, id_reconstructed_val, zeros_after_val), axis=1
-            )
-            id_reconstructed_test_padded = np.concatenate(
-                (zeros_before_test, id_reconstructed_test), axis=1
-            )
-
-            # Remove from reconstructed_train, reconstructed_val and reconstructed_test the data for this id
-            reconstructed_train = reconstructed_train[:, train_len:]
-            reconstructed_val = reconstructed_val[:, val_len:]
-            reconstructed_test = reconstructed_test[:, test_len:]
-
-            # Concat the dataset and plot
-            id_actual = np.concatenate(
-                (id_actual_train, id_actual_val, id_actual_test), axis=1
-            )
-
-            # Plot for each feature for this ID
-            for feature, label in enumerate(feature_labels):
-                # Plot for this ID and feature
-                fig_id = go.Figure()
+                # Create figure
+                fig = go.Figure()
 
                 # Add actual values
-                fig_id.add_trace(
+                actual_df = feature_df[feature_df["type"] == "actual"]
+                fig.add_trace(
                     go.Scatter(
-                        y=id_actual[feature],
+                        x=actual_df["time_step"],
+                        y=actual_df["value"],
                         mode="lines",
                         name="Actual",
                         line=dict(color="blue"),
                     )
                 )
 
-                # Add reconstructed values with split coloring
-                if id_reconstructed_train_padded.shape[1] > 0:
-                    fig_id.add_trace(
-                        go.Scatter(
-                            y=id_reconstructed_train_padded[feature],
-                            mode="lines",
-                            name="Reconstructed - Train",
-                            line=dict(color="green"),
-                        )
-                    )
+                # Add reconstructed values for each dataset
+                for dataset in ["train", "validation", "test"]:
+                    dataset_df = feature_df[
+                        (feature_df["type"] == "reconstructed")
+                        & (feature_df["dataset"] == dataset)
+                    ]
 
-                if id_reconstructed_val_padded.shape[1] > id_actual_train.shape[1]:
-                    fig_id.add_trace(
-                        go.Scatter(
-                            y=id_reconstructed_val_padded[feature],
-                            mode="lines",
-                            name="Reconstructed - Validation",
-                            line=dict(color="orange"),
+                    if not dataset_df.empty:
+                        color = (
+                            "green"
+                            if dataset == "train"
+                            else "orange" if dataset == "validation" else "red"
                         )
-                    )
-
-                if (
-                    id_reconstructed_test_padded.shape[1]
-                    > id_actual_train.shape[1] + id_actual_val.shape[1]
-                ):
-                    fig_id.add_trace(
-                        go.Scatter(
-                            y=id_reconstructed_test_padded[feature],
-                            mode="lines",
-                            name="Reconstructed - Test",
-                            line=dict(color="red"),
+                        fig.add_trace(
+                            go.Scatter(
+                                x=dataset_df["time_step"],
+                                y=dataset_df["value"],
+                                mode="lines",
+                                name=f"Reconstructed - {dataset.capitalize()}",
+                                line=dict(color=color),
+                            )
                         )
-                    )
 
                 # Update layout
-                fig_id.update_layout(
-                    title=f"ID {id_value} - {label}",
+                fig.update_layout(
+                    title=f"ID {id_value} - {feature_name}",
                     xaxis_title="Time Step",
                     yaxis_title="Value",
                     showlegend=True,
@@ -275,160 +186,211 @@ def plot_actual_and_reconstructed(
                 )
 
                 # Save ID-specific plot
-                id_plot_path = os.path.join(save_path, id_value, f"{label}.html")
-                fig_id.write_html(id_plot_path)
+                id_plot_path = os.path.join(id_save_path, f"{feature_name}.html")
+                fig.write_html(id_plot_path)
 
             # Plot all features for this ID
-            fig_all_id = go.Figure()
-            for feature, label in enumerate(feature_labels):
-                fig_all_id.add_trace(
-                    go.Scatter(y=id_actual[feature], mode="lines", name=label)
-                )
-                fig_all_id.add_trace(
+            fig_all = go.Figure()
+
+            for feature_name in feature_labels:
+                feature_df = id_df[id_df["feature"] == feature_name]
+
+                # Add actual values
+                actual_df = feature_df[feature_df["type"] == "actual"]
+                fig_all.add_trace(
                     go.Scatter(
-                        y=id_reconstructed_train_padded[feature],
+                        x=actual_df["time_step"],
+                        y=actual_df["value"],
                         mode="lines",
-                        line=dict(dash="dash"),
-                        name=f"Reconstructed - Train ({label})",
-                    )
-                )
-                fig_all_id.add_trace(
-                    go.Scatter(
-                        y=id_reconstructed_val_padded[feature],
-                        mode="lines",
-                        line=dict(dash="dash"),
-                        name=f"Reconstructed - Validation ({label})",
-                    )
-                )
-                fig_all_id.add_trace(
-                    go.Scatter(
-                        y=id_reconstructed_test_padded[feature],
-                        mode="lines",
-                        line=dict(dash="dash"),
-                        name=f"Reconstructed - Test ({label})",
+                        name=f"{feature_name} - Actual",
                     )
                 )
 
-                fig_all_id.update_layout(
-                    title=f"ID {id_value} - All Features",
-                    xaxis_title="Time Step",
-                    yaxis_title="Value",
-                    showlegend=True,
-                    hovermode="x unified",
-                )
+                # Add reconstructed values for each dataset
+                for dataset in ["train", "validation", "test"]:
+                    dataset_df = feature_df[
+                        (feature_df["type"] == "reconstructed")
+                        & (feature_df["dataset"] == dataset)
+                    ]
 
-                id_plot_path = os.path.join(save_path, id_value, f"all_features.html")
-                fig_all_id.write_html(id_plot_path)
+                    if not dataset_df.empty:
+                        color = (
+                            "green"
+                            if dataset == "train"
+                            else "orange" if dataset == "validation" else "red"
+                        )
+                        fig_all.add_trace(
+                            go.Scatter(
+                                x=dataset_df["time_step"],
+                                y=dataset_df["value"],
+                                mode="lines",
+                                name=f"{feature_name} - {dataset.capitalize()}",
+                                line=dict(dash="dash", color=color),
+                            )
+                        )
+
+            # Update layout
+            fig_all.update_layout(
+                title=f"ID {id_value} - All Features",
+                xaxis_title="Time Step",
+                yaxis_title="Value",
+                showlegend=True,
+                hovermode="x unified",
+            )
+
+            # Save all features plot
+            id_plot_path = os.path.join(id_save_path, "all_features.html")
+            fig_all.write_html(id_plot_path)
 
     else:
-        # Continue with original plotting for the full dataset
-        for feature, label in enumerate(feature_labels):
+        # Create plots for each feature
+        for feature_name in feature_labels:
+            feature_df = df[df["feature"] == feature_name]
+
             # First plot: Separate actual and reconstructed
             fig_separate = make_subplots(
                 rows=2,
                 cols=1,
                 subplot_titles=(
-                    f"Actual - {label}",
-                    f"Reconstructed - {label}",
+                    f"Actual - {feature_name}",
+                    f"Reconstructed - {feature_name}",
                 ),
             )
 
             # Add the actual line plot
+            actual_df = feature_df[feature_df["type"] == "actual"]
             fig_separate.add_trace(
-                go.Scatter(y=actual[feature], mode="lines", name="Actual"), row=1, col=1
+                go.Scatter(
+                    x=actual_df["time_step"],
+                    y=actual_df["value"],
+                    mode="lines",
+                    name="Actual",
+                ),
+                row=1,
+                col=1,
             )
 
-            # Add the reconstructed line plots
-            fig_separate.add_trace(
-                go.Scatter(
-                    y=reconstructed_train_padded[feature], mode="lines", name="Train"
-                ),
-                row=2,
-                col=1,
-            )
-            fig_separate.add_trace(
-                go.Scatter(
-                    y=reconstructed_val_padded[feature], mode="lines", name="Validation"
-                ),
-                row=2,
-                col=1,
-            )
-            fig_separate.add_trace(
-                go.Scatter(
-                    y=reconstructed_test_padded[feature], mode="lines", name="Test"
-                ),
-                row=2,
-                col=1,
-            )
+            # Add the reconstructed line plots for each dataset
+            for dataset in ["train", "validation", "test"]:
+                dataset_df = feature_df[
+                    (feature_df["type"] == "reconstructed")
+                    & (feature_df["dataset"] == dataset)
+                ]
+
+                if not dataset_df.empty:
+                    color = (
+                        "green"
+                        if dataset == "train"
+                        else "orange" if dataset == "validation" else "red"
+                    )
+                    fig_separate.add_trace(
+                        go.Scatter(
+                            x=dataset_df["time_step"],
+                            y=dataset_df["value"],
+                            mode="lines",
+                            name=dataset.capitalize(),
+                            line=dict(color=color),
+                        ),
+                        row=2,
+                        col=1,
+                    )
 
             fig_separate.update_layout(
-                title=f"{label} - Separate Views", showlegend=True
+                title=f"{feature_name} - Separate Views", showlegend=True
             )
 
             # Save separate view plot
-            separate_path = os.path.join(save_path, f"{label}_separate.html")
+            separate_path = os.path.join(save_path, f"{feature_name}_separate.html")
             fig_separate.write_html(separate_path)
 
             # Second plot: Overlapped actual and reconstructed
             fig_overlap = go.Figure()
-            fig_overlap.add_trace(
-                go.Scatter(y=actual[feature], mode="lines", name="Actual")
-            )
-            fig_overlap.add_trace(
-                go.Scatter(
-                    y=reconstructed_train_padded[feature],
-                    mode="lines",
-                    name="Reconstructed - Train",
-                )
-            )
+
+            # Add actual values
             fig_overlap.add_trace(
                 go.Scatter(
-                    y=reconstructed_val_padded[feature],
+                    x=actual_df["time_step"],
+                    y=actual_df["value"],
                     mode="lines",
-                    name="Reconstructed - Validation",
-                )
-            )
-            fig_overlap.add_trace(
-                go.Scatter(
-                    y=reconstructed_test_padded[feature],
-                    mode="lines",
-                    name="Reconstructed - Test",
+                    name="Actual",
                 )
             )
 
+            # Add reconstructed values for each dataset
+            for dataset in ["train", "validation", "test"]:
+                dataset_df = feature_df[
+                    (feature_df["type"] == "reconstructed")
+                    & (feature_df["dataset"] == dataset)
+                ]
+
+                if not dataset_df.empty:
+                    color = (
+                        "green"
+                        if dataset == "train"
+                        else "orange" if dataset == "validation" else "red"
+                    )
+                    fig_overlap.add_trace(
+                        go.Scatter(
+                            x=dataset_df["time_step"],
+                            y=dataset_df["value"],
+                            mode="lines",
+                            name=f"Reconstructed - {dataset.capitalize()}",
+                            line=dict(color=color),
+                        )
+                    )
+
             fig_overlap.update_layout(
-                title=f"{label} - Overlapped View",
+                title=f"{feature_name} - Overlapped View",
                 xaxis_title="Time Step",
                 yaxis_title="Value",
                 showlegend=True,
             )
 
             # Save overlapped view plot
-            overlap_path = os.path.join(save_path, f"{label}_overlap.html")
+            overlap_path = os.path.join(save_path, f"{feature_name}_overlap.html")
             fig_overlap.write_html(overlap_path)
 
-            fig_all = go.Figure()
+        # Create a combined plot for all features
+        fig_all = go.Figure()
 
         # Add traces for each feature - both actual and reconstructed
-        for feature, label in enumerate(feature_labels):
+        for feature_name in feature_labels:
+            feature_df = df[df["feature"] == feature_name]
+
             # Add actual values
+            actual_df = feature_df[feature_df["type"] == "actual"]
             fig_all.add_trace(
                 go.Scatter(
-                    y=actual[feature],
+                    x=actual_df["time_step"],
+                    y=actual_df["value"],
                     mode="lines",
-                    name=f"{label} - Actual",
+                    name=f"{feature_name} - Actual",
                     line=dict(dash="solid"),
                 )
             )
-            # Add reconstructed values
-            fig_all.add_trace(
-                go.Scatter(
-                    y=reconstructed[feature],
-                    mode="lines",
-                    name=f"{label} - Reconstructed",
-                    line=dict(dash="dash"),
-                )
-            )
+
+            # Add reconstructed values for each dataset
+            for dataset in ["train", "validation", "test"]:
+                dataset_df = feature_df[
+                    (feature_df["type"] == "reconstructed")
+                    & (feature_df["dataset"] == dataset)
+                ]
+
+                if not dataset_df.empty:
+                    color = (
+                        "green"
+                        if dataset == "train"
+                        else "orange" if dataset == "validation" else "red"
+                    )
+                    fig_all.add_trace(
+                        go.Scatter(
+                            x=dataset_df["time_step"],
+                            y=dataset_df["value"],
+                            mode="lines",
+                            name=f"{feature_name} - {dataset.capitalize()}",
+                            line=dict(dash="dash", color=color),
+                        )
+                    )
 
         # Update layout
         fig_all.update_layout(

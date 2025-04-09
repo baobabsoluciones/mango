@@ -1551,6 +1551,186 @@ class AutoEncoder:
 
         self.save(filename=f"{epoch}.pkl")
 
+    def _create_data_points_df(
+        self,
+        x_converted: np.ndarray,
+        x_hat: np.ndarray,
+        feature_labels: List[str],
+        train_split: int,
+        val_split: int,
+    ) -> pd.DataFrame:
+        """
+        Create a DataFrame containing all data points for plotting.
+
+        :param x_converted: Original data array
+        :type x_converted: np.ndarray
+        :param x_hat: Reconstructed data array
+        :type x_hat: np.ndarray
+        :param feature_labels: List of feature names
+        :type feature_labels: List[str]
+        :param train_split: Index where training data ends
+        :type train_split: int
+        :param val_split: Index where validation data ends
+        :type val_split: int
+        :return: DataFrame containing all data points
+        :rtype: pd.DataFrame
+        """
+        data_points = []
+
+        # Process data with IDs if provided
+        if self.id_data_dict != {}:
+            current_pos = 0
+            for id_value in sorted(self.length_datasets.keys()):
+                train_len = self.length_datasets[id_value]["train"]
+                val_len = self.length_datasets[id_value]["val"]
+                test_len = self.length_datasets[id_value]["test"]
+
+                # Add data points for each feature
+                for feature_idx, feature_name in enumerate(feature_labels):
+                    # Process actual values
+                    for t in range(train_len):
+                        data_points.append(
+                            {
+                                "id": id_value,
+                                "feature": feature_name,
+                                "time_step": t,
+                                "value": x_converted[feature_idx, current_pos + t],
+                                "dataset": "train",
+                                "type": "actual",
+                            }
+                        )
+                        data_points.append(
+                            {
+                                "id": id_value,
+                                "feature": feature_name,
+                                "time_step": t,
+                                "value": x_hat[feature_idx, current_pos + t],
+                                "dataset": "train",
+                                "type": "reconstructed",
+                            }
+                        )
+
+                    for t in range(val_len):
+                        t_offset = t + train_len
+                        data_points.append(
+                            {
+                                "id": id_value,
+                                "feature": feature_name,
+                                "time_step": t_offset,
+                                "value": x_converted[
+                                    feature_idx, current_pos + t_offset
+                                ],
+                                "dataset": "validation",
+                                "type": "actual",
+                            }
+                        )
+                        data_points.append(
+                            {
+                                "id": id_value,
+                                "feature": feature_name,
+                                "time_step": t_offset,
+                                "value": x_hat[feature_idx, current_pos + t_offset],
+                                "dataset": "validation",
+                                "type": "reconstructed",
+                            }
+                        )
+
+                    for t in range(test_len):
+                        t_offset = t + train_len + val_len
+                        data_points.append(
+                            {
+                                "id": id_value,
+                                "feature": feature_name,
+                                "time_step": t_offset,
+                                "value": x_converted[
+                                    feature_idx, current_pos + t_offset
+                                ],
+                                "dataset": "test",
+                                "type": "actual",
+                            }
+                        )
+                        data_points.append(
+                            {
+                                "id": id_value,
+                                "feature": feature_name,
+                                "time_step": t_offset,
+                                "value": x_hat[feature_idx, current_pos + t_offset],
+                                "dataset": "test",
+                                "type": "reconstructed",
+                            }
+                        )
+
+                current_pos += train_len + val_len + test_len
+        else:
+            # Process data without IDs
+            for feature_idx, feature_name in enumerate(feature_labels):
+                # Add train data points
+                for t in range(train_split):
+                    data_points.append(
+                        {
+                            "feature": feature_name,
+                            "time_step": t,
+                            "value": x_converted[feature_idx, t],
+                            "dataset": "train",
+                            "type": "actual",
+                        }
+                    )
+                    data_points.append(
+                        {
+                            "feature": feature_name,
+                            "time_step": t,
+                            "value": x_hat[feature_idx, t],
+                            "dataset": "train",
+                            "type": "reconstructed",
+                        }
+                    )
+
+                # Add validation data points
+                for t in range(val_split - train_split):
+                    t_offset = t + train_split
+                    data_points.append(
+                        {
+                            "feature": feature_name,
+                            "time_step": t_offset,
+                            "value": x_converted[feature_idx, t_offset],
+                            "dataset": "validation",
+                            "type": "actual",
+                        }
+                    )
+                    data_points.append(
+                        {
+                            "feature": feature_name,
+                            "time_step": t_offset,
+                            "value": x_hat[feature_idx, t_offset],
+                            "dataset": "validation",
+                            "type": "reconstructed",
+                        }
+                    )
+
+                # Add test data points
+                for t in range(x_converted.shape[1] - val_split):
+                    t_offset = t + val_split
+                    data_points.append(
+                        {
+                            "feature": feature_name,
+                            "time_step": t_offset,
+                            "value": x_converted[feature_idx, t_offset],
+                            "dataset": "test",
+                            "type": "actual",
+                        }
+                    )
+                    data_points.append(
+                        {
+                            "feature": feature_name,
+                            "time_step": t_offset,
+                            "value": x_hat[feature_idx, t_offset],
+                            "dataset": "test",
+                            "type": "reconstructed",
+                        }
+                    )
+
+        return pd.DataFrame(data_points)
+
     def reconstruct(self) -> bool:
         """
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
@@ -1877,14 +2057,20 @@ class AutoEncoder:
         train_split = self.x_train.shape[0]
         val_split = train_split + self.x_val.shape[0]
 
-        plot_actual_and_reconstructed(
-            actual=x_converted,
-            reconstructed=x_hat,
-            save_path=os.path.join(self._save_path, "plots"),
+        # Create DataFrame with all data points
+        df = self._create_data_points_df(
+            x_converted=x_converted,
+            x_hat=x_hat,
             feature_labels=feature_labels,
             train_split=train_split,
             val_split=val_split,
-            length_datasets=self.length_datasets if self.id_data_dict != {} else None,
+        )
+
+        # Plot the data
+        plot_actual_and_reconstructed(
+            df=df,
+            save_path=os.path.join(self._save_path, "plots"),
+            feature_labels=feature_labels,
         )
 
         return True
@@ -2302,8 +2488,6 @@ class AutoEncoder:
                 self._time_step_to_check,
             )
 
-            reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
-
             # Generate plot path based on ID
             plot_path = (
                 os.path.join(save_path or self.root_dir, "plots", str(id_iter))
@@ -2312,14 +2496,22 @@ class AutoEncoder:
             )
 
             # Plot actual vs reconstructed data
+            # Create DataFrame with actual and reconstructed data
+            actual_df = pd.DataFrame(
+                data_original[:, self._feature_to_check], columns=feature_names
+            )
+            actual_df["type"] = "actual"
+
+            reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
+            reconstructed_df["type"] = "reconstructed"
+
+            # Combine the DataFrames
+            df = pd.concat([actual_df, reconstructed_df], ignore_index=True)
+
             plot_actual_and_reconstructed(
-                actual=data_original[:, self._feature_to_check].T,
-                reconstructed=padded_reconstructed.T,
+                df=df,
                 save_path=plot_path,
                 feature_labels=feature_names,
-                train_split=None,
-                val_split=None,
-                length_datasets=None,
             )
 
             return reconstructed_df
