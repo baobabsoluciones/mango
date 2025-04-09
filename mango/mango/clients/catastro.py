@@ -9,6 +9,13 @@ from bs4 import BeautifulSoup
 import json
 from typing import Union, Optional, List
 import re
+import logging
+
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s - %(levelname)s - %(module)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 class CatastroData:
@@ -27,34 +34,38 @@ class CatastroData:
 
     CACHE_FILE = "catastro_cache.json"
 
-    def __init__(self, debug=False, cache=False, request_timeout=30):
+    def __init__(self, debug=False, verbose=False, cache=False, request_timeout=30):
         """
         Initializes the CatastroData module.
 
-        :param debug: If True, prints detailed messages
+        :param debug: If True, sets the logging level to DEBUG for detailed output. Overrides verbose.
         :type debug: bool
+        :param verbose: If True and debug is False, sets the logging level to INFO for general information.
+        :type verbose: bool
         :param cache: If True, loads/saves the municipality index from/to cache
         :type cache: bool
         :param request_timeout: Timeout in seconds for network requests
         :type request_timeout: int
         """
         self.debug = debug
+        self.verbose = verbose
         self.cache = cache
         self.request_timeout = request_timeout
         self.municipalities_links = pd.DataFrame()
         self._index_loaded = False
         self.available_datatypes = list(self.BASE_URLS.keys())
 
-    def _log(self, message) -> None:
-        """
-        Logs a message if verbose mode is enabled.
-
-        :param message: Message to log
-        :type message: str
-        :return: None
-        """
         if self.debug:
-            print(message)
+            logger.setLevel(logging.DEBUG)
+            logger.debug("Debug mode enabled: Showing all log messages.")
+        elif self.verbose:
+            logger.setLevel(logging.INFO)
+            logger.info("Verbose mode enabled: Showing informational messages.")
+        else:
+            logger.setLevel(logging.WARNING)
+            logger.warning(
+                "Neither debug nor verbose mode is enabled. Showing warnings, errors, and critical messages only."
+            )
 
     def _fetch_content(self, url) -> Optional[bytes]:
         """
@@ -69,10 +80,10 @@ class CatastroData:
             response = requests.get(url, timeout=self.request_timeout)
             response.raise_for_status()
             response.encoding = response.apparent_encoding
-            self._log(f"Successfully fetched content from: {url}")
+            logger.debug(f"Successfully fetched content from: {url}")
             return response.content
         except requests.exceptions.RequestException as e:
-            self._log(f"Error fetching {url}: {e}")
+            logger.error(f"Error fetching URL: {url} - {e}")
             return None
 
     def _get_soup(self, url) -> Optional[BeautifulSoup]:
@@ -88,9 +99,10 @@ class CatastroData:
         if content:
             try:
                 soup = BeautifulSoup(content, features="xml")
+                logger.debug(f"Successfully parsed XML from: {url}")
                 return soup
             except Exception as e:
-                self._log(f"Error parsing XML from {url}: {e}")
+                logger.error(f"Error parsing XML content from URL: {url} - {e}")
                 return None
         return None
 
@@ -101,15 +113,17 @@ class CatastroData:
         :return: DataFrame with parsed municipality links
         :rtype: pd.DataFrame
         """
-        self._log("Fetching and parsing municipality .zip links...")
+        logger.info(
+            "Starting to fetch and parse municipality download links from ATOM feeds..."
+        )
         municipalities_data = []
 
         for dataset, base_url in self.BASE_URLS.items():
-            self._log(f"Processing dataset: {dataset} from {base_url}")
+            logger.info(f"Processing dataset: {dataset} - Fetching from {base_url}")
             base_soup = self._get_soup(base_url)
             if not base_soup:
-                self._log(
-                    f"Skipping dataset {dataset} due to fetch/parse error on base URL."
+                logger.warning(
+                    f"Skipping dataset '{dataset}' due to an error fetching or parsing the base URL."
                 )
                 continue
 
@@ -122,32 +136,38 @@ class CatastroData:
                     and link_element
                     and len(title_element.get_text(strip=True)) >= 22
                 ):
-                    self._log(f"Skipping invalid territorial entry in {dataset}")
+                    logger.debug(
+                        f"Skipping an invalid territorial entry in dataset '{dataset}'."
+                    )
                     continue
 
                 terr_name_full = title_element.get_text(strip=True)
                 territorial_link = link_element.get("href")
                 try:
-                    # Extract the territory code and name using regex pattern matching
-                    match = re.search(r'Territorial office (\d{2}) (.*)', terr_name_full)
+                    match = re.search(
+                        r"Territorial office (\d{2}) (.*)", terr_name_full
+                    )
                     if match:
                         territorial_code = match.group(1).zfill(2)
                         territorial_name = match.group(2).strip()
                     else:
-                        # Fallback to the position-based approach
                         territorial_code = str(terr_name_full[19:21]).zfill(2)
                         territorial_name = terr_name_full[22:].strip()
 
-                    self._log(f"  Processing Territorial Office: {territorial_code} - {territorial_name}")
+                    logger.debug(
+                        f"Processing Territorial Office: Code={territorial_code}, Name='{territorial_name}'"
+                    )
 
                 except IndexError:
-                    self._log(f"Could not parse code/name from title: '{terr_name_full}' in {dataset}. Skipping.")
+                    logger.warning(
+                        f"Could not parse territorial code/name from title: '{terr_name_full}' in dataset '{dataset}'. Skipping."
+                    )
                     continue
 
                 terr_soup = self._get_soup(territorial_link)
                 if not terr_soup:
-                    self._log(
-                        f"  Skipping territorial office {territorial_name} due to fetch/parse error."
+                    logger.warning(
+                        f"Skipping territorial office '{territorial_name}' due to an error fetching or parsing the territorial link."
                     )
                     continue
 
@@ -158,7 +178,9 @@ class CatastroData:
                     title_tag = mun_entry.find("title")
 
                     if not (link_tag and title_tag):
-                        self._log("  Skipping entry with missing link or title.")
+                        logger.debug(
+                            "Skipping a municipality entry with missing link or title."
+                        )
                         continue
 
                     zip_link = link_tag.get("href")
@@ -172,10 +194,9 @@ class CatastroData:
                             municipality_name = municipality_name.replace(
                                 word, "", 1
                             ).strip()
-
                     except (IndexError, ValueError):
-                        self._log(
-                            f"  Could not parse code/name from title: '{municipality_info}'. Skipping."
+                        logger.warning(
+                            f"Could not parse municipality code/name from title: '{municipality_info}'. Skipping."
                         )
                         continue
 
@@ -189,11 +210,13 @@ class CatastroData:
                             "Zip Link": zip_link,
                         }
                     )
-                    self._log(
-                        f"Found: {municipality_code} - {municipality_name} ({dataset})"
+                    logger.debug(
+                        f"Found municipality: Code={municipality_code}, Name='{municipality_name}' (Dataset: {dataset})"
                     )
 
-        self._log(f"Finished parsing. Found {len(municipalities_data)} total links.")
+        logger.info(
+            f"Finished parsing municipality links. Found a total of {len(municipalities_data)} links."
+        )
         return pd.DataFrame(
             municipalities_data,
             columns=[
@@ -209,45 +232,56 @@ class CatastroData:
     def load_index(self) -> None:
         """
         Loads the index of available municipalities and their download links.
-
         Uses cache if enabled and available, otherwise fetches fresh data.
         Must be called before retrieving specific municipality data.
 
         :return: None
         """
         if self._index_loaded:
-            self._log("Municipality index already loaded.")
+            logger.info("Municipality index is already loaded.")
             return
 
         if self.cache and os.path.exists(self.CACHE_FILE):
             try:
-                self._log(f"Loading municipalities index from cache: {self.CACHE_FILE}")
+                logger.info(
+                    f"Attempting to load municipality index from cache: {self.CACHE_FILE}"
+                )
                 self.municipalities_links = pd.read_json(self.CACHE_FILE, dtype=False)
                 self._index_loaded = True
-                self._log("Successfully loaded index from cache.")
+                logger.info("Successfully loaded municipality index from cache.")
                 return
             except (json.JSONDecodeError, ValueError, KeyError, FileNotFoundError) as e:
-                self._log(f"Failed to load from cache ({e}). Fetching fresh data.")
+                logger.warning(
+                    f"Failed to load municipality index from cache ({e}). Fetching fresh data."
+                )
                 if os.path.exists(self.CACHE_FILE):
                     try:
                         os.remove(self.CACHE_FILE)
+                        logger.info(
+                            f"Potentially corrupted cache file '{self.CACHE_FILE}' removed."
+                        )
                     except OSError as remove_err:
-                        self._log(
-                            f"Warning: Could not remove potentially corrupt cache file {self.CACHE_FILE}: {remove_err}"
+                        logger.error(
+                            f"Warning: Could not remove potentially corrupt cache file '{self.CACHE_FILE}': {remove_err}"
                         )
 
-        self._log("Fetching fresh municipalities index...")
+        logger.info("Fetching fresh municipality index from the Catastro website...")
         self.municipalities_links = self._fetch_and_parse_links()
         self._index_loaded = True
 
         if self.cache and not self.municipalities_links.empty:
             try:
-                self._log(f"Saving municipalities index to cache: {self.CACHE_FILE}")
+                logger.info(
+                    f"Saving the fetched municipality index to cache: {self.CACHE_FILE}"
+                )
                 self.municipalities_links.to_json(self.CACHE_FILE, indent=4)
+                logger.info("Municipality index saved to cache successfully.")
             except IOError as e:
-                self._log(f"Error saving index to cache: {e}")
+                logger.error(f"Error saving municipality index to cache: {e}")
         elif self.cache and self.municipalities_links.empty:
-            self._log("Skipping cache save because fetched index is empty.")
+            logger.warning(
+                "Skipping cache save because the fetched municipality index is empty."
+            )
 
     def _ensure_index_loaded(self) -> None:
         """
@@ -258,7 +292,7 @@ class CatastroData:
         """
         if not self._index_loaded or self.municipalities_links.empty:
             raise RuntimeError(
-                "Municipality index not loaded. Call load_index() first."
+                "Municipality index not loaded. Call load_index() first to populate the index."
             )
 
     def _download_and_extract(self, municipality_code, datatype, subtype=None):
@@ -278,7 +312,7 @@ class CatastroData:
         """
         self._ensure_index_loaded()
 
-        self._log(
+        logger.debug(
             f"Filtering for Municipality Code: {municipality_code}, Datatype: {datatype}"
         )
 
@@ -291,18 +325,18 @@ class CatastroData:
 
         if filtered_links.empty:
             raise ValueError(
-                f"No index entry found for Municipality Code '{municipality_code_str}' and Datatype '{datatype}'. Check availability."
+                f"No index entry found for Municipality Code '{municipality_code_str}' and Datatype '{datatype}'. Please check the code and datatype."
             )
 
         zip_link = filtered_links.iloc[0]["Zip Link"]
 
         if not zip_link or pd.isna(zip_link):
             raise ValueError(
-                f"Index entry found, but no valid Zip Link for municipality '{municipality_code_str}' and Datatype '{datatype}'."
+                f"Index entry found for municipality '{municipality_code_str}' and Datatype '{datatype}', but the Zip Link is invalid."
             )
 
-        self._log(
-            f"Downloading data for municipality {municipality_code_str} ({datatype}) from {zip_link}..."
+        logger.info(
+            f"Downloading {datatype} data for municipality {municipality_code_str} from {zip_link}..."
         )
         zip_content = self._fetch_content(zip_link)
 
@@ -346,7 +380,9 @@ class CatastroData:
                     elif isinstance(suffix, list):
                         suffix = suffix[0]
                     else:
-                        raise ValueError(f"Unexpected suffix type: {type(suffix)}")
+                        raise ValueError(
+                            f"Unexpected suffix type for datatype '{datatype}'."
+                        )
 
                 gml_filename = None
                 for filename in zip_ref.namelist():
@@ -355,26 +391,27 @@ class CatastroData:
                         break
 
                 if gml_filename:
-                    self._log(f"Extracting '{gml_filename}' from zip archive.")
+                    logger.debug(f"Extracting '{gml_filename}' from the zip archive.")
                     return zip_ref.open(gml_filename)
                 else:
                     raise FileNotFoundError(
-                        f"No file ending with expected pattern ('{suffix}' or specific Address GML) "
+                        f"No file ending with the expected pattern ('{suffix}' or specific Address GML) "
                         f"found in the zip archive from {zip_link} for datatype {datatype}. "
-                        f"Files found: {zip_ref.namelist()}"
+                        f"Files found in archive: {zip_ref.namelist()}"
                     )
         except zipfile.BadZipFile:
             raise zipfile.BadZipFile(
-                f"Downloaded file from {zip_link} is not a valid zip archive."
+                f"Downloaded file from {zip_link} appears to be an invalid zip archive."
             )
         except Exception as e:
-            self._log(f"An unexpected error occurred during zip extraction: {e}")
+            logger.critical(
+                f"An unexpected error occurred during zip file processing: {e}"
+            )
             raise
 
     def available_municipalities(self, datatype: str) -> pd.DataFrame:
         """
         Returns a DataFrame of available municipalities for a given datatype.
-
         Requires ``load_index()`` to be called first.
 
         :param datatype: The type of data ("Buildings", "CadastralParcels", "Addresses")
@@ -387,24 +424,26 @@ class CatastroData:
         self._ensure_index_loaded()
         if datatype not in self.available_datatypes:
             raise ValueError(
-                f"Invalid datatype '{datatype}'. Available types: {self.available_datatypes}"
+                f"Invalid datatype '{datatype}'. Available types are: {self.available_datatypes}"
             )
 
-        return (
+        df = (
             self.municipalities_links[
                 self.municipalities_links["Datatype"] == datatype
             ][["Municipality Code", "Municipality Name"]]
             .drop_duplicates()
             .reset_index(drop=True)
         )
+        logger.info(
+            f"Retrieved a list of {len(df)} available municipalities for datatype '{datatype}'."
+        )
+        return df
 
-    def get_municipality_data(
+    def _get_municipality_data(
         self, municipality_code, datatype, subtype=None
     ) -> gpd.GeoDataFrame:
         """
         Gets a GeoDataFrame for a single municipality and datatype.
-
-        Main method of the class. Requires ``load_index()`` to be called first.
 
         :param municipality_code: The 5-digit code of the municipality
         :type municipality_code: str
@@ -418,15 +457,15 @@ class CatastroData:
         :raises RuntimeError: If index is not loaded
         """
         self._ensure_index_loaded()
-        self._log(
-            f"Attempting to get {datatype} data for municipality {municipality_code}..."
+        logger.info(
+            f"Attempting to retrieve {datatype} data for municipality code '{municipality_code}'..."
         )
 
         municipality_code_str = str(municipality_code).zfill(5)
 
         if datatype not in self.available_datatypes:
             raise ValueError(
-                f"Invalid datatype '{datatype}'. Available types: {self.available_datatypes}"
+                f"Invalid datatype '{datatype}'. Available types are: {self.available_datatypes}"
             )
 
         try:
@@ -435,8 +474,8 @@ class CatastroData:
             ) as gml_file:
                 # TODO: ADD SUPPORT FOR ALL LAYERS OF ADDRESS 'Address' (default), 'ThoroughfareName', 'PostalDescriptor', 'AdminUnitName'
                 gdf = gpd.read_file(gml_file)
-                self._log(
-                    f"Successfully loaded GeoDataFrame for {municipality_code_str} ({datatype})."
+                logger.info(
+                    f"Successfully loaded GeoDataFrame for municipality code '{municipality_code_str}' and datatype '{datatype}'. Found {len(gdf)} features."
                 )
                 return gdf
         except (
@@ -446,28 +485,28 @@ class CatastroData:
             zipfile.BadZipFile,
             RuntimeError,
         ) as e:
-            self._log(
-                f"Failed to get data for {municipality_code_str} ({datatype}): {e}"
+            logger.error(
+                f"Failed to get {datatype} data for municipality code '{municipality_code_str}': {e}"
             )
             raise
         except Exception as e:
-            self._log(
-                f"An unexpected error occurred loading GeoDataFrame for {municipality_code_str} ({datatype}): {e}"
+            logger.critical(
+                f"An unexpected error occurred while loading GeoDataFrame for municipality code '{municipality_code_str}' and datatype '{datatype}': {e}"
             )
             raise
 
-    def get_multiple_municipalities_data(
+    def get_municipality_data(
         self,
         municipality_codes: Union[str, List[str]],
         datatype,
-        target_crs="EPSG:4326",
         subtype=None,
+        target_crs="EPSG:4326",
     ) -> Optional[gpd.GeoDataFrame]:
         """
         Returns a combined GeoDataFrame for multiple municipalities of the same datatype.
+        Main method of the class. Requires ``load_index()`` to be called first.
 
-        Requires ``load_index()`` to be called first. Optionally reprojects to the
-        specified ``target_crs``, or defaults to EPSG:4326 for merging all municipalities
+        Optionally reprojects to the specified ``target_crs``, or defaults to EPSG:4326 for merging all municipalities
         into one GeoDataFrame.
 
         :param municipality_codes: A list of 5-digit municipality codes or a single code
@@ -483,55 +522,81 @@ class CatastroData:
         """
         self._ensure_index_loaded()
 
-        if not isinstance(municipality_codes, list) and not isinstance(
-            municipality_codes, str
-        ):
+        if isinstance(municipality_codes, str):
+            municipality_codes = [municipality_codes]
+        elif not isinstance(municipality_codes, list):
             raise TypeError(
                 "municipality_codes must be a list of strings or a single string."
             )
+
         if datatype not in self.available_datatypes:
             raise ValueError(
-                f"Invalid datatype '{datatype}'. Available types: {self.available_datatypes}"
+                f"Invalid datatype '{datatype}'. Available types are: {self.available_datatypes}"
             )
 
         gdfs = []
+        processed_codes = []
+        failed_codes = {}
+
         for code in municipality_codes:
             sleep(0.1)
             code_str = str(code).zfill(5)
+            logger.info(
+                f"Processing municipality code: {code_str} for datatype '{datatype}'."
+            )
             try:
-                self._log(f"Processing municipality: {code_str} ({datatype})")
-                gdf = self.get_municipality_data(code_str, datatype, subtype)
-
+                gdf = self._get_municipality_data(code_str, datatype, subtype)
                 if gdf is not None and not gdf.empty:
                     if gdf.crs and gdf.crs != target_crs:
-                        self._log(
-                            f"Reprojecting {code_str} from {gdf.crs} to {target_crs}"
+                        logger.info(
+                            f"Reprojecting municipality {code_str} from {gdf.crs} to {target_crs}."
                         )
                         gdf = gdf.to_crs(target_crs)
                     elif not gdf.crs:
-                        self._log(
-                            f"Warning: CRS missing for {code_str}. Cannot reproject. Assuming {target_crs}."
+                        logger.warning(
+                            f"Warning: CRS missing for municipality {code_str}. Assuming '{target_crs}' for concatenation."
                         )
 
                     gdf["municipality_code"] = code_str
                     gdfs.append(gdf)
-                else:
-                    self._log(
-                        f"No valid data returned for municipality {code_str} ({datatype})."
+                    processed_codes.append(code_str)
+                    logger.debug(
+                        f"Successfully processed municipality code: {code_str}."
                     )
+                else:
+                    logger.warning(
+                        f"No data returned for municipality code '{code_str}' and datatype '{datatype}'."
+                    )
+                    failed_codes[code_str] = "No data returned"
 
             except Exception as e:
-                self._log(
-                    f"Error processing municipality {code_str} ({datatype}): {e}. Skipping."
+                logger.error(
+                    f"Error processing municipality code '{code_str}' for datatype '{datatype}': {e}"
                 )
+                failed_codes[code_str] = str(e)
                 continue
 
         if not gdfs:
-            self._log("No data collected for any of the requested municipalities.")
+            logger.warning("No data collected for any of the requested municipalities.")
+            if failed_codes:
+                logger.warning(
+                    f"Processing failed for the following municipalities: {failed_codes}"
+                )
             return None
 
-        self._log(f"Concatenating data for {len(gdfs)} municipalities.")
+        logger.info(
+            f"Successfully processed data for {len(processed_codes)} municipalities."
+        )
+        if failed_codes:
+            logger.warning(
+                f"Processing failed for {len(failed_codes)} municipalities: {failed_codes}"
+            )
+
+        logger.info(f"Concatenating data for the processed municipalities.")
         combined_gdf = gpd.GeoDataFrame(
             pd.concat(gdfs, ignore_index=True), crs=target_crs if gdfs else None
+        )
+        logger.info(
+            f"Combined GeoDataFrame created with a total of {len(combined_gdf)} features."
         )
         return combined_gdf
