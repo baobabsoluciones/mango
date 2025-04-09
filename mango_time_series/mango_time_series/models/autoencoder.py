@@ -1231,6 +1231,31 @@ class AutoEncoder:
 
         self._create_datasets(batch_size)
 
+    @property
+    def checkpoint(self) -> int:
+        """
+        Get the checkpoint value.
+
+        :return: Number of epochs between checkpoints (0 to disable)
+        :rtype: int
+        """
+        return getattr(self, "_checkpoint", 0)
+
+    @checkpoint.setter
+    def checkpoint(self, value: int) -> None:
+        """
+        Set the checkpoint value.
+
+        :param value: Number of epochs between checkpoints (0 to disable)
+        :type value: int
+        :raises ValueError: If value is negative
+        """
+        if not isinstance(value, int):
+            raise ValueError("checkpoint must be an integer")
+        if value < 0:
+            raise ValueError("checkpoint cannot be negative")
+        self._checkpoint = value
+
     def train(
         self,
         epochs: int = 100,
@@ -1243,7 +1268,7 @@ class AutoEncoder:
 
         :param epochs: Number of epochs to train the model
         :type epochs: int
-        :param checkpoint: Number of epochs to save a checkpoint
+        :param checkpoint: Number of epochs to save a checkpoint (0 to disable)
         :type checkpoint: int
         :param use_early_stopping: Whether to use early stopping or not
         :type use_early_stopping: bool
