@@ -339,7 +339,12 @@ class CatastroData:
                             f"Subtypes are not supported for datatype '{datatype}'."
                         )
                 else:
-                    suffix = next(iter(suffix.values()))
+                    if isinstance(suffix, dict):
+                        suffix = next(iter(suffix.values()))
+                    elif isinstance(suffix, list):
+                        suffix = suffix[0]
+                    else:
+                        raise ValueError(f"Unexpected suffix type: {type(suffix)}")
 
                 gml_filename = None
                 for filename in zip_ref.namelist():
