@@ -1558,7 +1558,7 @@ class AutoEncoder:
         feature_labels: List[str],
         train_split: int,
         val_split: int,
-    ) -> pd.DataFrame:
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Create a DataFrame containing all data points for plotting.
 
@@ -1572,10 +1572,11 @@ class AutoEncoder:
         :type train_split: int
         :param val_split: Index where validation data ends
         :type val_split: int
-        :return: DataFrame containing all data points
-        :rtype: pd.DataFrame
+        :return: DataFrames for actual and reconstructed data points
+        :rtype: Tuple[pd.DataFrame, pd.DataFrame]
         """
-        data_points = []
+        data_points_actual = []
+        data_points_reconstructed = []
 
         # Process data with IDs if provided
         if self.id_data_dict != {}:
@@ -1589,30 +1590,28 @@ class AutoEncoder:
                 for feature_idx, feature_name in enumerate(feature_labels):
                     # Process actual values
                     for t in range(train_len):
-                        data_points.append(
+                        data_points_actual.append(
                             {
                                 "id": id_value,
                                 "feature": feature_name,
                                 "time_step": t,
                                 "value": x_converted[feature_idx, current_pos + t],
                                 "dataset": "train",
-                                "type": "actual",
                             }
                         )
-                        data_points.append(
+                        data_points_reconstructed.append(
                             {
                                 "id": id_value,
                                 "feature": feature_name,
                                 "time_step": t,
                                 "value": x_hat[feature_idx, current_pos + t],
                                 "dataset": "train",
-                                "type": "reconstructed",
                             }
                         )
 
                     for t in range(val_len):
                         t_offset = t + train_len
-                        data_points.append(
+                        data_points_actual.append(
                             {
                                 "id": id_value,
                                 "feature": feature_name,
@@ -1621,23 +1620,21 @@ class AutoEncoder:
                                     feature_idx, current_pos + t_offset
                                 ],
                                 "dataset": "validation",
-                                "type": "actual",
                             }
                         )
-                        data_points.append(
+                        data_points_reconstructed.append(
                             {
                                 "id": id_value,
                                 "feature": feature_name,
                                 "time_step": t_offset,
                                 "value": x_hat[feature_idx, current_pos + t_offset],
                                 "dataset": "validation",
-                                "type": "reconstructed",
                             }
                         )
 
                     for t in range(test_len):
                         t_offset = t + train_len + val_len
-                        data_points.append(
+                        data_points_actual.append(
                             {
                                 "id": id_value,
                                 "feature": feature_name,
@@ -1646,17 +1643,15 @@ class AutoEncoder:
                                     feature_idx, current_pos + t_offset
                                 ],
                                 "dataset": "test",
-                                "type": "actual",
                             }
                         )
-                        data_points.append(
+                        data_points_reconstructed.append(
                             {
                                 "id": id_value,
                                 "feature": feature_name,
                                 "time_step": t_offset,
                                 "value": x_hat[feature_idx, current_pos + t_offset],
                                 "dataset": "test",
-                                "type": "reconstructed",
                             }
                         )
 
@@ -1666,70 +1661,64 @@ class AutoEncoder:
             for feature_idx, feature_name in enumerate(feature_labels):
                 # Add train data points
                 for t in range(train_split):
-                    data_points.append(
+                    data_points_actual.append(
                         {
                             "feature": feature_name,
                             "time_step": t,
                             "value": x_converted[feature_idx, t],
                             "dataset": "train",
-                            "type": "actual",
                         }
                     )
-                    data_points.append(
+                    data_points_reconstructed.append(
                         {
                             "feature": feature_name,
                             "time_step": t,
                             "value": x_hat[feature_idx, t],
                             "dataset": "train",
-                            "type": "reconstructed",
                         }
                     )
 
                 # Add validation data points
                 for t in range(val_split - train_split):
                     t_offset = t + train_split
-                    data_points.append(
+                    data_points_actual.append(
                         {
                             "feature": feature_name,
                             "time_step": t_offset,
                             "value": x_converted[feature_idx, t_offset],
                             "dataset": "validation",
-                            "type": "actual",
                         }
                     )
-                    data_points.append(
+                    data_points_reconstructed.append(
                         {
                             "feature": feature_name,
                             "time_step": t_offset,
                             "value": x_hat[feature_idx, t_offset],
                             "dataset": "validation",
-                            "type": "reconstructed",
                         }
                     )
 
                 # Add test data points
                 for t in range(x_converted.shape[1] - val_split):
                     t_offset = t + val_split
-                    data_points.append(
+                    data_points_actual.append(
                         {
                             "feature": feature_name,
                             "time_step": t_offset,
                             "value": x_converted[feature_idx, t_offset],
                             "dataset": "test",
-                            "type": "actual",
                         }
                     )
-                    data_points.append(
+                    data_points_reconstructed.append(
                         {
                             "feature": feature_name,
                             "time_step": t_offset,
                             "value": x_hat[feature_idx, t_offset],
                             "dataset": "test",
-                            "type": "reconstructed",
                         }
                     )
 
-        return pd.DataFrame(data_points)
+        return pd.DataFrame(data_points_actual), pd.DataFrame(data_points_reconstructed)
 
     def reconstruct(self) -> bool:
         """
@@ -2058,7 +2047,7 @@ class AutoEncoder:
         val_split = train_split + self.x_val.shape[0]
 
         # Create DataFrame with all data points
-        df = self._create_data_points_df(
+        df_actual, df_reconstructed = self._create_data_points_df(
             x_converted=x_converted,
             x_hat=x_hat,
             feature_labels=feature_labels,
@@ -2068,7 +2057,8 @@ class AutoEncoder:
 
         # Plot the data
         plot_actual_and_reconstructed(
-            df=df,
+            df_actual=df_actual,
+            df_reconstructed=df_reconstructed,
             save_path=os.path.join(self._save_path, "plots"),
             feature_labels=feature_labels,
         )
@@ -2505,11 +2495,9 @@ class AutoEncoder:
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
             reconstructed_df["type"] = "reconstructed"
 
-            # Combine the DataFrames
-            df = pd.concat([actual_df, reconstructed_df], ignore_index=True)
-
             plot_actual_and_reconstructed(
-                df=df,
+                df_actual=actual_df,
+                df_reconstructed=reconstructed_df,
                 save_path=plot_path,
                 feature_labels=feature_names,
             )

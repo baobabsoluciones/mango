@@ -57,7 +57,8 @@ def plot_loss_history(
 
 
 def plot_actual_and_reconstructed(
-    df: pd.DataFrame,
+    df_actual: pd.DataFrame,
+    df_reconstructed: pd.DataFrame,
     save_path: str,
     feature_labels: Optional[List[str]] = None,
 ):
@@ -65,8 +66,10 @@ def plot_actual_and_reconstructed(
     Plot actual vs reconstructed values for each feature and save to specified folder.
     Can separate plots by data ID if id_data is provided.
 
-    :param df: DataFrame containing columns: feature, time_step, value, dataset, type, and optionally id
-    :type df: pd.DataFrame
+    :param df_actual: DataFrame containing actual values
+    :type df_actual: pd.DataFrame
+    :param df_reconstructed: DataFrame containing reconstructed values
+    :type df_reconstructed: pd.DataFrame
     :param save_path: path to folder where plots will be saved
     :type save_path: str
     :param feature_labels: optional list of labels for each feature
@@ -75,24 +78,23 @@ def plot_actual_and_reconstructed(
     os.makedirs(save_path, exist_ok=True)
 
     # Check if we have IDs in the data
-    has_ids = "id" in df.columns
+    has_ids = "id" in df_actual.columns
 
     # Check if we have dataset splits
-    has_splits = "dataset" in df.columns
+    has_splits = "dataset" in df_actual.columns
 
     if not has_splits:
         # Simple case: just actual vs reconstructed without splits
         for feature_name in feature_labels:
-            feature_df = df.copy()
-            feature_df["value"] = df[feature_name]
+            feature_df_actual = df_actual.copy()
+            feature_df_actual["value"] = df_actual[feature_name]
 
             fig = go.Figure()
 
             # Add actual values
-            actual_df = feature_df[feature_df["type"] == "actual"]
             fig.add_trace(
                 go.Scatter(
-                    y=actual_df["value"],
+                    y=feature_df_actual["value"],
                     mode="lines",
                     name="Actual",
                     line=dict(color="blue"),
@@ -100,10 +102,11 @@ def plot_actual_and_reconstructed(
             )
 
             # Add reconstructed values
-            reconstructed_df = feature_df[feature_df["type"] == "reconstructed"]
+            feature_df_reconstructed = df_reconstructed.copy()
+            feature_df_reconstructed["value"] = feature_df_reconstructed[feature_name]
             fig.add_trace(
                 go.Scatter(
-                    y=reconstructed_df["value"],
+                    y=feature_df_reconstructed["value"],
                     mode="lines",
                     name="Reconstructed",
                     line=dict(dash="dash"),
@@ -126,27 +129,32 @@ def plot_actual_and_reconstructed(
 
     if has_ids:
         # Create plots for each ID and feature
-        for id_value in sorted(df["id"].unique()):
+        for id_value in sorted(df_actual["id"].unique()):
             # Create a separate directory for ID-based plots
             id_save_path = os.path.join(save_path, id_value)
             os.makedirs(id_save_path, exist_ok=True)
 
             # Filter data for this ID
-            id_df = df[df["id"] == id_value]
+            id_df_actual = df_actual[df_actual["id"] == id_value]
+            id_df_reconstructed = df_reconstructed[df_reconstructed["id"] == id_value]
 
             # Plot for each feature
             for feature_name in feature_labels:
-                feature_df = id_df[id_df["feature"] == feature_name]
+                feature_df_actual = id_df_actual[
+                    id_df_actual["feature"] == feature_name
+                ]
+                feature_df_reconstructed = id_df_reconstructed[
+                    id_df_reconstructed["feature"] == feature_name
+                ]
 
                 # Create figure
                 fig = go.Figure()
 
                 # Add actual values
-                actual_df = feature_df[feature_df["type"] == "actual"]
                 fig.add_trace(
                     go.Scatter(
-                        x=actual_df["time_step"],
-                        y=actual_df["value"],
+                        x=feature_df_actual["time_step"],
+                        y=feature_df_actual["value"],
                         mode="lines",
                         name="Actual",
                         line=dict(color="blue"),
@@ -155,12 +163,11 @@ def plot_actual_and_reconstructed(
 
                 # Add reconstructed values for each dataset
                 for dataset in ["train", "validation", "test"]:
-                    dataset_df = feature_df[
-                        (feature_df["type"] == "reconstructed")
-                        & (feature_df["dataset"] == dataset)
+                    dataset_df_reconstructed = feature_df_reconstructed[
+                        (feature_df_reconstructed["dataset"] == dataset)
                     ]
 
-                    if not dataset_df.empty:
+                    if not dataset_df_reconstructed.empty:
                         color = (
                             "green"
                             if dataset == "train"
@@ -168,8 +175,8 @@ def plot_actual_and_reconstructed(
                         )
                         fig.add_trace(
                             go.Scatter(
-                                x=dataset_df["time_step"],
-                                y=dataset_df["value"],
+                                x=dataset_df_reconstructed["time_step"],
+                                y=dataset_df_reconstructed["value"],
                                 mode="lines",
                                 name=f"Reconstructed - {dataset.capitalize()}",
                                 line=dict(color=color),
@@ -193,14 +200,18 @@ def plot_actual_and_reconstructed(
             fig_all = go.Figure()
 
             for feature_name in feature_labels:
-                feature_df = id_df[id_df["feature"] == feature_name]
+                feature_df_actual = id_df_actual[
+                    id_df_actual["feature"] == feature_name
+                ]
 
-                # Add actual values
-                actual_df = feature_df[feature_df["type"] == "actual"]
+                feature_df_reconstructed = id_df_reconstructed[
+                    id_df_reconstructed["feature"] == feature_name
+                ]
+
                 fig_all.add_trace(
                     go.Scatter(
-                        x=actual_df["time_step"],
-                        y=actual_df["value"],
+                        x=feature_df_actual["time_step"],
+                        y=feature_df_actual["value"],
                         mode="lines",
                         name=f"{feature_name} - Actual",
                     )
@@ -208,12 +219,11 @@ def plot_actual_and_reconstructed(
 
                 # Add reconstructed values for each dataset
                 for dataset in ["train", "validation", "test"]:
-                    dataset_df = feature_df[
-                        (feature_df["type"] == "reconstructed")
-                        & (feature_df["dataset"] == dataset)
+                    dataset_df_reconstructed = feature_df_reconstructed[
+                        feature_df_reconstructed["dataset"] == dataset
                     ]
 
-                    if not dataset_df.empty:
+                    if not dataset_df_reconstructed.empty:
                         color = (
                             "green"
                             if dataset == "train"
@@ -221,8 +231,8 @@ def plot_actual_and_reconstructed(
                         )
                         fig_all.add_trace(
                             go.Scatter(
-                                x=dataset_df["time_step"],
-                                y=dataset_df["value"],
+                                x=dataset_df_reconstructed["time_step"],
+                                y=dataset_df_reconstructed["value"],
                                 mode="lines",
                                 name=f"{feature_name} - {dataset.capitalize()}",
                                 line=dict(dash="dash", color=color),
@@ -245,7 +255,10 @@ def plot_actual_and_reconstructed(
     else:
         # Create plots for each feature
         for feature_name in feature_labels:
-            feature_df = df[df["feature"] == feature_name]
+            feature_df_actual = df_actual[df_actual["feature"] == feature_name]
+            feature_df_reconstructed = df_reconstructed[
+                df_reconstructed["feature"] == feature_name
+            ]
 
             # First plot: Separate actual and reconstructed
             fig_separate = make_subplots(
@@ -258,11 +271,10 @@ def plot_actual_and_reconstructed(
             )
 
             # Add the actual line plot
-            actual_df = feature_df[feature_df["type"] == "actual"]
             fig_separate.add_trace(
                 go.Scatter(
-                    x=actual_df["time_step"],
-                    y=actual_df["value"],
+                    x=feature_df_actual["time_step"],
+                    y=feature_df_actual["value"],
                     mode="lines",
                     name="Actual",
                 ),
@@ -272,12 +284,11 @@ def plot_actual_and_reconstructed(
 
             # Add the reconstructed line plots for each dataset
             for dataset in ["train", "validation", "test"]:
-                dataset_df = feature_df[
-                    (feature_df["type"] == "reconstructed")
-                    & (feature_df["dataset"] == dataset)
+                dataset_df_reconstructed = feature_df_reconstructed[
+                    feature_df_reconstructed["dataset"] == dataset
                 ]
 
-                if not dataset_df.empty:
+                if not dataset_df_reconstructed.empty:
                     color = (
                         "green"
                         if dataset == "train"
@@ -285,8 +296,8 @@ def plot_actual_and_reconstructed(
                     )
                     fig_separate.add_trace(
                         go.Scatter(
-                            x=dataset_df["time_step"],
-                            y=dataset_df["value"],
+                            x=dataset_df_reconstructed["time_step"],
+                            y=dataset_df_reconstructed["value"],
                             mode="lines",
                             name=dataset.capitalize(),
                             line=dict(color=color),
@@ -309,8 +320,8 @@ def plot_actual_and_reconstructed(
             # Add actual values
             fig_overlap.add_trace(
                 go.Scatter(
-                    x=actual_df["time_step"],
-                    y=actual_df["value"],
+                    x=feature_df_actual["time_step"],
+                    y=feature_df_actual["value"],
                     mode="lines",
                     name="Actual",
                 )
@@ -318,12 +329,11 @@ def plot_actual_and_reconstructed(
 
             # Add reconstructed values for each dataset
             for dataset in ["train", "validation", "test"]:
-                dataset_df = feature_df[
-                    (feature_df["type"] == "reconstructed")
-                    & (feature_df["dataset"] == dataset)
+                dataset_df_reconstructed = feature_df_reconstructed[
+                    feature_df_reconstructed["dataset"] == dataset
                 ]
 
-                if not dataset_df.empty:
+                if not dataset_df_reconstructed.empty:
                     color = (
                         "green"
                         if dataset == "train"
@@ -331,8 +341,8 @@ def plot_actual_and_reconstructed(
                     )
                     fig_overlap.add_trace(
                         go.Scatter(
-                            x=dataset_df["time_step"],
-                            y=dataset_df["value"],
+                            x=dataset_df_reconstructed["time_step"],
+                            y=dataset_df_reconstructed["value"],
                             mode="lines",
                             name=f"Reconstructed - {dataset.capitalize()}",
                             line=dict(color=color),
@@ -355,14 +365,16 @@ def plot_actual_and_reconstructed(
 
         # Add traces for each feature - both actual and reconstructed
         for feature_name in feature_labels:
-            feature_df = df[df["feature"] == feature_name]
+            feature_df_actual = df_actual[df_actual["feature"] == feature_name]
+            feature_df_reconstructed = df_reconstructed[
+                df_reconstructed["feature"] == feature_name
+            ]
 
             # Add actual values
-            actual_df = feature_df[feature_df["type"] == "actual"]
             fig_all.add_trace(
                 go.Scatter(
-                    x=actual_df["time_step"],
-                    y=actual_df["value"],
+                    x=feature_df_actual["time_step"],
+                    y=feature_df_actual["value"],
                     mode="lines",
                     name=f"{feature_name} - Actual",
                     line=dict(dash="solid"),
@@ -371,12 +383,11 @@ def plot_actual_and_reconstructed(
 
             # Add reconstructed values for each dataset
             for dataset in ["train", "validation", "test"]:
-                dataset_df = feature_df[
-                    (feature_df["type"] == "reconstructed")
-                    & (feature_df["dataset"] == dataset)
+                dataset_df_reconstructed = feature_df_reconstructed[
+                    feature_df_reconstructed["dataset"] == dataset
                 ]
 
-                if not dataset_df.empty:
+                if not dataset_df_reconstructed.empty:
                     color = (
                         "green"
                         if dataset == "train"
@@ -384,8 +395,8 @@ def plot_actual_and_reconstructed(
                     )
                     fig_all.add_trace(
                         go.Scatter(
-                            x=dataset_df["time_step"],
-                            y=dataset_df["value"],
+                            x=dataset_df_reconstructed["time_step"],
+                            y=dataset_df_reconstructed["value"],
                             mode="lines",
                             name=f"{feature_name} - {dataset.capitalize()}",
                             line=dict(dash="dash", color=color),
