@@ -471,6 +471,24 @@ class AutoEncoder:
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change activation_encoder after model is built")
 
+        valid_activations = {
+            "relu",
+            "sigmoid",
+            "softmax",
+            "softplus",
+            "softsign",
+            "tanh",
+            "selu",
+            "elu",
+            "exponential",
+            "linear",
+            "swish",
+        }
+        if value is not None and value not in valid_activations:
+            raise ValueError(
+                f"Invalid activation_encoder '{value}'. Must be one of: {sorted(valid_activations)}"
+            )
+
         self._activation_encoder = value
 
     @property
@@ -490,6 +508,24 @@ class AutoEncoder:
         """
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change activation_decoder after model is built")
+
+        valid_activations = {
+            "relu",
+            "sigmoid",
+            "softmax",
+            "softplus",
+            "softsign",
+            "tanh",
+            "selu",
+            "elu",
+            "exponential",
+            "linear",
+            "swish",
+        }
+        if value is not None and value not in valid_activations:
+            raise ValueError(
+                f"Invalid activation_decoder '{value}'. Must be one of: {sorted(valid_activations)}"
+            )
 
         self._activation_decoder = value
 
