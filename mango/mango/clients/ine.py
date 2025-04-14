@@ -2,9 +2,14 @@ import requests
 import pandas as pd
 import os
 from io import BytesIO
+import geopandas as gpd
 import logging
+import json
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(asctime)s - %(levelname)s - %(module)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -74,18 +79,27 @@ class INEAPIClient:
         "Melilla": "69294",
     }
 
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False, debug: bool = False):
         """
         Initialize the INEAPIClient.
-        :param verbose: If True, print additional information
+        :param verbose: If True, print additional information (using logger.info)
         :type verbose: bool
+        :param debug: If True, set the logging level to DEBUG for more detailed output
+        :type debug: bool
         """
         self.verbose = verbose
+        if debug:
+            logging.getLogger().setLevel(logging.DEBUG)
+            logger.debug("Debug mode enabled: Logging level set to DEBUG.")
+        else:
+            logger.debug("Debug mode disabled.")
+        logger.debug(f"Initializing INEAPIClient with verbose={verbose} and debug={debug}")
         self.municipalities = self._get_municipalities()
+        logger.debug(f"Municipalities data loaded successfully. Shape: {self.municipalities.shape}")
 
     def _log(self, message: str) -> None:
         """
-        Logs a message if verbose mode is enabled.
+        Logs a message based on the verbose setting (now using logger directly).
 
         :param message: Message to log
         :type message: str
@@ -103,12 +117,15 @@ class INEAPIClient:
         :rtype: bytes
         """
         self._log(f"Fetching data from URL: {url}")
+        logger.debug(f"Fetching data from URL: {url}")
         try:
             response = requests.get(url)
             response.raise_for_status()
+            logger.debug(f"Successfully fetched data from URL: {url}. Status code: {response.status_code}")
             return response.content
         except requests.RequestException as e:
             logger.error(f"Error fetching data from {url}: {e}")
+            logger.debug(f"Error details: {e}")
             raise
 
     def _get_municipalities(self) -> pd.DataFrame:
@@ -118,16 +135,24 @@ class INEAPIClient:
         :rtype: pd.DataFrame
         """
         self._log("Fetching municipalities data from INE...")
+        logger.debug(f"Fetching municipalities data from URL: {self.INE_CODES_URL}")
         content = self._fetch_url(self.INE_CODES_URL)
 
         self._log("Municipalities data fetched successfully.")
+        logger.debug("Municipalities data fetched successfully.")
         self._log("Reading Excel file...")
+        logger.debug("Reading Excel file into pandas DataFrame...")
         df = pd.read_excel(BytesIO(content), skiprows=1, header=0)
-        df["Codigo_INE"] = df["CPRO"].astype(str).str.zfill(2) + df["CMUN"].astype(
+        logger.debug(f"Initial municipalities DataFrame shape: {df.shape}")
+        df["ine_municipality_code"] = df["CPRO"].astype(str).str.zfill(2) + df["CMUN"].astype(
             str
         ).str.zfill(3)
+        logger.debug("Created 'ine_municipality_code' column.")
+        df.rename({"NOMBRE": "ine_municipality_name"}, axis=1, inplace=True)
+        logger.debug("Renamed 'NOMBRE' column to 'ine_municipality_name'.")
 
-        df = df[["CODAUTO", "CPRO", "CMUN", "Codigo_INE", "NOMBRE"]]
+        df = df[["CODAUTO", "CPRO", "CMUN", "ine_municipality_code", "ine_municipality_name"]]
+        logger.debug(f"Selected final columns for municipalities DataFrame. Shape: {df.shape}")
 
         return df
 
@@ -136,6 +161,7 @@ class INEAPIClient:
         List all the table codes related to each province.
         :return: dict
         """
+        logger.info("Listing available province codes.")
         return self.PROVINCE_CODES
 
     def _valid_province_code(self, province_code: str) -> bool:
@@ -147,16 +173,21 @@ class INEAPIClient:
         :return: True if valid, False otherwise
         :rtype: bool
         """
+        logger.debug(f"Validating province code: {province_code}")
         if isinstance(province_code, int):
             province_code = str(province_code)
+            logger.debug(f"Province code converted to string: {province_code}")
         if len(province_code) != 5:
             raise ValueError("Table code must be a 5-digit string/integer.")
         if province_code not in self.PROVINCE_CODES.values():
+            logger.debug(f"Province code {province_code} is not in the list of valid codes.")
             return False
 
+        province_name = list(self.PROVINCE_CODES.keys())[list(self.PROVINCE_CODES.values()).index(province_code)]
         self._log(
-            f"Province code {province_code} is valid and corresponds to {list(self.PROVINCE_CODES.keys())[list(self.PROVINCE_CODES.values()).index(province_code)]}."
+            f"Province code {province_code} is valid and corresponds to {province_name}."
         )
+        logger.debug(f"Province code {province_code} is valid and corresponds to {province_name}.")
         return True
 
     def _clean_table(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -168,42 +199,61 @@ class INEAPIClient:
         :return: Cleaned DataFrame
         :rtype: pd.DataFrame
         """
-        self._log("Filtering data excluding aggregated values...")
+        logger.info("Filtering data excluding aggregated values...")
+        logger.debug(f"Initial shape of DataFrame before cleaning: {df.shape}")
         df = df.loc[
             df["Nombre"].str.contains("sección")
             & ~df["Nombre"].str.contains("Hombres|Mujeres|Española|Extranjera")
             & df["Nombre"].str.contains("Total")
             & df["Nombre"].str.contains("Todas las edades")
         ]
-        self._log("Extracting section names and codes...")
+        logger.info("Extracting section names and codes...")
+        logger.debug(f"Shape of DataFrame after initial filtering: {df.shape}")
         matches = df["Nombre"].str.extract(r"^(.*?)\ssección\s(\d{5})", expand=True)
         df = df.assign(Name=matches[0], Code=matches[1])
+        logger.debug("Extracted section names and codes.")
 
-        self._log("Extracting census data from data dict...")
+        logger.info("Extracting census data from data dict...")
+        logger.debug("Applying lambda function to extract 'Valor' from 'Data' column.")
         df["Total"] = df["Data"].apply(
             lambda x: x[0].get("Valor") if isinstance(x, list) and len(x) > 0 else None
         )
+        logger.debug("Extracted total population.")
 
-        self._log("Adding ine code...")
+        logger.debug("Changing column name of name to ine_municipality_name...")
+        df.rename(columns={"Name": "ine_municipality_name"}, inplace=True)
+
+        logger.info("Adding ine code...")
+        logger.debug("Merging with municipalities DataFrame...")
         df = df.merge(
-            self.municipalities[["Codigo_INE", "NOMBRE"]],
+            self.municipalities[["ine_municipality_code", "ine_municipality_name"]],
             how="left",
-            left_on="Name",
-            right_on="NOMBRE",
+            left_on="ine_municipality_name",
+            right_on="ine_municipality_name",
         )
+        logger.debug(f"Shape of DataFrame after merging with municipalities: {df.shape}")
 
         # Check if the merge was successful
-        if df["Codigo_INE"].isnull().any():
+        if df["ine_municipality_code"].isnull().any():
             # Print the municipalities that could not be matched
-            unmatched_municipalities = df[df["Codigo_INE"].isnull()]["Name"].unique()
-
+            unmatched_municipalities = df[df["ine_municipality_code"].isnull()]["ine_municipality_name"].unique()
+            logger.warning(
+                f"Some municipalities could not be matched to their INE code by name. Check the data. They are: {unmatched_municipalities}"
+            )
+            logger.debug(f"Unmatched municipalities: {unmatched_municipalities}")
             raise ValueError(
                 f"Some municipalities could not be matched to their INE code by name. Check the data. They are: {unmatched_municipalities}"
             )
+        else:
+            logger.debug("All municipalities matched successfully.")
 
-        self._log("Reordering columns...")
-        df.rename(columns={"Code": "Seccion censal"}, inplace=True)
-        df = df[["Provincia", "Codigo_INE", "Name", "Seccion censal", "Total"]]
+        logger.info("Reordering columns...")
+        df.rename(columns={"Code": "ine_census_tract"}, inplace=True)
+        logger.debug("Renamed 'Code' column to 'ine_census_tract'.")
+        df["ine_census_tract"] = df["ine_municipality_code"].astype(str) + df["ine_census_tract"].astype(str)
+        logger.debug("Concatenated 'ine_municipality_code' and 'ine_census_tract'.")
+        df = df[["Provincia", "ine_municipality_code", "ine_municipality_name", "ine_census_tract", "Total"]]
+        logger.debug(f"Selected final columns for cleaned DataFrame. Shape: {df.shape}")
 
         return df
 
@@ -218,30 +268,42 @@ class INEAPIClient:
         """
         if isinstance(table_id, str):
             table_id = [table_id]
+            logger.debug(f"Fetching census data for single table ID: {table_id}")
+        else:
+            logger.debug(f"Fetching census data for multiple table IDs: {table_id}")
 
         all_data = []
         for tid in table_id:
+            logger.info(f"Fetching data for table ID: {tid}")
             if not self._valid_province_code(tid):
                 raise ValueError(
                     f"Invalid province code: {tid}. Call list_table_codes() for valid codes."
                 )
 
             url = f"{self.BASE_API_URL}{tid}?nult=1"
+            logger.debug(f"Fetching data from URL: {url}")
             content = self._fetch_url(url)
 
-            data = requests.get(url).json()
+            data = json.loads(content)
             df = pd.json_normalize(data)
-            self._log(f"Data fetched successfully for table ID {tid}.")
+            logger.info(f"Data fetched successfully for table ID {tid}.")
+            logger.debug(f"Shape of raw data for table ID {tid}: {df.shape}")
 
-            self._log("Adding province name...")
-            df["Provincia"] = next(
+            logger.info("Adding province name...")
+            province_name = next(
                 (k for k, v in self.PROVINCE_CODES.items() if v == tid), None
             )
+            df["Provincia"] = province_name
+            logger.debug(f"Added province name '{province_name}' to DataFrame.")
 
             df = self._clean_table(df)
             all_data.append(df)
+            logger.debug(f"Cleaned data for table ID {tid}. Shape: {df.shape}")
 
-        return pd.concat(all_data, ignore_index=True)
+        combined_df = pd.concat(all_data, ignore_index=True)
+        logger.info(f"Combined data for all requested tables. Shape: {combined_df.shape}")
+        logger.debug(f"Combined DataFrame info:\n{combined_df.info()}")
+        return combined_df
 
     def _clean_full_census(self, df: pd.DataFrame, year: int = None) -> pd.DataFrame:
         """
@@ -254,7 +316,8 @@ class INEAPIClient:
         :return: Cleaned DataFrame
         :rtype: pd.DataFrame
         """
-        self._log("Filtering data excluding aggregated values...")
+        logger.info("Filtering full census data...")
+        logger.debug(f"Initial shape of full census DataFrame: {df.shape}")
         df = df[
             df["Provincias"].notna()
             & df["Municipios"].notna()
@@ -262,21 +325,26 @@ class INEAPIClient:
             & (df["Sexo"] == "Total")
             & (df["Lugar de nacimiento"] == "Total")
         ]
+        logger.debug(f"Shape after filtering non-null and 'Total' rows: {df.shape}")
 
         year_filter = year if year else df["Periodo"].max()
-        self._log(f"Filtering by year {year_filter}...")
+        logger.info(f"Filtering by year {year_filter}...")
+        logger.debug(f"Filtering by year: {year_filter}")
         df = df[df["Periodo"] == year_filter]
+        logger.debug(f"Shape after filtering by year {year_filter}: {df.shape}")
 
-        self._log("Extracting section names and codes...")
+        logger.info("Extracting section names and codes...")
         df["Id_Provincia"] = df["Provincias"].str[:2]
         df["Provincias"] = df["Provincias"].str[3:]
         df["Id_Municipio"] = df["Municipios"].str[:5]
         df["Municipios"] = df["Municipios"].str[5:]
         df["Id_Seccion"] = df["Secciones"].str[:10]
         df["Secciones"] = df["Secciones"].str[10:]
+        logger.debug("Extracted province, municipality, and section identifiers and names.")
 
-        self._log("Dropping unnecessary columns...")
+        logger.info("Dropping unnecessary columns...")
         df.drop(columns=["Sexo", "Lugar de nacimiento", "Total Nacional"], inplace=True)
+        logger.debug("Dropped unnecessary columns: 'Sexo', 'Lugar de nacimiento', 'Total Nacional'.")
         df = df[
             [
                 "Id_Provincia",
@@ -288,6 +356,7 @@ class INEAPIClient:
                 "Total",
             ]
         ]
+        logger.debug(f"Selected final columns for full census DataFrame. Shape: {df.shape}")
 
         return df
 
@@ -303,27 +372,38 @@ class INEAPIClient:
         :rtype: pd.DataFrame
         """
         if cache and os.path.exists(self.CACHE_FILENAME):
-            self._log(f"Fetching data from cache at {self.CACHE_FILENAME}...")
+            logger.info(f"Fetching data from cache at {self.CACHE_FILENAME}...")
+            logger.debug(f"Checking for cache file at: {self.CACHE_FILENAME}")
             try:
                 df = pd.read_csv(self.CACHE_FILENAME)
-                self._log("Data fetched from cache successfully.")
+                logger.info("Data fetched from cache successfully.")
+                logger.debug(f"Data loaded from cache. Shape: {df.shape}")
                 return df
             except Exception as e:
                 logger.error(f"Error reading cache file: {e}")
-                self._log("Cache file not found or invalid. Fetching data from the API.")
+                logger.debug(f"Error details: {e}")
+                logger.info("Cache file not found or invalid. Fetching data from the API.")
+        else:
+            logger.debug("Cache is disabled or file does not exist. Fetching from API.")
 
+        logger.info("Fetching all census data from INE API...")
+        logger.debug(f"Fetching full census data from URL: {self.FULL_CENSUS_URL}")
         content = self._fetch_url(self.FULL_CENSUS_URL)
 
-        self._log("All census data fetched successfully.")
+        logger.info("All census data fetched successfully.")
+        logger.debug("All census data fetched successfully.")
         df = pd.read_csv(BytesIO(content), sep=";")
+        logger.debug(f"Raw full census data loaded. Shape: {df.shape}")
         df = self._clean_full_census(df, year)
 
         if cache:
             try:
                 df.to_csv(self.CACHE_FILENAME, index=False)
-                self._log(f"Data cached successfully at {self.CACHE_FILENAME}.")
+                logger.info(f"Data cached successfully at {self.CACHE_FILENAME}.")
+                logger.debug(f"Data saved to cache at: {self.CACHE_FILENAME}")
             except Exception as e:
                 logger.error(f"Error caching data: {e}")
+                logger.debug(f"Error details during caching: {e}")
 
         return df
 
