@@ -88,10 +88,14 @@ class CatastroINEMapper:
         """
         raw_mapping = self._download_mapping_file()
 
-        raw_mapping["Codigo Municipio INE"] = (raw_mapping["Provincia"].str.zfill(2) +
-                                               raw_mapping["Municipio INE"].str.zfill(3))
-        raw_mapping["Codigo Municipio Catastro"] = (raw_mapping["Provincia"].str.zfill(2) +
-                                                    raw_mapping["Municipio"].str.zfill(3))
+        raw_mapping["ine_municipality_code"] = raw_mapping["Provincia"].str.zfill(
+            2
+        ) + raw_mapping["Municipio INE"].str.zfill(3)
+        raw_mapping["catastro_municipality_code"] = raw_mapping["Provincia"].str.zfill(
+            2
+        ) + raw_mapping["Municipio"].str.zfill(3)
+        raw_mapping["Municipio INE"] = raw_mapping["Municipio INE"].str.zfill(3)
+        raw_mapping["Municipio"] = raw_mapping["Municipio"].str.zfill(3)
 
         self.mapping = raw_mapping[
             [
@@ -100,13 +104,21 @@ class CatastroINEMapper:
                 "Municipio INE",
                 "Municipio",
                 "Nombre Municipio",
-                "Codigo Municipio INE",
-                "Codigo Municipio Catastro",
+                "ine_municipality_code",
+                "catastro_municipality_code",
             ]
-        ]
+        ][:-2]
 
-        self.mapping["Nombre INE"] = self.mapping["Nombre Municipio"]
-        self.mapping["Nombre Catastro"] = self.mapping["Nombre Municipio"]
+        self.mapping.rename(
+            {
+                "catastro_municipality_name": "Municipio",
+                "ine_municipality_name": "Municipio INE",
+            },
+            inplace=True,
+        )
+
+        self.mapping["ine_municipality_name"] = self.mapping["Nombre Municipio"]
+        self.mapping["catastro_municipality_name"] = self.mapping["Nombre Municipio"]
 
         self._create_lookup_dictionaries()
 
@@ -129,28 +141,31 @@ class CatastroINEMapper:
         """
         self.ine_to_catastro = dict(
             zip(
-                self.mapping["Codigo Municipio INE"],
-                self.mapping["Codigo Municipio Catastro"],
+                self.mapping["ine_municipality_code"],
+                self.mapping["catastro_municipality_code"],
             )
         )
         self.catastro_to_ine = dict(
             zip(
-                self.mapping["Codigo Municipio Catastro"],
-                self.mapping["Codigo Municipio INE"],
+                self.mapping["catastro_municipality_code"],
+                self.mapping["ine_municipality_code"],
             )
         )
         self.ine_code_to_name = dict(
-            zip(self.mapping["Codigo Municipio INE"], self.mapping["Nombre INE"])
+            zip(
+                self.mapping["ine_municipality_code"],
+                self.mapping["ine_municipality_name"],
+            )
         )
         self.catastro_code_to_name = dict(
             zip(
-                self.mapping["Codigo Municipio Catastro"],
-                self.mapping["Nombre Catastro"],
+                self.mapping["catastro_municipality_code"],
+                self.mapping["catastro_municipality_name"],
             )
         )
         self.code_to_name = dict(
             zip(
-                self.mapping["Codigo Municipio Catastro"],
+                self.mapping["catastro_municipality_code"],
                 self.mapping["Nombre Municipio"],
             )
         )
@@ -203,14 +218,16 @@ class CatastroINEMapper:
             )
 
             for idx, row in self.mapping.iterrows():
-                code = row["Codigo Municipio Catastro"]
+                code = row["catastro_municipality_code"]
                 if code in catastro_names:
-                    self.mapping.at[idx, "Nombre Catastro"] = catastro_names[code]
+                    self.mapping.at[idx, "catastro_municipality_name"] = catastro_names[
+                        code
+                    ]
 
             self.catastro_code_to_name = dict(
                 zip(
-                    self.mapping["Codigo Municipio Catastro"],
-                    self.mapping["Nombre Catastro"],
+                    self.mapping["catastro_municipality_code"],
+                    self.mapping["catastro_municipality_name"],
                 )
             )
             logger.info(
@@ -237,18 +254,21 @@ class CatastroINEMapper:
 
             ine_names = dict(
                 zip(
-                    municipalities_df["Codigo_INE"].astype(str),
-                    municipalities_df["NOMBRE"],
+                    municipalities_df["ine_municipality_code"].astype(str),
+                    municipalities_df["ine_municipality_name"],
                 )
             )
 
             for idx, row in self.mapping.iterrows():
-                code = row["Codigo Municipio INE"]
+                code = row["ine_municipality_code"]
                 if code in ine_names:
-                    self.mapping.at[idx, "Nombre INE"] = ine_names[code]
+                    self.mapping.at[idx, "ine_municipality_name"] = ine_names[code]
 
             self.ine_code_to_name = dict(
-                zip(self.mapping["Codigo Municipio INE"], self.mapping["Nombre INE"])
+                zip(
+                    self.mapping["ine_municipality_code"],
+                    self.mapping["ine_municipality_name"],
+                )
             )
             logger.info(f"Updated {len(ine_names)} municipality names from INE")
 
@@ -291,7 +311,7 @@ class CatastroINEMapper:
         return self.catastro_to_ine.get(str(catastro_code))
 
     def get_municipality_name(
-        self, code: str, code_type: str = "ine", name_source: str = "original"
+            self, code: str, code_type: str = "ine", name_source: str = "ine"
     ) -> Optional[str]:
         """
         Get municipality name from code.
@@ -300,29 +320,29 @@ class CatastroINEMapper:
         :type code: str
         :param code_type: Type of code - 'catastro' or 'ine'.
         :type code_type: str
-        :param name_source: Source of name - 'original', 'catastro', 'ine'.
+        :param name_source: Source of name - 'ine' or 'catastro'.
         :type name_source: str
         :return: Municipality name or None if not found.
         :rtype: str or None
         """
+
         code = str(code)
+
+        if name_source.lower() not in ['ine', 'catastro']:
+            raise ValueError("name_source must be 'ine' or 'catastro'")
+
         if code_type.lower() == "ine":
             if name_source.lower() == "catastro":
                 catastro_code = self.ine_to_catastro.get(code)
                 return self.catastro_code_to_name.get(catastro_code)
-            elif name_source.lower() == "ine":
+            else:  # name_source is 'ine'
                 return self.ine_code_to_name.get(code)
-            else:
-                catastro_code = self.ine_to_catastro.get(code)
-                return self.code_to_name.get(catastro_code)
-        else:
+        else:  # code_type is 'catastro'
             if name_source.lower() == "ine":
                 ine_code = self.catastro_to_ine.get(code)
                 return self.ine_code_to_name.get(ine_code)
-            elif name_source.lower() == "catastro":
+            else:  # name_source is 'catastro'
                 return self.catastro_code_to_name.get(code)
-            else:
-                return self.code_to_name.get(code)
 
     def get_mapping_table(self) -> pd.DataFrame:
         """
