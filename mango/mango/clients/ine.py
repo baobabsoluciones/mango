@@ -326,3 +326,59 @@ class INEAPIClient:
                 logger.error(f"Error caching data: {e}")
 
         return df
+
+    def _load_geometry(self, geometry_path: str) -> gpd.GeoDataFrame:
+        """
+        Loads the census section geometries from a spatial file. Requires the file to be downloaded.
+
+        :param geometry_path: Path to the geometry file (GeoJSON, SHP, etc.)
+        :type geometry_path: str
+        :return: GeoDataFrame with geometries
+        :rtype: gpd.GeoDataFrame
+        """
+        logger.info(f"Loading geometry from {geometry_path}...")
+        logger.debug(f"Attempting to load geometry from path: {geometry_path}")
+        try:
+            gdf = gpd.read_file(geometry_path)
+            logger.info("Geometry data loaded successfully.")
+            logger.debug(f"Geometry data loaded successfully. CRS: {gdf.crs}")
+            return gdf
+        except Exception as e:
+            logger.error(f"Error loading geometry data: {e}")
+            logger.debug(f"Error details during geometry loading: {e}")
+            raise
+
+    def generate_census_geodataframe(self, table_id: str | list[str], geometry_path: str, year: int = None) -> gpd.GeoDataFrame:
+        """
+        Creates a density map by merging census data with geometries.
+
+        :param table_id: ID(s) of the table(s) to retrieve
+        :type table_id: str or list of str
+        :param geometry_path: Path to the geometry file (GeoJSON, SHP, etc.)
+        :type geometry_path: str
+        :param year: Year to filter the data by, if None it will use the last year available in the data
+        :type year: int
+        :return: GeoDataFrame with density information
+        :rtype: gpd.GeoDataFrame
+        """
+        logger.info("Fetching census data for density map...")
+        census_data = self.fetch_census_by_section(table_id)
+        logger.info("Census data fetched successfully.")
+        logger.debug(f"Shape of fetched census data: {census_data.shape}")
+
+        logger.info("Loading geometry data for density map...")
+        geometry_data = self._load_geometry(geometry_path)
+        logger.info("Geometry data loaded successfully.")
+        logger.debug(f"Shape of loaded geometry data: {geometry_data.shape}")
+
+        logger.info("Merging census and geometry data for density map...")
+        logger.debug("Merging on 'CUSEC' from geometry and 'ine_census_tract' from census data.")
+        merged_data = geometry_data.merge(census_data, left_on="CUSEC", right_on="ine_census_tract")
+        logger.info("Data merged successfully.")
+        logger.debug(f"Shape of merged data: {merged_data.shape}")
+
+        merged_data["Density"] = merged_data["Total"] / merged_data["Shape_Area"]
+        logger.info("Density calculated.")
+        logger.debug("Density calculated as 'Total' / 'Shape_Area'.")
+
+        return merged_data
