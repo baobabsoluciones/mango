@@ -34,7 +34,7 @@ class CatastroData:
 
     CACHE_FILE = "catastro_cache.json"
 
-    def __init__(self, debug=False, verbose=False, cache=False, request_timeout=30):
+    def __init__(self, debug=False, verbose=False, cache=False, request_timeout=30, request_interval=0.1):
         """
         Initializes the CatastroData module.
 
@@ -45,6 +45,8 @@ class CatastroData:
         :param cache: If True, loads/saves the municipality index from/to cache
         :type cache: bool
         :param request_timeout: Timeout in seconds for network requests
+        :type request_timeout: float
+        :param request_interval: Time in seconds to wait between requests to avoid overwhelming the server
         :type request_timeout: int
         """
         self.debug = debug
@@ -54,6 +56,7 @@ class CatastroData:
         self.municipalities_links = pd.DataFrame()
         self._index_loaded = False
         self.available_datatypes = list(self.BASE_URLS.keys())
+        self.REQUEST_INTERVAL = request_interval
 
         if self.debug:
             logger.setLevel(logging.DEBUG)
@@ -63,9 +66,7 @@ class CatastroData:
             logger.info("Verbose mode enabled: Showing informational messages.")
         else:
             logger.setLevel(logging.WARNING)
-            logger.warning(
-                "Neither debug nor verbose mode is enabled. Showing warnings, errors, and critical messages only."
-            )
+
 
     def _fetch_content(self, url) -> Optional[bytes]:
         """
@@ -202,12 +203,12 @@ class CatastroData:
 
                     municipalities_data.append(
                         {
-                            "Territorial Code": territorial_code,
-                            "Territorial Name": territorial_name,
-                            "Municipality Code": municipality_code,
-                            "Municipality Name": municipality_name,
-                            "Datatype": dataset,
-                            "Zip Link": zip_link,
+                            "territorial_office_code": territorial_code,
+                            "territorial_office_name": territorial_name,
+                            "catastro_municipality_code": municipality_code,
+                            "catastro_municipality_name": municipality_name,
+                            "datatype": dataset,
+                            "zip link": zip_link,
                         }
                     )
                     logger.debug(
@@ -220,12 +221,12 @@ class CatastroData:
         return pd.DataFrame(
             municipalities_data,
             columns=[
-                "Territorial Code",
-                "Territorial Name",
-                "Municipality Code",
-                "Municipality Name",
-                "Datatype",
-                "Zip Link",
+                "territorial_office_code",
+                "territorial_office_name",
+                "catastro_municipality_code",
+                "catastro_municipality_name",
+                "datatype",
+                "zip link",
             ],
         )
 
@@ -539,7 +540,7 @@ class CatastroData:
         failed_codes = {}
 
         for code in municipality_codes:
-            sleep(0.1)
+            sleep(self.REQUEST_INTERVAL)
             code_str = str(code).zfill(5)
             logger.info(
                 f"Processing municipality code: {code_str} for datatype '{datatype}'."
@@ -557,7 +558,7 @@ class CatastroData:
                             f"Warning: CRS missing for municipality {code_str}. Assuming '{target_crs}' for concatenation."
                         )
 
-                    gdf["municipality_code"] = code_str
+                    gdf["catastro_municipality_code"] = code_str
                     gdfs.append(gdf)
                     processed_codes.append(code_str)
                     logger.debug(
@@ -600,3 +601,33 @@ class CatastroData:
             f"Combined GeoDataFrame created with a total of {len(combined_gdf)} features."
         )
         return combined_gdf
+
+    def get_addresses_and_buildings(self, municipality_code: str) -> Optional[gpd.GeoDataFrame]:
+        """
+        Fetches both Address and Building data for a given municipality code.
+
+        :param municipality_code: The 5-digit code of the municipality
+        :type municipality_code: str
+        :return: Combined GeoDataFrame with Address and Building data, or None if no data could be processed
+        :rtype: Optional[gpd.GeoDataFrame]
+        """
+        logger.info(
+            f"Fetching Address and Building data for municipality code '{municipality_code}'."
+        )
+        addresses = self.get_municipality_data([municipality_code], "Addresses")
+        buildings = self.get_municipality_data(municipality_code, "Buildings", "Buildings")
+
+        addresses["merge_id"] = addresses["localId"].str.rsplit(".", n=1).str[-1]
+        buildings["merge_id"] = buildings["gml_id"].str.rsplit(".", n=1).str[-1]
+
+        entrance_data = addresses[addresses["specification"] == "Entrance"].copy()
+        entrance_counts = entrance_data["merge_id"].value_counts()
+        entrance_data["entrance_count"] = entrance_data["merge_id"].map(entrance_counts)
+
+        merged = entrance_data.merge(buildings, on="merge_id", how="left", suffixes=("_entrance", "_building"))
+
+        merged["dwellings_per_entrance"] = merged["numberOfDwellings"] / merged["entrance_count"]
+
+        merged.set_geometry("geometry_entrance", inplace=True)
+
+        return merged
