@@ -335,13 +335,13 @@ class CatastroINEMapper:
             if name_source.lower() == "catastro":
                 catastro_code = self.ine_to_catastro.get(code)
                 return self.catastro_code_to_name.get(catastro_code)
-            else:  # name_source is 'ine'
+            else:
                 return self.ine_code_to_name.get(code)
-        else:  # code_type is 'catastro'
+        else:
             if name_source.lower() == "ine":
                 ine_code = self.catastro_to_ine.get(code)
                 return self.ine_code_to_name.get(ine_code)
-            else:  # name_source is 'catastro'
+            else:
                 return self.catastro_code_to_name.get(code)
 
     def get_mapping_table(self) -> pd.DataFrame:

@@ -428,7 +428,7 @@ class INEAPIClient:
             logger.debug(f"Error details during geometry loading: {e}")
             raise
 
-    def generate_census_geodataframe(self, table_id: str | list[str], geometry_path: str, year: int = None) -> gpd.GeoDataFrame:
+    def generate_geodataframe(self, table_id: str | list[str], geometry_path: str, year: int = None) -> gpd.GeoDataFrame:
         """
         Creates a density map by merging census data with geometries.
 
@@ -457,8 +457,5 @@ class INEAPIClient:
         logger.info("Data merged successfully.")
         logger.debug(f"Shape of merged data: {merged_data.shape}")
 
-        merged_data["Density"] = merged_data["Total"] / merged_data["Shape_Area"]
-        logger.info("Density calculated.")
-        logger.debug("Density calculated as 'Total' / 'Shape_Area'.")
 
         return merged_data

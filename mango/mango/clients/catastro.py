@@ -602,9 +602,9 @@ class CatastroData:
         )
         return combined_gdf
 
-    def get_addresses_and_buildings(self, municipality_code: str) -> Optional[gpd.GeoDataFrame]:
+    def match_entrance_with_buildings(self, municipality_code: str) -> Optional[gpd.GeoDataFrame]:
         """
-        Fetches both Address and Building data for a given municipality code.
+        Fetches both Address and Building data for a given municipality code and matches them returning a combined GeoDataFrame.
 
         :param municipality_code: The 5-digit code of the municipality
         :type municipality_code: str
@@ -614,20 +614,17 @@ class CatastroData:
         logger.info(
             f"Fetching Address and Building data for municipality code '{municipality_code}'."
         )
-        addresses = self.get_municipality_data([municipality_code], "Addresses")
-        buildings = self.get_municipality_data(municipality_code, "Buildings", "Buildings")
+        addresses = self.get_municipality_data([municipality_code], "Addresses").add_suffix("_address")
+        buildings = self.get_municipality_data(municipality_code, "Buildings", "Buildings").add_suffix("_building")
 
-        addresses["merge_id"] = addresses["localId"].str.rsplit(".", n=1).str[-1]
-        buildings["merge_id"] = buildings["gml_id"].str.rsplit(".", n=1).str[-1]
+        addresses["merge_id_address"] = addresses["localId_address"].str.rsplit(".", n=1).str[-1]
 
-        entrance_data = addresses[addresses["specification"] == "Entrance"].copy()
-        entrance_counts = entrance_data["merge_id"].value_counts()
-        entrance_data["entrance_count"] = entrance_data["merge_id"].map(entrance_counts)
+        entrance_data = addresses[addresses["specification_address"] == "Entrance"].copy()
+        entrance_counts = entrance_data["merge_id_address"].value_counts()
+        entrance_data["entrance_count_per_address"] = entrance_data["merge_id_address"].map(entrance_counts)
 
-        merged = entrance_data.merge(buildings, on="merge_id", how="left", suffixes=("_entrance", "_building"))
-
-        merged["dwellings_per_entrance"] = merged["numberOfDwellings"] / merged["entrance_count"]
-
-        merged.set_geometry("geometry_entrance", inplace=True)
+        merged = entrance_data.merge(buildings, left_on="merge_id_address", right_on="localId_building", how="left", suffixes=("_entrance", "_building"))
+        merged.drop(columns=["merge_id_address"], inplace=True, axis=1)
+        merged.set_geometry("geometry_address", inplace=True)
 
         return merged
