@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mango"
-version = "0.3.0a7"
+version = "0.3.0a8"
 authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
 ]
