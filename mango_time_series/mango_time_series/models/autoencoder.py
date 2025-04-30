@@ -926,6 +926,31 @@ class AutoEncoder:
         self._x_train_no_shuffle = value
 
     @property
+    def checkpoint(self) -> int:
+        """
+        Get the checkpoint value.
+
+        :return: Number of epochs between checkpoints (0 to disable)
+        :rtype: int
+        """
+        return getattr(self, "_checkpoint", 0)
+
+    @checkpoint.setter
+    def checkpoint(self, value: int) -> None:
+        """
+        Set the checkpoint value.
+
+        :param value: Number of epochs between checkpoints (0 to disable)
+        :type value: int
+        :raises ValueError: If value is negative
+        """
+        if not isinstance(value, int):
+            raise ValueError("checkpoint must be an integer")
+        if value < 0:
+            raise ValueError("checkpoint cannot be negative")
+        self._checkpoint = value
+
+    @property
     def model_optimizer(
         self,
     ) -> Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]:
@@ -1266,31 +1291,6 @@ class AutoEncoder:
         self.model_optimizer = optimizer
 
         self._create_datasets(batch_size)
-
-    @property
-    def checkpoint(self) -> int:
-        """
-        Get the checkpoint value.
-
-        :return: Number of epochs between checkpoints (0 to disable)
-        :rtype: int
-        """
-        return getattr(self, "_checkpoint", 0)
-
-    @checkpoint.setter
-    def checkpoint(self, value: int) -> None:
-        """
-        Set the checkpoint value.
-
-        :param value: Number of epochs between checkpoints (0 to disable)
-        :type value: int
-        :raises ValueError: If value is negative
-        """
-        if not isinstance(value, int):
-            raise ValueError("checkpoint must be an integer")
-        if value < 0:
-            raise ValueError("checkpoint cannot be negative")
-        self._checkpoint = value
 
     def train(
         self,
@@ -1797,48 +1797,30 @@ class AutoEncoder:
                     self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
-                    mean_=(
-                        norm_values["mean_"][self._feature_to_check]
-                        if "mean_" in norm_values
-                        else None
+                    mean_=norm_values.get("mean_", {}).get(
+                        self._feature_to_check, None
                     ),
-                    std_=(
-                        norm_values["std_"][self._feature_to_check]
-                        if "std_" in norm_values
-                        else None
-                    ),
+                    std_=norm_values.get("std_", {}).get(self._feature_to_check, None),
                 )
                 x_hat_val = denormalize_data(
                     x_hat_val,
                     self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
-                    mean_=(
-                        norm_values["mean_"][self._feature_to_check]
-                        if "mean_" in norm_values
-                        else None
+                    mean_=norm_values.get("mean_", {}).get(
+                        self._feature_to_check, None
                     ),
-                    std_=(
-                        norm_values["std_"][self._feature_to_check]
-                        if "std_" in norm_values
-                        else None
-                    ),
+                    std_=norm_values.get("std_", {}).get(self._feature_to_check, None),
                 )
                 x_hat_test = denormalize_data(
                     x_hat_test,
                     self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
-                    mean_=(
-                        norm_values["mean_"][self._feature_to_check]
-                        if "mean_" in norm_values
-                        else None
+                    mean_=norm_values.get("mean_", {}).get(
+                        self._feature_to_check, None
                     ),
-                    std_=(
-                        norm_values["std_"][self._feature_to_check]
-                        if "std_" in norm_values
-                        else None
-                    ),
+                    std_=norm_values.get("std_", {}).get(self._feature_to_check, None),
                 )
 
                 # Denormalize original data
@@ -1847,48 +1829,30 @@ class AutoEncoder:
                     self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
-                    mean_=(
-                        norm_values["mean_"][self._feature_to_check]
-                        if "mean_" in norm_values
-                        else None
+                    mean_=norm_values.get("mean_", {}).get(
+                        self._feature_to_check, None
                     ),
-                    std_=(
-                        norm_values["std_"][self._feature_to_check]
-                        if "std_" in norm_values
-                        else None
-                    ),
+                    std_=norm_values.get("std_", {}).get(self._feature_to_check, None),
                 )
                 x_val_converted = denormalize_data(
                     x_val_converted,
                     self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
-                    mean_=(
-                        norm_values["mean_"][self._feature_to_check]
-                        if "mean_" in norm_values
-                        else None
+                    mean_=norm_values.get("mean_", {}).get(
+                        self._feature_to_check, None
                     ),
-                    std_=(
-                        norm_values["std_"][self._feature_to_check]
-                        if "std_" in norm_values
-                        else None
-                    ),
+                    std_=norm_values.get("std_", {}).get(self._feature_to_check, None),
                 )
                 x_test_converted = denormalize_data(
                     x_test_converted,
                     self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
-                    mean_=(
-                        norm_values["mean_"][self._feature_to_check]
-                        if "mean_" in norm_values
-                        else None
+                    mean_=norm_values.get("mean_", {}).get(
+                        self._feature_to_check, None
                     ),
-                    std_=(
-                        norm_values["std_"][self._feature_to_check]
-                        if "std_" in norm_values
-                        else None
-                    ),
+                    std_=norm_values.get("std_", {}).get(self._feature_to_check, None),
                 )
 
             # If we used ID-based normalization and need to reconstruct by ID
@@ -1943,15 +1907,11 @@ class AutoEncoder:
                         self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
-                        mean_=(
-                            norm_values["mean_"][self._feature_to_check]
-                            if "mean_" in norm_values
-                            else None
+                        mean_=norm_values.get("mean_", {}).get(
+                            self._feature_to_check, None
                         ),
-                        std_=(
-                            norm_values["std_"][self._feature_to_check]
-                            if "std_" in norm_values
-                            else None
+                        std_=norm_values.get("std_", {}).get(
+                            self._feature_to_check, None
                         ),
                     )
                     id_x_hat_val = denormalize_data(
@@ -1959,15 +1919,11 @@ class AutoEncoder:
                         self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
-                        mean_=(
-                            norm_values["mean_"][self._feature_to_check]
-                            if "mean_" in norm_values
-                            else None
+                        mean_=norm_values.get("mean_", {}).get(
+                            self._feature_to_check, None
                         ),
-                        std_=(
-                            norm_values["std_"][self._feature_to_check]
-                            if "std_" in norm_values
-                            else None
+                        std_=norm_values.get("std_", {}).get(
+                            self._feature_to_check, None
                         ),
                     )
                     id_x_hat_test = denormalize_data(
@@ -1975,15 +1931,11 @@ class AutoEncoder:
                         self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
-                        mean_=(
-                            norm_values["mean_"][self._feature_to_check]
-                            if "mean_" in norm_values
-                            else None
+                        mean_=norm_values.get("mean_", {}).get(
+                            self._feature_to_check, None
                         ),
-                        std_=(
-                            norm_values["std_"][self._feature_to_check]
-                            if "std_" in norm_values
-                            else None
+                        std_=norm_values.get("std_", {}).get(
+                            self._feature_to_check, None
                         ),
                     )
 
@@ -1992,15 +1944,11 @@ class AutoEncoder:
                         self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
-                        mean_=(
-                            norm_values["mean_"][self._feature_to_check]
-                            if "mean_" in norm_values
-                            else None
+                        mean_=norm_values.get("mean_", {}).get(
+                            self._feature_to_check, None
                         ),
-                        std_=(
-                            norm_values["std_"][self._feature_to_check]
-                            if "std_" in norm_values
-                            else None
+                        std_=norm_values.get("std_", {}).get(
+                            self._feature_to_check, None
                         ),
                     )
                     id_x_val = denormalize_data(
@@ -2008,15 +1956,11 @@ class AutoEncoder:
                         self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
-                        mean_=(
-                            norm_values["mean_"][self._feature_to_check]
-                            if "mean_" in norm_values
-                            else None
+                        mean_=norm_values.get("mean_", {}).get(
+                            self._feature_to_check, None
                         ),
-                        std_=(
-                            norm_values["std_"][self._feature_to_check]
-                            if "std_" in norm_values
-                            else None
+                        std_=norm_values.get("std_", {}).get(
+                            self._feature_to_check, None
                         ),
                     )
                     id_x_test = denormalize_data(
@@ -2024,15 +1968,11 @@ class AutoEncoder:
                         self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
-                        mean_=(
-                            norm_values["mean_"][self._feature_to_check]
-                            if "mean_" in norm_values
-                            else None
+                        mean_=norm_values.get("mean_", {}).get(
+                            self._feature_to_check, None
                         ),
-                        std_=(
-                            norm_values["std_"][self._feature_to_check]
-                            if "std_" in norm_values
-                            else None
+                        std_=norm_values.get("std_", {}).get(
+                            self._feature_to_check, None
                         ),
                     )
 
