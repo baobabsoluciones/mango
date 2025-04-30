@@ -1,7 +1,37 @@
+"""
+Module for mapping between different coding systems used by Spanish official sources.
+
+This module provides the CatastroINEMapper class for mapping between the coding systems
+used by the Spanish Cadastre (Catastro) and the Spanish National Statistics Institute (INE).
+
+Examples
+--------
+>>> from geodemolytics.core.mapper import CatastroINEMapper
+>>> from geodemolytics.core.catastro import CatastroData
+>>> from geodemolytics.core.ine import INEAPIClient
+
+Initialize the mapper with API data loading to get the accurate names from both INE and Catastro.
+It is recommended to pass the Catastro client with the cache_dir parameter to avoid downloading the data again. (Can take a while)
+>>> mapper = CatastroINEMapper(load_from_apis=True, ine_client=INEAPIClient(), catastro_client=CatastroData(cache=True, cache_file_path=r"catastro_cache.json", verbose=True))
+
+Convert INE code to Catastro code
+>>> print(mapper.ine_to_catastro_code("25203"))
+
+Convert Catastro code to INE code
+>>> print(mapper.catastro_to_ine_code("25252"))
+
+Get municipality name from INE code.
+>>> print(mapper.get_municipality_name("25203", "ine"))
+
+Get municipality name from Catastro code
+>>> print(mapper.get_municipality_name("25252", "catastro"))
+
+"""
+
 import pandas as pd
 import logging
-from catastro import CatastroData
-from ine import INEAPIClient
+from geodemolytics.core.catastro import CatastroData
+from geodemolytics.core.ine import INEAPIClient
 from typing import Optional
 import requests
 from io import BytesIO
@@ -16,11 +46,18 @@ class CatastroINEMapper:
     This class integrates with both Catastro and INE modules to enrich municipality data.
     It processes raw relationship data obtained from:
     https://www.fega.gob.es/es/content/relacion-de-municipios-por-ccaa-con-equivalencias-entre-los-codigos-ine-y-catastro-2025.
-    The mapping file should be updated regularly as the data changes.
+    The mapping file should be updated regularly as the data may change.
 
-    Attributes:
-        PROCESSED_FILENAME (str): Default filename for the processed mapping file.
-        MAPPING_FILE_URL (str): URL to download the mapping file if it does not exist locally.
+    :param load_from_apis: Whether to load additional data from Catastro and INE APIs. (Can take long as it has to fetch the catastro index)
+    :type load_from_apis: bool
+    :param save_processed: Whether to save the processed mapping to a file.
+    :type save_processed: bool
+    :param catastro_client: Optional pre-initialized CatastroData client. (RECOMENDED, with cached index)
+    :type catastro_client: CatastroData
+    :param ine_client: Optional pre-initialized INEAPIClient client.
+    :type ine_client: INEAPIClient
+    :param processed_file: Path to a pre-processed mapping file (if provided, mapping_file is ignored).
+    :type processed_file: str
     """
 
     PROCESSED_FILENAME = "processed_municipalities_mapping.csv"
@@ -28,31 +65,18 @@ class CatastroINEMapper:
 
     def __init__(
         self,
-        load_from_apis: bool = True,
-        save_processed: bool = True,
+        load_from_apis: bool = False,
+        save_processed: bool = False,
         catastro_client: Optional[CatastroData] = None,
         ine_client: Optional[INEAPIClient] = None,
-        processed_file: Optional[str] = None,
+        processed_file: Optional[str] = None
     ) -> None:
-        """
-        Initialize the mapper with the mapping file and optionally enrich with data from APIs.
-
-        :param load_from_apis: Whether to load additional data from Catastro and INE APIs.
-        :type load_from_apis: bool
-        :param save_processed: Whether to save the processed mapping to a file.
-        :type save_processed: bool
-        :param catastro_client: Optional pre-initialized CatastroData client.
-        :type catastro_client: CatastroData
-        :param ine_client: Optional pre-initialized INEAPIClient client.
-        :type ine_client: INEAPIClient
-        :param processed_file: Path to a pre-processed mapping file (if provided, mapping_file is ignored).
-        :type processed_file: str
-        """
         self.save_processed = save_processed
         self.load_from_apis = load_from_apis
         self.processed_file = processed_file or self.PROCESSED_FILENAME
 
         self.catastro_client = catastro_client
+
         self.ine_client = ine_client
 
         logger.info(f"Downloading mapping file from {self.MAPPING_FILE_URL}")
@@ -81,7 +105,7 @@ class CatastroINEMapper:
 
     def _load_mapping(self) -> None:
         """
-        Load and process the raw mapping file.
+        Download and process the raw mapping file.
 
         This method downloads the raw mapping file, processes it to generate municipality codes,
         and creates a mapping table with relevant columns.
@@ -182,8 +206,7 @@ class CatastroINEMapper:
         if self.load_from_apis:
             if not self.catastro_client:
                 logger.info("Initializing Catastro client")
-                self.catastro_client = CatastroData(verbose=False, cache=True)
-                self.catastro_client.load_index()
+                self.catastro_client = CatastroData(verbose=False, cache=False)
 
             if not self.ine_client:
                 logger.info("Initializing INE client")
@@ -212,8 +235,8 @@ class CatastroINEMapper:
 
             catastro_names = dict(
                 zip(
-                    municipalities_df["Municipality Code"].astype(str),
-                    municipalities_df["Municipality Name"],
+                    municipalities_df["catastro_municipality_code"].astype(str),
+                    municipalities_df["catastro_municipality_name"],
                 )
             )
 
@@ -314,7 +337,7 @@ class CatastroINEMapper:
             self, code: str, code_type: str = "ine", name_source: str = "ine"
     ) -> Optional[str]:
         """
-        Get municipality name from code.
+        Get municipality name from the municipality code. The name returned comes from the source specified.
 
         :param code: Municipality code.
         :type code: str
@@ -352,4 +375,3 @@ class CatastroINEMapper:
         :rtype: pandas.DataFrame
         """
         return self.mapping
-
