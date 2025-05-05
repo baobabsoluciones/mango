@@ -1,123 +1,173 @@
+"""
+MITMA Data Processing Module
+
+This module provides functions to read, process, and compute some statistics for MITMA data.
+It requires the already downloaded monthly data files as an input in a folder.
+The data can be downloded from https://www.transportes.gob.es/ministerio/proyectos-singulares/estudios-de-movilidad-con-big-data/opendata-movilidad/
+estudios_basicos -> por-distritos -> pernoctaciones -> meses-completos
+
+Examples
+--------
+# Process MITMA data
+>>> from mango.clients.mitma import load_mitma_data
+>>> data = load_mitma_data("path/to/mitma/data")
+
+# Group by zona_pernoctacion to get the sum of personas each day in each district
+>>> grouped_data = groupby_zona_pernoctacion(data, group_by="district")
+"""
+
 import pandas as pd
 import os
-from typing import Literal, Optional
-import logging
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
+import tarfile
+from typing import Union, List, Optional, TextIO, BinaryIO, Literal
 
 
-
-def read_file_as_df(file_path: str, file_name: str) -> pd.DataFrame:
+def load_mitma_data(input_path: str) -> pd.DataFrame:
     """
-    Read a file from a given path and return it as a DataFrame.
-
-    :param file_path: Path to the file to read.
-    :param file_name: Name of the file to read.
-    :return: DataFrame with the data from the file.
-    :raises FileNotFoundError: If the file does not exist.
-    :raises TypeError: If the file type is not supported.
+    Load MITMA data from the specified directory. It reads all files in the directory and combines them into a single DataFrame.
+    It supports both CSV files and tar files containing CSV files.
+    :param input_path: Path to the directory containing the MITMA data files.
+    :type input_path: str
+    :return: A pandas DataFrame containing the combined data from all files.
+    :rtype: pd.DataFrame
     """
-    file = os.path.join(file_path, file_name)
+    if not os.path.exists(input_path):
+        raise FileNotFoundError(f"Input path not found: {input_path}")
+    if not os.path.isdir(input_path):
+        raise NotADirectoryError(f"Input path is not a directory: {input_path}")
 
-    if not os.path.exists(file):
-        logging.error(f"File not found: {file}")
-        raise FileNotFoundError(f"File not found: {file}")
+    dataframes = []
 
+    for root, _, files in os.walk(input_path):
+        for name in files:
+            path = os.path.join(root, name)
+            if _is_tar_file(name):
+                dataframes.extend(_read_tar_file(path))
+            elif _is_data_file(name):
+                df = _read_csv_file(path)
+                if df is not None:
+                    dataframes.append(df)
+
+    return pd.concat(dataframes, ignore_index=True) if dataframes else pd.DataFrame()
+
+
+def _is_data_file(filename: str) -> bool:
+    return filename.endswith((".csv", ".csv.gz", ".gz"))
+
+
+def _is_tar_file(filename: str) -> bool:
+    return filename.endswith((".tar", ".tar.gz", ".tgz", ".tar.bz2", ".tbz2"))
+
+
+def _read_csv_file(file: Union[str, TextIO, BinaryIO]) -> Optional[pd.DataFrame]:
     try:
-        if file.endswith(".tar"):
-            result = pd.read_csv(file, compression="tar")
-        elif file.endswith(".gz"):
-            result = pd.read_csv(file, compression="gzip", sep="|")
-        elif file.endswith(".csv"):
-            result = pd.read_csv(file)
-        else:
-            logging.error(f"Unsupported file type: {file}")
-            raise TypeError(f"File type not supported: {file}")
+        return pd.read_csv(
+            file,
+            compression="gzip",
+            parse_dates=["fecha"],
+            date_format="%Y%m%d",
+            dtype={"zona_residencia": str, "zona_pernoctacion": str, "personas": float},
+            sep="|",
+        )
     except Exception as e:
-        logging.error(f"Error reading file {file}: {e}")
-        raise
+        print(f"Error reading CSV file: {e}")
+        print(f"File: {file}")
+        return None
 
-    logging.info(f"Successfully read file: {file}")
-    return result
 
-def process_mitma_data(path: str, group_by: Literal["district", "municipality"] = "district") -> pd.DataFrame:
+def _read_tar_file(tar_path: str) -> List[pd.DataFrame]:
+    dataframes = []
+    try:
+        with tarfile.open(tar_path, "r:*") as tar:
+            for member in tar.getmembers():
+                if member.isfile() and _is_data_file(member.name):
+                    f = tar.extractfile(member)
+                    if f:
+                        df = _read_csv_file(f)
+                        if df is not None:
+                            dataframes.append(df)
+    except:
+        pass
+    return dataframes
+
+
+def groupby_zona_pernoctacion(
+    data: pd.DataFrame, group_by: Literal["district", "municipality"] = "district"
+) -> pd.DataFrame:
     """
-    Process the MITMA data from the given path.
+    Group the data by 'zona_pernoctacion' and compute the sum of 'personas'.
 
-    :param path: Path to the directory containing the MITMA data files.
-    :param group_by: Grouping method. Can be 'district' or 'municipality'.
-    :return: DataFrame containing the processed data.
+    :param data: DataFrame containing the data to group.
+    :type data: pd.DataFrame
+    :param group_by: Method to group by. Can be 'district' or 'municipality'.
+    :type group_by: str
+    :return: DataFrame containing the grouped data.
     :raises ValueError: If the group_by parameter is invalid.
     """
     if group_by not in ["district", "municipality"]:
-        logging.error("Invalid group_by value. Must be 'district' or 'municipality'.")
         raise ValueError("group_by must be 'district' or 'municipality'")
 
-    if not os.path.isdir(path):
-        logging.error(f"Invalid directory path: {path}")
-        raise FileNotFoundError(f"Directory not found: {path}")
+    if group_by == "municipality":
+        data["municipality"] = data["zona_pernoctacion"].str[:5]
+        grouped_data = (
+            data.groupby(["fecha", "municipality"])["personas"].sum().reset_index()
+        )
+    else:
+        grouped_data = (
+            data.groupby(["fecha", "zona_pernoctacion"])["personas"].sum().reset_index()
+        )
+    return grouped_data
 
-    df = pd.DataFrame()
-    for month in os.listdir(path):
-        month_path = os.path.join(path, month)
-        if not os.path.isdir(month_path):
-            logging.warning(f"Skipping non-directory: {month_path}")
-            continue
 
-        for filename in os.listdir(month_path):
-            try:
-                logging.info(f"Processing file: {filename}")
-                mitma_data = read_file_as_df(file_path=month_path, file_name=filename)
-                df = pd.concat([df, mitma_data], ignore_index=True)
-            except Exception as e:
-                logging.error(f"Failed to process file {filename}: {e}")
-                continue
-
-    if df.empty:
-        logging.warning("No data was processed. Returning an empty DataFrame.")
-        return df
-
-    try:
-        if group_by == "municipality":
-            df['municipality'] = df['zona_pernoctacion'].str[:5]
-            df = df.groupby('municipality', as_index=False).sum(numeric_only=True)
-        elif group_by == "district":
-            df = df.groupby('zona_pernoctacion', as_index=False).sum(numeric_only=True)
-    except KeyError as e:
-        logging.error(f"Missing required column in data: {e}")
-        raise
-
-    logging.info("Data processing completed successfully.")
-    return df
-
-def compute_multipliers(data: pd.DataFrame, by: Literal["month"] = "month") -> pd.DataFrame:
+def compute_multipliers(
+    data: pd.DataFrame, by: Literal["month"] = "month"
+) -> pd.DataFrame:
     """
-    Compute multipliers for each district/municipality compared to January.
+    Compute multipliers for each district/municipality compared to January. It supports only datasets with data for all 12 months of a single year.
 
     :param data: DataFrame containing the data to compute multipliers for.
-    :param by: Method to group by. Currently supports 'month'.
+    :param by: Method to group by. Currently, supports 'month'.
     :return: DataFrame containing the computed multipliers.
     :raises ValueError: If the 'by' parameter is invalid.
     """
     if by != "month":
-        logging.error("Invalid 'by' value. Must be 'month'.")
         raise ValueError("by must be 'month'")
 
-    if 'fecha' not in data.columns or 'zona_pernoctacion' not in data.columns or 'personas' not in data.columns:
-        logging.error("Data is missing required columns: 'fecha', 'zona_pernoctacion', 'personas'")
-        raise KeyError("Data must contain 'fecha', 'zona_pernoctacion', and 'personas' columns.")
+    if (
+        "fecha" not in data.columns
+        or "zona_pernoctacion" not in data.columns
+        or "personas" not in data.columns
+    ):
+        raise KeyError(
+            "Data must contain 'fecha', 'zona_pernoctacion', and 'personas' columns."
+        )
 
     try:
-        data['month'] = pd.to_datetime(data['fecha'], format="%Y%m%d").dt.month
-        data = data.groupby(['month', 'zona_pernoctacion'], as_index=False).mean(numeric_only=True)
+        data["month"] = data["fecha"].dt.month
+        data["year"] = data["fecha"].dt.year
 
-        base_data = data[data['month'] == 1][['zona_pernoctacion', 'personas']].rename(columns={'personas': 'base_personas'})
-        merged_data = data.merge(base_data, on='zona_pernoctacion', how='left')
-        merged_data['multiplier'] = merged_data['personas'] / merged_data['base_personas']
+        # check if the data contains records from only one year
+        unique_years = data["year"].nunique()
+        if unique_years != 1:
+            raise ValueError("Data must contain records from only one year.")
+
+        # check if all 12 months are present
+        months_in_data = data["month"].nunique()
+        if months_in_data != 12:
+            raise ValueError("Data must contain records for all 12 months.")
+
+        data = data.groupby(["month", "zona_pernoctacion"], as_index=False).mean(
+            numeric_only=True
+        )
+
+        base_data = data[data["month"] == 1][["zona_pernoctacion", "personas"]].rename(
+            columns={"personas": "base_personas"}
+        )
+        merged_data = data.merge(base_data, on="zona_pernoctacion", how="left")
+        merged_data["multiplier"] = (
+            merged_data["personas"] / merged_data["base_personas"]
+        )
     except Exception as e:
-        logging.error(f"Error computing multipliers: {e}")
         raise
 
-    logging.info("Multipliers computed successfully.")
     return merged_data
