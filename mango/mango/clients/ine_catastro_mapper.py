@@ -6,9 +6,9 @@ used by the Spanish Cadastre (Catastro) and the Spanish National Statistics Inst
 
 Examples
 --------
->>> from geodemolytics.core.mapper import CatastroINEMapper
->>> from geodemolytics.core.catastro import CatastroData
->>> from geodemolytics.core.ine import INEAPIClient
+>>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
+>>> from mango.clients.catastro import CatastroData
+>>> from mango.clients.ine import INEAPIClient
 
 Initialize the mapper with API data loading to get the accurate names from both INE and Catastro.
 It is recommended to pass the Catastro client with the cache_dir parameter to avoid downloading the data again. (Can take a while)
@@ -30,8 +30,8 @@ Get municipality name from Catastro code
 
 import pandas as pd
 import logging
-from geodemolytics.core.catastro import CatastroData
-from geodemolytics.core.ine import INEAPIClient
+from mango.clients.catastro import CatastroData
+from mango.clients.ine import INEAPIClient
 from typing import Optional
 import requests
 from io import BytesIO
