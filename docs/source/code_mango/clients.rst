@@ -49,3 +49,24 @@ CatastroData
    :members:
    :undoc-members:
    :show-inheritance:
+
+INEData
+============
+.. autoclass:: mango.clients.ine.INEAPIClient
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+CatastroINEMapper
+============
+.. autoclass:: mango.clients.ine_catastro_mapper.CatastroINEMapper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+MitmaIneMapper
+============
+.. autoclass:: mango.clients.mitma_ine_mapper.MitmaIneMapper
+   :members:
+   :undoc-members:
+   :show-inheritance:
