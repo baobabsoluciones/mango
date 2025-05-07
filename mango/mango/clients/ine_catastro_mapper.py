@@ -4,28 +4,6 @@ Module for mapping between different coding systems used by Spanish official sou
 This module provides the CatastroINEMapper class for mapping between the coding systems
 used by the Spanish Cadastre (Catastro) and the Spanish National Statistics Institute (INE).
 
-Examples
---------
->>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
->>> from mango.clients.catastro import CatastroData
->>> from mango.clients.ine import INEAPIClient
-
-Initialize the mapper with API data loading to get the accurate names from both INE and Catastro.
-It is recommended to pass the Catastro client with the cache_dir parameter to avoid downloading the data again. (Can take a while)
->>> mapper = CatastroINEMapper(load_from_apis=True, ine_client=INEAPIClient(), catastro_client=CatastroData(cache=True, cache_file_path=r"catastro_cache.json", verbose=True))
-
-Convert INE code to Catastro code
->>> print(mapper.ine_to_catastro_code("25203"))
-
-Convert Catastro code to INE code
->>> print(mapper.catastro_to_ine_code("25252"))
-
-Get municipality name from INE code.
->>> print(mapper.get_municipality_name("25203", "ine"))
-
-Get municipality name from Catastro code
->>> print(mapper.get_municipality_name("25252", "catastro"))
-
 """
 
 import pandas as pd
@@ -46,7 +24,7 @@ class CatastroINEMapper:
     This class integrates with both Catastro and INE modules to enrich municipality data.
     It processes raw relationship data obtained from:
     https://www.fega.gob.es/es/content/relacion-de-municipios-por-ccaa-con-equivalencias-entre-los-codigos-ine-y-catastro-2025.
-    The mapping file should be updated regularly as the data may change.
+    The mapping file url should be checked and updated regularly as the data may change.
 
     :param load_from_apis: Whether to load additional data from Catastro and INE APIs. (Can take long as it has to fetch the catastro index)
     :type load_from_apis: bool
@@ -58,6 +36,19 @@ class CatastroINEMapper:
     :type ine_client: INEAPIClient
     :param processed_file: Path to a pre-processed mapping file (if provided, mapping_file is ignored).
     :type processed_file: str
+
+    Usage
+    --------
+    >>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
+    >>> from mango.clients.catastro import CatastroData
+    >>> from mango.clients.ine import INEAPIClient
+
+    Initialize the mapper with API data loading to get the accurate names from both INE and Catastro.
+    It is recommended to pass the Catastro client with the cache_dir parameter set up to avoid downloading the data again. (Can take a while)
+
+    >>> mapper = CatastroINEMapper(load_from_apis=True,
+    ...                            ine_client=INEAPIClient(),
+    ...                            catastro_client=CatastroData(cache=True, cache_file_path=r"catastro_cache.json", verbose=True))
     """
 
     PROCESSED_FILENAME = "processed_municipalities_mapping.csv"
@@ -319,6 +310,14 @@ class CatastroINEMapper:
         :type ine_code: str
         :return: Corresponding Catastro municipality code, or None if not found.
         :rtype: str or None
+
+        Usage
+        --------
+
+        Convert INE code to Catastro code
+
+        >>> catastro_code = mapper.ine_to_catastro_code("25203")
+        >>> print(catastro_code)
         """
         return self.ine_to_catastro.get(str(ine_code))
 
@@ -330,6 +329,14 @@ class CatastroINEMapper:
         :type catastro_code: str
         :return: Corresponding INE municipality code, or None if not found.
         :rtype: str or None
+
+        Usage
+        --------
+
+        Convert Catastro code to INE code
+
+        >>> ine_code = mapper.catastro_to_ine_code("25252")
+        >>> print(ine_code)
         """
         return self.catastro_to_ine.get(str(catastro_code))
 
@@ -347,6 +354,18 @@ class CatastroINEMapper:
         :type name_source: str
         :return: Municipality name or None if not found.
         :rtype: str or None
+
+        Usage
+        --------
+
+        Get municipality name from INE code.
+
+        >>> municipality_name = mapper.get_municipality_name("25203", "ine")
+        >>> print(municipality_name)
+
+        Get municipality name from Catastro code
+        >>> municipality_name = mapper.get_municipality_name("25252", "catastro")
+        >>> print(municipality_name)
         """
 
         code = str(code)
@@ -373,5 +392,13 @@ class CatastroINEMapper:
 
         :return: DataFrame containing the mapping table.
         :rtype: pandas.DataFrame
+
+        Usage
+        --------
+
+        Get the full mapping table.
+
+        >>> mapping_table = mapper.get_mapping_table()
+        >>> print(mapping_table.head())
         """
         return self.mapping

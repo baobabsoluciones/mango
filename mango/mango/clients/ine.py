@@ -3,22 +3,6 @@ Module for obtaining census data from the Spanish National Statistics Institute 
 
 This module provides the INEAPIClient class for retrieving and processing
 census data from the INE API.
-
-Examples
---------
-Import the INEAPIClient class and create an instance:
->>> from mango.clients.ine import INEAPIClient, fetch_full_census, list_table_codes
->>> ine_api = INEAPIClient()
-
-Show all available table codes in the INE API:
->>> print(list_table_codes())
-
-Fetch census data for a specific province:
->>> census_69202 = ine_api.fetch_census_by_section("69202")
-
-Fetch full census and add the geometry data:
->>> full_census = fetch_full_census()
->>> geometry_data = enrich_with_geometry(census_69202)
 """
 
 import requests
@@ -186,20 +170,43 @@ def _valid_province_code(province_code: str) -> bool:
 
 def list_table_codes() -> dict:
     """
-    List all the table codes related to each province.
-    :return: dict
+    Lists all available table codes for provinces in the INE API.
+
+    Each table code corresponds to a specific province and can be used to fetch census data.
+
+    :return: A dictionary mapping province names to their respective table codes.
+    :rtype: dict
+
+    Usage
+    --------
+
+    Show all available table codes in the INE API:
+
+    >>> table_codes = list_table_codes()
+    >>> print(list_table_codes())
     """
     return PROVINCE_CODES
 
 
 def fetch_full_census(year: int = None) -> pd.DataFrame:
     """
-    Fetch all census data from the INE API.
+    Fetches the full census data from the INE API and cleans it.
 
-    :param year: Year to filter the data by, if None, it will use the last year available in the data
+    This function retrieves census data for all available provinces, filters it by the specified year
+    (or the latest year available if not specified), and returns a cleaned DataFrame.
+
+    :param year: The year to filter the data by. If None, the latest year available is used.
     :type year: int
-    :return: DataFrame containing all census data
+    :return: A cleaned DataFrame containing census data with province, municipality, and census tract details.
     :rtype: pd.DataFrame
+
+    Usage
+    --------
+
+    Fetch full census and add the geometry data:
+
+    >>> full_census = fetch_full_census()
+    >>> print(full_census.head())
     """
 
     content = _fetch_url(FULL_CENSUS_URL)
@@ -212,14 +219,29 @@ def fetch_full_census(year: int = None) -> pd.DataFrame:
 
 def enrich_with_geometry(census_df: pd.DataFrame, geometry_path: str = None) -> gpd.GeoDataFrame:
     """
-    Enrich census DataFrame with geometrical data from a spatial file.
+    Enriches a census DataFrame with spatial geometry data.
 
-    :param census_df: Cleaned census data from INEAPIClient
+    This function merges census data with geometrical data from a spatial file (e.g., shapefile or GeoJSON).
+    If no file path is provided, it fetches the geometry data from a predefined URL.
+
+    :param census_df: A cleaned census DataFrame to enrich with geometry.
     :type census_df: pd.DataFrame
-    :param geometry_path: Path to the geometry file (e.g., GeoJSON, SHP)
+    :param geometry_path: Path to the spatial file containing geometry data. If None, data is fetched from a URL.
     :type geometry_path: str
-    :return: GeoDataFrame containing both census and spatial data
+    :return: A GeoDataFrame containing both census and spatial data.
     :rtype: gpd.GeoDataFrame
+
+    Usage
+    --------
+
+    Enrich previously fetched census data with the geometries assigned to the census tracts:
+
+    >>> from mango.clients.ine import INEAPIClient, fetch_full_census, enrich_with_geometry
+    >>> import geopandas as gpd
+    >>> ine_api = INEAPIClient()
+    >>> census_df = ine_api.fetch_census_by_section("69202")
+    >>> geometry_df = enrich_with_geometry(census_df)
+    >>> geometry_df.explore()
     """
 
     if geometry_path is None:
@@ -256,10 +278,21 @@ def enrich_with_geometry(census_df: pd.DataFrame, geometry_path: str = None) -> 
 
 class INEAPIClient:
     """
-    A client for fetching census data from the INE API.
+    A client for retrieving and processing census data from the INE API.
 
-    :param verbose: If True, print additional information (using logger.info)
+    This class provides methods to fetch census data by section, clean it, and link it with municipality data.
+    It also supports verbose logging for debugging purposes.
+
+    :param verbose: If True, enables detailed logging for debugging.
     :type verbose: bool
+
+    Usage
+    --------
+
+    Import the INEAPIClient class and create an instance:
+
+    >>> from mango.clients.ine import INEAPIClient, fetch_full_census, list_table_codes
+    >>> ine_api = INEAPIClient()
     """
 
     def __init__(self, verbose: bool = False):
@@ -345,12 +378,22 @@ class INEAPIClient:
 
     def fetch_census_by_section(self, table_id: str | list[str]) -> pd.DataFrame:
         """
-        Get the data from a specific table or multiple tables in the INE API. Each table corresponds to a province.
+        Fetches census data for specific province(s) from the INE API.
 
-        :param table_id: ID(s) of the table(s) to retrieve
+        This method retrieves data for one or more provinces based on their table IDs, cleans the data,
+        and returns it as a DataFrame. Each table ID corresponds to a province.
+
+        :param table_id: A single table ID or a list of table IDs representing provinces.
         :type table_id: str or list of str
-        :return: DataFrame containing the data from the table(s)
+        :return: A cleaned DataFrame containing census data for the specified provinces.
         :rtype: pd.DataFrame
+
+        Usage
+        --------
+
+        Fetch census data for a specific province:
+
+        >>> census = ine_api.fetch_census_by_section("69202")
         """
         if isinstance(table_id, str):
             table_id = [table_id]

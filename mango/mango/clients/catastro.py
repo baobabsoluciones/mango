@@ -4,29 +4,6 @@ Module for collecting cadastral data from the Spanish Catastro.
 This module provides the CatastroData class for retrieving and processing
 cadastral data from the Spanish Catastro API.
 
-Examples
---------
-Initialize the CatastroData with caching enabled or disabled if it's the first time initializing:
-
->>> from mango.clients.catastro import CatastroData
->>> catastro = CatastroData(cache=True, request_interval=0.1,
-...                        cache_file_path="catastro_cache.json")
-
-Get addresses data for a specific municipality:
-
->>> addresses_data = catastro.get_data("28900", "Addresses")
-
-Get buildings data for the same municipality:
-
->>> buildings_data = catastro.get_data("28900", "Buildings")
-
-Link entrances to buildings:
-
->>> merged_data = catastro.link_entrances_to_buildings(addresses_data, buildings_data)
-
-Get already matched entrances and buildings in one step:
-
->>> merged_data_auto = catastro.get_matched_entrance_with_buildings("25252")
 """
 
 import geopandas as gpd
@@ -295,18 +272,32 @@ def _download_zip_content(url: str) -> Optional[bytes]:
 
 class CatastroData:
     """
-    Class for retrieving and processing cadastral data from the Spanish Catastro.
+    A class for retrieving, processing, and linking cadastral data from the Spanish Catastro API.
 
-    :param verbose: If True, enables verbose logging.
+    This class provides methods to fetch cadastral data for municipalities, process it into GeoDataFrames,
+    and link related datasets such as addresses and buildings. It supports caching for faster later
+    data retrieval and allows customization of request intervals and timeouts.
+
+    :param verbose: Enables verbose logging for debugging purposes if set to True.
     :type verbose: bool
-    :param cache: If True, caches the municipality index to a file.
+    :param cache: Enables caching of the municipality index to a file if set to True.
     :type cache: bool
-    :param request_timeout: Timeout for HTTP requests in seconds.
+    :param request_timeout: Timeout for HTTP requests in seconds. Default is 30 seconds.
     :type request_timeout: float
-    :param request_interval: Interval between requests in seconds.
+    :param request_interval: Interval between consecutive HTTP requests in seconds. Default is 0.1 seconds.
     :type request_interval: float
-    :param cache_file_path: Path to the cache file.
+    :param cache_file_path: Path to the cache file for storing the municipality index.
     :type cache_file_path: str
+
+    Usage
+    --------
+
+    Initialize the CatastroData with caching enabled or disabled if it's the first time initializing:
+
+    >>> from mango.clients.catastro import CatastroData
+    >>> catastro = CatastroData(cache=True, request_interval=0.1,
+    ...                        cache_file_path="catastro_cache.json")
+
     """
     def __init__(
         self,
@@ -395,7 +386,6 @@ class CatastroData:
         """
         Ensures the municipality index is loaded. Raises an error if not.
         :return: None
-        :raises RuntimeError: If the index could not be loaded.
         """
         if not self._index_loaded:
             raise RuntimeError(
@@ -473,10 +463,15 @@ class CatastroData:
 
     def available_municipalities(self, datatype: str) -> pd.DataFrame:
         """
-        Returns a DataFrame with available municipalities for the specified datatype.
+        Retrieves a list of municipalities available for a specific datatype.
 
-        :param datatype: Datatype to filter by (e.g., "Buildings", "CadastralParcels").
-        :return: DataFrame with municipality codes and names.
+        This method filters the municipality index for the specified datatype and returns a DataFrame
+        containing municipality codes and names.
+
+        :param datatype: The type of data to filter by (e.g., "Buildings", "CadastralParcels").
+        :type datatype: str
+        :return: A DataFrame with municipality codes and names for the specified datatype.
+        :rtype: pd.DataFrame
         """
         self._ensure_index_loaded()
         if datatype not in self.available_datatypes:
@@ -503,13 +498,32 @@ class CatastroData:
         target_crs: Optional[str] = "EPSG:4326",
     ) -> Optional[gpd.GeoDataFrame]:
         """
-        Retrieves data for the specified municipality codes and datatype.
+        Fetches cadastral data for one or more municipalities and returns it as a GeoDataFrame.
 
-        :param municipality_codes: Municipality code(s) to retrieve data for.
-        :param datatype: Datatype to retrieve (e.g., "Buildings", "CadastralParcels").
+        This method retrieves data for the specified municipality codes and datatype, optionally reprojecting
+        the data to a target CRS. It supports fetching data for multiple municipalities and concatenates the
+        results into a single GeoDataFrame.
+
+        :param municipality_codes: A single municipality code or a list of municipality codes to retrieve data for.
+        :type municipality_codes: Union[str, List[str]]
+        :param datatype: The type of data to retrieve (e.g., "Buildings", "CadastralParcels").
+        :type datatype: str
         :param subtype: Optional subtype for the datatype (e.g., "Buildings", "Building_Parts").
-        :param target_crs: Target CRS for the GeoDataFrame. If None, uses a predefined CRS.
-        :return: GeoDataFrame containing the data or None if not found.
+        :type subtype: Optional[str]
+        :param target_crs: The target coordinate reference system (CRS) for the GeoDataFrame. Default is "EPSG:4326".
+        :type target_crs: Optional[str]
+        :return: A GeoDataFrame containing the requested data or None if no data is found.
+        :rtype: Optional[gpd.GeoDataFrame]
+
+        Usage
+        --------
+        Get addresses data for a specific municipality:
+
+        >>> addresses_data = catastro.get_data("28900", "Addresses")
+
+        Get buildings data for the same municipality:
+
+        >>> buildings_data = catastro.get_data("28900", "Buildings")
         """
         self._ensure_index_loaded()
 
@@ -664,10 +678,24 @@ class CatastroData:
         self, municipality_code: str, target_crs: Optional[str] = "EPSG:4326"
     ) -> Optional[gpd.GeoDataFrame]:
         """
-        Retrieves and matches entrances to buildings for a given municipality code.
-        :param municipality_code: Municipality code to retrieve data for.
-        :param target_crs: Target CRS for the GeoDataFrame. If None, uses a predefined CRS.
-        :return: GeoDataFrame with matched entrances and buildings or None if not found.
+        Retrieves and links entrances to buildings for a specific municipality.
+
+        This method fetches address and building data for the specified municipality, links entrances
+        to their corresponding buildings, and returns the result as a GeoDataFrame.
+
+        :param municipality_code: The municipality code to retrieve and link data for.
+        :type municipality_code: str
+        :param target_crs: The target coordinate reference system (CRS) for the GeoDataFrame. Default is "EPSG:4326".
+        :type target_crs: Optional[str]
+        :return: A GeoDataFrame with matched entrances and buildings or None if no matches are found.
+        :rtype: Optional[gpd.GeoDataFrame]
+
+        Usage
+        --------
+
+        Get already matched entrances and buildings in one step:
+
+        >>> merged_data_auto = catastro.get_matched_entrance_with_buildings("25252")
         """
         self._ensure_index_loaded()
         code_str = str(municipality_code).zfill(5)
@@ -706,12 +734,24 @@ class CatastroData:
         self, addresses_gdf: gpd.GeoDataFrame, buildings_gdf: gpd.GeoDataFrame
     ) -> Optional[gpd.GeoDataFrame]:
         """
-        Link entrances to buildings based on the localId_address and localId_building columns.
-        This method is a wrapper around _perform_entrance_linkage to provide a more user-friendly interface.
+        Links entrances to buildings based on their identifiers.
 
-        :param addresses_gdf: GeoDataFrame containing address data.
-        :param buildings_gdf: GeoDataFrame containing building data.
-        :return: GeoDataFrame with linked entrances and buildings or None.
+        This method takes GeoDataFrames for addresses and buildings, matches entrances to buildings
+        using their local identifiers, and returns a GeoDataFrame with the linked data.
+
+        :param addresses_gdf: A GeoDataFrame containing address data.
+        :type addresses_gdf: gpd.GeoDataFrame
+        :param buildings_gdf: A GeoDataFrame containing building data.
+        :type buildings_gdf: gpd.GeoDataFrame
+        :return: A GeoDataFrame with linked entrances and buildings or None if no matches are found.
+        :rtype: Optional[gpd.GeoDataFrame]
+
+        Usage
+        --------
+
+        Link entrances to buildings:
+
+        >>> merged_data = catastro.link_entrances_to_buildings(addresses_data, buildings_data)
         """
 
         linked_gdf = self._perform_entrance_linkage(

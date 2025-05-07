@@ -115,6 +115,7 @@ class MitmaIneMapper:
     def seccion_ine_to_distrito_mitma(self, code: str) -> str | None:
         """
         Get the MITMA district code from the INE section code.
+
         :param code: INE section code.
         :type code: str
         :return: MITMA district code or None if not found.
@@ -126,6 +127,7 @@ class MitmaIneMapper:
     def distrito_mitma_to_seccion_ine(self, code: str) -> str | None:
         """
         Get the INE section code from the MITMA district code.
+
         :param code: MITMA district code.
         :type code: str
         :return: INE section code or None if not found.
@@ -137,6 +139,7 @@ class MitmaIneMapper:
     def municipio_ine_to_municipio_mitma(self, code: str) -> str | None:
         """
         Get the MITMA municipality code from the INE municipality code.
+
         :param code: INE municipality code.
         :type code: str
         :return: MITMA municipality code or None if not found.
@@ -148,6 +151,7 @@ class MitmaIneMapper:
     def municipio_mitma_to_municipio_ine(self, code: str) -> str | None:
         """
         Get the INE municipality code from the MITMA municipality code.
+
         :param code: MITMA municipality code.
         :type code: str
         :return: INE municipality code or None if not found.
@@ -159,6 +163,7 @@ class MitmaIneMapper:
     def seccion_ine_to_municipio_mitma(self, code: str) -> str | None:
         """
         Get the MITMA municipality code from the INE section code.
+
         :param code: INE section code.
         :type code: str
         :return: MITMA municipality code or None if not found.
@@ -170,6 +175,7 @@ class MitmaIneMapper:
     def municipio_mitma_to_seccion_ine(self, code: str) -> str | None:
         """
         Get the INE section code from the MITMA municipality code.
+
         :param code: MITMA municipality code.
         :type code: str
         :return: INE section code or None if not found.
@@ -181,6 +187,7 @@ class MitmaIneMapper:
     def distrito_mitma_to_municipio_ine(self, code: str) -> str | None:
         """
         Get the INE municipality code from the MITMA district code.
+
         :param code: MITMA district code.
         :type code: str
         :return: INE municipality code or None if not found.
@@ -192,6 +199,7 @@ class MitmaIneMapper:
     def municipio_ine_to_distrito_mitma(self, code: str) -> str | None:
         """
         Get the MITMA district code from the INE municipality code.
+
         :param code: INE municipality code.
         :type code: str
         :return: MITMA district code or None if not found.

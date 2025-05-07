@@ -2,18 +2,12 @@
 MITMA Data Processing Module
 
 This module provides functions to read, process, and compute some statistics for MITMA data.
+
 It requires the already downloaded monthly data files as an input in a folder.
+
 The data can be downloded from https://www.transportes.gob.es/ministerio/proyectos-singulares/estudios-de-movilidad-con-big-data/opendata-movilidad/
+
 estudios_basicos -> por-distritos -> pernoctaciones -> meses-completos
-
-Examples
---------
-# Process MITMA data
->>> from mango.clients.mitma import load_mitma_data
->>> data = load_mitma_data("path/to/mitma/data")
-
-# Group by zona_pernoctacion to get the sum of personas each day in each district
->>> grouped_data = groupby_zona_pernoctacion(data, group_by="district")
 """
 
 import pandas as pd
@@ -24,12 +18,31 @@ from typing import Union, List, Optional, TextIO, BinaryIO, Literal
 
 def load_mitma_data(input_path: str) -> pd.DataFrame:
     """
-    Load MITMA data from the specified directory. It reads all files in the directory and combines them into a single DataFrame.
-    It supports both CSV files and tar files containing CSV files.
+    Loads and consolidates MITMA mobility data by recursively scanning a specified directory.
+
+    This function searches the `input_path`, including all its subdirectories,
+    to locate and process relevant data files. It supports:
+
+    * **Directly:** CSV files, whether plain (`.csv`) or gzipped (`.csv.gz`, `.gz`).
+    * **Within TAR archives:** Standard TAR archives (e.g., `.tar`), gzipped TAR archives
+        (`.tar.gz`, `.tgz`), or bzipped2 TAR archives (`.tar.bz2`, `.tbz2`) that contain
+        the CSV file types mentioned above.
+
+    All CSV files that are successfully parsed according to the expected format
+    (see below for details on format) are then concatenated into a single
+    pandas DataFrame.
+
     :param input_path: Path to the directory containing the MITMA data files.
     :type input_path: str
     :return: A pandas DataFrame containing the combined data from all files.
     :rtype: pd.DataFrame
+
+    Usage
+    -----
+    >>> # Process MITMA data
+    >>> from mango.clients.mitma import load_mitma_data
+    >>> data = load_mitma_data("path/to/mitma/data")
+
     """
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input path not found: {input_path}")
@@ -102,7 +115,16 @@ def groupby_zona_pernoctacion(
     :param group_by: Method to group by. Can be 'district' or 'municipality'.
     :type group_by: str
     :return: DataFrame containing the grouped data.
-    :raises ValueError: If the group_by parameter is invalid.
+    :rtype: pd.DataFrame
+
+    Usage
+    -----
+    >>> # Process MITMA data
+    >>> from mango.clients.mitma import load_mitma_data
+    >>> data = load_mitma_data("path/to/mitma/data")
+    >>> # Group by zona_pernoctacion to get the sum of personas each day in each district
+    >>> grouped_data = groupby_zona_pernoctacion(data, group_by="district")
+
     """
     if group_by not in ["district", "municipality"]:
         raise ValueError("group_by must be 'district' or 'municipality'")
@@ -126,9 +148,11 @@ def compute_multipliers(
     Compute multipliers for each district/municipality compared to January. It supports only datasets with data for all 12 months of a single year.
 
     :param data: DataFrame containing the data to compute multipliers for.
+    :type data: pd.DataFrame
     :param by: Method to group by. Currently, supports 'month'.
+    :type by: str
     :return: DataFrame containing the computed multipliers.
-    :raises ValueError: If the 'by' parameter is invalid.
+    :rtype: pd.DataFrame
     """
     if by != "month":
         raise ValueError("by must be 'month'")
