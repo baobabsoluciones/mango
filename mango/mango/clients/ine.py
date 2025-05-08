@@ -20,59 +20,59 @@ INE_CODES_URL = "https://www.ine.es/daco/daco42/codmun/diccionario25.xlsx"
 BASE_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/"
 FULL_CENSUS_URL = "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65031.csv"
 PROVINCE_CODES = {
-        "Albacete": "69095",
-        "Alicante/Alacant": "69102",
-        "Almería": "69106",
-        "Araba/Álava": "65039",
-        "Asturias": "69110",
-        "Ávila": "69114",
-        "Badajoz": "69118",
-        "Balears, Illes": "69122",
-        "Barcelona": "69126",
-        "Bizkaia": "69130",
-        "Burgos": "69134",
-        "Cáceres": "69138",
-        "Cádiz": "69142",
-        "Cantabria": "69146",
-        "Castellón/Castelló": "69150",
-        "Ciudad Real": "69154",
-        "Córdoba": "69158",
-        "Coruña, A": "69162",
-        "Cuenca": "69166",
-        "Gipuzkoa": "69170",
-        "Girona": "69174",
-        "Granada": "69178",
-        "Guadalajara": "69182",
-        "Huelva": "69186",
-        "Huesca": "69190",
-        "Jaén": "69194",
-        "León": "69198",
-        "Lleida": "69202",
-        "Lugo": "69206",
-        "Madrid": "69210",
-        "Málaga": "69214",
-        "Murcia": "69218",
-        "Navarra": "69222",
-        "Ourense": "69226",
-        "Palencia": "69230",
-        "Palmas, Las": "69234",
-        "Pontevedra": "69238",
-        "Rioja, La": "69242",
-        "Salamanca": "69246",
-        "Santa Cruz de Tenerife": "69250",
-        "Segovia": "69254",
-        "Sevilla": "69258",
-        "Soria": "69262",
-        "Tarragona": "69266",
-        "Teruel": "69343",
-        "Toledo": "69270",
-        "Valencia/València": "69274",
-        "Valladolid": "69278",
-        "Zamora": "69282",
-        "Zaragoza": "69286",
-        "Ceuta": "69290",
-        "Melilla": "69294",
-    }
+    "Albacete": "69095",
+    "Alicante/Alacant": "69102",
+    "Almería": "69106",
+    "Araba/Álava": "65039",
+    "Asturias": "69110",
+    "Ávila": "69114",
+    "Badajoz": "69118",
+    "Balears, Illes": "69122",
+    "Barcelona": "69126",
+    "Bizkaia": "69130",
+    "Burgos": "69134",
+    "Cáceres": "69138",
+    "Cádiz": "69142",
+    "Cantabria": "69146",
+    "Castellón/Castelló": "69150",
+    "Ciudad Real": "69154",
+    "Córdoba": "69158",
+    "Coruña, A": "69162",
+    "Cuenca": "69166",
+    "Gipuzkoa": "69170",
+    "Girona": "69174",
+    "Granada": "69178",
+    "Guadalajara": "69182",
+    "Huelva": "69186",
+    "Huesca": "69190",
+    "Jaén": "69194",
+    "León": "69198",
+    "Lleida": "69202",
+    "Lugo": "69206",
+    "Madrid": "69210",
+    "Málaga": "69214",
+    "Murcia": "69218",
+    "Navarra": "69222",
+    "Ourense": "69226",
+    "Palencia": "69230",
+    "Palmas, Las": "69234",
+    "Pontevedra": "69238",
+    "Rioja, La": "69242",
+    "Salamanca": "69246",
+    "Santa Cruz de Tenerife": "69250",
+    "Segovia": "69254",
+    "Sevilla": "69258",
+    "Soria": "69262",
+    "Tarragona": "69266",
+    "Teruel": "69343",
+    "Toledo": "69270",
+    "Valencia/València": "69274",
+    "Valladolid": "69278",
+    "Zamora": "69282",
+    "Zaragoza": "69286",
+    "Ceuta": "69290",
+    "Melilla": "69294",
+}
 
 logging.basicConfig(
     level=logging.WARNING,
@@ -127,7 +127,6 @@ def _clean_full_census(df: pd.DataFrame, year: int = None) -> pd.DataFrame:
     df["ine_municipality_code"] = df["Municipios"].str[:5].astype(str).str.zfill(5)
     df["ine_municipality_name"] = df["Municipios"].str[5:]
     df["ine_census_tract_code"] = df["Secciones"].str[:10].astype(str).str.zfill(9)
-    df["ine_census_tract_name"] = df["Secciones"].str[10:]
 
     # Convert population to numeric where thousands separator is a dot ignoring NANs
     df["Total"] = df["Total"].str.replace(".", "", regex=False)
@@ -140,7 +139,6 @@ def _clean_full_census(df: pd.DataFrame, year: int = None) -> pd.DataFrame:
         "ine_municipality_code",
         "ine_municipality_name",
         "ine_census_tract_code",
-        "ine_census_tract_name",
         "ine_population",
     ]
 
@@ -166,6 +164,49 @@ def _valid_province_code(province_code: str) -> bool:
         return False
 
     return True
+
+
+def save_geojson_file(
+        df_geom: gpd.GeoDataFrame, folder_path: str, file_name: str
+) -> None:
+    """
+    Saves a GeoDataFrame to a GeoJSON file.
+
+    :param df_geom: GeoDataFrame to save
+    :type df_geom: gpd.GeoDataFrame
+    :param folder_path: Path to the folder where the file will be saved
+    :type folder_path: str
+    :param file_name: Name of the output file (without extension)
+    :type file_name: str
+    :return: None
+    """
+
+    if not isinstance(df_geom, gpd.GeoDataFrame):
+        raise ValueError("df_geom must be a GeoDataFrame.")
+
+    if df_geom.empty:
+        raise ValueError("GeoDataFrame is empty. Nothing to save.")
+
+    if not isinstance(folder_path, str) or not folder_path.strip():
+        raise ValueError("Invalid folder_path. Must be a non-empty string.")
+
+    if not isinstance(file_name, str) or not file_name.strip():
+        raise ValueError("Invalid file_name. Must be a non-empty string.")
+
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path, exist_ok=True)
+
+    file_name = file_name if file_name.endswith(".geojson") else f"{file_name}.geojson"
+    file_path = os.path.join(folder_path, file_name)
+
+    try:
+        df_geom.to_file(file_path, driver="GeoJSON")
+    except Exception as e:
+        logger.error(f"Could not save the GeoJSON to {file_path}: {e}")
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise
+    print(f"GeoJSON data saved to {file_path}")
 
 
 def list_table_codes() -> dict:
@@ -217,7 +258,9 @@ def fetch_full_census(year: int = None) -> pd.DataFrame:
     return df
 
 
-def enrich_with_geometry(census_df: pd.DataFrame, geometry_path: str = None) -> gpd.GeoDataFrame:
+def enrich_with_geometry(
+        census_df: pd.DataFrame, geometry_path: str = None
+) -> gpd.GeoDataFrame:
     """
     Enriches a census DataFrame with spatial geometry data.
 
@@ -254,13 +297,12 @@ def enrich_with_geometry(census_df: pd.DataFrame, geometry_path: str = None) -> 
             raise
 
         with zipfile.ZipFile(BytesIO(geo_bytes)) as zf:
-            shp_file = next((f for f in zf.namelist() if f.endswith('.shp')), None)
+            shp_file = next((f for f in zf.namelist() if f.endswith(".shp")), None)
             if not shp_file:
                 raise ValueError("No shapefile found in the zip archive")
             with tempfile.TemporaryDirectory() as tmpdir:
                 zf.extractall(tmpdir)
                 geometry_data = gpd.read_file(os.path.join(tmpdir, shp_file))
-
 
     else:
         try:
@@ -270,10 +312,90 @@ def enrich_with_geometry(census_df: pd.DataFrame, geometry_path: str = None) -> 
             raise
 
     geometry_with_census = geometry_data.merge(
-        census_df, left_on="CUSEC", right_on="ine_census_tract"
+        census_df, left_on="CUSEC", right_on="ine_census_tract_code"
     )
 
+    # Move geometry column to the end
+    geometry_with_census = geometry_with_census[
+        [col for col in geometry_with_census.columns if col != "geometry"]
+        + ["geometry"]
+    ]
+
     return geometry_with_census
+
+
+def download_full_census_with_geometry(
+    folder_path: str,
+    file_name: str = "full_census_with_geometry",
+    geometry_path: str = None,
+        split_by_province: bool = False,
+) -> None:
+    """
+    Downloads the cleaned full census data and its geometry, and saves it to a specified path.
+
+    :param folder_path: Path to the folder where the data will be saved.
+    :type folder_path: str
+    :param file_name: Name of the output file (without extension).
+    :type file_name: str
+    :param geometry_path: Path to the spatial file containing geometry data. If None, data is fetched from a URL.
+    :type geometry_path: str
+    :param split_by_province: If True, saves the data split by province. If False, saves the full dataset.
+    :type split_by_province: bool
+    :return: None
+
+
+    Usage
+    --------
+
+    """
+
+    # Check if folder path exists and is a string and create it if not
+    if not folder_path or not isinstance(folder_path, str):
+        raise ValueError("folder_path must be a non-empty string.")
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path, exist_ok=True)
+
+    df = fetch_full_census()
+    df_geom = enrich_with_geometry(df, geometry_path=geometry_path)
+
+    if split_by_province:
+        if "ine_province_code" not in df_geom.columns:
+            raise ValueError("'ine_province_code' column is missing from the data.")
+
+        for province_code in df_geom["ine_province_code"].unique():
+            print(f"Processing province code: {province_code}")
+            province_df = df_geom[df_geom["ine_province_code"] == province_code]
+            province_file_name = f"{file_name}_province_{province_code}"
+            save_geojson_file(province_df, folder_path, province_file_name)
+    else:
+        save_geojson_file(df_geom, folder_path, file_name)
+
+        print(
+            f"Full census data with geometry saved to {folder_path}/{file_name}.geojson"
+        )
+
+
+def read_geojson_file(file_path: str) -> gpd.GeoDataFrame:
+    """
+    Reads a GeoJSON file and returns it as a GeoDataFrame.
+
+    :param file_path: Path to the GeoJSON file.
+    :type file_path: str
+    :return: A GeoDataFrame containing the data from the GeoJSON file.
+    :rtype: gpd.GeoDataFrame
+
+    Usage
+    --------
+
+    Read a GeoJSON file:
+
+    >>> geo_df = read_geojson_file("path/to/your/file.geojson")
+    >>> print(geo_df.head())
+    """
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File {file_path} does not exist.")
+
+    return gpd.read_file(file_path)
 
 
 class INEAPIClient:
@@ -313,12 +435,20 @@ class INEAPIClient:
         """
         content = _fetch_url(INE_CODES_URL)
         df = pd.read_excel(BytesIO(content), skiprows=1, header=0)
-        df["ine_municipality_code"] = df["CPRO"].astype(str).str.zfill(2) + df["CMUN"].astype(
-            str
-        ).str.zfill(3)
+        df["ine_municipality_code"] = df["CPRO"].astype(str).str.zfill(2) + df[
+            "CMUN"
+        ].astype(str).str.zfill(3)
         df.rename({"NOMBRE": "ine_municipality_name"}, axis=1, inplace=True)
 
-        df = df[["CODAUTO", "CPRO", "CMUN", "ine_municipality_code", "ine_municipality_name"]]
+        df = df[
+            [
+                "CODAUTO",
+                "CPRO",
+                "CMUN",
+                "ine_municipality_code",
+                "ine_municipality_name",
+            ]
+        ]
 
         return df
 
@@ -358,26 +488,41 @@ class INEAPIClient:
         # Check if the merge was successful
         if df["ine_municipality_code"].isnull().any():
             # Print the municipalities that could not be matched
-            unmatched_municipalities = df[df["ine_municipality_code"].isnull()]["ine_municipality_name"].unique()
+            unmatched_municipalities = df[df["ine_municipality_code"].isnull()][
+                "ine_municipality_name"
+            ].unique()
 
             raise ValueError(
                 f"Some municipalities could not be matched to their INE code by name. Check the data. They are: {unmatched_municipalities}"
             )
 
         df.rename(
-            columns={
-                "Code": "ine_census_tract",
-                "Provincia": "province_name"},
-            inplace=True
+            columns={"Code": "ine_census_tract_code", "Provincia": "ine_province_name"},
+            inplace=True,
         )
 
-        df["ine_census_tract"] = df["ine_municipality_code"].astype(str) + df["ine_census_tract"].astype(str)
-        df = df[["province_name", "ine_municipality_code", "ine_municipality_name", "ine_census_tract", "ine_population"]]
+        df["ine_census_tract_code"] = df["ine_municipality_code"].astype(str) + df[
+            "ine_census_tract_code"
+        ].astype(str)
+        df["ine_province_code"] = df["ine_municipality_code"].str[:2]
+        df = df[
+            [
+                "ine_province_code",
+                "ine_province_name",
+                "ine_municipality_code",
+                "ine_municipality_name",
+                "ine_census_tract_code",
+                "ine_population",
+            ]
+        ]
 
         return df
 
     def fetch_census_by_section(self, table_id: str | list[str]) -> pd.DataFrame:
         """
+        WARNING: This method is unreliable due to INE naming inconsistencies.
+        The best way to fetch this data is to fetch the full census.
+
         Fetches census data for specific province(s) from the INE API.
 
         This method retrieves data for one or more provinces based on their table IDs, cleans the data,
@@ -422,4 +567,5 @@ class INEAPIClient:
             all_data.append(df)
 
         combined_df = pd.concat(all_data, ignore_index=True)
+
         return combined_df
