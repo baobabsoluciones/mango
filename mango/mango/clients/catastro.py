@@ -647,18 +647,16 @@ class CatastroData:
             addr_gdf["localId_address"].astype(str).str.rsplit(".", n=1).str[-1]
         )
 
-        entrance_data = addr_gdf[addr_gdf["specification_address"] == "Entrance"].copy()
-
-        if entrance_data.empty:
+        if addr_gdf.empty:
             logger.warning("No 'Entrance' features found in Addresses data.")
             return None
 
-        entrance_counts = entrance_data["merge_id_address"].value_counts()
-        entrance_data["entrance_count_per_building"] = entrance_data[
+        entrance_counts = addr_gdf["merge_id_address"].value_counts()
+        addr_gdf["entrance_count_per_building"] = addr_gdf[
             "merge_id_address"
         ].map(entrance_counts)
 
-        merged_gdf = entrance_data.merge(
+        merged_gdf = addr_gdf.merge(
             bldg_gdf,
             left_on="merge_id_address",
             right_on="localId_building",
