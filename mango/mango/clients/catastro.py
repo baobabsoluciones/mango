@@ -136,7 +136,9 @@ def _parse_municipality_entry(
         )
         return None
 
-    logger.debug(f"Parsed Municipality in {dataset} dataset: Code={code}, Name='{name}'")
+    logger.debug(
+        f"Parsed Municipality in {dataset} dataset: Code={code}, Name='{name}'"
+    )
     return {"municipality_code": code, "municipality_name": name, "link": link}
 
 
@@ -299,6 +301,7 @@ class CatastroData:
     ...                        cache_file_path="catastro_cache.json")
 
     """
+
     def __init__(
         self,
         verbose: bool = False,
@@ -440,9 +443,13 @@ class CatastroData:
                 zip_content, datatype, subtype, zip_link
             )
             if gml_file_buffer:
-                # Ensure the buffer is reset before reading
+                # Ensure the buffer is reset before reading otherwise it can give problems
                 gml_file_buffer.seek(0)
-                gdf = gpd.read_file(gml_file_buffer)
+                # Adresses files seem to have several layers, the important one is "Address" however, there's "ThoroughfareName" that contains the details about the street name and the codification which can be linked to the "Address" layer by the gml_id
+                if datatype == "Addresses":
+                    gdf = gpd.read_file(gml_file_buffer, layer="Address")
+                else:
+                    gdf = gpd.read_file(gml_file_buffer)
                 logger.info(
                     f"Loaded GDF for {municipality_code} - {datatype}. Found {len(gdf)} features."
                 )
@@ -603,7 +610,7 @@ class CatastroData:
 
     @staticmethod
     def _perform_entrance_linkage(
-            addresses_gdf: gpd.GeoDataFrame, buildings_gdf: gpd.GeoDataFrame
+        addresses_gdf: gpd.GeoDataFrame, buildings_gdf: gpd.GeoDataFrame
     ) -> Optional[gpd.GeoDataFrame]:
         """
         Link entrances to buildings based on the localId_address and localId_building columns.
@@ -652,9 +659,9 @@ class CatastroData:
             return None
 
         entrance_counts = addr_gdf["merge_id_address"].value_counts()
-        addr_gdf["entrance_count_per_building"] = addr_gdf[
-            "merge_id_address"
-        ].map(entrance_counts)
+        addr_gdf["entrance_count_per_building"] = addr_gdf["merge_id_address"].map(
+            entrance_counts
+        )
 
         merged_gdf = addr_gdf.merge(
             bldg_gdf,
