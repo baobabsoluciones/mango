@@ -20,12 +20,14 @@ Get the INE municipality code from the MITMA municipality code
 >>> print(f"INE municipality for MITMA municipality code 01047_AM: {ine_muni}")
 """
 
+from typing import Any, Optional
+
 import pandas as pd
 import requests
 from io import StringIO
+from collections import defaultdict
 
-
-MAPPING_PATH = "https://movilidad-opendata.mitma.es/zonificacion/relacion_ine_zonificacionMitma.csv"
+MAPPING_FILE_URL = "https://movilidad-opendata.mitma.es/zonificacion/relacion_ine_zonificacionMitma.csv"
 
 
 def _download_csv_text(url: str) -> str:
@@ -41,6 +43,7 @@ def _download_csv_text(url: str) -> str:
     response.raise_for_status()
     return response.text
 
+
 def _read_csv_from_text(csv_text: str) -> pd.DataFrame:
     """
     Reads CSV data from a string and returns a pandas DataFrame.
@@ -53,6 +56,7 @@ def _read_csv_from_text(csv_text: str) -> pd.DataFrame:
     csv_io = StringIO(csv_text)
     return pd.read_csv(csv_io, sep="|", header=0, dtype=str)
 
+
 def _get_csv_dataframe(url: str) -> pd.DataFrame:
     """
     Combines downloading and reading a CSV into a pandas DataFrame.
@@ -64,6 +68,7 @@ def _get_csv_dataframe(url: str) -> pd.DataFrame:
     """
     csv_text = _download_csv_text(url)
     return _read_csv_from_text(csv_text)
+
 
 def _validate_code(code: str) -> str:
     """
@@ -79,6 +84,7 @@ def _validate_code(code: str) -> str:
         raise TypeError(f"Code must be a string, got {type(code).__name__} instead.")
     return code
 
+
 class MitmaIneMapper:
     """
     Class for mapping the INE municipalities with the MITMA districts. When instantiated, it reads the mapping file from the MITMA website and stores it in a DataFrame.
@@ -88,19 +94,45 @@ class MitmaIneMapper:
         """
         Initialize the MitmaIneMapper class.
         """
-        self.mapping_df = _get_csv_dataframe(MAPPING_PATH)
-        self._seccion_ine_to_distrito_mitma = dict(zip(self.mapping_df['seccion_ine'], self.mapping_df['distrito_mitma']))
-        self._distrito_mitma_to_seccion_ine = dict(zip(self.mapping_df['distrito_mitma'], self.mapping_df['seccion_ine']))
+        self.mapping_df = _get_csv_dataframe(MAPPING_FILE_URL)
 
-        self._municipio_ine_to_municipio_mitma = dict(zip(self.mapping_df['municipio_ine'], self.mapping_df['municipio_mitma']))
-        self._municipio_mitma_to_municipio_ine = dict(zip(self.mapping_df['municipio_mitma'], self.mapping_df['municipio_ine']))
+        def create_mapping(df, key_col, val_col):
+            grouped = (
+                df.groupby(key_col)[val_col]
+                .apply(lambda x: list(set(x.tolist())))
+                .to_dict()
+            )
+            return defaultdict(
+                list, grouped
+            )
 
-        self._seccion_ine_to_municipio_mitma = dict(zip(self.mapping_df['seccion_ine'], self.mapping_df['municipio_mitma']))
-        self._municipio_mitma_to_seccion_ine = dict(zip(self.mapping_df['municipio_mitma'], self.mapping_df['seccion_ine']))
+        self._seccion_ine_to_distrito_mitma = create_mapping(
+            self.mapping_df, "seccion_ine", "distrito_mitma"
+        )
+        self._distrito_mitma_to_seccion_ine = create_mapping(
+            self.mapping_df, "distrito_mitma", "seccion_ine"
+        )
 
-        self._distrito_mitma_to_municipio_ine = dict(zip(self.mapping_df['distrito_mitma'], self.mapping_df['municipio_ine']))
-        self._municipio_ine_to_distrito_mitma = dict(zip(self.mapping_df['municipio_ine'], self.mapping_df['distrito_mitma']))
+        self._municipio_ine_to_municipio_mitma = create_mapping(
+            self.mapping_df, "municipio_ine", "municipio_mitma"
+        )
+        self._municipio_mitma_to_municipio_ine = create_mapping(
+            self.mapping_df, "municipio_mitma", "municipio_ine"
+        )
 
+        self._seccion_ine_to_municipio_mitma = create_mapping(
+            self.mapping_df, "seccion_ine", "municipio_mitma"
+        )
+        self._municipio_mitma_to_seccion_ine = create_mapping(
+            self.mapping_df, "municipio_mitma", "seccion_ine"
+        )
+
+        self._distrito_mitma_to_municipio_ine = create_mapping(
+            self.mapping_df, "distrito_mitma", "municipio_ine"
+        )
+        self._municipio_ine_to_distrito_mitma = create_mapping(
+            self.mapping_df, "municipio_ine", "distrito_mitma"
+        )
 
     def get_mapping(self) -> pd.DataFrame:
         """
@@ -111,99 +143,92 @@ class MitmaIneMapper:
         """
         return self.mapping_df
 
+    def _get_mapped_values(
+            self, mapping_dict: defaultdict, code: str
+    ) -> Optional[list[str]]:
+        """Helper to retrieve and process mapped values."""
+        code = _validate_code(code)
+        values = mapping_dict.get(code)
+        if values is None:
+            return None
+        return list(set(values))
 
-    def seccion_ine_to_distrito_mitma(self, code: str) -> str | None:
+    def seccion_ine_to_distrito_mitma(self, code: str) -> Optional[list[str]]:
         """
-        Get the MITMA district code from the INE section code.
+        Get the MITMA district code/s from the INE section code.
 
         :param code: INE section code.
         :type code: str
-        :return: MITMA district code or None if not found.
-        :rtype: str | None
+        :return: List of MITMA district codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._seccion_ine_to_distrito_mitma.get(code)
+        return self._get_mapped_values(self._seccion_ine_to_distrito_mitma, code)
 
-    def distrito_mitma_to_seccion_ine(self, code: str) -> str | None:
+    def distrito_mitma_to_seccion_ine(self, code: str) -> Optional[list[str]]:
         """
-        Get the INE section code from the MITMA district code.
+        Get the INE section code/s from the MITMA district code.
 
         :param code: MITMA district code.
         :type code: str
-        :return: INE section code or None if not found.
-        :rtype: str | None
+        :return: List of INE section codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._distrito_mitma_to_seccion_ine.get(code)
+        return self._get_mapped_values(self._distrito_mitma_to_seccion_ine, code)
 
-    def municipio_ine_to_municipio_mitma(self, code: str) -> str | None:
+    def municipio_ine_to_municipio_mitma(self, code: str) -> Optional[list[str]]:
         """
-        Get the MITMA municipality code from the INE municipality code.
+        Get the MITMA municipality code/s from the INE municipality code.
 
         :param code: INE municipality code.
         :type code: str
-        :return: MITMA municipality code or None if not found.
-        :rtype: str | None
+        :return: List of MITMA municipality codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._municipio_ine_to_municipio_mitma.get(code)
+        return self._get_mapped_values(self._municipio_ine_to_municipio_mitma, code)
 
-    def municipio_mitma_to_municipio_ine(self, code: str) -> str | None:
+    def municipio_mitma_to_municipio_ine(self, code: str) -> Optional[list[str]]:
         """
-        Get the INE municipality code from the MITMA municipality code.
+        Get the INE municipality code/s from the MITMA municipality code.
 
         :param code: MITMA municipality code.
         :type code: str
-        :return: INE municipality code or None if not found.
-        :rtype: str | None
+        :return: List of INE municipality codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._municipio_mitma_to_municipio_ine.get(code)
+        return self._get_mapped_values(self._municipio_mitma_to_municipio_ine, code)
 
-    def seccion_ine_to_municipio_mitma(self, code: str) -> str | None:
+    def seccion_ine_to_municipio_mitma(self, code: str) -> Optional[list[str]]:
         """
-        Get the MITMA municipality code from the INE section code.
+        Get the MITMA municipality code/s from the INE section code.
 
         :param code: INE section code.
         :type code: str
-        :return: MITMA municipality code or None if not found.
-        :rtype: str | None
+        :return: List of MITMA municipality codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._seccion_ine_to_municipio_mitma.get(code)
+        return self._get_mapped_values(self._seccion_ine_to_municipio_mitma, code)
 
-    def municipio_mitma_to_seccion_ine(self, code: str) -> str | None:
+    def municipio_mitma_to_seccion_ine(self, code: str) -> Optional[list[str]]:
         """
-        Get the INE section code from the MITMA municipality code.
+        Get the INE section code/s from the MITMA municipality code.
 
         :param code: MITMA municipality code.
         :type code: str
-        :return: INE section code or None if not found.
-        :rtype: str | None
+        :return: List of INE section codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._municipio_mitma_to_seccion_ine.get(code)
+        return self._get_mapped_values(self._municipio_mitma_to_seccion_ine, code)
 
-    def distrito_mitma_to_municipio_ine(self, code: str) -> str | None:
+    def distrito_mitma_to_municipio_ine(self, code: str) -> Optional[list[str]]:
         """
-        Get the INE municipality code from the MITMA district code.
+        Get the INE municipality code/s from the MITMA district code.
 
         :param code: MITMA district code.
         :type code: str
-        :return: INE municipality code or None if not found.
-        :rtype: str | None
+        :return: List of INE municipality codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._distrito_mitma_to_municipio_ine.get(code)
+        return self._get_mapped_values(self._distrito_mitma_to_municipio_ine, code)
 
-    def municipio_ine_to_distrito_mitma(self, code: str) -> str | None:
+    def municipio_ine_to_distrito_mitma(self, code: str) -> Optional[list[str]]:
         """
-        Get the MITMA district code from the INE municipality code.
+        Get the MITMA district code/s from the INE municipality code.
 
         :param code: INE municipality code.
         :type code: str
-        :return: MITMA district code or None if not found.
-        :rtype: str | None
+        :return: List of MITMA district codes or None if not found.
         """
-        code = _validate_code(code)
-        return self._municipio_ine_to_distrito_mitma.get(code)
+        return self._get_mapped_values(self._municipio_ine_to_distrito_mitma, code)
