@@ -60,7 +60,7 @@ class CatastroINEMapper:
         save_processed: bool = False,
         catastro_client: Optional[CatastroData] = None,
         ine_client: Optional[INEAPIClient] = None,
-        processed_file: Optional[str] = None
+        processed_file: Optional[str] = None,
     ) -> None:
         self.save_processed = save_processed
         self.load_from_apis = load_from_apis
@@ -341,7 +341,7 @@ class CatastroINEMapper:
         return self.catastro_to_ine.get(str(catastro_code))
 
     def get_municipality_name(
-            self, code: str, code_type: str = "ine", name_source: str = "ine"
+        self, code: str, code_type: str = "ine", name_source: str = "ine"
     ) -> Optional[str]:
         """
         Get municipality name from the municipality code. The name returned comes from the source specified.
@@ -370,7 +370,7 @@ class CatastroINEMapper:
 
         code = str(code)
 
-        if name_source.lower() not in ['ine', 'catastro']:
+        if name_source.lower() not in ["ine", "catastro"]:
             raise ValueError("name_source must be 'ine' or 'catastro'")
 
         if code_type.lower() == "ine":

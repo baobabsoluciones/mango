@@ -69,3 +69,10 @@ MITMA
    :members:
    :undoc-members:
    :show-inheritance:
+
+MitmaINEMapper
+============
+.. automodule:: mango.clients.mitma_ine_mapper
+   :members:
+   :undoc-members:
+   :show-inheritance:
