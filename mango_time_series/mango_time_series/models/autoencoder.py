@@ -2371,6 +2371,12 @@ class AutoEncoder:
                 else None
             )
         else:
+            if len(self.id_data) > 0:
+                raise ValueError(
+                    "The input data contains more columns than expected, "
+                    "but 'id_columns' was not provided. Please specify which columns "
+                    "are identifiers using the 'id_columns' parameter."
+                )
             features_names_to_check = (
                 [feature_names[i] for i in self._feature_to_check]
                 if feature_names
