@@ -188,26 +188,24 @@ class AutoEncoder:
             raise NotImplementedError("Dense model type is not yet implemented")
 
     @property
-    def time_step_to_check(self) -> Optional[Union[int, List[int]]]:
+    def time_step_to_check(self) -> Optional[List[int]]:
         """
         Get the time step indices to check during reconstruction.
 
         :return: Time step indices
-        :rtype: Optional[Union[int, List[int]]]
+        :rtype: Optional[List[int]]
         """
         if not hasattr(self, "_time_step_to_check"):
             return None
-        if len(self._time_step_to_check) == 1:
-            return self._time_step_to_check[0]
         return self._time_step_to_check
 
     @time_step_to_check.setter
-    def time_step_to_check(self, value: Union[int, List[int]]) -> None:
+    def time_step_to_check(self, value: List[int]) -> None:
         """
         Set the time step indices to check during reconstruction.
 
         :param value: Time step indices to check
-        :type value: Union[int, List[int]]
+        :type value: List[int]
         :return: None
         :rtype: None
         :raises ValueError: If value is not valid or if attempting to change after model is built
@@ -219,13 +217,8 @@ class AutoEncoder:
                 "Call build_model() with the new time_step_to_check instead."
             )
 
-        # Convert single integer to list
-        if isinstance(value, int):
-            value = [value]
-        elif not isinstance(value, list):
-            raise ValueError(
-                "time_step_to_check must be an integer or list of integers"
-            )
+        if isinstance(value, list):
+            raise ValueError("time_step_to_check must be a list of integers")
 
         # Validate all values are integers
         if not all(isinstance(t, int) for t in value):
@@ -335,7 +328,7 @@ class AutoEncoder:
         self._data = value
 
     @property
-    def feature_to_check(self) -> Optional[Union[int, List[int]]]:
+    def feature_to_check(self) -> Optional[List[int]]:
         """
         Get the feature index or indices to check during reconstruction.
 
@@ -345,12 +338,12 @@ class AutoEncoder:
         return self._feature_to_check
 
     @feature_to_check.setter
-    def feature_to_check(self, value: Union[int, List[int]]) -> None:
+    def feature_to_check(self, value: List[int]) -> None:
         """
         Set the feature index or indices to check during reconstruction.
 
         :param value: Feature index or indices to check
-        :type value: Union[int, List[int]]
+        :type value: List[int]
         :return: None
         :rtype: None
         :raises ValueError: If value is not valid or if attempting to change after model is built
@@ -358,10 +351,8 @@ class AutoEncoder:
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change feature_to_check after model is built")
 
-        if not isinstance(value, (int, list)):
-            raise ValueError("feature_to_check must be an integer or list of integers")
-
-        value = [value] if isinstance(value, int) else value
+        if not isinstance(value, list):
+            raise ValueError("feature_to_check must be a list of integers")
 
         self._feature_to_check = value
 
