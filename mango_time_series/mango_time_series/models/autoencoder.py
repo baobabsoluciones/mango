@@ -217,7 +217,7 @@ class AutoEncoder:
                 "Call build_model() with the new time_step_to_check instead."
             )
 
-        if isinstance(value, list):
+        if not isinstance(value, list):
             raise ValueError("time_step_to_check must be a list of integers")
 
         # Validate all values are integers
