@@ -10,3 +10,4 @@ Jinja2>=3.1.4, <4.0.0
 statsforecast>=1.7.8, <2.0.0
 tensorflow>=2.18.0, <3.0.0
 scikit-learn>=1.6.1, <2.0.0
+click>8.1.7, <8.2.0
