@@ -67,17 +67,50 @@ class AutoEncoder:
         self._form = "lstm"
         self.model = None
         self.layers = []
+        self._model_optimizer = None
+        self._bidirectional_encoder = False
+        self._bidirectional_decoder = False
+        self._activation_encoder = None
+        self._activation_decoder = None
 
         # Data processing settings
         self._normalization_method = None
         self.normalization_values = {}
         self._normalize = False
         self.imputer = None
+        self._id_columns_indices = None
+        self._data = None
+        self._features_name = None
+        self._feature_weights = None
+        self._id_data = None
+        self._id_data_dict = None
+        self._id_data_mask = None
+        self._id_data_dict_mask = None
+
+        # Dataset splits
+        self.x_train = None
+        self.x_val = None
+        self.x_test = None
+
+        # Mask settings
+        self._mask_train = None
+        self._mask_val = None
+        self._mask_test = None
 
         # Training settings
         self._verbose = False
         self._shuffle_buffer_size = None
         self._x_train_no_shuffle = None
+        self._feature_to_check = None
+        self._time_step_to_check = None
+        self._context_window = None
+        self._hidden_dim = None
+        self._train_size = self.TRAIN_SIZE
+        self._val_size = self.VAL_SIZE
+        self._test_size = self.TEST_SIZE
+        self._use_mask = False
+        self._custom_mask = None
+        self._shuffle = False
 
     @property
     def save_path(self) -> Optional[str]:
@@ -218,7 +251,7 @@ class AutoEncoder:
         :return: Context window size or None if not initialized
         :rtype: Optional[int]
         """
-        return getattr(self, "_context_window", None)
+        return self._context_window
 
     @context_window.setter
     def context_window(self, value: int) -> None:
@@ -240,6 +273,42 @@ class AutoEncoder:
         self._context_window = value
 
     @property
+    def feature_weights(self) -> Optional[List[float]]:
+        """
+        Get the feature weights.
+
+        :return: Feature weights
+        :rtype: Optional[List[float]]
+        """
+        return self._feature_weights
+
+    @feature_weights.setter
+    def feature_weights(self, value: Optional[List[float]]) -> None:
+        """
+        Set the feature weights.
+        """
+        self._feature_weights = value
+
+    @property
+    def features_name(self) -> Optional[List[str]]:
+        """
+        Get the features name used for training the model.
+        """
+        return self._features_name
+
+    @features_name.setter
+    def features_name(self, value: List[str]) -> None:
+        """
+        Set the features name used for training the model.
+
+        :param value: List of feature names
+        :type value: List[str]
+        :return: None
+        :rtype: None
+        """
+        self._features_name = value
+
+    @property
     def data(self) -> Optional[np.ndarray]:
         """
         Get the data used for training the model.
@@ -247,7 +316,7 @@ class AutoEncoder:
         :return: Data used for training the model
         :rtype: Optional[np.ndarray]
         """
-        return getattr(self, "_data", None)
+        return self._data
 
     @data.setter
     def data(self, value: Optional[np.ndarray]) -> None:
@@ -266,25 +335,6 @@ class AutoEncoder:
         self._data = value
 
     @property
-    def features_name(self) -> Optional[List[str]]:
-        """
-        Get the features name used for training the model.
-        """
-        return getattr(self, "_features_name", None)
-
-    @features_name.setter
-    def features_name(self, value: List[str]) -> None:
-        """
-        Set the features name used for training the model.
-
-        :param value: List of feature names
-        :type value: List[str]
-        :return: None
-        :rtype: None
-        """
-        self._features_name = value
-
-    @property
     def feature_to_check(self) -> Optional[Union[int, List[int]]]:
         """
         Get the feature index or indices to check during reconstruction.
@@ -292,7 +342,7 @@ class AutoEncoder:
         :return: Feature index or indices to check
         :rtype: Optional[Union[int, List[int]]]
         """
-        return getattr(self, "_feature_to_check", None)
+        return self._feature_to_check
 
     @feature_to_check.setter
     def feature_to_check(self, value: Union[int, List[int]]) -> None:
@@ -343,7 +393,7 @@ class AutoEncoder:
         :return: Normalization method
         :rtype: Optional[str]
         """
-        return getattr(self, "_normalization_method", None)
+        return self._normalization_method
 
     @normalization_method.setter
     def normalization_method(self, value: str) -> None:
@@ -371,7 +421,7 @@ class AutoEncoder:
         :return: Hidden dimensions
         :rtype: Optional[Union[int, List[int]]]
         """
-        return getattr(self, "_hidden_dim", None)
+        return self._hidden_dim
 
     @hidden_dim.setter
     def hidden_dim(self, value: Union[int, List[int]]) -> None:
@@ -400,7 +450,7 @@ class AutoEncoder:
         :return: Bidirectional encoder flag
         :rtype: bool
         """
-        return getattr(self, "_bidirectional_encoder", False)
+        return self._bidirectional_encoder
 
     @bidirectional_encoder.setter
     def bidirectional_encoder(self, value: bool) -> None:
@@ -429,7 +479,7 @@ class AutoEncoder:
         :return: Bidirectional decoder flag
         :rtype: bool
         """
-        return getattr(self, "_bidirectional_decoder", False)
+        return self._bidirectional_decoder
 
     @bidirectional_decoder.setter
     def bidirectional_decoder(self, value: bool) -> None:
@@ -458,7 +508,7 @@ class AutoEncoder:
         :return: Activation function
         :rtype: Optional[str]
         """
-        return getattr(self, "_activation_encoder", None)
+        return self._activation_encoder
 
     @activation_encoder.setter
     def activation_encoder(self, value: Optional[str]) -> None:
@@ -499,7 +549,7 @@ class AutoEncoder:
         :return: Activation function
         :rtype: Optional[str]
         """
-        return getattr(self, "_activation_decoder", None)
+        return self._activation_decoder
 
     @activation_decoder.setter
     def activation_decoder(self, value: Optional[str]) -> None:
@@ -552,23 +602,6 @@ class AutoEncoder:
         self._verbose = value
 
     @property
-    def feature_weights(self) -> Optional[List[float]]:
-        """
-        Get the feature weights.
-
-        :return: Feature weights
-        :rtype: Optional[List[float]]
-        """
-        return self._feature_weights
-
-    @feature_weights.setter
-    def feature_weights(self, value: Optional[List[float]]) -> None:
-        """
-        Set the feature weights.
-        """
-        self._feature_weights = value
-
-    @property
     def train_size(self) -> float:
         """
         Get the training set size proportion.
@@ -576,7 +609,7 @@ class AutoEncoder:
         :return: Training set size (0.0-1.0)
         :rtype: float
         """
-        return getattr(self, "_train_size", self.TRAIN_SIZE)
+        return self._train_size
 
     @train_size.setter
     def train_size(self, value: float) -> None:
@@ -602,7 +635,7 @@ class AutoEncoder:
         :return: Validation set size (0.0-1.0)
         :rtype: float
         """
-        return getattr(self, "_val_size", self.VAL_SIZE)
+        return self._val_size
 
     @val_size.setter
     def val_size(self, value: float) -> None:
@@ -628,7 +661,7 @@ class AutoEncoder:
         :return: Test set size (0.0-1.0)
         :rtype: float
         """
-        return getattr(self, "_test_size", self.TEST_SIZE)
+        return self._test_size
 
     @test_size.setter
     def test_size(self, value: float) -> None:
@@ -651,7 +684,9 @@ class AutoEncoder:
         """
         Get the number of layers.
         """
-        return getattr(self, "_num_layers", len(self._hidden_dim))
+        if self._hidden_dim is None:
+            return 0
+        return len(self._hidden_dim)
 
     @num_layers.setter
     def num_layers(self, value: int) -> None:
@@ -665,7 +700,7 @@ class AutoEncoder:
         """
         Get the ID data.
         """
-        return getattr(self, "_id_data", None)
+        return self._id_data
 
     @id_data.setter
     def id_data(self, value: Optional[np.ndarray]) -> None:
@@ -679,7 +714,7 @@ class AutoEncoder:
         """
         Get the ID data dictionary.
         """
-        return getattr(self, "_id_data_dict", None)
+        return self._id_data_dict
 
     @id_data_dict.setter
     def id_data_dict(self, value: Optional[Dict[str, np.ndarray]]) -> None:
@@ -693,7 +728,7 @@ class AutoEncoder:
         """
         Get the ID data mask.
         """
-        return getattr(self, "_id_data_mask", None)
+        return self._id_data_mask
 
     @id_data_mask.setter
     def id_data_mask(self, value: Optional[np.ndarray]) -> None:
@@ -707,7 +742,7 @@ class AutoEncoder:
         """
         Get the ID data mask dictionary.
         """
-        return getattr(self, "_id_data_dict_mask", None)
+        return self._id_data_dict_mask
 
     @id_data_dict_mask.setter
     def id_data_dict_mask(self, value: Optional[Dict[str, np.ndarray]]) -> None:
@@ -721,7 +756,7 @@ class AutoEncoder:
         """
         Get the indices of the ID columns.
         """
-        return getattr(self, "_id_columns_indices", None)
+        return self._id_columns_indices
 
     @id_columns_indices.setter
     def id_columns_indices(self, value: List[int]) -> None:
@@ -758,7 +793,7 @@ class AutoEncoder:
         """
         Get the custom mask.
         """
-        return getattr(self, "_custom_mask", None)
+        return self._custom_mask
 
     @custom_mask.setter
     def custom_mask(self, value: Optional[np.ndarray]) -> None:
@@ -811,7 +846,7 @@ class AutoEncoder:
         """
         Get the training mask.
         """
-        return getattr(self, "_mask_train", None)
+        return self._mask_train
 
     @mask_train.setter
     def mask_train(self, value: np.ndarray) -> None:
@@ -830,7 +865,7 @@ class AutoEncoder:
         """
         Get the validation mask.
         """
-        return getattr(self, "_mask_val", None)
+        return self._mask_val
 
     @mask_val.setter
     def mask_val(self, value: np.ndarray) -> None:
@@ -849,7 +884,7 @@ class AutoEncoder:
         """
         Get the test mask.
         """
-        return getattr(self, "_mask_test", None)
+        return self._mask_test
 
     @mask_test.setter
     def mask_test(self, value: np.ndarray) -> None:
@@ -960,7 +995,7 @@ class AutoEncoder:
         :return: The optimizer instance
         :rtype: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]
         """
-        return getattr(self, "_model_optimizer", None)
+        return self._model_optimizer
 
     @model_optimizer.setter
     def model_optimizer(
