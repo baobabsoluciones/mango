@@ -2463,6 +2463,17 @@ class AutoEncoder:
             else self.normalization_values.get("global")
         ) or {}
 
+        if not normalization_values:
+            if self.normalization_method not in ["minmax", "zscore"]:
+                raise ValueError("Invalid normalization method.")
+
+            # Simulate train/val/test split using only current data
+            x_train = x_val = x_test = data
+
+            _, _, _, normalization_values = normalize_data_for_training(
+                x_train, x_val, x_test, self.normalization_method
+            )
+
         # Set normalization parameters
         self.min_x = normalization_values.get("min_x", None)
         self.max_x = normalization_values.get("max_x", None)
@@ -2815,7 +2826,6 @@ class AutoEncoder:
                 x_val=x_val,
                 x_test=x_test,
                 normalization_method=self.normalization_method,
-                id_iter=id_iter,
             )
 
             if id_iter is not None:
