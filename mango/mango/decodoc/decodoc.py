@@ -17,9 +17,8 @@ SETUP_DICT = {
     "mermaid": True,
     "prompts": True,
     "confidential": False,
-    "autowrite": True,
+    "autowrite": True, 
 }
-
 
 def decodoc(inputs, outputs):
     """
@@ -70,10 +69,18 @@ def decodoc(inputs, outputs):
     - If a function does not have a docstring, a warning will be issued.
     - If any input or output variable names are missing or invalid, a warning will be generated.
     """
+    # Create a closure to maintain state
+    at_exit_registered = False
 
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            nonlocal at_exit_registered
+            if not at_exit_registered:
+                atexit.register(_write)
+                print("Registered at exit")
+                at_exit_registered = True
+
             # Get the function ID and the arguments ID to obtain an unique ID
             args_id = [id(arg) for arg in args]
             args_id = "_".join(map(str, args_id))
@@ -446,7 +453,3 @@ def _write():
         )
 
     print(f"decodoc process completed. Check './{base_dir}' for details.")
-
-
-# Register the write function to be executed at the end of the script
-atexit.register(_write)
