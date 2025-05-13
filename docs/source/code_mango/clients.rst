@@ -59,7 +59,7 @@ INEData
 
 CatastroINEMapper
 ============
-.. autoclass:: mango.clients.ine_catastro_mapper.CatastroINEMapper
+.. automodule:: mango.clients.ine_catastro_mapper
    :members:
    :show-inheritance:
 

@@ -10,10 +10,11 @@ The data can be downloded from https://www.transportes.gob.es/ministerio/proyect
 estudios_basicos -> por-distritos -> pernoctaciones -> meses-completos
 """
 
-import pandas as pd
 import os
 import tarfile
 from typing import Union, List, Optional, TextIO, BinaryIO, Literal
+
+import pandas as pd
 
 
 def load_mitma_data(input_path: str) -> pd.DataFrame:

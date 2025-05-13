@@ -5,15 +5,16 @@ This module provides the INEAPIClient class for retrieving and processing
 census data from the INE API.
 """
 
-import requests
-import pandas as pd
-import os
-from io import BytesIO
-import geopandas as gpd
-import logging
 import json
-import zipfile
+import logging
+import os
 import tempfile
+import zipfile
+from io import BytesIO
+
+import geopandas as gpd
+import pandas as pd
+import requests
 
 GEOMETRY_DATA_URL = r"https://www.ine.es/prodyser/cartografia/seccionado_2024.zip"
 INE_CODES_URL = "https://www.ine.es/daco/daco42/codmun/diccionario25.xlsx"
@@ -167,7 +168,7 @@ def _valid_province_code(province_code: str) -> bool:
 
 
 def save_geojson_file(
-        df_geom: gpd.GeoDataFrame, folder_path: str, file_name: str
+    df_geom: gpd.GeoDataFrame, folder_path: str, file_name: str
 ) -> None:
     """
     Saves a GeoDataFrame to a GeoJSON file.
@@ -259,7 +260,7 @@ def fetch_full_census(year: int = None) -> pd.DataFrame:
 
 
 def enrich_with_geometry(
-        census_df: pd.DataFrame, geometry_path: str = None
+    census_df: pd.DataFrame, geometry_path: str = None
 ) -> gpd.GeoDataFrame:
     """
     Enriches a census DataFrame with spatial geometry data.
@@ -328,7 +329,7 @@ def download_full_census_with_geometry(
     folder_path: str,
     file_name: str = "full_census_with_geometry",
     geometry_path: str = None,
-        split_by_province: bool = False,
+    split_by_province: bool = False,
 ) -> None:
     """
     Downloads the cleaned full census data and its geometry, and saves it to a specified path.

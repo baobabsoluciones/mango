@@ -7,12 +7,12 @@ It processes the data and allows for an easy conversion between the INE municipa
 Mapping file origin https://movilidad-opendata.mitma.es/zonificacion/relacion_ine_zonificacionMitma.csv
 """
 
-from typing import Any, Optional
+from collections import defaultdict
+from io import StringIO
+from typing import Optional
 
 import pandas as pd
 import requests
-from io import StringIO
-from collections import defaultdict
 
 MAPPING_FILE_URL = "https://movilidad-opendata.mitma.es/zonificacion/relacion_ine_zonificacionMitma.csv"
 
@@ -89,9 +89,7 @@ class MitmaIneMapper:
                 .apply(lambda x: list(set(x.tolist())))
                 .to_dict()
             )
-            return defaultdict(
-                list, grouped
-            )
+            return defaultdict(list, grouped)
 
         self._seccion_ine_to_distrito_mitma = create_mapping(
             self.mapping_df, "seccion_ine", "distrito_mitma"
@@ -131,7 +129,7 @@ class MitmaIneMapper:
         return self.mapping_df
 
     def _get_mapped_values(
-            self, mapping_dict: defaultdict, code: str
+        self, mapping_dict: defaultdict, code: str
     ) -> Optional[list[str]]:
         """Helper to retrieve and process mapped values."""
         code = _validate_code(code)

@@ -6,13 +6,17 @@ used by the Spanish Cadastre (Catastro) and the Spanish National Statistics Inst
 
 """
 
-import pandas as pd
 import logging
+from io import BytesIO
+from typing import Optional
+
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import requests
+
 from mango.clients.catastro import CatastroData
 from mango.clients.ine import INEAPIClient
-from typing import Optional
-import requests
-from io import BytesIO
 
 logger = logging.getLogger(__name__)
 
@@ -402,3 +406,196 @@ class CatastroINEMapper:
         >>> print(mapping_table.head())
         """
         return self.mapping
+
+
+def merge_catastro_census(
+    cadastral_addresses_with_buildings: gpd.GeoDataFrame,
+    census_data: gpd.GeoDataFrame,
+    mapping: CatastroINEMapper,
+) -> gpd.GeoDataFrame:
+    """
+    Merges cadastral address and building data with census data based on spatial relationships
+    and municipality code matching, correcting mismatches by finding the nearest census unit.
+
+    :param mapping: Mapping object for converting municipality codes.
+    :type mapping: CatastroINEMapper
+    :param cadastral_addresses_with_buildings: GeoDataFrame containing cadastral addresses and buildings.
+    :type cadastral_addresses_with_buildings: gpd.GeoDataFrame
+    :param census_data: GeoDataFrame containing census data.
+    :type census_data: gpd.GeoDataFrame
+    :return: GeoDataFrame with merged data, including population estimates at each address.
+    :rtype: gpd.GeoDataFrame
+    """
+
+    # initial geospatial join
+    address_with_census = gpd.sjoin(
+        cadastral_addresses_with_buildings.to_crs(census_data.crs),
+        census_data,
+        how="left",
+        predicate="within",
+        rsuffix="_census",
+    )
+
+    # identify mismatched addresses
+    mismatch_addresses = address_with_census[
+        "catastro_municipality_code_building"
+    ].astype(str) != address_with_census["ine_municipality_code"].astype(str).apply(
+        mapping.ine_to_catastro_code
+    )
+
+    # reassign to the closest census unit excluding the previously assigned
+    matched = address_with_census[~mismatch_addresses]
+    mismatched = address_with_census[mismatch_addresses].copy()
+
+    redone_matches = []
+
+    if not mismatched.empty:
+        for idx, row in mismatched.iterrows():
+            single_building = gpd.GeoDataFrame(
+                [row],
+                columns=mismatched.columns[:43],
+                geometry=[row.geometry_address],
+                crs=mismatched.crs,
+            )
+            filtered_census = census_data[census_data["CUSEC"] != row["CUSEC"]]
+
+            corrected = gpd.sjoin_nearest(single_building, filtered_census, how="left")
+
+            redone_matches.append(corrected)
+
+        redone_matches_gdf = pd.concat(redone_matches, ignore_index=True)
+
+        final_address_with_census = pd.concat(
+            [matched, redone_matches_gdf], ignore_index=True
+        )
+        final_address_with_census = gpd.GeoDataFrame(
+            final_address_with_census, geometry="geometry_address", crs=census_data.crs
+        )
+        final_address_with_census = final_address_with_census.drop(
+            columns=["geometry", "index_right"]
+        )
+
+    else:
+        return matched
+
+    return final_address_with_census
+
+
+def distribute_population_by_dwellings(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """
+    Estimate and assign population per building entrance based on the number of dwellings.
+
+    This function distributes the total census tract population to each building entrance
+    proportionally based on its share of the total dwellings in that tract.
+
+    :param gdf: GeoDataFrame containing address-level data with building and census tract info.
+    :type gdf: gpd.GeoDataFrame
+    :return: GeoDataFrame with a new column 'population_per_entrance'.
+    :rtype: gpd.GeoDataFrame
+    """
+
+    # number of dwellings assigned to each entrance
+    gdf["dwellings_per_entrance"] = np.where(
+        gdf["numberOfDwellings_building"] > 0,
+        gdf["numberOfDwellings_building"] / gdf["entrance_count_per_building"],
+        0,
+    )
+
+    # total number of dwellings in each census tract (CUSEC)
+    total_dwellings_per_cusec = (
+        gdf.groupby("CUSEC")["dwellings_per_entrance"]
+        .sum()
+        .reset_index(name="total_dwellings_in_cusec")
+    )
+
+    # merge the total dwellings per census tract back to the original dataframe
+    gdf = gdf.merge(total_dwellings_per_cusec, on="CUSEC", how="left")
+
+    # population per entrance by distributing the total population of the census tract
+    # proportionally to the number of dwellings assigned to each entrance
+    gdf["population_per_entrance"] = (
+        gdf["ine_population"]
+        / gdf["total_dwellings_in_cusec"]
+        * gdf["dwellings_per_entrance"]
+    )
+
+    return gdf
+
+
+def export_population_gdf(
+    gdf: gpd.GeoDataFrame, path: str, lightweight: bool = False
+) -> None:
+    """
+    Export the population data from a GeoDataFrame to a new GeoDataFrame.
+
+    :param gdf: GeoDataFrame containing population data.
+    :type gdf: gpd.GeoDataFrame
+    :param path: Path to save the new GeoDataFrame.
+    :type path: str
+    :param lightweight: If True, exports a lightweight version of the GeoDataFrame.
+    :return: None
+    """
+
+    # Validate input
+    if not isinstance(gdf, gpd.GeoDataFrame):
+        raise ValueError("Input must be a GeoDataFrame.")
+    if not isinstance(path, str):
+        raise ValueError("Path must be a string.")
+    if not path.endswith(".geojson"):
+        raise ValueError("Path must end with .geojson")
+
+    if lightweight:
+        gdf[["gml_id_address", "geometry_address", "population_per_entrance"]].to_file(
+            path, driver="GeoJSON"
+        )
+    else:
+        gdf.to_file(path, driver="GeoJSON")
+
+    print(f"Population data exported successfully to {path}")
+
+
+def reload_population_gdf_from_file(
+    path: str, lightweight: bool = False
+) -> gpd.GeoDataFrame:
+    """
+    Reload a GeoDataFrame from a file.
+
+    :param path: Path to the file.
+    :type path: str
+    :param lightweight: If True, it expects the lightweight version of the GeoDataFrame.
+    :type lightweight: bool
+    :return: GeoDataFrame loaded from the file.
+    :rtype: gpd.GeoDataFrame
+    """
+
+    # Validate input
+    if not isinstance(path, str):
+        raise ValueError("Path must be a string.")
+    if not path.endswith(".geojson"):
+        raise ValueError("File extension must be .geojson")
+
+    # Load from file
+    gdf = gpd.read_file(path)
+
+    gdf.rename(columns={"geometry": "geometry_address"}, inplace=True)
+    gdf.set_geometry("geometry_address", inplace=True)
+
+    if lightweight:
+        return gdf
+
+    col_to_move = "geometry_address"
+    target_position = 11
+
+    # Ensure we don't exceed the number of columns
+    cols = gdf.columns.tolist()
+    if col_to_move in cols:
+        cols.remove(col_to_move)
+        # Insert at desired position, pad if needed
+        if target_position >= len(cols):
+            cols.append(col_to_move)
+        else:
+            cols.insert(target_position, col_to_move)
+
+        gdf = gdf[cols]
+
+    return gdf

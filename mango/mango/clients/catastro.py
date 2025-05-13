@@ -6,18 +6,18 @@ cadastral data from the Spanish Catastro API.
 
 """
 
-import geopandas as gpd
-import pandas as pd
-import requests
+import logging
 import os
+import re
 import zipfile
 from io import BytesIO
 from time import sleep
 from typing import Union, Optional, List, Dict
-import re
-import logging
-import feedparser
 
+import feedparser
+import geopandas as gpd
+import pandas as pd
+import requests
 
 BASE_URLS = {
     "Buildings": "https://www.catastro.hacienda.gob.es/INSPIRE/buildings/ES.SDGC.BU.atom.xml",
