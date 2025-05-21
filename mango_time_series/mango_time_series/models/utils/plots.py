@@ -1,12 +1,18 @@
 import os
-from typing import List, Optional, Dict, Any, Union
-import pandas as pd
+from pathlib import Path
+from typing import List, Optional
+
 import numpy as np
+import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
+from mango.logging import get_configured_logger
 from plotly.subplots import make_subplots
 
 pio.renderers.default = "browser"
+
+logger = get_configured_logger()
 
 
 def plot_loss_history(
@@ -551,3 +557,288 @@ def plot_reconstruction_iterations(
 
         plot_path = os.path.join(plot_dir, plot_filename)
         fig.write_html(plot_path)
+
+
+def create_error_analysis_dashboard(
+    error_df: pd.DataFrame,
+    save_path: Optional[str] = None,
+    filename: str = "error_analysis_dashboard.html",
+    show: bool = True,
+    height: int = 1000,
+    width: int = 1200,
+    template: str = "plotly_white",
+) -> go.Figure:
+    """
+    Create an interactive dashboard for error analysis with multiple plots.
+
+    :param error_df: DataFrame containing error data
+    :type error_df: pd.DataFrame
+    :param save_path: Optional path to save the plot
+    :type save_path: Optional[str]
+    :param filename: Name of the file to save
+    :type filename: str
+    :param show: Whether to display the plot
+    :type show: bool
+    :param height: Height of the figure
+    :type height: int
+    :param width: Width of the figure
+    :type width: int
+    :param template: Plotly template to use
+    :type template: str
+    :return: Plotly figure object
+    :rtype: go.Figure
+    """
+    try:
+        # Create a subplot figure with 3 plots
+        fig = make_subplots(
+            rows=2,
+            cols=2,
+            subplot_titles=(
+                "Mean Error by Feature",
+                "Error Distribution by Feature",
+                "Error Correlation Between Features",
+            ),
+            specs=[
+                [{"type": "bar"}, {"type": "box"}],
+                [{"type": "heatmap", "colspan": 2}, None],
+            ],
+            vertical_spacing=0.1,
+            horizontal_spacing=0.1,
+        )
+
+        # Mean error by column - barplot
+        mean_errors = error_df.mean().reset_index()
+        mean_errors.columns = ["Feature", "Mean Error"]
+        fig.add_trace(
+            go.Bar(
+                x=mean_errors["Feature"], y=mean_errors["Mean Error"], name="Mean Error"
+            ),
+            row=1,
+            col=1,
+        )
+
+        # Error distribution - boxplot
+        for col in error_df.columns:
+            fig.add_trace(
+                go.Box(y=error_df[col], name=col, boxpoints="outliers"), row=1, col=2
+            )
+
+        # Heatmap of correlation between errors
+        corr = error_df.corr()
+        fig.add_trace(
+            go.Heatmap(
+                z=corr.values,
+                x=corr.columns,
+                y=corr.columns,
+                colorscale="RdBu_r",
+                zmin=-1,
+                zmax=1,
+            ),
+            row=2,
+            col=1,
+        )
+
+        # Update layout
+        fig.update_layout(
+            height=height,
+            width=width,
+            showlegend=False,
+            title_text="Error Analysis Dashboard",
+            template=template,
+        )
+
+        # Update axes labels
+        fig.update_xaxes(title_text="Feature", row=1, col=1)
+        fig.update_yaxes(title_text="Mean Error", row=1, col=1)
+        fig.update_xaxes(title_text="Feature", row=1, col=2)
+        fig.update_yaxes(title_text="Error Value", row=1, col=2)
+        fig.update_xaxes(title_text="Feature", row=2, col=1)
+        fig.update_yaxes(title_text="Feature", row=2, col=1)
+
+        if save_path:
+            output_dir = Path(save_path)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            fig.write_html(output_dir / filename)
+            logger.info(f"Error analysis dashboard saved to {output_dir / filename}")
+
+        if show:
+            fig.show()
+
+        return fig
+
+    except Exception as e:
+        logger.error(f"Error creating error analysis dashboard: {str(e)}")
+        raise
+
+
+def create_reconstruction_error_boxplot(
+    melted_df: pd.DataFrame,
+    save_path: Optional[str] = None,
+    filename: str = "reconstruction_error_boxplot.html",
+    show: bool = True,
+    height: Optional[int] = None,
+    width: Optional[int] = None,
+    template: str = "plotly_white",
+    xaxis_tickangle: int = -45,
+) -> go.Figure:
+    """
+    Create an interactive boxplot for reconstruction errors.
+
+    :param melted_df: Melted DataFrame containing reconstruction error data
+    :type melted_df: pd.DataFrame
+    :param save_path: Optional path to save the plot
+    :type save_path: Optional[str]
+    :param filename: Name of the file to save
+    :type filename: str
+    :param show: Whether to display the plot
+    :type show: bool
+    :param height: Height of the figure (None for auto)
+    :type height: Optional[int]
+    :param width: Width of the figure (None for auto)
+    :type width: Optional[int]
+    :param template: Plotly template to use
+    :type template: str
+    :param xaxis_tickangle: Angle for x-axis labels
+    :type xaxis_tickangle: int
+    :return: Plotly figure object
+    :rtype: go.Figure
+    """
+    try:
+        # Create the boxplot using Plotly
+        fig = px.box(
+            melted_df,
+            x="sensor",
+            y="AE_error",
+            color="data_split",
+            title="Autoencoder Reconstruction Error",
+            labels={
+                "sensor": "",
+                "AE_error": "Reconstruction Error (Autoencoder - Actual)",
+                "data_split": "Dataset Split",
+            },
+            template=template,
+        )
+
+        # Update layout for better visualization and responsiveness
+        fig.update_layout(
+            showlegend=True,
+            legend_title="Dataset Split",
+            xaxis_tickangle=xaxis_tickangle,
+            margin=dict(l=50, r=50, t=100, b=100),
+            autosize=True,
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            hovermode="x unified",
+            # Make the plot responsive to container size
+            height=height,
+            width=width,
+            # Ensure the plot fills the container
+            uirevision=True,
+            # Improve responsiveness
+            xaxis=dict(
+                automargin=True,
+                showgrid=True,
+                gridcolor="lightgray",
+            ),
+            yaxis=dict(
+                automargin=True,
+                showgrid=True,
+                gridcolor="lightgray",
+            ),
+        )
+
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            full_path = path / filename
+            # Save with responsive configuration
+            fig.write_html(
+                full_path,
+                include_plotlyjs=True,
+                full_html=True,
+                config={"responsive": True},
+            )
+            logger.info(f"Reconstruction error boxplot saved to {full_path}")
+
+        if show:
+            fig.show()
+
+        return fig
+
+    except Exception as e:
+        logger.error(f"Error creating reconstruction error boxplot: {str(e)}")
+        raise
+
+
+def create_actual_vs_reconstructed_plot(
+    df_actual: pd.DataFrame,
+    df_reconstructed: pd.DataFrame,
+    save_path: Optional[str] = None,
+    filename: str = "actual_vs_reconstructed.html",
+    show: bool = True,
+    height: int = 800,
+    width: int = 1200,
+    template: str = "plotly_white",
+) -> go.Figure:
+    """
+    Create an interactive plot comparing actual and reconstructed values.
+
+    :param df_actual: DataFrame with actual values
+    :type df_actual: pd.DataFrame
+    :param df_reconstructed: DataFrame with reconstructed values
+    :type df_reconstructed: pd.DataFrame
+    :param save_path: Optional path to save the plot
+    :type save_path: Optional[str]
+    :param filename: Name of the file to save
+    :type filename: str
+    :param show: Whether to display the plot
+    :type show: bool
+    :param height: Height of the figure
+    :type height: int
+    :param width: Width of the figure
+    :type width: int
+    :param template: Plotly template to use
+    :type template: str
+    :return: Plotly figure object
+    :rtype: go.Figure
+    """
+    try:
+        # Combine actual and reconstructed data
+        df_combined = pd.concat([df_actual, df_reconstructed])
+
+        # Create the plot
+        fig = px.line(
+            df_combined,
+            x=df_combined.index,
+            y=df_combined.columns[:-1],  # Exclude the 'type' column
+            color="type",
+            title="Actual vs Reconstructed Values",
+            labels={"value": "Value", "index": "Time Step", "type": "Data Type"},
+            template=template,
+        )
+
+        # Update layout
+        fig.update_layout(
+            height=height,
+            width=width,
+            showlegend=True,
+            legend_title="Data Type",
+            xaxis_title="Time Step",
+            yaxis_title="Value",
+        )
+
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            full_path = path / filename
+            fig.write_html(full_path)
+            logger.info(f"Actual vs reconstructed plot saved to {full_path}")
+
+        if show:
+            fig.show()
+
+        return fig
+
+    except Exception as e:
+        logger.error(f"Error creating actual vs reconstructed plot: {str(e)}")
+        raise

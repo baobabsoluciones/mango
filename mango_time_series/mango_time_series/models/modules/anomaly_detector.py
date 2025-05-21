@@ -1,70 +1,82 @@
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-import plotly.subplots as sp
 from pathlib import Path
+from typing import Optional, List
+
+import numpy as np
+import pandas as pd
+from mango.logging import get_configured_logger
+
+from mango_time_series.models.utils.plots import (
+    create_error_analysis_dashboard,
+    create_reconstruction_error_boxplot,
+)
 from mango_time_series.models.utils.processing import time_series_split
-import matplotlib.pyplot as plt
-import seaborn as sns
+
+logger = get_configured_logger()
 
 
-def calculate_reconstruction_error(x_converted, x_hat):
+def calculate_reconstruction_error(
+    x_converted: np.ndarray, x_hat: np.ndarray
+) -> np.ndarray:
     """
-    Calculate the reconstruction error matrix.
+    Calculate the reconstruction error matrix between original and reconstructed data.
 
-    :param x_converted: Original data
-    :param x_hat: Reconstructed data
+    :param x_converted: Original data array
+    :type x_converted: np.ndarray
+    :param x_hat: Reconstructed data array
+    :type x_hat: np.ndarray
     :return: Matrix of absolute differences between original and reconstructed data
+    :rtype: np.ndarray
+    :raises ValueError: If input arrays have different shapes
     """
+    if x_converted.shape != x_hat.shape:
+        raise ValueError(
+            f"Input arrays must have the same shape. Got {x_converted.shape} and {x_hat.shape}"
+        )
     return np.abs(x_converted - x_hat)
 
 
-def analyze_error_by_columns(error_matrix, column_names=None, save_path=None):
+def analyze_error_by_columns(
+    error_matrix: np.ndarray,
+    column_names: Optional[List[str]] = None,
+    save_path: Optional[str] = None,
+    show: bool = False,
+) -> pd.DataFrame:
     """
     Analyze reconstruction error distribution by columns with interactive Plotly visualizations.
 
     :param error_matrix: Matrix of reconstruction errors
+    :type error_matrix: np.ndarray
     :param column_names: List of column names for the features
+    :type column_names: Optional[List[str]]
     :param save_path: Path to save the generated plots
+    :type save_path: Optional[str]
+    :param show: Whether to display the plots
+    :type show: bool
     :return: DataFrame with error data
+    :rtype: pd.DataFrame
+    :raises ValueError: If error_matrix is empty or if column_names length doesn't match error_matrix columns
     """
+    if error_matrix.size == 0:
+        raise ValueError("Error matrix cannot be empty")
+
     if column_names is None:
         column_names = [f"Feature_{i}" for i in range(error_matrix.shape[1])]
+    elif len(column_names) != error_matrix.shape[1]:
+        raise ValueError(
+            f"Number of column names ({len(column_names)}) must match number of columns in error matrix ({error_matrix.shape[1]})"
+        )
 
     error_df = pd.DataFrame(error_matrix, columns=column_names)
 
-    # Mean error by column - barplot
-    mean_errors = error_df.mean().reset_index()
-    mean_errors.columns = ["Feature", "Mean Error"]
-    fig1 = px.bar(
-        mean_errors, x="Feature", y="Mean Error", title="Mean Error by Feature"
-    )
-    fig1.update_layout(xaxis_tickangle=-90)
+    try:
+        create_error_analysis_dashboard(
+            error_df=error_df, save_path=save_path, show=show
+        )
+        return error_df
 
-    # Error distribution - boxplot
-    fig2 = px.box(error_df, title="Error Distribution by Feature")
-
-    # Heatmap of correlation between errors
-    corr = error_df.corr()
-    fig3 = px.imshow(
-        corr,
-        color_continuous_scale="RdBu_r",
-        title="Error Correlation Between Features",
-    )
-
-    if save_path:
-        output_dir = Path(save_path)
-        output_dir.mkdir(parents=True, exist_ok=True)
-        fig1.write_html(output_dir / "mean_error_barplot.html")
-        fig2.write_html(output_dir / "error_boxplot.html")
-        fig3.write_html(output_dir / "error_correlation.html")
-
-    fig1.show()
-    fig2.show()
-    fig3.show()
-
-    return error_df
+    except Exception as e:
+        logger.error(f"Error generating visualizations: {str(e)}")
+        raise
 
 
 def reconstruction_error(
@@ -74,217 +86,277 @@ def reconstruction_error(
     TRAIN_SIZE: float = 0.8,
     VAL_SIZE: float = 0.1,
     TEST_SIZE: float = 0.1,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     filename: str = "reconstruction_error.csv",
-):
+) -> pd.DataFrame:
     """
     Calculate and optionally save reconstruction error between actual sensor data and autoencoder output.
 
     :param actual_data_df: Original sensor data
+    :type actual_data_df: pd.DataFrame
     :param autoencoder_output_df: Autoencoder output
+    :type autoencoder_output_df: pd.DataFrame
     :param context_window: Number of initial rows used as context by the AE
+    :type context_window: int
     :param TRAIN_SIZE: Proportion of training data
+    :type TRAIN_SIZE: float
     :param VAL_SIZE: Proportion of validation data
+    :type VAL_SIZE: float
     :param TEST_SIZE: Proportion of test data
+    :type TEST_SIZE: float
     :param save_path: Optional directory to save the output CSV
+    :type save_path: Optional[str]
     :param filename: Filename for saved CSV
+    :type filename: str
     :return: DataFrame with reconstruction error and associated data_split
+    :rtype: pd.DataFrame
+    :raises ValueError: If input DataFrames have different lengths or if split sizes don't sum to 1
     """
-    # Checks
-    if len(autoencoder_output_df) != len(actual_data_df):
+    # Validate input parameters
+    context_offset = context_window - 1
+    expected_autoencoder_length = len(actual_data_df) - context_offset
+
+    if len(autoencoder_output_df) != expected_autoencoder_length:
         raise ValueError(
-            f"Autoencoder output rows {len(autoencoder_output_df)} do not match actual data rows {len(actual_data_df)}"
+            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length "
+            f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
         )
     if not np.isclose(TRAIN_SIZE + VAL_SIZE + TEST_SIZE, 1.0):
         raise ValueError(
             f"TRAIN_SIZE + VAL_SIZE + TEST_SIZE must equal 1, but got {TRAIN_SIZE + VAL_SIZE + TEST_SIZE}"
         )
+    if context_window < 1:
+        raise ValueError("context_window must be a positive integer")
 
-    # Drop first context_window rows from actual data and autoencoder output
-    context_offset = context_window - 1
-    actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
-    autoencoder_output_df = autoencoder_output_df.iloc[context_offset:].reset_index(
-        drop=True
-    )
+    try:
+        # Drop first context_window rows from actual data and autoencoder output
+        actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
+        autoencoder_output_df = autoencoder_output_df.iloc[context_offset:].reset_index(
+            drop=True
+        )
 
-    # Drop the 'type'=reconstructed column
-    if "type" in autoencoder_output_df.columns:
-        autoencoder_output_df = autoencoder_output_df.drop(columns=["type"])
+        # Drop the 'type'=reconstructed column
+        if "type" in autoencoder_output_df.columns:
+            autoencoder_output_df = autoencoder_output_df.drop(columns=["type"])
 
-    # Define data splits ( train, validation, test) for autoencoder output
-    autoencoder_train_df, autoencoder_val_df, autoencoder_test_df = time_series_split(
-        autoencoder_output_df, TRAIN_SIZE, VAL_SIZE, TEST_SIZE
-    )
-    autoencoder_train_df["data_split"] = "train"
-    autoencoder_val_df["data_split"] = "validation"
-    autoencoder_test_df["data_split"] = "test"
+        # Define data splits ( train, validation, test) for autoencoder output
+        autoencoder_train_df, autoencoder_val_df, autoencoder_test_df = (
+            time_series_split(autoencoder_output_df, TRAIN_SIZE, VAL_SIZE, TEST_SIZE)
+        )
 
-    # Combine dataframes
-    autoencoder_output_df = pd.concat(
-        [autoencoder_train_df, autoencoder_val_df, autoencoder_test_df], axis=0
-    ).reset_index(drop=True)
+        autoencoder_train_df = autoencoder_train_df.copy()
+        autoencoder_val_df = autoencoder_val_df.copy()
+        autoencoder_test_df = autoencoder_test_df.copy()
 
-    # Order data_split column
-    autoencoder_output_df["data_split"] = pd.Categorical(
-        autoencoder_output_df["data_split"],
-        categories=["train", "validation", "test"],
-        ordered=True,
-    )
+        autoencoder_train_df.loc[:, "data_split"] = "train"
+        autoencoder_val_df.loc[:, "data_split"] = "validation"
+        autoencoder_test_df.loc[:, "data_split"] = "test"
 
-    # Generate reconstruction error DataFrame
-    reconstruction_error_df = (
-        autoencoder_output_df.drop(columns=["data_split"]) - actual_data_df
-    )
-    # Add data_split column
-    reconstruction_error_df["data_split"] = autoencoder_output_df["data_split"]
-    # Rename columns
-    reconstruction_error_df.rename(
-        columns={
-            col: col.split("-")[0] + "_AE_error"
-            for col in reconstruction_error_df.columns
-            if col != "data_split"
-        },
-        inplace=True,
-    )
+        # Combine dataframes
+        autoencoder_output_df = pd.concat(
+            [autoencoder_train_df, autoencoder_val_df, autoencoder_test_df], axis=0
+        ).reset_index(drop=True)
 
-    if save_path:
-        path = Path(save_path)
-        path.mkdir(parents=True, exist_ok=True)
-        file_path = path / filename
-        reconstruction_error_df.to_csv(file_path, index=False)
-        print(f"Reconstruction error saved to {file_path}")
+        autoencoder_output_df.loc[:, "data_split"] = pd.Categorical(
+            autoencoder_output_df["data_split"],
+            categories=["train", "validation", "test"],
+            ordered=True,
+        )
 
-    return reconstruction_error_df
+        # Generate reconstruction error DataFrame
+        reconstruction_error_df = (
+            autoencoder_output_df.drop(columns=["data_split"]) - actual_data_df
+        )
+        reconstruction_error_df.loc[:, "data_split"] = autoencoder_output_df[
+            "data_split"
+        ]
+
+        # Rename columns efficiently using vectorized operations
+        error_columns = [
+            col for col in reconstruction_error_df.columns if col != "data_split"
+        ]
+        new_columns = {col: col.split("-")[0] + "_AE_error" for col in error_columns}
+        reconstruction_error_df.rename(columns=new_columns, inplace=True)
+
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            file_path = path / filename
+            reconstruction_error_df.to_csv(file_path, index=False)
+            logger.info(f"Reconstruction error saved to {file_path}")
+
+        return reconstruction_error_df
+
+    except Exception as e:
+        logger.error(f"Error calculating reconstruction error: {str(e)}")
+        raise
 
 
 def reconstruction_error_summary(
     reconstruction_error_df: pd.DataFrame,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     filename: str = "reconstruction_error_summary.csv",
-):
+) -> pd.DataFrame:
     """
     Generate and optionally save summary statistics (mean and std) for reconstruction error
     grouped by data split.
 
     :param reconstruction_error_df: DataFrame with reconstruction error and 'data_split' column
+    :type reconstruction_error_df: pd.DataFrame
     :param save_path: Optional path to save the summary CSV
+    :type save_path: Optional[str]
     :param filename: Filename to use for the saved CSV
+    :type filename: str
     :return: Summary statistics MultiIndex column DataFrame
+    :rtype: pd.DataFrame
+    :raises ValueError: If required columns are missing or if data is empty
     """
-    summary_stats = reconstruction_error_df.groupby("data_split").agg(["mean", "std"])
+    if reconstruction_error_df.empty:
+        raise ValueError("Input DataFrame cannot be empty")
+    if "data_split" not in reconstruction_error_df.columns:
+        raise ValueError("Input DataFrame must contain 'data_split' column")
 
-    # Save if a path is provided
-    if save_path:
-        path = Path(save_path)
-        path.mkdir(parents=True, exist_ok=True)
-        full_path = path / filename
-        summary_stats.to_csv(full_path)
-        print(f"Reconstruction error summary saved to {full_path}")
+    try:
+        summary_stats = reconstruction_error_df.groupby("data_split").agg(
+            ["mean", "std"]
+        )
 
-    return summary_stats
+        # Save if a path is provided
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            full_path = path / filename
+            summary_stats.to_csv(full_path)
+            logger.info(f"Reconstruction error summary saved to {full_path}")
+
+        return summary_stats
+
+    except Exception as e:
+        logger.error(f"Error generating reconstruction error summary: {str(e)}")
+        raise
 
 
 def reconstruction_error_boxplot(
     reconstruction_error_df: pd.DataFrame,
-    save_path: str = None,
-    filename: str = "reconstruction_error_boxplot.png",
-):
+    save_path: Optional[str] = None,
+    show: bool = False,
+) -> None:
     """
-    Generate and optionally save a boxplot for reconstruction error.
+    Generate and optionally save a boxplot for reconstruction error using Plotly.
 
     :param reconstruction_error_df: DataFrame with reconstruction error values and 'data_split'
+    :type reconstruction_error_df: pd.DataFrame
     :param save_path: Optional path to save the plot
-    :param filename: Filename to use if saving the plot
-    :return: The matplotlib plt object
+    :type save_path: Optional[str]
+    :param show: Whether to display the plot
+    :type show: bool
+    :raises ValueError: If required columns are missing or if data is empty
     """
-    # Melt the Dataframe
-    melted_df = reconstruction_error_df.melt(
-        id_vars=["data_split"], var_name="sensor", value_name="AE_error"
-    )
-    # Remove "_AE_error" from sensor names for cleaner names
-    melted_df["sensor"] = melted_df["sensor"].str.replace("_AE_error", "", regex=False)
+    if reconstruction_error_df.empty:
+        raise ValueError("Input DataFrame cannot be empty")
+    if "data_split" not in reconstruction_error_df.columns:
+        raise ValueError("Input DataFrame must contain 'data_split' column")
 
-    # Create the boxplot
-    plt.figure(figsize=(12, 6))
-    sns.boxplot(data=melted_df, x="sensor", y="AE_error", hue="data_split", fliersize=1)
-    plt.title("Autoencoder Reconstruction Error")
-    plt.xlabel("")
-    plt.ylabel("Reconstruction Error (Autoencoder - Actual)")
-    plt.tight_layout()
+    try:
+        # Melt the DataFrame
+        melted_df = reconstruction_error_df.melt(
+            id_vars=["data_split"], var_name="sensor", value_name="AE_error"
+        )
+        # Remove "_AE_error" from sensor names for cleaner names
+        melted_df["sensor"] = melted_df["sensor"].str.replace(
+            "_AE_error", "", regex=False
+        )
 
-    # Save if a path is provided
-    if save_path:
-        path = Path(save_path)
-        path.mkdir(parents=True, exist_ok=True)
-        full_path = path / filename
-        plt.savefig(full_path)
-        print(f"Reconstruction error boxplot saved to {full_path}")
+        create_reconstruction_error_boxplot(
+            melted_df=melted_df, save_path=save_path, show=show
+        )
 
-    return plt
+    except Exception as e:
+        logger.error(f"Error generating reconstruction error boxplot: {str(e)}")
+        raise
 
 
 def std_error_threshold(
     reconstruction_error_df: pd.DataFrame,
     std_threshold: float = 3.0,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     anomaly_mask_filename: str = "std_anomaly_mask.csv",
     anomaly_proportions_filename: str = "std_anomaly_proportions.csv",
-):
+) -> pd.DataFrame:
     """
     Identify anomalies using a standard deviation threshold over reconstruction error.
     Considers all time series data for a given sensor.
 
     :param reconstruction_error_df: DataFrame with AE reconstruction errors and 'data_split'
+    :type reconstruction_error_df: pd.DataFrame
     :param std_threshold: Threshold in terms of standard deviations from the mean error
+    :type std_threshold: float
     :param save_path: Optional path to save outputs
+    :type save_path: Optional[str]
     :param anomaly_mask_filename: CSV filename for the boolean anomaly mask
+    :type anomaly_mask_filename: str
     :param anomaly_proportions_filename: CSV filename for anomaly rate summary
+    :type anomaly_proportions_filename: str
     :return: DataFrame boolean mask of anomalies (True for anomalies, False otherwise)
+    :rtype: pd.DataFrame
+    :raises ValueError: If required columns are missing, if data is empty, or if std_threshold is negative
     """
-    # Calculate mean and std error for each sensor column
-    sensor_columns = [
-        col for col in reconstruction_error_df.columns if col != "data_split"
-    ]
-    mean_errors = reconstruction_error_df[sensor_columns].mean()
-    std_errors = reconstruction_error_df[sensor_columns].std()
+    if reconstruction_error_df.empty:
+        raise ValueError("Input DataFrame cannot be empty")
+    if "data_split" not in reconstruction_error_df.columns:
+        raise ValueError("Input DataFrame must contain 'data_split' column")
+    if std_threshold < 0:
+        raise ValueError("std_threshold must be non-negative")
 
-    # Create sensor based anomaly mask (showing which data points are outside the std threshold)
-    anomaly_mask = pd.DataFrame(
-        data=False, index=reconstruction_error_df.index, columns=sensor_columns
-    )
-    for col in sensor_columns:
-        anomaly_mask[col] = np.abs(reconstruction_error_df[col] - mean_errors[col]) > (
-            std_threshold * std_errors[col]
+    try:
+        # Calculate mean and std error for each sensor column
+        sensor_columns = [
+            col for col in reconstruction_error_df.columns if col != "data_split"
+        ]
+        mean_errors = reconstruction_error_df[sensor_columns].mean()
+        std_errors = reconstruction_error_df[sensor_columns].std()
+
+        # Create sensor based anomaly mask (showing which data points are outside the std threshold)
+        anomaly_mask = pd.DataFrame(
+            data=False, index=reconstruction_error_df.index, columns=sensor_columns
         )
-    anomaly_mask["data_split"] = reconstruction_error_df["data_split"]
+        for col in sensor_columns:
+            anomaly_mask[col] = np.abs(
+                reconstruction_error_df[col] - mean_errors[col]
+            ) > (std_threshold * std_errors[col])
+        anomaly_mask["data_split"] = reconstruction_error_df["data_split"]
 
-    # Calculate anomalies per sensor and proportion of anomalies
-    anomaly_counts = anomaly_mask.groupby("data_split")[sensor_columns].sum()
-    total_counts = anomaly_mask.groupby("data_split")[sensor_columns].count()
-    anomaly_proportions = anomaly_counts / total_counts
+        # Calculate anomalies per sensor and proportion of anomalies
+        anomaly_counts = anomaly_mask.groupby("data_split")[sensor_columns].sum()
+        total_counts = anomaly_mask.groupby("data_split")[sensor_columns].count()
+        anomaly_proportions = anomaly_counts / total_counts
 
-    # Rename anomaly proportions columns
-    anomaly_proportions.rename(
-        columns={
-            col: col + "_prop"
-            for col in anomaly_proportions.columns
-            if "_AE_error" in col
-        },
-        inplace=True,
-    )
+        # Rename anomaly proportions columns
+        anomaly_proportions.rename(
+            columns={
+                col: col + "_prop"
+                for col in anomaly_proportions.columns
+                if "_AE_error" in col
+            },
+            inplace=True,
+        )
 
-    # Save if a path is provided
-    if save_path:
-        path = Path(save_path)
-        path.mkdir(parents=True, exist_ok=True)
-        mask_full_path = path / anomaly_mask_filename
-        prop_full_path = path / anomaly_proportions_filename
-        anomaly_mask.to_csv(mask_full_path)
-        anomaly_proportions.to_csv(prop_full_path)
-        print(f"Anomaly mask saved to {mask_full_path}")
-        print(f"Anomaly proportions saved to {prop_full_path}")
+        # Save if a path is provided
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            mask_full_path = path / anomaly_mask_filename
+            prop_full_path = path / anomaly_proportions_filename
+            anomaly_mask.to_csv(mask_full_path)
+            anomaly_proportions.to_csv(prop_full_path)
+            logger.info(f"Anomaly mask saved to {mask_full_path}")
+            logger.info(f"Anomaly proportions saved to {prop_full_path}")
 
-    return anomaly_mask
+        return anomaly_mask
+
+    except Exception as e:
+        logger.error(f"Error calculating std error threshold: {str(e)}")
+        raise
 
 
 def corrected_data(
@@ -292,50 +364,75 @@ def corrected_data(
     autoencoder_output_df: pd.DataFrame,
     anomaly_mask: pd.DataFrame,
     context_window: int = 10,
-    save_path: str = None,
+    save_path: Optional[str] = None,
     filename: str = "corrected_data.csv",
-):
+) -> pd.DataFrame:
     """
     Replace anomalous values in the original sensor data with autoencoder reconstructed values.
 
     :param actual_data_df: Original sensor data
+    :type actual_data_df: pd.DataFrame
     :param autoencoder_output_df: Autoencoder output
+    :type autoencoder_output_df: pd.DataFrame
     :param anomaly_mask: DataFrame of boolean values indicating where to apply corrections
+    :type anomaly_mask: pd.DataFrame
     :param context_window: Number of rows at the start of the data where AE does not have output
+    :type context_window: int
     :param save_path: Optional path to save the corrected data as CSV
+    :type save_path: Optional[str]
     :param filename: Filename to use if saving the corrected data
+    :type filename: str
     :return: DataFrame with corrected sensor data
+    :rtype: pd.DataFrame
+    :raises ValueError: If input DataFrames have different lengths or if context_window is invalid
     """
-    # Drop first context_window rows from actual data and AE output and save them
-    context_offset = context_window - 1
-    initial_rows_df = actual_data_df.iloc[:context_offset].copy()
-    actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
-    autoencoder_output_df = autoencoder_output_df.iloc[context_offset:].reset_index(
-        drop=True
-    )
+    if context_window < 1:
+        raise ValueError("context_window must be a positive integer")
 
-    # Create corrected dataset where anomalies are replaced with AE output
-    corrected_data_df = actual_data_df.copy()
-    for corrected_data_col in corrected_data_df.columns:
-        anomaly_mask_col = corrected_data_col.split("-")[0] + "_AE_error"
-        corrected_data_df.loc[anomaly_mask[anomaly_mask_col], corrected_data_col] = (
-            autoencoder_output_df.loc[
+    try:
+        # Save initial rows and adjust actual_data_df and anomaly_mask to match autoencoder_output_df
+        context_offset = context_window - 1
+        initial_rows_df = actual_data_df.iloc[:context_offset].copy()
+        actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
+
+        # Validate the lengths after adjusting for context window
+        if len(autoencoder_output_df) != len(actual_data_df):
+            raise ValueError(
+                f"Autoencoder output rows {len(autoencoder_output_df)} do not match actual data rows {len(actual_data_df)}"
+            )
+        if len(anomaly_mask) != len(actual_data_df):
+            raise ValueError(
+                f"Anomaly mask rows {len(anomaly_mask)} do not match actual data rows {len(actual_data_df)}"
+            )
+
+        # Create corrected dataset where anomalies are replaced with AE output
+        corrected_data_df = actual_data_df.copy()
+        for corrected_data_col in corrected_data_df.columns:
+            anomaly_mask_col = corrected_data_col.split("-")[0] + "_AE_error"
+            corrected_data_df.loc[
+                anomaly_mask[anomaly_mask_col], corrected_data_col
+            ] = autoencoder_output_df.loc[
                 anomaly_mask[anomaly_mask_col], corrected_data_col
             ]
-        )
-        num_replaced = anomaly_mask[anomaly_mask_col].sum()
-        print(f"{num_replaced} anomalies corrected in column {corrected_data_col}")
+            num_replaced = anomaly_mask[anomaly_mask_col].sum()
+            logger.info(
+                f"{num_replaced} anomalies corrected in column {corrected_data_col}"
+            )
 
-    corrected_data_df = pd.concat(
-        [initial_rows_df, corrected_data_df], axis=0
-    ).reset_index(drop=True)
+        corrected_data_df = pd.concat(
+            [initial_rows_df, corrected_data_df], axis=0
+        ).reset_index(drop=True)
 
-    # Save if a path is provided
-    if save_path:
-        path = Path(save_path)
-        path.mkdir(parents=True, exist_ok=True)
-        full_path = path / filename
-        corrected_data_df.to_csv(full_path, index=False)
-        print(f"Corrected data saved to {full_path}")
+        # Save if a path is provided
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            full_path = path / filename
+            corrected_data_df.to_csv(full_path, index=False)
+            logger.info(f"Corrected data saved to {full_path}")
 
-    return corrected_data_df
+        return corrected_data_df
+
+    except Exception as e:
+        logger.error(f"Error correcting data: {str(e)}")
+        raise
