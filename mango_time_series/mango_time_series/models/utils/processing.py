@@ -176,8 +176,7 @@ def normalize_data_for_training(
     x_train: np.ndarray,
     x_val: np.ndarray,
     x_test: np.ndarray,
-    normalization_method: str,
-    id_iter: Optional[Union[str, int]] = None,
+    normalization_method: str
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
     """
     Normalize training, validation and test data using the specified method.

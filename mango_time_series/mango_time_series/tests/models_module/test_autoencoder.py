@@ -387,7 +387,7 @@ class TestAutoEncoderBidirectional(unittest.TestCase):
             bidirectional_encoder=True,
             bidirectional_decoder=True,
             feature_to_check=[0, 1, 2, 3, 4],
-            time_step_to_check=9,
+            time_step_to_check=[9],
         )
 
         encoder = model.model.get_layer("lstm_encoder")
@@ -429,7 +429,7 @@ class TestAutoEncoderBidirectional(unittest.TestCase):
                 bidirectional_encoder=True,
                 bidirectional_decoder=True,
                 feature_to_check=[0, 1, 2, 3, 4],
-                time_step_to_check=9,
+                time_step_to_check=[9],
             )
 
 
