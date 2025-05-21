@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import zipfile
+from datetime import datetime
 from io import BytesIO
 from time import sleep
 from typing import Union, Optional, List, Dict
@@ -19,258 +20,14 @@ import geopandas as gpd
 import pandas as pd
 import requests
 
-BASE_URLS = {
-    "Buildings": "https://www.catastro.hacienda.gob.es/INSPIRE/buildings/ES.SDGC.BU.atom.xml",
-    "CadastralParcels": "https://www.catastro.hacienda.gob.es/INSPIRE/CadastralParcels/ES.SDGC.CP.atom.xml",
-    "Addresses": "https://www.catastro.hacienda.gob.es/INSPIRE/Addresses/ES.SDGC.AD.atom.xml",
-}
-MUN_NAME_CLEANUP_WORDS = ["buildings", "Cadastral Parcels", "addresses"]
-TERRITORIAL_TITLE_REGEX = re.compile(r"Territorial office (\d{2}) (.*)")
-FILE_SUFFIXES = {
-    "Addresses": [".gml"],
-    "Buildings": {
-        "Buildings": ".building.gml",
-        "Building_Parts": ".buildingpart.gml",
-        "Other_Buildings": ".otherconstruction.gml",
-    },
-    "CadastralParcels": {
-        "CadastralParcels": ".cadastralparcel.gml",
-        "CadastralZonings": ".cadastralzoning.gml",
-    },
-}
+from mango.logging import get_configured_logger
 
-logging.basicConfig(
-    level=logging.WARNING,
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+# configure logging level
+logger = get_configured_logger(
+    logger_type=__name__,
+    log_console_level=logging.WARNING,
+    mango_color=True,
 )
-logger = logging.getLogger(__name__)
-
-
-def _fetch_feed(url: str) -> Optional[feedparser.FeedParserDict]:
-    """
-    Fetches and parses an Atom feed from the given URL.
-
-    :param url: URL of the Atom feed to fetch.
-    :return: Parsed feed or None if the feed is empty or an error occurs.
-    """
-    try:
-        feed = feedparser.parse(url)
-        if not feed.entries and not feed.feed:
-            logger.warning(
-                f"Feed from {url} is empty or could not be fetched properly."
-            )
-            return None
-        return feed
-    except Exception as e:
-        logger.error(f"Unexpected error fetching feed from {url}: {e}")
-        return None
-
-
-def _parse_territorial_entry(
-    entry: feedparser.FeedParserDict,
-) -> Optional[Dict[str, str]]:
-    """
-    Parses a territorial entry from the feed.
-
-    :param entry: The territorial feed entry to parse.
-    :type entry: feedparser.FeedParserDict
-    :return: Dictionary with territorial code, name, and link or None if parsing fails.
-    """
-    title = getattr(entry, "title", None)
-    link = getattr(entry, "link", None)
-    if not title or not link:
-        logger.warning(
-            f"Missing title or link in territorial entry. Title: '{title}', Link: '{link}'. Skipping."
-        )
-        return None
-
-    match = TERRITORIAL_TITLE_REGEX.search(title)
-    if match:
-        code = match.group(1)
-        name = match.group(2).strip()
-        logger.debug(f"Parsed Territorial Office: Code={code}, Name='{name}'")
-        return {"territorial_code": code, "territorial_name": name, "link": link}
-    else:
-        logger.warning(
-            f"Could not parse territorial code/name from title: '{title}'. Skipping."
-        )
-        return None
-
-
-def _parse_municipality_entry(
-    entry: feedparser.FeedParserDict,
-) -> Optional[Dict[str, str]]:
-    """
-    Parses a municipality entry from the feed.
-
-    :param entry: The municipality feed entry to parse.
-    :type entry: feedparser.FeedParserDict
-    :return: Dictionary with municipality code, name, and link or None if parsing fails.
-    """
-    title = getattr(entry, "title", None)
-    link = getattr(entry, "link", None)
-    if not link or not title:
-        logger.warning(
-            f"Missing title or link in municipality entry. Title: '{title}', Link: '{link}'. Skipping."
-        )
-        return None
-
-    try:
-        parts = title.split("-", 1)
-        if len(parts) != 2:
-            logger.warning(
-                f"Unknown title structure, expected code-name but got: '{title}'. Skipping."
-            )
-            return None
-
-        code = parts[0].zfill(5)
-        name = parts[1]
-        for word in MUN_NAME_CLEANUP_WORDS:
-            name = name.replace(word, "")
-        name = name.strip()
-        dataset = parts[1].split(" ")[-1]
-
-    except (IndexError, ValueError) as e:
-        logger.warning(
-            f"Could not parse municipality code/name from title: '{title}'. Error: {e}. Skipping."
-        )
-        return None
-
-    logger.debug(
-        f"Parsed Municipality in {dataset} dataset: Code={code}, Name='{name}'"
-    )
-    return {"municipality_code": code, "municipality_name": name, "link": link}
-
-
-def _fetch_and_parse_links() -> pd.DataFrame:
-    """
-    Fetches and parses the municipality download links from the Catastro feeds.
-    :return: DataFrame with municipality codes, names, and download links.
-    """
-    logger.info("Fetching and parsing municipality download links...")
-    all_data = []
-    for dataset, base_url in BASE_URLS.items():
-        logger.info(f"Processing dataset: {dataset} from {base_url}")
-        dataset_feed = _fetch_feed(base_url)
-        if not dataset_feed:
-            continue
-
-        for terr_entry in dataset_feed.entries:
-            territorial_info = _parse_territorial_entry(terr_entry)
-            if not territorial_info:
-                continue
-
-            terr_feed = _fetch_feed(territorial_info["link"])
-            if not terr_feed:
-                continue
-
-            for mun_entry in terr_feed.entries:
-                municipality_info = _parse_municipality_entry(mun_entry)
-                if not municipality_info:
-                    continue
-
-                all_data.append(
-                    {
-                        "territorial_office_code": territorial_info["territorial_code"],
-                        "territorial_office_name": territorial_info["territorial_name"],
-                        "catastro_municipality_code": municipality_info[
-                            "municipality_code"
-                        ],
-                        "catastro_municipality_name": municipality_info[
-                            "municipality_name"
-                        ],
-                        "datatype": dataset,
-                        "zip_link": municipality_info["link"],
-                    }
-                )
-    if not all_data:
-        logger.warning("Parsing finished, but no links were found.")
-        return pd.DataFrame()
-
-    logger.info(f"Finished parsing. Found {len(all_data)} links.")
-    columns = [
-        "territorial_office_code",
-        "territorial_office_name",
-        "catastro_municipality_code",
-        "catastro_municipality_name",
-        "datatype",
-        "zip_link",
-    ]
-    return pd.DataFrame(all_data, columns=columns)
-
-
-def _extract_gml_from_zip(
-    zip_content: bytes, datatype: str, subtype: Optional[str], zip_url: str
-) -> Optional[BytesIO]:
-    """
-    Extracts the GML file from a zip archive content based on the datatype and subtype.
-
-    :param zip_content: Downloaded zip file content from _download_zip_content().
-    :param datatype: The type of data to extract (e.g., "Buildings", "CadastralParcels").
-    :param subtype: The subtype of data to extract (e.g., "Buildings", "Building_Parts").
-    :param zip_url: The URL from which the zip file was downloaded.
-    :return: BytesIO object containing the GML file content or None if not found.
-    """
-    try:
-        with zipfile.ZipFile(BytesIO(zip_content), "r") as zip_ref:
-            suffix_config = FILE_SUFFIXES.get(datatype)
-            if not suffix_config:
-                raise ValueError(
-                    f"Internal error: Invalid datatype '{datatype}' for suffix lookup."
-                )
-
-            target_suffix = ""
-            if isinstance(suffix_config, dict):
-                if subtype:
-                    if subtype not in suffix_config:
-                        raise ValueError(
-                            f"Invalid subtype '{subtype}' for '{datatype}'. Available: {list(suffix_config.keys())}"
-                        )
-                    target_suffix = suffix_config[subtype]
-                else:
-                    target_suffix = next(iter(suffix_config.values()))
-            elif isinstance(suffix_config, list):
-                target_suffix = suffix_config[0]
-            else:
-                raise TypeError(f"Unexpected suffix config for datatype '{datatype}'.")
-
-            gml_filename = None
-            for filename in zip_ref.namelist():
-                if filename.lower().endswith(target_suffix.lower()):
-                    gml_filename = filename
-                    break
-
-            if gml_filename:
-                logger.debug(f"Extracting '{gml_filename}' from archive.")
-                return BytesIO(zip_ref.read(gml_filename))
-            else:
-                raise FileNotFoundError(
-                    f"No file with suffix '{target_suffix}' found in zip from {zip_url}. Files: {zip_ref.namelist()}"
-                )
-
-    except zipfile.BadZipFile:
-        logger.error(f"Downloaded file from {zip_url} is not a valid zip archive.")
-        raise
-    except Exception as e:
-        logger.error(f"Error processing zip file from {zip_url}: {e}")
-        raise
-
-
-def _download_zip_content(url: str) -> Optional[bytes]:
-    """
-    Downloads the zip file from the given URL and returns its content.
-    :param url: URL of the zip file to download.
-    :return: Content of the zip file as bytes or None if download fails.
-    """
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        logger.debug(f"Successfully downloaded content from: {url}")
-        return response.content
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error downloading from URL: {url} - {e}")
-        return None
-
 
 class CatastroData:
     """
@@ -302,6 +59,26 @@ class CatastroData:
 
     """
 
+    BASE_URLS = {
+        "Buildings": "https://www.catastro.hacienda.gob.es/INSPIRE/buildings/ES.SDGC.BU.atom.xml",
+        "CadastralParcels": "https://www.catastro.hacienda.gob.es/INSPIRE/CadastralParcels/ES.SDGC.CP.atom.xml",
+        "Addresses": "https://www.catastro.hacienda.gob.es/INSPIRE/Addresses/ES.SDGC.AD.atom.xml",
+    }
+    MUN_NAME_CLEANUP_WORDS = ["buildings", "Cadastral Parcels", "addresses"]
+    TERRITORIAL_TITLE_REGEX = re.compile(r"Territorial office (\d{2}) (.*)")
+    FILE_SUFFIXES = {
+        "Addresses": [".gml"],
+        "Buildings": {
+            "Buildings": ".building.gml",
+            "Building_Parts": ".buildingpart.gml",
+            "Other_Buildings": ".otherconstruction.gml",
+        },
+        "CadastralParcels": {
+            "CadastralParcels": ".cadastralparcel.gml",
+            "CadastralZonings": ".cadastralzoning.gml",
+        },
+    }
+
     def __init__(
         self,
         verbose: bool = False,
@@ -316,13 +93,13 @@ class CatastroData:
         self.cache_file = cache_file_path
         self.municipalities_links = pd.DataFrame()
         self._index_loaded = False
-        self.available_datatypes = list(BASE_URLS.keys())
+        self.available_datatypes = list(self.BASE_URLS.keys())
 
-        # configure logging level
+
+
         if verbose:
             logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.WARNING)
+
         logger.debug(
             f"CatastroData initializing. Log level: {logging.getLevelName(logger.level)}"
         )
@@ -331,7 +108,9 @@ class CatastroData:
         loaded_from_cache = False
         if self.cache and os.path.exists(self.cache_file):
             try:
-                logger.info(f"Attempting to load index from cache: {self.cache_file}")
+                logger.info(
+                    f"Attempting to load index from cache: {self.cache_file}"
+                )
                 # we specify dtype to ensure codes are read as strings and not integers so they keep their leading zeros
                 self.municipalities_links = pd.read_json(
                     self.cache_file,
@@ -366,7 +145,7 @@ class CatastroData:
 
         if not self._index_loaded:
             logger.info("Fetching fresh municipality index...")
-            self.municipalities_links = _fetch_and_parse_links()
+            self.municipalities_links = self._fetch_and_parse_links()
             self._index_loaded = not self.municipalities_links.empty
 
             if not self._index_loaded:
@@ -376,7 +155,9 @@ class CatastroData:
             elif self.cache and not loaded_from_cache:
                 # save only if cache enabled and we didn't load from it initially
                 try:
-                    logger.info(f"Saving fetched index to cache: {self.cache_file}")
+                    logger.info(
+                        f"Saving fetched index to cache: {self.cache_file}"
+                    )
                     self.municipalities_links.to_json(self.cache_file, indent=4)
                     logger.info("Index saved to cache.")
                 except IOError as e:
@@ -384,6 +165,275 @@ class CatastroData:
             elif self.cache and loaded_from_cache:
                 # This case should not happen due to logic flow, but adding for completeness
                 logger.debug("Index was loaded from cache, no need to save.")
+
+    def _fetch_feed(self, url: str) -> Optional[feedparser.FeedParserDict]:
+        """
+        Fetches and parses an Atom feed from the given URL.
+
+        :param url: URL of the Atom feed to fetch.
+        :return: Parsed feed or None if the feed is empty or an error occurs.
+        """
+        try:
+            feed = feedparser.parse(url)
+            if not feed.entries and not feed.feed:
+                logger.warning(
+                    f"Feed from {url} is empty or could not be fetched properly."
+                )
+                return None
+            return feed
+        except Exception as e:
+            logger.error(f"Unexpected error fetching feed from {url}: {e}")
+            return None
+
+    def _parse_territorial_entry(
+            self,
+            entry: feedparser.FeedParserDict,
+    ) -> Optional[Dict[str, str]]:
+        """
+        Parses a territorial entry from the feed.
+
+        :param entry: The territorial feed entry to parse.
+        :type entry: feedparser.FeedParserDict
+        :return: Dictionary with territorial code, name, and link or None if parsing fails.
+        """
+        title = getattr(entry, "title", None)
+        link = getattr(entry, "link", None)
+        if not title or not link:
+            logger.warning(
+                f"Missing title or link in territorial entry. Title: '{title}', Link: '{link}'. Skipping."
+            )
+            return None
+
+        match = self.TERRITORIAL_TITLE_REGEX.search(title)
+        if match:
+            code = match.group(1)
+            name = match.group(2).strip()
+            logger.debug(f"Parsed Territorial Office: Code={code}, Name='{name}'")
+            return {"territorial_code": code, "territorial_name": name, "link": link}
+        else:
+            logger.warning(
+                f"Could not parse territorial code/name from title: '{title}'. Skipping."
+            )
+            return None
+
+    def _parse_municipality_entry(
+            self,
+            entry: feedparser.FeedParserDict,
+    ) -> Optional[Dict[str, str]]:
+        """
+        Parses a municipality entry from the feed.
+
+        :param entry: The municipality feed entry to parse.
+        :type entry: feedparser.FeedParserDict
+        :return: Dictionary with municipality code, name, and link or None if parsing fails.
+        """
+        title = getattr(entry, "title", None)
+        link = getattr(entry, "link", None)
+        if not link or not title:
+            logger.warning(
+                f"Missing title or link in municipality entry. Title: '{title}', Link: '{link}'. Skipping."
+            )
+            return None
+
+        try:
+            parts = title.split("-", 1)
+            if len(parts) != 2:
+                logger.warning(
+                    f"Unknown title structure, expected code-name but got: '{title}'. Skipping."
+                )
+                return None
+
+            code = parts[0].zfill(5)
+            name = parts[1]
+            for word in self.MUN_NAME_CLEANUP_WORDS:
+                name = name.replace(word, "")
+            name = name.strip()
+            dataset = parts[1].split(" ")[-1]
+
+        except (IndexError, ValueError) as e:
+            logger.warning(
+                f"Could not parse municipality code/name from title: '{title}'. Error: {e}. Skipping."
+            )
+            return None
+
+        logger.debug(
+            f"Parsed Municipality in {dataset} dataset: Code={code}, Name='{name}'"
+        )
+        return {"municipality_code": code, "municipality_name": name, "link": link}
+
+    def _fetch_and_parse_links(self) -> pd.DataFrame:
+        """
+        Fetches and parses the municipality download links from the Catastro feeds.
+        :return: DataFrame with municipality codes, names, and download links.
+        """
+        logger.info("Fetching and parsing municipality download links...")
+        all_data = []
+        for dataset, base_url in self.BASE_URLS.items():
+            logger.info(f"Processing dataset: {dataset} from {base_url}")
+            dataset_feed = self._fetch_feed(base_url)
+            if not dataset_feed:
+                continue
+
+            for terr_entry in dataset_feed.entries:
+                territorial_info = self._parse_territorial_entry(terr_entry)
+                if not territorial_info:
+                    continue
+
+                terr_feed = self._fetch_feed(territorial_info["link"])
+                if not terr_feed:
+                    continue
+
+                for mun_entry in terr_feed.entries:
+                    municipality_info = self._parse_municipality_entry(mun_entry)
+                    if not municipality_info:
+                        continue
+
+                    all_data.append(
+                        {
+                            "territorial_office_code": territorial_info[
+                                "territorial_code"
+                            ],
+                            "territorial_office_name": territorial_info[
+                                "territorial_name"
+                            ],
+                            "catastro_municipality_code": municipality_info[
+                                "municipality_code"
+                            ],
+                            "catastro_municipality_name": municipality_info[
+                                "municipality_name"
+                            ],
+                            "datatype": dataset,
+                            "zip_link": municipality_info["link"],
+                        }
+                    )
+        if not all_data:
+            logger.warning("Parsing finished, but no links were found.")
+            return pd.DataFrame()
+
+        logger.info(f"Finished parsing. Found {len(all_data)} links.")
+        columns = [
+            "territorial_office_code",
+            "territorial_office_name",
+            "catastro_municipality_code",
+            "catastro_municipality_name",
+            "datatype",
+            "zip_link",
+        ]
+        return pd.DataFrame(all_data, columns=columns)
+
+    def _extract_gml_from_zip(
+            self, zip_content: bytes, datatype: str, subtype: Optional[str], zip_url: str
+    ) -> Optional[BytesIO]:
+        """
+        Extracts the GML file from a zip archive content based on the datatype and subtype.
+
+        :param zip_content: Downloaded zip file content from _download_zip_content().
+        :param datatype: The type of data to extract (e.g., "Buildings", "CadastralParcels").
+        :param subtype: The subtype of data to extract (e.g., "Buildings", "Building_Parts").
+        :param zip_url: The URL from which the zip file was downloaded.
+        :return: BytesIO object containing the GML file content or None if not found.
+        """
+        try:
+            with zipfile.ZipFile(BytesIO(zip_content), "r") as zip_ref:
+                suffix_config = self.FILE_SUFFIXES.get(datatype)
+                if not suffix_config:
+                    raise ValueError(
+                        f"Internal error: Invalid datatype '{datatype}' for suffix lookup."
+                    )
+
+                target_suffix = ""
+                if isinstance(suffix_config, dict):
+                    if subtype:
+                        if subtype not in suffix_config:
+                            raise ValueError(
+                                f"Invalid subtype '{subtype}' for '{datatype}'. Available: {list(suffix_config.keys())}"
+                            )
+                        target_suffix = suffix_config[subtype]
+                    else:
+                        target_suffix = next(iter(suffix_config.values()))
+                elif isinstance(suffix_config, list):
+                    target_suffix = suffix_config[0]
+                else:
+                    raise TypeError(
+                        f"Unexpected suffix config for datatype '{datatype}'."
+                    )
+
+                gml_filename = None
+                for filename in zip_ref.namelist():
+                    if filename.lower().endswith(target_suffix.lower()):
+                        gml_filename = filename
+                        break
+
+                if gml_filename:
+                    logger.debug(f"Extracting '{gml_filename}' from archive.")
+                    return BytesIO(zip_ref.read(gml_filename))
+                else:
+                    raise FileNotFoundError(
+                        f"No file with suffix '{target_suffix}' found in zip from {zip_url}. Files: {zip_ref.namelist()}"
+                    )
+
+        except zipfile.BadZipFile:
+            logger.error(
+                f"Downloaded file from {zip_url} is not a valid zip archive."
+            )
+            raise
+        except Exception as e:
+            logger.error(f"Error processing zip file from {zip_url}: {e}")
+            raise
+
+    def extract_zip_to_folder(self, zip_content: bytes, output_folder: str) -> bool:
+        """
+        Extracts zip file content to the specified output folder.
+        :param zip_content: Bytes of the zip file.
+        :param output_folder: Path to the output directory.
+        :return: True if extraction succeeds, False otherwise.
+        """
+        try:
+            os.makedirs(output_folder, exist_ok=True)
+            with zipfile.ZipFile(BytesIO(zip_content)) as zip_ref:
+                for zip_info in zip_ref.infolist():
+                    if zip_info.filename.lower().endswith(".gml"):
+                        zip_ref.extract(zip_info, output_folder)
+                        extracted_any = True
+                        logger.debug(
+                            f"Extracted {zip_info.filename} to {output_folder}"
+                        )
+
+            logger.debug(f"Extracted zip content to folder: {output_folder}")
+            return True
+        except zipfile.BadZipFile:
+            logger.error("Failed to extract: Bad zip file format.")
+        except Exception as e:
+            logger.error(f"Unexpected error during extraction: {e}")
+        return False
+
+    def _download_zip_content(self, url: str) -> Optional[bytes]:
+        """
+        Downloads the zip file from the given URL and returns its content.
+        :param url: URL of the zip file to download.
+        :return: Content of the zip file as bytes or None if download fails.
+        """
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            logger.debug(f"Successfully downloaded content from: {url}")
+            return response.content
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error downloading from URL: {url} - {e}")
+            return None
+
+    def _download_and_extract_zip(self, url: str, output_folder: str) -> bool:
+        """
+        Combines downloading and extracting a zip file from a URL.
+        :param url: URL of the zip file.
+        :param output_folder: Directory where files should be extracted.
+        :return: True if successful, False otherwise.
+        """
+        zip_content = self._download_zip_content(url)
+        if zip_content is None:
+            logger.error("No zip content downloaded.")
+            return False
+        return self.extract_zip_to_folder(zip_content, output_folder)
 
     def _ensure_index_loaded(self) -> None:
         """
@@ -434,12 +484,12 @@ class CatastroData:
                 f"No index entry found for Municipality {municipality_code}, Datatype {datatype}."
             )
 
-        zip_content = _download_zip_content(zip_link)
+        zip_content = self._download_zip_content(zip_link)
         if not zip_content:
             raise ConnectionError(f"Failed to download zip file from {zip_link}")
 
         try:
-            gml_file_buffer = _extract_gml_from_zip(
+            gml_file_buffer = self._extract_gml_from_zip(
                 zip_content, datatype, subtype, zip_link
             )
             if gml_file_buffer:
@@ -526,6 +576,8 @@ class CatastroData:
         --------
         Get addresses data for a specific municipality:
 
+        >>> from mango.clients.catastro import CatastroData
+        >>> catastro = CatastroData()
         >>> addresses_data = catastro.get_data("28900", "Addresses")
 
         Get buildings data for the same municipality:
@@ -555,7 +607,9 @@ class CatastroData:
         for code in codes_list:
             sleep(self.request_interval)
             code_str = str(code).zfill(5)
-            logger.info(f"Processing {code_str} - {datatype} ({subtype or 'default'})")
+            logger.info(
+                f"Processing {code_str} - {datatype} ({subtype or 'default'})"
+            )
             try:
                 gdf = self._get_single_municipality_gdf(code_str, datatype, subtype)
                 if gdf is not None and not gdf.empty:
@@ -575,7 +629,9 @@ class CatastroData:
                     gdfs.append(gdf)
                     processed_codes.append(code_str)
                 elif gdf is not None and gdf.empty:
-                    logger.warning(f"No features found for {code_str} - {datatype}.")
+                    logger.warning(
+                        f"No features found for {code_str} - {datatype}."
+                    )
                     processed_codes.append(code_str)
                 else:
                     failed_codes[code_str] = "Data retrieval failed (check logs)"
@@ -591,7 +647,9 @@ class CatastroData:
                 logger.warning(f"Failures occurred for: {failed_codes}")
             return None
 
-        logger.info(f"Successfully processed {len(processed_codes)} municipalities.")
+        logger.info(
+            f"Successfully processed {len(processed_codes)} municipalities."
+        )
         if failed_codes:
             logger.warning(
                 f"Failed to process {len(failed_codes)} municipalities: {failed_codes}"
@@ -608,9 +666,8 @@ class CatastroData:
         )
         return combined_gdf
 
-    @staticmethod
     def _perform_entrance_linkage(
-        addresses_gdf: gpd.GeoDataFrame, buildings_gdf: gpd.GeoDataFrame
+            self, addresses_gdf: gpd.GeoDataFrame, buildings_gdf: gpd.GeoDataFrame
     ) -> Optional[gpd.GeoDataFrame]:
         """
         Link entrances to buildings based on the localId_address and localId_building columns.
@@ -700,6 +757,8 @@ class CatastroData:
 
         Get already matched entrances and buildings in one step:
 
+        >>> from mango.clients.catastro import CatastroData
+        >>> catastro = CatastroData()
         >>> merged_data_auto = catastro.get_matched_entrance_with_buildings("25252")
         """
         self._ensure_index_loaded()
@@ -756,11 +815,72 @@ class CatastroData:
 
         Link entrances to buildings:
 
+        >>> from mango.clients.catastro import CatastroData
+        >>> catastro = CatastroData()
+
+        >>> addresses_data = catastro.get_data("28900", "Addresses")
+        >>> buildings_data = catastro.get_data("28900", "Buildings")
+
         >>> merged_data = catastro.link_entrances_to_buildings(addresses_data, buildings_data)
         """
 
         linked_gdf = self._perform_entrance_linkage(
-            addresses_gdf.copy(), buildings_gdf.copy()
+            addresses_gdf=addresses_gdf.copy(), buildings_gdf=buildings_gdf.copy()
         )
 
         return linked_gdf
+
+    def download_all_data(self, output_directory: str, sample: bool = False) -> None:
+        """
+        Downloads all available data from the Catastro API and saves it to the specified directory,
+        structured by timestamp and datatype.
+
+        :param output_directory: Directory where the downloaded data will be saved.
+        :type output_directory: str
+        :param sample: If True, only a sample of the data will be downloaded. Default is False.
+        :type sample: bool
+        :return: None
+
+        Usage
+        --------
+
+        Download all data to a specified directory:
+
+        >>> from mango.clients.catastro import CatastroData
+        >>> catastro = CatastroData()
+        >>> catastro.download_all_data("path/to/output_directory")
+
+        Download a sample of the data:
+
+        >>> catastro.download_all_data("path/to/output_directory", sample=True)
+        """
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        run_directory = os.path.join(output_directory, timestamp)
+        os.makedirs(run_directory, exist_ok=True)
+
+        for datatype in self.municipalities_links["datatype"].unique():
+            logger.info(f"Downloading {datatype} data...")
+
+            datatype_dir = os.path.join(run_directory, datatype)
+            os.makedirs(datatype_dir, exist_ok=True)
+
+            if not sample:
+                datatype_links = self.municipalities_links[
+                    self.municipalities_links["datatype"] == datatype
+                    ]["zip_link"]
+            else:
+                datatype_links = self.municipalities_links[
+                    self.municipalities_links["datatype"] == datatype
+                    ]["zip_link"].sample(n=10)
+
+            for link in datatype_links:
+                success = self._download_and_extract_zip(link, datatype_dir)
+                if success:
+                    logger.info(
+                        f"Successfully extracted zip from {link} to {datatype_dir}"
+                    )
+                else:
+                    logger.error(f"Failed to process zip from {link}")
