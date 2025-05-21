@@ -2581,7 +2581,9 @@ class AutoEncoder:
                 feature_labels=feature_names,
             )
 
-            return reconstructed_df
+            # Remove padding rows after plotting
+            valid_reconstructed = padded_reconstructed[self._context_window - 1 :]
+            return pd.DataFrame(valid_reconstructed, columns=feature_names)
 
         # Case 2: With NaNs - Iterative reconstruction
         reconstruction_records = []
@@ -2713,7 +2715,6 @@ class AutoEncoder:
             self._context_window,
             self._time_step_to_check,
         )
-
         reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
 
         # Record final reconstruction results
@@ -2727,8 +2728,6 @@ class AutoEncoder:
                     "Reconstructed value": padded_reconstructed_final[i, j],
                 }
             )
-
-        reconstructed_df = pd.DataFrame(reconstructed_data_final, columns=feature_names)
 
         # Save reconstruction progress
         progress_df = pd.DataFrame(reconstruction_records)
@@ -2751,7 +2750,11 @@ class AutoEncoder:
             id_iter=id_iter,
         )
 
-        return reconstructed_df
+        # Remove padding rows after plotting
+        valid_reconstructed_final = padded_reconstructed_final[
+            self._context_window - 1 :
+        ]
+        return pd.DataFrame(valid_reconstructed_final, columns=feature_names)
 
     def prepare_datasets(
         self,
