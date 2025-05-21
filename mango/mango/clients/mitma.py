@@ -13,6 +13,9 @@ estudios_basicos -> por-distritos -> pernoctaciones -> meses-completos
 import os
 import tarfile
 from typing import Union, List, Optional, TextIO, BinaryIO, Literal
+import requests
+from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -196,3 +199,56 @@ def compute_multipliers(
         raise
 
     return merged_data
+
+
+def download_mitma_data(
+        output_folder: str, start_date: str, end_date: str
+) -> None:
+    """
+    Downloads MITMA data files for a specified date range into a specified folder.
+
+    :param output_folder: Path to the folder where the files will be downloaded.
+    :type output_folder: str
+    :param start_date: Start date in YYYYMM format.
+    :type start_date: str
+    :param end_date: End date in YYYYMM format.
+    :type end_date: str
+    :return: None
+    """
+    base_url = "https://movilidad-opendata.mitma.es/estudios_basicos/por-distritos/pernoctaciones/meses-completos"
+    output_path = Path(output_folder)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    try:
+        start = datetime.strptime(start_date, "%Y%m")
+        end = datetime.strptime(end_date, "%Y%m")
+    except ValueError:
+        raise ValueError("Dates must be in YYYYMM format.")
+
+    if start > end:
+        raise ValueError("Start date must be earlier than or equal to end date.")
+
+    current = start
+    while current <= end:
+        print(f"Downloading data for {current.strftime('%Y-%m')}")
+        year_month = current.strftime("%Y%m")
+        file_name = f"{year_month}_Pernoctaciones_distritos.tar"
+        file_url = f"{base_url}/{file_name}"
+        output_file = output_path / file_name
+
+        try:
+            response = requests.get(file_url, stream=True)
+            response.raise_for_status()
+
+            with open(output_file, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+            print(f"Downloaded: {file_name}")
+        except requests.RequestException as e:
+            print(f"Failed to download {file_name}: {e}")
+
+        if current.month == 12:
+            current = current.replace(year=current.year + 1, month=1)
+        else:
+            current = current.replace(month=current.month + 1)
