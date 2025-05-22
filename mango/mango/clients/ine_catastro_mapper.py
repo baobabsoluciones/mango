@@ -16,7 +16,7 @@ import pandas as pd
 import requests
 
 from mango.clients.catastro import CatastroData
-from mango.clients.ine import INEAPIClient
+from mango.clients.ine import INEData
 
 logger = logging.getLogger(__name__)
 
@@ -30,28 +30,29 @@ class CatastroINEMapper:
     https://www.fega.gob.es/es/content/relacion-de-municipios-por-ccaa-con-equivalencias-entre-los-codigos-ine-y-catastro-2025.
     The mapping file url should be checked and updated regularly as the data may change.
 
-    :param load_from_apis: Whether to load additional data from Catastro and INE APIs. (Can take long as it has to fetch the catastro index)
+    :param load_from_apis: Whether to load additional data from Catastro and INE. (Can take long as it has to fetch the catastro index)
     :type load_from_apis: bool
     :param save_processed: Whether to save the processed mapping to a file.
     :type save_processed: bool
     :param catastro_client: Optional pre-initialized CatastroData client. (RECOMENDED, with cached index)
     :type catastro_client: CatastroData
-    :param ine_client: Optional pre-initialized INEAPIClient client.
-    :type ine_client: INEAPIClient
+    :param ine_client: Optional pre-initialized INEData client.
+    :type ine_client: INEData
     :param processed_file: Path to a pre-processed mapping file (if provided, mapping_file is ignored).
     :type processed_file: str
 
     Usage
     --------
+
     >>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
     >>> from mango.clients.catastro import CatastroData
-    >>> from mango.clients.ine import INEAPIClient
+    >>> from mango.clients.ine import INEData
 
-    Initialize the mapper with API data loading to get the accurate names from both INE and Catastro.
+    Initialize the mapper with INE data loading to get the accurate names from both INE and Catastro.
     It is recommended to pass the Catastro client with the cache_dir parameter set up to avoid downloading the data again. (Can take a while)
 
     >>> mapper = CatastroINEMapper(load_from_apis=True,
-    ...                            ine_client=INEAPIClient(),
+    ...                            ine_client=INEData(),
     ...                            catastro_client=CatastroData(cache=True, cache_file_path=r"catastro_cache.json", verbose=True))
     """
 
@@ -63,7 +64,7 @@ class CatastroINEMapper:
         load_from_apis: bool = False,
         save_processed: bool = False,
         catastro_client: Optional[CatastroData] = None,
-        ine_client: Optional[INEAPIClient] = None,
+        ine_client: Optional[INEData] = None,
         processed_file: Optional[str] = None,
     ) -> None:
         self.save_processed = save_processed
@@ -191,12 +192,12 @@ class CatastroINEMapper:
 
     def _enrich_with_api_data(self) -> None:
         """
-        Enrich the mapping with names from Catastro and INE APIs.
+        Enrich the mapping with names from Catastro and INE.
 
-        This method fetches additional municipality names from the Catastro and INE APIs
+        This method fetches additional municipality names from the Catastro and INE.
         and updates the mapping table accordingly.
         """
-        logger.info("Enriching municipality data with names from Catastro and INE APIs")
+        logger.info("Enriching municipality data with names from Catastro and INE.")
 
         if self.load_from_apis:
             if not self.catastro_client:
@@ -205,7 +206,7 @@ class CatastroINEMapper:
 
             if not self.ine_client:
                 logger.info("Initializing INE client")
-                self.ine_client = INEAPIClient(verbose=False)
+                self.ine_client = INEData(verbose=False)
 
             self._enrich_with_catastro_names()
 
@@ -215,7 +216,7 @@ class CatastroINEMapper:
         """
         Get municipality names from Catastro data.
 
-        This method retrieves municipality names from the Catastro API and updates
+        This method retrieves municipality names from the Catastro and updates
         the mapping table with the fetched names.
         """
         if not self.catastro_client:
@@ -259,7 +260,7 @@ class CatastroINEMapper:
         """
         Get municipality names from INE data.
 
-        This method retrieves municipality names from the INE API and updates
+        This method retrieves municipality names from the INE and updates
         the mapping table with the fetched names.
         """
         if not self.ine_client:
@@ -320,6 +321,9 @@ class CatastroINEMapper:
 
         Convert INE code to Catastro code
 
+        >>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
+        >>> mapper = CatastroINEMapper(load_from_apis=False)
+
         >>> catastro_code = mapper.ine_to_catastro_code("25203")
         >>> print(catastro_code)
         """
@@ -338,6 +342,9 @@ class CatastroINEMapper:
         --------
 
         Convert Catastro code to INE code
+
+        >>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
+        >>> mapper = CatastroINEMapper(load_from_apis=False)
 
         >>> ine_code = mapper.catastro_to_ine_code("25252")
         >>> print(ine_code)
@@ -363,6 +370,9 @@ class CatastroINEMapper:
         --------
 
         Get municipality name from INE code.
+
+        >>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
+        >>> mapper = CatastroINEMapper(load_from_apis=False)
 
         >>> municipality_name = mapper.get_municipality_name("25203", "ine")
         >>> print(municipality_name)
@@ -402,6 +412,9 @@ class CatastroINEMapper:
 
         Get the full mapping table.
 
+        >>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
+        >>> mapper = CatastroINEMapper(load_from_apis=False)
+
         >>> mapping_table = mapper.get_mapping_table()
         >>> print(mapping_table.head())
         """
@@ -425,6 +438,25 @@ def merge_catastro_census(
     :type census_data: gpd.GeoDataFrame
     :return: GeoDataFrame with merged data, including population estimates at each address.
     :rtype: gpd.GeoDataFrame
+
+    Usage
+    --------
+
+    >>> from mango.clients.catastro import CatastroData
+    >>> from mango.clients.ine import INEData
+    >>> from mango.clients.ine_catastro_mapper import CatastroINEMapper
+
+    >>> catastro_client = CatastroData(cache=True, cache_file_path=r"catastro_cache.json", verbose=True)
+    >>> ineDataSource = INEData()
+    >>> mapper = CatastroINEMapper(load_from_apis=True,
+    ...                            ine_client=ineDataSource,
+    ...                            catastro_client=catastro_client)
+
+    >>> census_df = ineDataSource.fetch_full_census()
+    >>> census_with_geom = ineDataSource.enrich_with_geometry(census_df)
+    >>> cadastral_addresses_with_buildings_df = catastro_client.get_matched_entrance_with_buildings("25252")
+
+    >>> merged_data = merge_catastro_census(cadastral_addresses_with_buildings_df, census_with_geom, mapper)
     """
 
     # initial geospatial join

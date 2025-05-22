@@ -1,8 +1,8 @@
 """
 Module for obtaining census data from the Spanish National Statistics Institute (INE).
 
-This module provides the INEAPIClient class for retrieving and processing
-census data from the INE API.
+This module provides the INEData class for retrieving and processing
+census data from the INE API and INE urls.
 """
 
 import json
@@ -28,7 +28,7 @@ logger = get_configured_logger(
 
 class INEData:
     """
-    A client for retrieving and processing census data from the INE API.
+    A client for retrieving and processing census data from the INE.
 
     This class provides methods to fetch census data by section, clean it, and link it with municipality data.
     It also supports verbose logging for debugging purposes.
@@ -39,10 +39,10 @@ class INEData:
     Usage
     --------
 
-    Import the INEAPIClient class and create an instance:
+    Import the INEData class and create an instance:
 
     >>> from mango.clients.ine import INEData
-    >>> ine_api = INEData()
+    >>> ineDataSource = INEData()
     """
 
     GEOMETRY_DATA_URL = r"https://www.ine.es/prodyser/cartografia/seccionado_2024.zip"
@@ -133,9 +133,9 @@ class INEData:
         Fetch census data for a specific province:
 
         >>> from mango.clients.ine import INEData
-        >>> ine_api = INEData()
+        >>> ineDataSource = INEData()
 
-        >>> census = ine_api.fetch_census_by_section("69202")
+        >>> census = ineDataSource.fetch_census_by_section("69202")
         """
         logger.info(f"Fetching census data for table ID(s): {table_id}")
         if isinstance(table_id, str):
@@ -170,7 +170,7 @@ class INEData:
     @staticmethod
     def fetch_full_census(year: int = None) -> pd.DataFrame:
         """
-        Fetches the full census data from the INE API and cleans it.
+        Fetches the full census data from the INE and cleans it.
 
         This function retrieves census data for all available provinces, filters it by the specified year
         (or the latest year available if not specified), and returns a cleaned DataFrame.
@@ -186,9 +186,9 @@ class INEData:
         Fetch full census and add the geometry data:
 
         >>> from mango.clients.ine import INEData
-        >>> ine_api = INEData()
+        >>> ineDataSource = INEData()
 
-        >>> full_census = ine_api.fetch_full_census()
+        >>> full_census = ineDataSource.fetch_full_census()
         >>> print(full_census.head())
         """
         logger.info("Fetching full census data.")
@@ -228,10 +228,10 @@ class INEData:
         >>> from mango.clients.ine import INEData
         >>> import geopandas as gpd
 
-        >>> ine_api = INEData()
+        >>> ineDataSource = INEData()
 
-        >>> census_df = ine_api.fetch_census_by_section("69202")
-        >>> geometry_df = ine_api.enrich_with_geometry(census_df)
+        >>> census_df = ineDataSource.fetch_census_by_section("69202")
+        >>> geometry_df = ineDataSource.enrich_with_geometry(census_df)
         >>> geometry_df.explore()
         """
         logger.info("Enriching census data with geometry.")
@@ -393,9 +393,9 @@ class INEData:
 
         Read a GeoJSON file:
         >>> from mango.clients.ine import INEData
-        >>> ine_api = INEData()
+        >>> ineDataSource = INEData()
 
-        >>> geo_df = ine_api.read_geojson_file("path/to/your/file.geojson")
+        >>> geo_df = ineDataSource.read_geojson_file("path/to/your/file.geojson")
         >>> print(geo_df.head())
         """
         logger.info(f"Reading GeoJSON file from path: {file_path}")
@@ -489,10 +489,10 @@ class INEData:
         Show all available table codes in the INE API:
 
         >>> from mango.clients.ine import INEData
-        >>> ine_api = INEData()
+        >>> ineDataSource = INEData()
 
-        >>> table_codes = ine_api.list_table_codes()
-        >>> print(ine_api.list_table_codes())
+        >>> table_codes = ineDataSource.list_table_codes()
+        >>> print(ineDataSource.list_table_codes())
         """
         return INEData.TABLE_IDS
 
