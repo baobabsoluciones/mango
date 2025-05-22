@@ -34,7 +34,7 @@ class TestCli(TestCase):
 
     @mock.patch("os.system")
     def test_cli_default(self, mock_system):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(cli, ["dashboard", "time_series"])
 
         # Assert the command executed successfully
