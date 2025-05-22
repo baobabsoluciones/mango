@@ -29,6 +29,7 @@ logger = get_configured_logger(
     mango_color=True,
 )
 
+
 class CatastroData:
     """
     A class for retrieving, processing, and linking cadastral data from the Spanish Catastro API.
@@ -95,8 +96,6 @@ class CatastroData:
         self._index_loaded = False
         self.available_datatypes = list(self.BASE_URLS.keys())
 
-
-
         if verbose:
             logger.setLevel(logging.DEBUG)
 
@@ -108,9 +107,7 @@ class CatastroData:
         loaded_from_cache = False
         if self.cache and os.path.exists(self.cache_file):
             try:
-                logger.info(
-                    f"Attempting to load index from cache: {self.cache_file}"
-                )
+                logger.info(f"Attempting to load index from cache: {self.cache_file}")
                 # we specify dtype to ensure codes are read as strings and not integers so they keep their leading zeros
                 self.municipalities_links = pd.read_json(
                     self.cache_file,
@@ -155,9 +152,7 @@ class CatastroData:
             elif self.cache and not loaded_from_cache:
                 # save only if cache enabled and we didn't load from it initially
                 try:
-                    logger.info(
-                        f"Saving fetched index to cache: {self.cache_file}"
-                    )
+                    logger.info(f"Saving fetched index to cache: {self.cache_file}")
                     self.municipalities_links.to_json(self.cache_file, indent=4)
                     logger.info("Index saved to cache.")
                 except IOError as e:
@@ -373,9 +368,7 @@ class CatastroData:
                     )
 
         except zipfile.BadZipFile:
-            logger.error(
-                f"Downloaded file from {zip_url} is not a valid zip archive."
-            )
+            logger.error(f"Downloaded file from {zip_url} is not a valid zip archive.")
             raise
         except Exception as e:
             logger.error(f"Error processing zip file from {zip_url}: {e}")
@@ -607,9 +600,7 @@ class CatastroData:
         for code in codes_list:
             sleep(self.request_interval)
             code_str = str(code).zfill(5)
-            logger.info(
-                f"Processing {code_str} - {datatype} ({subtype or 'default'})"
-            )
+            logger.info(f"Processing {code_str} - {datatype} ({subtype or 'default'})")
             try:
                 gdf = self._get_single_municipality_gdf(code_str, datatype, subtype)
                 if gdf is not None and not gdf.empty:
@@ -629,9 +620,7 @@ class CatastroData:
                     gdfs.append(gdf)
                     processed_codes.append(code_str)
                 elif gdf is not None and gdf.empty:
-                    logger.warning(
-                        f"No features found for {code_str} - {datatype}."
-                    )
+                    logger.warning(f"No features found for {code_str} - {datatype}.")
                     processed_codes.append(code_str)
                 else:
                     failed_codes[code_str] = "Data retrieval failed (check logs)"
@@ -647,9 +636,7 @@ class CatastroData:
                 logger.warning(f"Failures occurred for: {failed_codes}")
             return None
 
-        logger.info(
-            f"Successfully processed {len(processed_codes)} municipalities."
-        )
+        logger.info(f"Successfully processed {len(processed_codes)} municipalities.")
         if failed_codes:
             logger.warning(
                 f"Failed to process {len(failed_codes)} municipalities: {failed_codes}"
@@ -870,11 +857,11 @@ class CatastroData:
             if not sample:
                 datatype_links = self.municipalities_links[
                     self.municipalities_links["datatype"] == datatype
-                    ]["zip_link"]
+                ]["zip_link"]
             else:
                 datatype_links = self.municipalities_links[
                     self.municipalities_links["datatype"] == datatype
-                    ]["zip_link"].sample(n=10)
+                ]["zip_link"].sample(n=10)
 
             for link in datatype_links:
                 success = self._download_and_extract_zip(link, datatype_dir)
