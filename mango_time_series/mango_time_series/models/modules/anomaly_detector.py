@@ -118,7 +118,7 @@ def reconstruction_error(
 
     if len(autoencoder_output_df) != expected_autoencoder_length:
         raise ValueError(
-            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length "
+            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length"
             f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
         )
     if not np.isclose(train_size + val_size + test_size, 1.0):
@@ -127,6 +127,11 @@ def reconstruction_error(
         )
     if context_window < 1:
         raise ValueError("context_window must be a positive integer")
+    if not autoencoder_output_df.columns.equals(actual_data_df.columns):
+        raise ValueError(
+            f"Autoencoder output columns ({autoencoder_output_df.columns})"
+            f" do match actual data columns ({actual_data_df.columns})"
+        )
 
     try:
         # Drop first context_window rows from actual data
@@ -378,24 +383,38 @@ def corrected_data(
     :rtype: pd.DataFrame
     :raises ValueError: If input DataFrames have different lengths or if context_window is invalid
     """
+    # Validate input parameters
+    context_offset = context_window - 1
+    expected_autoencoder_length = len(actual_data_df) - context_offset
+
+    if len(autoencoder_output_df) != expected_autoencoder_length:
+        raise ValueError(
+            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length"
+            f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
+        )
+    if len(anomaly_mask) != len(actual_data_df) - context_offset:
+        raise ValueError(
+            f"Anomaly mask rows {len(anomaly_mask)} do not match actual data rows {len(actual_data_df)} with context offset {context_offset}"
+        )
     if context_window < 1:
         raise ValueError("context_window must be a positive integer")
+    if not autoencoder_output_df.columns.equals(actual_data_df.columns):
+        raise ValueError(
+            f"Autoencoder output columns ({autoencoder_output_df.columns})"
+            f" do match actual data columns ({actual_data_df.columns})"
+        )
+    anomaly_cols = [col for col in anomaly_mask.columns if col != "data_split"]
+    actual_cols = list(actual_data_df.columns)
+    if set(anomaly_cols) != set(actual_cols):
+        raise ValueError(
+            f"Anomaly mask columns ({anomaly_mask.columns}) "
+            f"do not match actual data columns ({actual_data_df.columns})"
+        )
 
     try:
         # Save initial rows and adjust actual_data_df and anomaly_mask to match autoencoder_output_df
-        context_offset = context_window - 1
         initial_rows_df = actual_data_df.iloc[:context_offset].copy()
         actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
-
-        # Validate the lengths after adjusting for context window
-        if len(autoencoder_output_df) != len(actual_data_df):
-            raise ValueError(
-                f"Autoencoder output rows {len(autoencoder_output_df)} do not match actual data rows {len(actual_data_df)}"
-            )
-        if len(anomaly_mask) != len(actual_data_df):
-            raise ValueError(
-                f"Anomaly mask rows {len(anomaly_mask)} do not match actual data rows {len(actual_data_df)}"
-            )
 
         # Create corrected dataset where anomalies are replaced with AE output
         corrected_data_df = actual_data_df.copy()

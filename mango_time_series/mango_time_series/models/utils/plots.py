@@ -724,6 +724,9 @@ def create_reconstruction_error_boxplot(
             showlegend=True,
             legend_title="Dataset Split",
             xaxis_tickangle=xaxis_tickangle,
+            title=dict(
+                text="Autoencoder Reconstruction Error", x=0.5, xanchor="center"
+            ),
             margin=dict(l=50, r=50, t=100, b=100),
             autosize=True,
             paper_bgcolor="rgba(0,0,0,0)",
@@ -746,6 +749,8 @@ def create_reconstruction_error_boxplot(
                 gridcolor="lightgray",
             ),
         )
+
+        fig.update_traces(hovertemplate="Reconstruction Error: %{y:.4f}<extra></extra>")
 
         if save_path:
             path = Path(save_path)
