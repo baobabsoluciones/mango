@@ -23,27 +23,6 @@ Libraries Overview
 Mango Core Library
 ~~~~~~~~~~~~~~~~
 
-Core Dependencies
-^^^^^^^^^^^^^^^
-
-- Python >= 3.8
-- numpy >= 1.24.4
-- certifi >= 2023.7.22
-- charset-normalizer >= 3.3.0
-- et-xmlfile >= 1.1.0
-- fastjsonschema >= 2.18.1
-- idna >= 3.4
-- openpyxl >= 3.1.2
-- pydantic >= 2.4.2
-- python-dateutil >= 2.8.2
-- pytups >= 0.86.2
-- pytz >= 2023.3
-- requests >= 2.31.0
-- six >= 1.16.0
-- tqdm >= 4.66.1
-- urllib3 >= 2.0.7
-- XlsxWriter >= 3.1.9
-
 Optional Dependencies
 ------------------
 
@@ -53,43 +32,43 @@ The library is modular, and you can install additional features as needed:
 
    .. code-block:: bash
 
-       pip install mango[cli]  # Adds click >= 8.1.7
+       pip install mango[cli]
 
 2. Data Processing:
 
    .. code-block:: bash
 
-       pip install mango[data]  # Adds pandas, holidays, pycountry, unidecode, tabulate
+       pip install mango[data]
 
 3. Dashboard Creation:
 
    .. code-block:: bash
 
-       pip install mango[dashboard]  # Adds streamlit, pandas, plotly
+       pip install mango[dashboard]
 
 4. Google Cloud Integration:
 
    .. code-block:: bash
 
-       pip install mango[gcloud]  # Adds google-cloud-storage
+       pip install mango[gcloud]
 
 5. Optimization Models:
 
    .. code-block:: bash
 
-       pip install mango[models]  # Adds pyomo
+       pip install mango[models]
 
 6. Plotting Capabilities:
 
    .. code-block:: bash
 
-       pip install mango[plot]  # Adds beautifulsoup4, pandas, plotly
+       pip install mango[plot]
 
 7. SHAP Analysis:
 
    .. code-block:: bash
 
-       pip install mango[shap]  # Adds shap with plotting capabilities
+       pip install mango[shap]
 
 You can also install multiple optional dependencies at once:
 
@@ -125,18 +104,6 @@ Main Modules
 
 Mango Time Series Library
 ~~~~~~~~~~~~~~~~~~~~~~~
-
-Core Dependencies
-^^^^^^^^^^^^^^^
-
-- Python >= 3.8
-- pandas >= 2.0.3
-- numpy >= 1.24.4
-- polars >= 1.8.2
-- scipy >= 1.10.1
-- statsmodels >= 0.14.1
-- mango[data] >= 0.2.0
-- pyarrow >= 17.0.0
 
 Main Features
 ^^^^^^^^^^
