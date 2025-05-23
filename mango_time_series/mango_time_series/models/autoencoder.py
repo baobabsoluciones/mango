@@ -2397,7 +2397,7 @@ class AutoEncoder:
                 else None
             )
         else:
-            if len(self.id_data) > 0:
+            if self.id_data is not None and len(self.id_data) > 0:
                 raise ValueError(
                     "The input data contains more columns than expected, "
                     "but 'id_columns' was not provided. Please specify which columns "
