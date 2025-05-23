@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
-from mango.logging import get_configured_logger
 
+from mango.logging import get_configured_logger
 from mango_time_series.models.utils.plots import (
     create_error_analysis_dashboard,
     create_reconstruction_error_boxplot,
@@ -83,9 +83,9 @@ def reconstruction_error(
     actual_data_df: pd.DataFrame,
     autoencoder_output_df: pd.DataFrame,
     context_window: int = 10,
-    TRAIN_SIZE: float = 0.8,
-    VAL_SIZE: float = 0.1,
-    TEST_SIZE: float = 0.1,
+    train_size: float = 0.8,
+    val_size: float = 0.1,
+    test_size: float = 0.1,
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error.csv",
 ) -> pd.DataFrame:
@@ -98,12 +98,12 @@ def reconstruction_error(
     :type autoencoder_output_df: pd.DataFrame
     :param context_window: Number of initial rows used as context by the AE
     :type context_window: int
-    :param TRAIN_SIZE: Proportion of training data
-    :type TRAIN_SIZE: float
-    :param VAL_SIZE: Proportion of validation data
-    :type VAL_SIZE: float
-    :param TEST_SIZE: Proportion of test data
-    :type TEST_SIZE: float
+    :param train_size: Proportion of training data
+    :type train_size: float
+    :param val_size: Proportion of validation data
+    :type val_size: float
+    :param test_size: Proportion of test data
+    :type test_size: float
     :param save_path: Optional directory to save the output CSV
     :type save_path: Optional[str]
     :param filename: Filename for saved CSV
@@ -121,19 +121,16 @@ def reconstruction_error(
             f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length "
             f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
         )
-    if not np.isclose(TRAIN_SIZE + VAL_SIZE + TEST_SIZE, 1.0):
+    if not np.isclose(train_size + val_size + test_size, 1.0):
         raise ValueError(
-            f"TRAIN_SIZE + VAL_SIZE + TEST_SIZE must equal 1, but got {TRAIN_SIZE + VAL_SIZE + TEST_SIZE}"
+            f"train_size + val_size + test_size must equal 1, but got {train_size + val_size + test_size}"
         )
     if context_window < 1:
         raise ValueError("context_window must be a positive integer")
 
     try:
-        # Drop first context_window rows from actual data and autoencoder output
+        # Drop first context_window rows from actual data
         actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
-        autoencoder_output_df = autoencoder_output_df.iloc[context_offset:].reset_index(
-            drop=True
-        )
 
         # Drop the 'type'=reconstructed column
         if "type" in autoencoder_output_df.columns:
@@ -141,7 +138,7 @@ def reconstruction_error(
 
         # Define data splits ( train, validation, test) for autoencoder output
         autoencoder_train_df, autoencoder_val_df, autoencoder_test_df = (
-            time_series_split(autoencoder_output_df, TRAIN_SIZE, VAL_SIZE, TEST_SIZE)
+            time_series_split(autoencoder_output_df, train_size, val_size, test_size)
         )
 
         autoencoder_train_df = autoencoder_train_df.copy()
@@ -171,18 +168,11 @@ def reconstruction_error(
             "data_split"
         ]
 
-        # Rename columns efficiently using vectorized operations
-        error_columns = [
-            col for col in reconstruction_error_df.columns if col != "data_split"
-        ]
-        new_columns = {col: col.split("-")[0] + "_AE_error" for col in error_columns}
-        reconstruction_error_df.rename(columns=new_columns, inplace=True)
-
         if save_path:
             path = Path(save_path)
             path.mkdir(parents=True, exist_ok=True)
             file_path = path / filename
-            reconstruction_error_df.to_csv(file_path, index=False)
+            reconstruction_error_df.to_csv(file_path, index=False, float_format="%.4f")
             logger.info(f"Reconstruction error saved to {file_path}")
 
         return reconstruction_error_df
@@ -221,12 +211,28 @@ def reconstruction_error_summary(
             ["mean", "std"]
         )
 
+        summary_stats = summary_stats.T
+        summary_stats.index.names = ["sensor", "statistic"]
+        summary_stats = summary_stats.unstack(level=1)
+        summary_stats.columns = [
+            f"{split}_{stat}" for split, stat in summary_stats.columns
+        ]
+
+        # Reorder columns to group by statistic (mean, then std)
+        split_order = ["train", "validation", "test"]
+        column_order = [
+            f"{split}_{stat}" for stat in ["mean", "std"] for split in split_order
+        ]
+        summary_stats = summary_stats[
+            [col for col in column_order if col in summary_stats.columns]
+        ]
+
         # Save if a path is provided
         if save_path:
             path = Path(save_path)
             path.mkdir(parents=True, exist_ok=True)
             full_path = path / filename
-            summary_stats.to_csv(full_path)
+            summary_stats.to_csv(full_path, index=True, float_format="%.4f")
             logger.info(f"Reconstruction error summary saved to {full_path}")
 
         return summary_stats
@@ -261,10 +267,6 @@ def reconstruction_error_boxplot(
         # Melt the DataFrame
         melted_df = reconstruction_error_df.melt(
             id_vars=["data_split"], var_name="sensor", value_name="AE_error"
-        )
-        # Remove "_AE_error" from sensor names for cleaner names
-        melted_df["sensor"] = melted_df["sensor"].str.replace(
-            "_AE_error", "", regex=False
         )
 
         create_reconstruction_error_boxplot(
@@ -331,24 +333,14 @@ def std_error_threshold(
         total_counts = anomaly_mask.groupby("data_split")[sensor_columns].count()
         anomaly_proportions = anomaly_counts / total_counts
 
-        # Rename anomaly proportions columns
-        anomaly_proportions.rename(
-            columns={
-                col: col + "_prop"
-                for col in anomaly_proportions.columns
-                if "_AE_error" in col
-            },
-            inplace=True,
-        )
-
         # Save if a path is provided
         if save_path:
             path = Path(save_path)
             path.mkdir(parents=True, exist_ok=True)
             mask_full_path = path / anomaly_mask_filename
             prop_full_path = path / anomaly_proportions_filename
-            anomaly_mask.to_csv(mask_full_path)
-            anomaly_proportions.to_csv(prop_full_path)
+            anomaly_mask.to_csv(mask_full_path, index=False, float_format="%.4f")
+            anomaly_proportions.to_csv(prop_full_path, index=False, float_format="%.4f")
             logger.info(f"Anomaly mask saved to {mask_full_path}")
             logger.info(f"Anomaly proportions saved to {prop_full_path}")
 
@@ -408,13 +400,12 @@ def corrected_data(
         # Create corrected dataset where anomalies are replaced with AE output
         corrected_data_df = actual_data_df.copy()
         for corrected_data_col in corrected_data_df.columns:
-            anomaly_mask_col = corrected_data_col.split("-")[0] + "_AE_error"
             corrected_data_df.loc[
-                anomaly_mask[anomaly_mask_col], corrected_data_col
+                anomaly_mask[corrected_data_col], corrected_data_col
             ] = autoencoder_output_df.loc[
-                anomaly_mask[anomaly_mask_col], corrected_data_col
+                anomaly_mask[corrected_data_col], corrected_data_col
             ]
-            num_replaced = anomaly_mask[anomaly_mask_col].sum()
+            num_replaced = anomaly_mask[corrected_data_col].sum()
             logger.info(
                 f"{num_replaced} anomalies corrected in column {corrected_data_col}"
             )
@@ -428,7 +419,7 @@ def corrected_data(
             path = Path(save_path)
             path.mkdir(parents=True, exist_ok=True)
             full_path = path / filename
-            corrected_data_df.to_csv(full_path, index=False)
+            corrected_data_df.to_csv(full_path, index=False, float_format="%.4f")
             logger.info(f"Corrected data saved to {full_path}")
 
         return corrected_data_df
