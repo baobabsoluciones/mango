@@ -177,28 +177,13 @@ The cadastral data can be easily visualized using GeoPandas' interactive `explor
 .. code-block:: python
 
    # Visualize addresses data
-   addresses.explore(
-       column='type',
-       tooltip=['designator', 'type', 'level'],
-       popup=True,
-       tiles='OpenStreetMap'
-   )
+   addresses.explore()
    
    # Visualize buildings data
-   buildings.explore(
-       column='currentUse',
-       tooltip=['currentUse', 'numberOfDwellings', 'numberOfFloorsAboveGround'],
-       popup=True,
-       tiles='OpenStreetMap'
-   )
+   buildings.explore()
    
    # Visualize cadastral parcels
-   parcels.explore(
-       column='areaValue',
-       tooltip=['nationalCadastralReference', 'areaValue', 'areaValue_uom'],
-       popup=True,
-       tiles='OpenStreetMap'
-   )
+   parcels.explore()
 
 **Example Visualizations for Getafe:**
 
