@@ -3,6 +3,7 @@ from typing import List, Optional
 
 import numpy as np
 import pandas as pd
+from scipy.stats import f_oneway
 
 from mango.logging import get_configured_logger
 from mango_time_series.models.utils.plots import create_error_analysis_dashboard
@@ -200,10 +201,68 @@ def reconstruction_error(
         raise
 
 
+def anova_reconstruction_error(
+    reconstruction_error_df: pd.DataFrame,
+    f_stat_threshold: float = 300.0,
+) -> pd.DataFrame:
+    """
+    Perform one-way ANOVA to test if reconstruction errors vary across data splits for each sensor.
+
+    :param reconstruction_error_df: DataFrame with reconstruction error and 'data_split' column
+    :type reconstruction_error_df: pd.DataFrame
+    :param F_threshold: Minimum F-statistic to consider the variability practically significant
+    :type F_threshold: float
+    :return: DataFrame with F-statistics and p-values per sensor
+    :rtype: pd.DataFrame
+    """
+    try:
+        results = []
+        sensor_columns = [
+            col for col in reconstruction_error_df.columns if col != "data_split"
+        ]
+
+        # Loop through each sensor column and perform one-way ANOVA across data splits
+        for sensor in sensor_columns:
+            group = reconstruction_error_df.groupby("data_split")[sensor].apply(list)
+
+            # Skip sensors with less than 2 data splits
+            if len(group) < 2:
+                logger.warning(
+                    f"Not enough data splits to calculate variability for sensor {sensor}. Skipping."
+                )
+                continue
+
+            # Perform one-way ANOVA
+            f_stat, p_val = f_oneway(*group)
+            results.append(
+                {
+                    "sensor": sensor,
+                    "F_statistic": f_stat,
+                    "p_value": p_val,
+                }
+            )
+
+            # Log if F-statistic exceeds threshold
+            if f_stat > f_stat_threshold:
+                logger.warning(
+                    f"Sensor {sensor} has a high F-statistic ({f_stat:.4f}) indicating significant variability in reconstruction error across data splits."
+                )
+
+        results_df = pd.DataFrame(results)
+        return results_df
+
+    except Exception as e:
+        logger.error(
+            f"Error computing one-way ANOVA tests across sensor data splits: {str(e)}"
+        )
+        raise
+
+
 def reconstruction_error_summary(
     reconstruction_error_df: pd.DataFrame,
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error_summary.csv",
+    threshold: float = 0.3,
 ) -> pd.DataFrame:
     """
     Generate and optionally save summary statistics (mean and std) for reconstruction error
@@ -215,6 +274,8 @@ def reconstruction_error_summary(
     :type save_path: Optional[str]
     :param filename: Filename to use for the saved CSV
     :type filename: str
+    :param threshold: Relative threshold for flagging large differences in mean/std across splits
+    :type threshold: float
     :return: Summary statistics MultiIndex column DataFrame
     :rtype: pd.DataFrame
     :raises ValueError: If required columns are missing or if data is empty
@@ -244,6 +305,25 @@ def reconstruction_error_summary(
         summary_stats = summary_stats[
             [col for col in column_order if col in summary_stats.columns]
         ]
+
+        mean_columns = [col for col in summary_stats.columns if col.endswith("_mean")]
+        std_columns = [col for col in summary_stats.columns if col.endswith("_std")]
+
+        for sensor, row in summary_stats.iterrows():
+            mean_values = row[mean_columns].dropna()
+            std_values = row[std_columns].dropna()
+            if len(mean_values) >= 2:
+                diff_mean = mean_values.max() - mean_values.min()
+                if diff_mean > threshold:
+                    logger.warning(
+                        f"Sensor {sensor} has a high difference in mean reconstruction error across splits."
+                    )
+            if len(std_values) >= 2:
+                diff_std = std_values.max() - std_values.min()
+                if diff_std > threshold:
+                    logger.warning(
+                        f"Sensor {sensor} has a high difference in std reconstruction error across splits."
+                    )
 
         # Save if a path is provided
         if save_path:
