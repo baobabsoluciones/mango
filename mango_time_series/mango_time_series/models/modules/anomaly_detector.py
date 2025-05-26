@@ -173,6 +173,22 @@ def reconstruction_error(
             "data_split"
         ]
 
+        # Warn if some sensors have higher reconstruction error than others
+        sensor_columns = [
+            col for col in reconstruction_error_df.columns if col != "data_split"
+        ]
+        mean_errors = reconstruction_error_df[sensor_columns].abs().mean()
+        median_mean_error = mean_errors.median()
+        threshold = 3 * median_mean_error
+        high_error_sensors = mean_errors[mean_errors > threshold]
+        if not high_error_sensors.empty:
+            logger.warning(
+                "Sensors with high reconstruction error compared to others:\n"
+                + high_error_sensors.sort_values(ascending=False).to_string(
+                    float_format="%.4f"
+                )
+            )
+
         if save_path:
             path = Path(save_path)
             path.mkdir(parents=True, exist_ok=True)
@@ -337,6 +353,11 @@ def std_error_threshold(
         anomaly_counts = anomaly_mask.groupby("data_split")[sensor_columns].sum()
         total_counts = anomaly_mask.groupby("data_split")[sensor_columns].count()
         anomaly_proportions = anomaly_counts / total_counts
+        high_anomaly_sensors = anomaly_proportions.mean().sort_values(ascending=False)
+        logger.info(
+            "Sensors with highest anomaly proportions (# anomalies / sensor data count):\n"
+            + high_anomaly_sensors.head().to_string(float_format="%.4f")
+        )
 
         # Save if a path is provided
         if save_path:
@@ -345,7 +366,7 @@ def std_error_threshold(
             mask_full_path = path / anomaly_mask_filename
             prop_full_path = path / anomaly_proportions_filename
             anomaly_mask.to_csv(mask_full_path, index=False, float_format="%.4f")
-            anomaly_proportions.to_csv(prop_full_path, index=False, float_format="%.4f")
+            anomaly_proportions.to_csv(prop_full_path, index=True, float_format="%.4f")
             logger.info(f"Anomaly mask saved to {mask_full_path}")
             logger.info(f"Anomaly proportions saved to {prop_full_path}")
 
