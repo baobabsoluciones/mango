@@ -672,21 +672,21 @@ def create_error_analysis_dashboard(
         raise
 
 
-def create_reconstruction_error_boxplot(
-    melted_df: pd.DataFrame,
+def boxplot_reconstruction_error(
+    reconstruction_error_df: pd.DataFrame,
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error_boxplot.html",
-    show: bool = True,
+    show: bool = False,
     height: Optional[int] = None,
     width: Optional[int] = None,
     template: str = "plotly_white",
     xaxis_tickangle: int = -45,
 ) -> go.Figure:
     """
-    Create an interactive boxplot for reconstruction errors.
+    Generate and optionally save a boxplot for reconstruction error using Plotly.
 
-    :param melted_df: Melted DataFrame containing reconstruction error data
-    :type melted_df: pd.DataFrame
+    :param reconstruction_error_df: DataFrame with reconstruction error values and 'data_split'
+    :type reconstruction_error_df: pd.DataFrame
     :param save_path: Optional path to save the plot
     :type save_path: Optional[str]
     :param filename: Name of the file to save
@@ -704,7 +704,17 @@ def create_reconstruction_error_boxplot(
     :return: Plotly figure object
     :rtype: go.Figure
     """
+    if reconstruction_error_df.empty:
+        raise ValueError("Input DataFrame cannot be empty")
+    if "data_split" not in reconstruction_error_df.columns:
+        raise ValueError("Input DataFrame must contain 'data_split' column")
+
     try:
+        # Melt the DataFrame
+        melted_df = reconstruction_error_df.melt(
+            id_vars=["data_split"], var_name="sensor", value_name="AE_error"
+        )
+
         # Create the boxplot using Plotly
         fig = px.box(
             melted_df,
@@ -980,7 +990,7 @@ def plot_corrected_data(
             )
 
         fig.update_layout(
-            title="Autoencoder Corrected Data",
+            title=dict(text="Autoencoder Corrected Data", x=0.5, xanchor="center"),
             xaxis_title="Time Step",
             yaxis_title="Value",
             showlegend=True,

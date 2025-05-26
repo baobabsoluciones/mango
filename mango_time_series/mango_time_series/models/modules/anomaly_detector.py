@@ -5,10 +5,7 @@ import numpy as np
 import pandas as pd
 
 from mango.logging import get_configured_logger
-from mango_time_series.models.utils.plots import (
-    create_error_analysis_dashboard,
-    create_reconstruction_error_boxplot,
-)
+from mango_time_series.models.utils.plots import create_error_analysis_dashboard
 from mango_time_series.models.utils.processing import time_series_split
 
 logger = get_configured_logger()
@@ -260,42 +257,6 @@ def reconstruction_error_summary(
 
     except Exception as e:
         logger.error(f"Error generating reconstruction error summary: {str(e)}")
-        raise
-
-
-def reconstruction_error_boxplot(
-    reconstruction_error_df: pd.DataFrame,
-    save_path: Optional[str] = None,
-    show: bool = False,
-) -> None:
-    """
-    Generate and optionally save a boxplot for reconstruction error using Plotly.
-
-    :param reconstruction_error_df: DataFrame with reconstruction error values and 'data_split'
-    :type reconstruction_error_df: pd.DataFrame
-    :param save_path: Optional path to save the plot
-    :type save_path: Optional[str]
-    :param show: Whether to display the plot
-    :type show: bool
-    :raises ValueError: If required columns are missing or if data is empty
-    """
-    if reconstruction_error_df.empty:
-        raise ValueError("Input DataFrame cannot be empty")
-    if "data_split" not in reconstruction_error_df.columns:
-        raise ValueError("Input DataFrame must contain 'data_split' column")
-
-    try:
-        # Melt the DataFrame
-        melted_df = reconstruction_error_df.melt(
-            id_vars=["data_split"], var_name="sensor", value_name="AE_error"
-        )
-
-        create_reconstruction_error_boxplot(
-            melted_df=melted_df, save_path=save_path, show=show
-        )
-
-    except Exception as e:
-        logger.error(f"Error generating reconstruction error boxplot: {str(e)}")
         raise
 
 
