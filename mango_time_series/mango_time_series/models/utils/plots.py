@@ -4,6 +4,7 @@ from typing import List, Optional
 
 import numpy as np
 import pandas as pd
+import plotly.colors as pc
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
@@ -750,7 +751,11 @@ def create_reconstruction_error_boxplot(
             ),
         )
 
-        fig.update_traces(hovertemplate="Reconstruction Error: %{y:.4f}<extra></extra>")
+        fig.update_traces(
+            hovertemplate="reconstruction error: %{y:.4f}<extra></extra>",
+            marker=dict(size=3),
+            showlegend=True,
+        )
 
         if save_path:
             path = Path(save_path)
@@ -846,4 +851,156 @@ def create_actual_vs_reconstructed_plot(
 
     except Exception as e:
         logger.error(f"Error creating actual vs reconstructed plot: {str(e)}")
+        raise
+
+
+def plot_corrected_data(
+    actual_data_df: pd.DataFrame,
+    autoencoder_output_df: pd.DataFrame,
+    anomaly_mask: pd.DataFrame,
+    save_path: Optional[str] = None,
+    filename: str = "corrected_data_plot.html",
+    show: bool = False,
+    height: Optional[int] = None,
+    width: Optional[int] = None,
+    template: str = "plotly_white",
+    color_palette: Optional[List[str]] = None,
+) -> go.Figure:
+    """
+    Plot original sensor data, autoencoder reconstruction, and corrected (replaced) anomaly points.
+
+    :param actual_data_df: Original sensor data including the context window
+    :type actual_data_df: pd.DataFrame
+    :param autoencoder_output_df: Autoencoder output after context window removal
+    :type autoencoder_output_df: pd.DataFrame
+    :param anomaly_mask: DataFrame of boolean values indicating where values categorized as anomalies
+    :type anomaly_mask: pd.DataFrame
+    :param save_path: Optional path to save the plot as an HTML file
+    :type save_path: Optional[str]
+    :param filename: Filename to use if saving the plot
+    :type filename: str
+    :param show: Whether to display the plot in a browser window
+    :type show: bool
+    :param height: Optional height of the figure in pixels
+    :type height: Optional[int]
+    :param width: Optional width of the figure in pixels
+    :type width: Optional[int]
+    :param template: Plotly template for figure styling (e.g. "plotly_white")
+    :type template: str
+    :param color_palette: Optional list of colors to use for plotting each sensor
+    :type color_palette: Optional[List[str]]
+    :return: Plotly figure object with actual, reconstructed, and corrected data traces
+    :rtype: go.Figure
+    :raises ValueError: If input DataFrames have mismatched lengths, columns, or invalid structure
+    :raises Exception: If an error occurs during plotting or file saving
+    """
+
+    # Define context offset based on the length of the actual vs outencoder outut
+    context_offset = len(actual_data_df.index) - len(autoencoder_output_df.index)
+    expected_autoencoder_length = len(actual_data_df) - context_offset
+
+    if context_offset < 0:
+        raise ValueError("context_offset must be a positive integer")
+    if len(autoencoder_output_df) != expected_autoencoder_length:
+        raise ValueError(
+            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length"
+            f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
+        )
+    if len(anomaly_mask) != len(actual_data_df) - context_offset:
+        raise ValueError(
+            f"Anomaly mask rows {len(anomaly_mask)} do not match actual data rows {len(actual_data_df)} with context offset {context_offset}"
+        )
+    if not autoencoder_output_df.columns.equals(actual_data_df.columns):
+        raise ValueError(
+            f"Autoencoder output columns ({autoencoder_output_df.columns})"
+            f" do match actual data columns ({actual_data_df.columns})"
+        )
+    anomaly_cols = [col for col in anomaly_mask.columns if col != "data_split"]
+    actual_cols = list(actual_data_df.columns)
+    if set(anomaly_cols) != set(actual_cols):
+        raise ValueError(
+            f"Anomaly mask columns ({anomaly_mask.columns}) "
+            f"do not match actual data columns ({actual_data_df.columns})"
+        )
+
+    try:
+
+        fig = go.Figure()
+        sensor_columns = actual_data_df.columns
+        if color_palette is None:
+            color_palette = pc.qualitative.Plotly
+
+        for i, col in enumerate(sensor_columns):
+            color = color_palette[i % len(color_palette)]
+
+            # Plot actual sensor data
+            fig.add_trace(
+                go.Scatter(
+                    x=actual_data_df.index,
+                    y=actual_data_df[col],
+                    mode="lines",
+                    name=f"{col} - Original",
+                    line=dict(color=color, width=1),
+                    opacity=0.4,
+                    # legendgroup=col,
+                    # legendgrouptitle={"text": col},
+                    showlegend=True,
+                )
+            )
+
+            # Plot autoencoder reconstructed sensor data
+            autoencoder_idx = autoencoder_output_df.index
+            shifted_idx = autoencoder_idx + context_offset
+            fig.add_trace(
+                go.Scatter(
+                    x=shifted_idx,
+                    y=autoencoder_output_df[col],
+                    mode="lines",
+                    name=f"{col} - Autoencoder Output",
+                    line=dict(color=color, width=1, dash="dot"),
+                    opacity=0.8,
+                    # legendgroup=col,
+                    showlegend=True,
+                )
+            )
+
+            # Plot replaced points based on anomaly mask
+            mask = anomaly_mask[col]
+            replaced_idx = autoencoder_output_df.index[mask] + context_offset
+            fig.add_trace(
+                go.Scatter(
+                    x=replaced_idx,
+                    y=autoencoder_output_df.loc[mask, col],
+                    mode="markers",
+                    name=f"{col} - Replaced",
+                    marker=dict(size=6, symbol="x", color=color),
+                    # legendgroup=col,
+                    showlegend=True,
+                )
+            )
+
+        fig.update_layout(
+            title="Autoencoder Corrected Data",
+            xaxis_title="Time Step",
+            yaxis_title="Value",
+            showlegend=True,
+            hovermode="x unified",
+            height=height,
+            width=width,
+            template=template,
+        )
+
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            full_path = path / filename
+            fig.write_html(full_path)
+            logger.info(f"Corrected data plot saved to {full_path}")
+
+        if show:
+            fig.show()
+
+        return fig
+    except Exception as e:
+        logger.error(f"Error creating corrected data plot: {str(e)}")
         raise
