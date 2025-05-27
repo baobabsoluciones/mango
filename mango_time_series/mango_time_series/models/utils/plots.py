@@ -681,6 +681,7 @@ def boxplot_reconstruction_error(
     width: Optional[int] = None,
     template: str = "plotly_white",
     xaxis_tickangle: int = -45,
+    color_palette: Optional[List[str]] = None,
 ) -> go.Figure:
     """
     Generate and optionally save a boxplot for reconstruction error using Plotly.
@@ -1011,6 +1012,111 @@ def plot_corrected_data(
             fig.show()
 
         return fig
+    except Exception as e:
+        logger.error(f"Error creating corrected data plot: {str(e)}")
+        raise
+
+
+def plot_anomaly_proportions(
+    anomaly_mask: pd.DataFrame,
+    save_path: Optional[str] = None,
+    filename: str = "anomaly_proportions_plot.html",
+    show: bool = False,
+    height: Optional[int] = None,
+    width: Optional[int] = None,
+    template: str = "plotly_white",
+    color_palette: Optional[List[str]] = None,
+    xaxis_tickangle: int = -45,
+) -> go.Figure:
+    """
+    Generate a bar chart showing anomaly proportions by sensor and data split.
+    Anomaly proportions are calculated as the number of anomalies divided by
+    the total number of observations for each sensor.
+
+    :param anomaly_mask: DataFrame containing boolean anomaly mask (True = anomaly) and a 'data_split' column
+    :type anomaly_mask: pd.DataFrame
+    :param save_path: Optional directory to save the output HTML plot
+    :type save_path: Optional[str]
+    :param filename: Filename for the saved plot (HTML format)
+    :type filename: str
+    :param show: Whether to display the plot interactively
+    :type show: bool
+    :param height: Optional height of the figure
+    :type height: Optional[int]
+    :param width: Optional width of the figure
+    :type width: Optional[int]
+    :param template: Plotly layout template to use (e.g., 'plotly_white', 'ggplot2')
+    :type template: str
+    :param color_palette: Optional list of color hex codes or names to use per data split
+    :type color_palette: Optional[List[str]]
+    :param xaxis_tickangle: Angle for x-axis labels
+    :type xaxis_tickangle: int
+    :return: Plotly Figure object
+    :rtype: go.Figure
+    :raises Exception: If plot creation or file saving fails
+    """
+    if "data_split" not in anomaly_mask.columns:
+        raise ValueError("Anomaly mask must contain a 'data_split' column.")
+
+    sensor_columns = [col for col in anomaly_mask.columns if col != "data_split"]
+    data_splits = anomaly_mask["data_split"].dropna().unique()
+
+    if not sensor_columns:
+        raise ValueError("Anomaly mask must contain sensor columns.")
+    if len(data_splits) == 0:
+        raise ValueError("Anomaly mask must contain at least one unique data split.")
+
+    try:
+
+        fig = go.Figure()
+
+        if color_palette is None:
+            color_palette = pc.qualitative.Plotly
+
+        # Go through each data split and calculate proportions of anomalies per sensor
+        for i, split in enumerate(data_splits):
+            color = color_palette[i % len(color_palette)]
+            split_mask = anomaly_mask[anomaly_mask["data_split"] == split]
+            proportions = (
+                split_mask[sensor_columns].sum() / split_mask[sensor_columns].count()
+            )
+            fig.add_trace(
+                go.Bar(
+                    x=sensor_columns,
+                    y=proportions,
+                    name=split,
+                    marker=dict(color=color),
+                )
+            )
+
+        fig.update_layout(
+            title=dict(
+                text="Anomaly Proportions",
+                x=0.5,
+                xanchor="center",
+            ),
+            yaxis_title="Anomaly Proportion (Given a Sensor and Data Split)",
+            showlegend=True,
+            legend_title="Dataset Split",
+            hovermode="x unified",
+            height=height,
+            width=width,
+            template=template,
+            xaxis_tickangle=xaxis_tickangle,
+        )
+
+        if save_path:
+            path = Path(save_path)
+            path.mkdir(parents=True, exist_ok=True)
+            full_path = path / filename
+            fig.write_html(full_path)
+            logger.info(f"Anomaly proportions plot saved to {full_path}")
+
+        if show:
+            fig.show()
+
+        return fig
+
     except Exception as e:
         logger.error(f"Error creating corrected data plot: {str(e)}")
         raise
