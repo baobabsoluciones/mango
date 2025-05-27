@@ -1,22 +1,31 @@
-"""
-Module for obtaining census data from the Spanish National Statistics Institute (INE).
-
-This module provides the INEData class for retrieving and processing
-census data from the INE API and INE urls.
-"""
-
 import json
 import logging
 import os
 import tempfile
-import zipfile
-from io import BytesIO
-
 import geopandas as gpd
 import pandas as pd
+from io import StringIO, BytesIO
+
+import polars as pl
 import requests
+import zipfile
 
 from mango.logging import get_configured_logger
+
+NATIONAL_DATA_URLS = {
+    "poblacion_sexo_pais_nacimiento_esp_ext": "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65031.csv?nocab=1",
+    "poblacion_sexo_nacionalidad_esp_ext": "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65032.csv?nocab=1",
+    "poblacion_sexo_pais_nacionalidad_principales": "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65036.csv?nocab=1",
+    "poblacion_sexo_pais_nacimiento_principales": "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65035.csv?nocab=1",
+    "poblacion_sexo_relacion_nacimiento_residencia": "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65033.csv?nocab=1",
+    "poblacion_sexo_edad_quinquenales": "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65034.csv?nocab=1",
+}
+
+API_BASE_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/"
+DEFAULT_TABLE_CODES_PATH = "ine_table_codes.json"
+
+GEOMETRY_DATA_URL = r"https://www.ine.es/prodyser/cartografia/seccionado_2024.zip"
+INE_CODES_URL = "https://www.ine.es/daco/daco42/codmun/diccionario25.xlsx"
 
 # configure logging level
 logger = get_configured_logger(
@@ -27,578 +36,63 @@ logger = get_configured_logger(
 
 
 class INEData:
-    """
-    A client for retrieving and processing census data from the INE.
 
-    This class provides methods to fetch census data by section, clean it, and link it with municipality data.
-    It also supports verbose logging for debugging purposes.
+    def __init__(
+            self,
+            table_codes_json_path: str = DEFAULT_TABLE_CODES_PATH,
+            verbose: bool = False,
+    ) -> None:
+        """
+        Initializes the INEData with specified configurations.
 
-    :param verbose: If True, enables detailed logging for debugging.
-    :type verbose: bool
-
-    Usage
-    --------
-
-    Import the INEData class and create an instance:
-
-    >>> from mango.clients.ine import INEData
-    >>> ineDataSource = INEData()
-    """
-
-    GEOMETRY_DATA_URL = r"https://www.ine.es/prodyser/cartografia/seccionado_2024.zip"
-    INE_CODES_URL = "https://www.ine.es/daco/daco42/codmun/diccionario25.xlsx"
-    BASE_API_URL = "https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/"
-    FULL_CENSUS_URL = "https://www.ine.es/jaxiT3/files/t/es/csv_bdsc/65031.csv"
-    TABLE_IDS = {
-        "Albacete": "69095",
-        "Alicante/Alacant": "69102",
-        "Almería": "69106",
-        "Araba/Álava": "65039",
-        "Asturias": "69110",
-        "Ávila": "69114",
-        "Badajoz": "69118",
-        "Balears, Illes": "69122",
-        "Barcelona": "69126",
-        "Bizkaia": "69130",
-        "Burgos": "69134",
-        "Cáceres": "69138",
-        "Cádiz": "69142",
-        "Cantabria": "69146",
-        "Castellón/Castelló": "69150",
-        "Ciudad Real": "69154",
-        "Córdoba": "69158",
-        "Coruña, A": "69162",
-        "Cuenca": "69166",
-        "Gipuzkoa": "69170",
-        "Girona": "69174",
-        "Granada": "69178",
-        "Guadalajara": "69182",
-        "Huelva": "69186",
-        "Huesca": "69190",
-        "Jaén": "69194",
-        "León": "69198",
-        "Lleida": "69202",
-        "Lugo": "69206",
-        "Madrid": "69210",
-        "Málaga": "69214",
-        "Murcia": "69218",
-        "Navarra": "69222",
-        "Ourense": "69226",
-        "Palencia": "69230",
-        "Palmas, Las": "69234",
-        "Pontevedra": "69238",
-        "Rioja, La": "69242",
-        "Salamanca": "69246",
-        "Santa Cruz de Tenerife": "69250",
-        "Segovia": "69254",
-        "Sevilla": "69258",
-        "Soria": "69262",
-        "Tarragona": "69266",
-        "Teruel": "69343",
-        "Toledo": "69270",
-        "Valencia/València": "69274",
-        "Valladolid": "69278",
-        "Zamora": "69282",
-        "Zaragoza": "69286",
-        "Ceuta": "69290",
-        "Melilla": "69294",
-    }
-
-    def __init__(self, verbose: bool = False):
-        self.verbose = verbose
-        self.municipalities = self._get_municipalities()
-
+        :param table_codes_json_path: Path to the JSON file containing table codes for provinces.
+        :type table_codes_json_path: str
+        :param verbose: If True, sets the logger to DEBUG level.
+        :type verbose: bool
+        """
         if verbose:
             logger.setLevel(logging.DEBUG)
-            logger.debug("Verbose logging enabled for INEData.")
 
-    def fetch_census_by_section(self, table_id: str | list[str]) -> pd.DataFrame:
-        """
-        WARNING: This method is unreliable due to INE naming inconsistencies.
-        The best way to fetch this data is to fetch the full census.
+        self.provincial_codes = self._load_provincial_codes(table_codes_json_path)
+        self.municipalities = self._process_municipalities_dictionary()
 
-        Fetches census data for specific province(s) from the INE API.
-
-        This method retrieves data for one or more provinces based on their table IDs, cleans the data,
-        and returns it as a DataFrame. Each table ID corresponds to a province.
-
-        :param table_id: A single table ID or a list of table IDs representing provinces.
-        :type table_id: str or list of str
-        :return: A cleaned DataFrame containing census data for the specified provinces.
-        :rtype: pd.DataFrame
-
-        Usage
-        --------
-
-        Fetch census data for a specific province:
-
-        >>> from mango.clients.ine import INEData
-        >>> ineDataSource = INEData()
-
-        >>> census = ineDataSource.fetch_census_by_section("69202")
-        """
-        logger.info(f"Fetching census data for table ID(s): {table_id}")
-        if isinstance(table_id, str):
-            table_id = [table_id]
-
-        all_data = []
-        for tid in table_id:
-            if not self._is_valid_table_id(tid):
-                logger.error(f"Invalid table ID: {tid}")
-                raise ValueError(
-                    f"Invalid province code: {tid}. Call list_table_codes() for valid codes."
-                )
-
-            url = f"{INEData.BASE_API_URL}{tid}?nult=1"
-            content = self._fetch_url(url)
-
-            data = json.loads(content)
-            df = pd.json_normalize(data)
-
-            province_name = next(
-                (k for k, v in INEData.TABLE_IDS.items() if v == tid), None
-            )
-            df["Provincia"] = province_name
-
-            df = self._clean_table(df)
-            all_data.append(df)
-
-        combined_df = pd.concat(all_data, ignore_index=True)
-        logger.info("Census data successfully fetched")
-        return combined_df
-
-    @staticmethod
-    def fetch_full_census(year: int = None) -> pd.DataFrame:
-        """
-        Fetches the full census data from the INE and cleans it.
-
-        This function retrieves census data for all available provinces, filters it by the specified year
-        (or the latest year available if not specified), and returns a cleaned DataFrame.
-
-        :param year: The year to filter the data by. If None, the latest year available is used.
-        :type year: int
-        :return: A cleaned DataFrame containing census data with province, municipality, and census tract details.
-        :rtype: pd.DataFrame
-
-        Usage
-        --------
-
-        Fetch full census and add the geometry data:
-
-        >>> from mango.clients.ine import INEData
-        >>> ineDataSource = INEData()
-
-        >>> full_census = ineDataSource.fetch_full_census()
-        >>> print(full_census.head())
-        """
-        logger.info("Fetching full census data.")
-        if year:
-            logger.debug(f"Filtering census data for the year: {year}")
-
-        content = INEData._fetch_url(INEData.FULL_CENSUS_URL)
-
-        df_raw = pd.read_csv(BytesIO(content), sep=";", dtype=str, thousands=".")
-        df = INEData._clean_full_census(df_raw, year)
-
-        logger.info("Full census data successfully fetched and cleaned.")
-        return df
-
-    @staticmethod
-    def enrich_with_geometry(
-            census_df: pd.DataFrame, geometry_path: str = None
-    ) -> gpd.GeoDataFrame:
-        """
-        Enriches a census DataFrame with spatial geometry data.
-
-        This function merges census data with geometrical data from a spatial file (e.g., shapefile or GeoJSON).
-        If no file path is provided, it fetches the geometry data from a predefined URL.
-
-        :param census_df: A cleaned census DataFrame to enrich with geometry.
-        :type census_df: pd.DataFrame
-        :param geometry_path: Path to the spatial file containing geometry data. If None, data is fetched from a URL.
-        :type geometry_path: str
-        :return: A GeoDataFrame containing both census and spatial data.
-        :rtype: gpd.GeoDataFrame
-
-        Usage
-        --------
-
-        Enrich previously fetched census data with the geometries assigned to the census tracts:
-
-        >>> from mango.clients.ine import INEData
-        >>> import geopandas as gpd
-
-        >>> ineDataSource = INEData()
-
-        >>> census_df = ineDataSource.fetch_census_by_section("69202")
-        >>> geometry_df = ineDataSource.enrich_with_geometry(census_df)
-        >>> geometry_df.explore()
-        """
-        logger.info("Enriching census data with geometry.")
-        if geometry_path:
-            logger.debug(f"Using geometry file from path: {geometry_path}")
-        else:
-            logger.debug("Fetching geometry data from predefined URL.")
-
-        if geometry_path is None:
-            try:
-                response = requests.get(INEData.GEOMETRY_DATA_URL)
-                response.raise_for_status()
-                geo_bytes = response.content
-            except requests.RequestException as e:
-                logger.error(
-                    f"Error fetching data from {INEData.GEOMETRY_DATA_URL}: {e}"
-                )
-                raise
-
-            with zipfile.ZipFile(BytesIO(geo_bytes)) as zf:
-                shp_file = next((f for f in zf.namelist() if f.endswith(".shp")), None)
-                if not shp_file:
-                    raise ValueError("No shapefile found in the zip archive")
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    zf.extractall(tmpdir)
-                    geometry_data = gpd.read_file(os.path.join(tmpdir, shp_file))
-
-        else:
-            try:
-                geometry_data = gpd.read_file(geometry_path)
-            except Exception as e:
-                logger.error(f"Could not read geometry file: {e}")
-                raise
-
-        geometry_with_census = geometry_data.merge(
-            census_df, left_on="CUSEC", right_on="ine_census_tract_code"
-        )
-
-        # Move geometry column to the end
-        geometry_with_census = geometry_with_census[
-            [col for col in geometry_with_census.columns if col != "geometry"]
-            + ["geometry"]
-        ]
-
-        logger.info("Census data successfully enrich with geometry.")
-        return geometry_with_census
-
-    @staticmethod
-    def download_full_census_with_geometry(
-            folder_path: str,
-            file_name: str = "full_census_with_geometry",
-            geometry_path: str = None,
-            split_by_province: bool = False,
-    ) -> None:
-        """
-        Downloads the cleaned full census data and its geometry, and saves it to a specified path.
-
-        :param folder_path: Path to the folder where the data will be saved.
-        :type folder_path: str
-        :param file_name: Name of the output file (without extension).
-        :type file_name: str
-        :param geometry_path: Path to the spatial file containing geometry data. If None, data is fetched from a URL.
-        :type geometry_path: str
-        :param split_by_province: If True, saves the data split by province. If False, saves the full dataset.
-        :type split_by_province: bool
-        :return: None
-
-
-        Usage
-        --------
-
-        """
-        logger.info("Starting download of full census data with geometry.")
-        logger.debug(f"Output folder: {folder_path}, File name: {file_name}")
-        if split_by_province:
-            logger.debug("Data will be split by province.")
-
-        # Check if folder path exists and is a string and create it if not
-        if not folder_path or not isinstance(folder_path, str):
-            raise ValueError("folder_path must be a non-empty string.")
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path, exist_ok=True)
-
-        df = INEData.fetch_full_census()
-        df_geom = INEData.enrich_with_geometry(df, geometry_path=geometry_path)
-
-        if split_by_province:
-            if "ine_province_code" not in df_geom.columns:
-                raise ValueError("'ine_province_code' column is missing from the data.")
-
-            for province_code in df_geom["ine_province_code"].unique():
-                logger.info(f"Processing province code: {province_code}")
-                province_df = df_geom[df_geom["ine_province_code"] == province_code]
-                province_file_name = f"{file_name}_province_{province_code}"
-                INEData.save_geojson_file(province_df, folder_path, province_file_name)
-        else:
-            INEData.save_geojson_file(df_geom, folder_path, file_name)
-
-            logger.info(
-                f"Full census data with geometry saved to {folder_path}/{file_name}.geojson"
+        if not self.provincial_codes:
+            logger.warning(
+                f"Provincial table codes could not be loaded from {table_codes_json_path}. "
+                "Fetching by province name and dataset title will not work if the file is missing or invalid."
             )
 
-        logger.info("Full census data with geometry successfully downloaded and saved.")
-
-    @staticmethod
-    def save_geojson_file(
-            df_geom: gpd.GeoDataFrame, folder_path: str, file_name: str
-    ) -> None:
+    def _load_provincial_codes(self, json_path):
         """
-        Saves a GeoDataFrame to a GeoJSON file.
+        Loads provincial table codes from a JSON file.
 
-        :param df_geom: GeoDataFrame to save
-        :type df_geom: gpd.GeoDataFrame
-        :param folder_path: Path to the folder where the file will be saved
-        :type folder_path: str
-        :param file_name: Name of the output file (without extension)
-        :type file_name: str
-        :return: None
+        :param json_path: Path to the JSON file containing table codes.
+        :type json_path: str
+        :return: Dictionary of provincial codes if successful, None otherwise.
+        :rtype: dict or None
         """
-        logger.info(f"Saving GeoJSON file: {file_name} to folder: {folder_path}")
-
-        if not isinstance(df_geom, gpd.GeoDataFrame):
-            raise ValueError("df_geom must be a GeoDataFrame.")
-
-        if df_geom.empty:
-            raise ValueError("GeoDataFrame is empty. Nothing to save.")
-
-        if not isinstance(folder_path, str) or not folder_path.strip():
-            raise ValueError("Invalid folder_path. Must be a non-empty string.")
-
-        if not isinstance(file_name, str) or not file_name.strip():
-            raise ValueError("Invalid file_name. Must be a non-empty string.")
-
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path, exist_ok=True)
-
-        file_name = (
-            file_name if file_name.endswith(".geojson") else f"{file_name}.geojson"
-        )
-        file_path = os.path.join(folder_path, file_name)
-
+        if not os.path.exists(json_path):
+            logger.warning(f"Table codes file not found at {json_path}")
+            return None
         try:
-            df_geom.to_file(file_path, driver="GeoJSON")
+            with open(json_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            logger.error(f"Could not decode JSON from {json_path}.")
+            return None
         except Exception as e:
-            logger.error(f"Could not save the GeoJSON to {file_path}: {e}")
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            raise
-        logger.info(f"GeoJSON file successfully saved: {file_name}")
+            logger.error(f"An error occurred while loading {json_path}: {e}")
+            return None
 
-    @staticmethod
-    def read_geojson_file(file_path: str) -> gpd.GeoDataFrame:
+    def _process_municipalities_dictionary(self) -> pd.DataFrame:
         """
-        Reads a GeoJSON file and returns it as a GeoDataFrame.
+        Fetches and processes the INE municipalities dictionary.
 
-        :param file_path: Path to the GeoJSON file.
-        :type file_path: str
-        :return: A GeoDataFrame containing the data from the GeoJSON file.
-        :rtype: gpd.GeoDataFrame
-
-        Usage
-        --------
-
-        Read a GeoJSON file:
-        >>> from mango.clients.ine import INEData
-        >>> ineDataSource = INEData()
-
-        >>> geo_df = ineDataSource.read_geojson_file("path/to/your/file.geojson")
-        >>> print(geo_df.head())
-        """
-        logger.info(f"Reading GeoJSON file from path: {file_path}")
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"File {file_path} does not exist.")
-
-        logger.info(f"GeoJSON file successfully read: {file_path}")
-        return gpd.read_file(file_path)
-
-    def _clean_table(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Cleans the DataFrame by filtering out unwanted rows from the INE API response.
-
-        :param df: DataFrame to clean
-        :type df: pd.DataFrame
-        :return: Cleaned DataFrame
-        :rtype: pd.DataFrame
-        """
-        logger.debug("Cleaning census data table.")
-
-        df = df.loc[
-            df["Nombre"].str.contains("sección")
-            & ~df["Nombre"].str.contains("Hombres|Mujeres|Española|Extranjera")
-            & df["Nombre"].str.contains("Total")
-            & df["Nombre"].str.contains("Todas las edades")
-        ]
-
-        matches = df["Nombre"].str.extract(r"^(.*?)\ssección\s(\d{5})", expand=True)
-        df = df.assign(Name=matches[0], Code=matches[1])
-
-        df["ine_population"] = df["Data"].apply(
-            lambda x: x[0].get("Valor") if isinstance(x, list) and len(x) > 0 else None
-        )
-
-        df.rename(columns={"Name": "ine_municipality_name"}, inplace=True)
-
-        df = df.merge(
-            self.municipalities[["ine_municipality_code", "ine_municipality_name"]],
-            how="left",
-            left_on="ine_municipality_name",
-            right_on="ine_municipality_name",
-        )
-
-        # Check if the merge was successful
-        if df["ine_municipality_code"].isnull().any():
-            # Print the municipalities that could not be matched
-            unmatched_municipalities = df[df["ine_municipality_code"].isnull()][
-                "ine_municipality_name"
-            ].unique()
-
-            raise ValueError(
-                f"Some municipalities could not be matched to their INE code by name. Check the data. They are: {unmatched_municipalities}"
-            )
-
-        df.rename(
-            columns={"Code": "ine_census_tract_code", "Provincia": "ine_province_name"},
-            inplace=True,
-        )
-
-        df["ine_census_tract_code"] = df["ine_municipality_code"].astype(str) + df[
-            "ine_census_tract_code"
-        ].astype(str)
-        df["ine_province_code"] = df["ine_municipality_code"].str[:2]
-        df = df[
-            [
-                "ine_province_code",
-                "ine_province_name",
-                "ine_municipality_code",
-                "ine_municipality_name",
-                "ine_census_tract_code",
-                "ine_population",
-            ]
-        ]
-
-        logger.info("Census data table successfully cleaned.")
-        return df
-
-    @staticmethod
-    def list_table_codes() -> dict:
-        """
-        Lists all available table codes for provinces in the INE API.
-
-        Each table code corresponds to a specific province and can be used to fetch census data.
-
-        :return: A dictionary mapping province names to their respective table codes.
-        :rtype: dict
-
-        Usage
-        --------
-
-        Show all available table codes in the INE API:
-
-        >>> from mango.clients.ine import INEData
-        >>> ineDataSource = INEData()
-
-        >>> table_codes = ineDataSource.list_table_codes()
-        >>> print(ineDataSource.list_table_codes())
-        """
-        return INEData.TABLE_IDS
-
-    @staticmethod
-    def _fetch_url(url: str) -> bytes:
-        """
-        Fetches content from a URL with error handling.
-
-        :param url: URL to fetch
-        :type url: str
-        :return: Content of the response
-        """
-        logger.debug(f"Fetching data from URL: {url}")
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            logger.debug(f"Data successfully fetched from URL: {url}")
-            return response.content
-        except requests.RequestException as e:
-            logger.error(f"Error fetching data from {url}: {e}")
-            raise
-
-    @staticmethod
-    def _clean_full_census(df: pd.DataFrame, year: int = None) -> pd.DataFrame:
-        """
-        Cleans the full census DataFrame by filtering out unwanted rows.
-
-        :param df: DataFrame to clean
-        :type df: pd.DataFrame
-        :param year: Year to filter the data by, if None it will use the last year available in the data
-        :type year: int
-        :return: Cleaned DataFrame
-        :rtype: pd.DataFrame
-        """
-        logger.debug("Cleaning full census data.")
-        if year:
-            logger.debug(f"Filtering census data for the year: {year}")
-
-        df = df[
-            df["Provincias"].notna()
-            & df["Municipios"].notna()
-            & df["Secciones"].notna()
-            & (df["Sexo"] == "Total")
-            & (df["Lugar de nacimiento"] == "Total")
-        ]
-
-        # filter by specific year if provided or use the last year available
-        year_filter = year if year else df["Periodo"].max()
-        df = df[df["Periodo"] == year_filter]
-
-        df["ine_province_code"] = df["Provincias"].str[:2].astype(str).str.zfill(2)
-        df["ine_province_name"] = df["Provincias"].str[3:]
-        df["ine_municipality_code"] = df["Municipios"].str[:5].astype(str).str.zfill(5)
-        df["ine_municipality_name"] = df["Municipios"].str[5:]
-        df["ine_census_tract_code"] = df["Secciones"].str[:10].astype(str).str.zfill(9)
-
-        # Convert population to numeric where thousands separator is a dot ignoring NANs
-        df["Total"] = df["Total"].str.replace(".", "", regex=False)
-        df["Total"] = df["Total"].str.replace(",", ".", regex=False)
-        df["ine_population"] = pd.to_numeric(df["Total"], errors="coerce")
-
-        final_columns = [
-            "ine_province_code",
-            "ine_province_name",
-            "ine_municipality_code",
-            "ine_municipality_name",
-            "ine_census_tract_code",
-            "ine_population",
-        ]
-
-        df_final = df[final_columns]
-
-        return df_final
-
-    @staticmethod
-    def _is_valid_table_id(table_id: str) -> bool:
-        """
-        Validates the table id providede.
-
-        :param table_id: Table id to validate
-        :type table_id: str
-        :return: True if valid, False otherwise
-        :rtype: bool
-        """
-        if isinstance(table_id, int):
-            table_id = str(table_id)
-        if len(table_id) != 5:
-            raise ValueError("Table code must be a 5-digit string/integer.")
-        if table_id not in INEData.TABLE_IDS.values():
-            return False
-
-        return True
-
-    @staticmethod
-    def _get_municipalities() -> pd.DataFrame:
-        """
-        Returns the municipalities DataFrame containing the name and the code as per INE.
-        :return: DataFrame containing municipalities data
+        :return: DataFrame containing municipalities data with codes and names.
         :rtype: pd.DataFrame
         """
         logger.info("Fetching municipalities data.")
-        content = INEData._fetch_url(INEData.INE_CODES_URL)
+        content = self._make_request(INE_CODES_URL).content
         df = pd.read_excel(BytesIO(content), skiprows=1, header=0)
         df["ine_municipality_code"] = df["CPRO"].astype(str).str.zfill(2) + df[
             "CMUN"
@@ -617,3 +111,714 @@ class INEData:
 
         logger.info("Municipalities data successfully fetched and processed.")
         return df
+
+    def _make_request(self, url):
+        """
+        Makes a GET request to the given URL.
+
+        :param url: The URL to make the request to.
+        :type url: str
+        :return: The response object if successful, None otherwise.
+        :rtype: requests.Response or None
+        """
+        try:
+            response = requests.get(url, timeout=30, allow_redirects=False)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.Timeout:
+            logger.error(f"Request timed out for URL: {url}")
+            return None
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP error for URL {url}: {e}")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching data from URL {url}: {e}")
+            return None
+
+    def _save_raw_content(self, content, destination_folder, filename):
+        """
+        Saves raw content to a file.
+
+        :param content: The content to save.
+        :type content: str or bytes
+        :param destination_folder: The folder to save the content to.
+        :type destination_folder: str
+        :param filename: The name of the file to save the content as.
+        :type filename: str
+        """
+        if not destination_folder:
+            return
+        try:
+            os.makedirs(destination_folder, exist_ok=True)
+            file_path = os.path.join(destination_folder, filename)
+            mode = "w" if isinstance(content, str) else "wb"
+            encoding = "utf-8" if isinstance(content, str) else None
+            with open(file_path, mode, encoding=encoding) as f:
+                f.write(content)
+            logger.info(f"Raw data saved to {file_path}")
+        except IOError as e:
+            logger.error(f"Error saving file {filename} to {destination_folder}: {e}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred while saving {filename}: {e}")
+
+    def _clean_csv_to_dataframe(self, csv_content_string, dataset_key, year=None):
+        """
+        Cleans the CSV content from INE into a polars DataFrame.
+
+        :param csv_content_string: The CSV content as a string.
+        :type csv_content_string: str
+        :param dataset_key: The key identifying the dataset type (influences cleaning logic).
+        :type dataset_key: str
+        :param year: The year to filter the data for. If None, no filtering is applied.
+        :type year: int, optional
+        :return: Cleaned data as a polars DataFrame.
+        :rtype: polars.DataFrame
+        """
+        try:
+            df = None
+            for enc in ["utf-8", "latin-1", "cp1252"]:
+                try:
+                    df = pl.read_csv(
+                        StringIO(csv_content_string), separator=";", encoding=enc
+                    )
+                    logger.info(f"Successfully read CSV with encoding: {enc}")
+                    break
+                except Exception as e:
+                    logger.warning(f"Failed to parse CSV with encoding {enc}: {e}")
+
+            if df is None:
+                logger.error(
+                    f"Could not parse CSV for {dataset_key} with attempted encodings."
+                )
+                return pl.DataFrame()
+
+            df = df.drop_nulls()
+
+            if df.columns[0] == "Total Nacional":
+                df = df.drop(df.columns[0])
+
+            df = df.filter(
+                ~pl.col(df.columns[3]).str.contains("Total")
+                & ~pl.col(df.columns[4]).str.contains("Total")
+            )
+
+            if year is not None:
+                try:
+                    year = int(year)
+                    df = df.filter(pl.col("Periodo") == year)
+                    if df.is_empty():
+                        logger.warning(
+                            f"No data found for year {year} in {dataset_key}."
+                        )
+                except ValueError:
+                    logger.error(f"Year '{year}' is not a valid integer")
+                    raise
+
+            if "Total" in df.columns:
+                df = df.with_columns(
+                    pl.col("Total")
+                    .str.replace_all(r"\.", "")
+                    .str.replace_all(r"^$", "0")
+                    .cast(pl.Int64)
+                    .alias("population_count")
+                )
+
+            if "Periodo" in df.columns:
+                df = df.with_columns(pl.col("Periodo").cast(pl.Int64))
+
+            df = df.with_columns(
+                pl.col("Provincias")
+                .str.extract(r"(\d{2})", 1)
+                .alias("ine_province_code"),
+                pl.col("Provincias").str.slice(3).alias("ine_province_name"),
+            )
+            df = df.with_columns(
+                pl.col("Municipios")
+                .str.extract(r"(\d{5})", 1)
+                .alias("ine_municipality_code"),
+                pl.col("Municipios").str.slice(6).alias("ine_municipality_name"),
+            )
+            df = df.with_columns(
+                pl.col("Secciones")
+                .str.extract(r"(\d{10})", 1)
+                .alias("ine_census_tract_code")
+            )
+
+            df = df.with_columns(pl.col("Sexo").alias("sex"))
+
+            group_map = {
+                "Lugar de nacimiento": "birth_country",
+                "Nacionalidad": "nationality",
+                "País de nacionalidad": "nationality",
+                "País de nacimiento": "birth_country",
+                "Relación entre lugar de nacimiento y lugar de residencia": "birth_residence_relation",
+                "Edad": "age_group",
+            }
+
+            group_column = None
+            for key, value in group_map.items():
+                if key in df.columns:
+                    group_column = key
+                    break
+
+            df = df.rename({group_column: group_map[group_column], "Periodo": "year"})
+
+            df = df.join(
+                pl.from_pandas(
+                    self.municipalities[
+                        ["ine_municipality_code", "ine_municipality_name"]
+                    ]
+                ),
+                how="left",
+                left_on="ine_municipality_name",
+                right_on="ine_municipality_name",
+            )
+
+            df = df.select(
+                [
+                    "ine_province_code",
+                    "ine_province_name",
+                    "ine_municipality_code",
+                    "ine_municipality_name",
+                    "ine_census_tract_code",
+                    "year",
+                    "sex",
+                    group_map[group_column],
+                    "population_count",
+                ]
+            )
+
+            if df.is_empty():
+                logger.warning(
+                    f"DataFrame is empty after initial load and drop_nulls for {dataset_key}."
+                )
+                return df
+
+            return df
+
+        except Exception as e:
+            logger.error(
+                f"An unexpected error occurred while cleaning CSV for {dataset_key}: {e}"
+            )
+            return pl.DataFrame()
+
+    def _is_valid_table_code(self, table_code):
+        """
+        Validates the table code by checking if it exists in the provincial codes.
+
+        :param table_code: The table code to validate.
+        :type table_code: str
+        :return: True if the table code is valid, False otherwise.
+        :rtype: bool
+        """
+        if not isinstance(table_code, str) or not table_code.isdigit():
+            logger.error(f"Invalid table code format: {table_code}")
+            return False
+
+        for province, datasets in self.provincial_codes.items():
+            for dataset in datasets:
+                if dataset["code"] == table_code:
+                    logger.info(
+                        f"Valid table code: {table_code} found in province '{province}' "
+                        f"for dataset '{dataset['title']}'"
+                    )
+                    return True
+
+        logger.error(f"Table code {table_code} not found in provincial codes.")
+        return False
+
+    def _get_title_by_code(self, target_code: str) -> str | None:
+        """
+        Retrieves the title of a dataset by its code.
+
+        :param target_code: The code to look up.
+        :type target_code: str
+        :return: The title corresponding to the code, or None if not found.
+        :rtype: str or None
+        """
+        for province, items in self.provincial_codes.items():
+            for item in items:
+                if item.get("code") == target_code:
+                    return item.get("title")
+        return None
+
+    def _clean_api_data(self, raw_data, dataset_key):
+        """
+        Cleans the raw data retrieved from the API.
+
+        :param raw_data: The raw data from the API.
+        :type raw_data: dict
+        :param dataset_key: The key identifying the dataset type.
+        :type dataset_key: str
+        :return: Cleaned data as a polars DataFrame.
+        :rtype: polars.DataFrame
+        """
+        df = (
+            pl.DataFrame(raw_data)
+            .explode("Data")
+            .filter(
+                pl.col("Nombre").str.contains(r"\b\d{5}\b")
+                & ~pl.col("Nombre").str.contains(
+                    "Todas las edades"
+                    if dataset_key == "Población por sexo y edad (grupos quinquenales)"
+                    else "Total"
+                )
+            )
+            .with_columns(
+                [
+                    pl.col("Nombre").str.split(by=". ").alias("split"),
+                    pl.col("Data").struct.field("Valor").alias("population_count"),
+                    pl.col("Data").struct.field("Anyo").alias("year"),
+                ]
+            )
+            .with_columns(
+                [
+                    pl.col("population_count").cast(pl.Int64),
+                    pl.col("split").list.get(0).alias("Section Name"),
+                    pl.col("split").list.get(1).alias("sex"),
+                ]
+            )
+            .with_columns(
+                [
+                    pl.col("Section Name")
+                    .str.split_exact(" sección ", n=1)
+                    .struct.field("field_0")
+                    .alias("ine_municipality_name"),
+                    pl.col("Section Name")
+                    .str.split_exact(" sección ", n=1)
+                    .struct.field("field_1")
+                    .alias("ine_census_tract_code"),
+                ]
+            )
+        )
+
+        df = df.join(
+            pl.from_pandas(
+                self.municipalities[["ine_municipality_code", "ine_municipality_name"]]
+            ),
+            how="left",
+            on="ine_municipality_name",
+        )
+
+        df = df.with_columns(
+            pl.col("ine_municipality_code")
+            .str.replace(" ", "")
+            .alias("ine_municipality_code")
+        )
+
+        if dataset_key == "Población por sexo y nacionalidad (española/extranjera)":
+            df = df.with_columns(
+                [
+                    pl.col("split")
+                    .list.slice(2, 2)
+                    .list.eval(
+                        pl.element().filter(
+                            pl.element().is_in(["Española", "Extranjera"])
+                        )
+                    )
+                    .list.first()
+                    .alias("nationality"),
+                ]
+            )
+
+            desired_columns_in_order = [
+                "ine_municipality_name",
+                "ine_census_tract_code",
+                "year",
+                "sex",
+                "nationality",
+                "population_count",
+            ]
+            df = df.select(desired_columns_in_order)
+
+        elif (
+                dataset_key == "Población por sexo y país de nacimiento (España/extranjero)"
+        ):
+            df = df.with_columns(
+                [
+                    pl.col("split")
+                    .list.slice(2, 2)
+                    .list.eval(
+                        pl.element().filter(
+                            pl.element().is_in(["España", "Extranjera"])
+                        )
+                    )
+                    .list.first()
+                    .alias("birth_country"),
+                ]
+            )
+
+            desired_columns_in_order = [
+                "ine_municipality_name",
+                "ine_census_tract_code",
+                "year",
+                "sex",
+                "birth_country",
+                "population_count",
+            ]
+            df = df.select(desired_columns_in_order)
+
+        elif (
+                dataset_key
+                == "Población por sexo y país de nacionalidad (principales países)"
+        ):
+            df = df.with_columns(
+                [
+                    pl.col("split")
+                    .list.slice(2, 2)
+                    .list.eval(pl.element().filter(pl.element() != "Todas las edades"))
+                    .list.first()
+                    .alias("nationality"),
+                ]
+            )
+
+            desired_columns_in_order = [
+                "ine_municipality_name",
+                "ine_census_tract_code",
+                "year",
+                "sex",
+                "nationality",
+                "population_count",
+            ]
+            df = df.select(desired_columns_in_order)
+
+        elif (
+                dataset_key
+                == "Población por sexo y país de nacimiento (principales países)"
+        ):
+            df = df.with_columns(
+                [
+                    pl.col("split")
+                    .list.slice(2, 2)
+                    .list.eval(pl.element().filter(pl.element() != "Todas las edades"))
+                    .list.first()
+                    .alias("birth_country"),
+                ]
+            )
+
+            desired_columns_in_order = [
+                "ine_municipality_name",
+                "ine_census_tract_code",
+                "year",
+                "sex",
+                "birth_country",
+                "population_count",
+            ]
+            df = df.select(desired_columns_in_order)
+
+        elif (
+                dataset_key
+                == "Población por sexo y relación entre lugar de nacimiento y lugar de residencia"
+        ):
+            df = df.with_columns(
+                pl.col("split").list.get(3).alias("birth_residence_relation"),
+            )
+
+            desired_columns_in_order = [
+                "ine_municipality_name",
+                "ine_census_tract_code",
+                "year",
+                "sex",
+                "birth_residence_relation",
+                "population_count",
+            ]
+            df = df.select(desired_columns_in_order)
+
+        elif dataset_key == "Población por sexo y edad (grupos quinquenales)":
+            df = df.with_columns(
+                pl.col("split").list.get(2).alias("age_group"),
+            )
+
+            desired_columns_in_order = [
+                "ine_municipality_name",
+                "ine_census_tract_code",
+                "year",
+                "sex",
+                "age_group",
+                "population_count",
+            ]
+            df = df.select(desired_columns_in_order)
+
+        else:
+            logger.error(f"Unknown dataset key: {dataset_key}")
+
+        return df
+
+    def get_national_data(
+            self, dataset_key, year=None, clean=True, download_folder=None
+    ):
+        """
+        Fetches national data from a pre-defined list of CSV URLs.
+
+        :param dataset_key: A key identifying the national dataset. Available keys include:
+                          - poblacion_sexo_pais_nacimiento_esp_ext
+                          - poblacion_sexo_nacionalidad_esp_ext
+                          - poblacion_sexo_pais_nacionalidad_principales
+                          - poblacion_sexo_pais_nacimiento_principales
+                          - poblacion_sexo_relacion_nacimiento_residencia
+                          - poblacion_sexo_edad_quinquenales
+        :type dataset_key: str
+        :param year: The year to filter the data by. If None, no filtering is applied.
+        :type year: int, optional
+        :param clean: If True, returns a cleaned polars DataFrame. If False, returns the raw CSV content as a string.
+        :type clean: bool
+        :param download_folder: If provided, saves the raw CSV to this folder with filename {dataset_key}.csv.
+        :type download_folder: str, optional
+        :return: Cleaned data as a polars DataFrame, raw CSV content as a string, or None on error.
+        :rtype: polars.DataFrame or str or None
+
+        Usage
+        --------
+
+        Fetch national data for a specific dataset key, e.g., "poblacion_sexo_pais_nacimiento_esp_ext":
+
+        >>> from mango.clients.ine import INEData
+        >>> ine = INEData()
+        >>> df = ine.get_national_data("poblacion_sexo_pais_nacimiento_esp_ext", year=2023, clean=True)
+        """
+        url = NATIONAL_DATA_URLS.get(dataset_key)
+        if not url:
+            logger.error(
+                f"Dataset key '{dataset_key}' not found in national URLS. Available keys: {list(NATIONAL_DATA_URLS.keys())}"
+            )
+            return None
+
+        response = self._make_request(url)
+        if not response:
+            return None
+
+        raw_csv_content = None
+        encodings_to_try = [response.apparent_encoding, "utf-8", "latin-1", "cp1252"]
+
+        for enc in encodings_to_try:
+            if enc:
+                try:
+                    raw_csv_content = response.content.decode(enc)
+                    logger.info(
+                        f"Successfully decoded CSV for {dataset_key} with encoding: {enc}"
+                    )
+                    break
+                except (UnicodeDecodeError, AttributeError) as e:
+                    logger.warning(
+                        f"Failed to decode CSV for {dataset_key} with {enc}: {e}"
+                    )
+
+        if raw_csv_content is None:
+            logger.error(
+                f"Could not decode CSV content for {dataset_key} from {url} with attempted encodings."
+            )
+            if download_folder:
+                self._save_raw_content(
+                    response.content,
+                    download_folder,
+                    f"{dataset_key}_error_raw_bytes.csv",
+                )
+            return None
+
+        if download_folder:
+            self._save_raw_content(
+                raw_csv_content, download_folder, f"{dataset_key}.csv"
+            )
+
+        if clean:
+            return self._clean_csv_to_dataframe(raw_csv_content, dataset_key, year)
+        else:
+            return raw_csv_content
+
+    def clean_local_csv(self, file_path, dataset_key, year=None):
+        """
+        Cleans a locally stored CSV file using the same logic as for national data.
+
+        The CSV must be the raw file from the INE website.
+
+        :param file_path: The full path to the local CSV file.
+        :type file_path: str
+        :param dataset_key: A key to identify the dataset type (influences cleaning logic if specific).
+                          For example: "poblacion_sexo_pais_nacimiento_esp_ext"
+        :type dataset_key: str
+        :param year: The year to filter the data for. If None, no filtering is applied.
+        :type year: int, optional
+        :return: Cleaned data as a Polars DataFrame, raw content as a string or bytes, or None on error.
+        :rtype: polars.DataFrame or str or bytes or None
+
+        Usage
+        --------
+
+        Clean a local CSV file that contains INE data, e.g., "poblacion_sexo_pais_nacimiento_esp_ext.csv":
+
+        >>> from mango.clients.ine import INEData
+        >>> ine = INEData()
+        >>> df = ine.clean_local_csv("path/to/poblacion_sexo_pais_nacimiento_esp_ext.csv", "poblacion_sexo_pais_nacimiento_esp_ext", year=2023)
+        """
+        if not os.path.exists(file_path):
+            print(f"Error: File not found at {file_path}")
+            return None
+
+        try:
+            with open(file_path, "rb") as f:
+                raw_csv_bytes = f.read()
+                return self._clean_csv_to_dataframe(
+                    raw_csv_bytes, dataset_key, year=year
+                )
+        except Exception as e:
+            print(f"Error reading local file {file_path} as bytes: {e}")
+            return None
+
+    def list_table_codes(self):
+        """
+        Lists all available table codes and their titles.
+
+        :return: A dictionary with province names as keys and lists of table code dictionaries as values.
+                Each table code dictionary contains 'code' and 'title' keys.
+        :rtype: dict
+
+        Usage
+        --------
+        List all available table codes and their titles:
+
+        >>> from mango.clients.ine import INEData
+        >>> ine = INEData()
+        >>> table_codes = ine.list_table_codes()
+        >>> print(table_codes)
+
+        """
+        if not self.provincial_codes:
+            logger.error("No provincial codes loaded. Cannot list table codes.")
+            return {}
+
+        return self.provincial_codes
+
+    def get_data_by_table_code(self, table_code, clean=True, nlast=1):
+        """
+        Fetches data from the API using the specified table code.
+
+        :param table_code: The table code to fetch data for. Use list_table_codes() to see available codes.
+        :type table_code: str
+        :param clean: If True, returns cleaned data as a polars DataFrame. If False, returns raw data as a dictionary.
+        :type clean: bool
+        :param nlast: Returns the nlast last periods/years.
+        :type nlast: int
+        :return: Cleaned data as a polars DataFrame, raw data as a dictionary, or None if an error occurs.
+        :rtype: polars.DataFrame or dict or None
+
+        Usage
+        --------
+
+        Fetch data for a specific table code, e.g., "69202":
+
+        >>> from mango.clients.ine import INEData
+        >>> ine = INEData()
+        >>> data = ine.get_data_by_table_code("69202", clean=True, nlast=1)
+        >>> print(data)
+
+
+        """
+        if not self._is_valid_table_code(table_code):
+            logger.error(f"Invalid table code: {table_code}")
+            return None
+
+        url = f"{API_BASE_URL}{table_code}?nult={nlast}"
+        response = self._make_request(url)
+        if not response:
+            return None
+
+        try:
+            raw_data = response.json()
+        except json.JSONDecodeError as e:
+            logger.error(
+                f"Failed to decode JSON response for table code {table_code}: {e}"
+            )
+            return None
+
+        if clean:
+            return self._clean_api_data(raw_data, self._get_title_by_code(table_code))
+        else:
+            return raw_data
+
+    def enrich_with_geometry(
+            self, census_df: pd.DataFrame, geometry_path: str = None
+    ) -> gpd.GeoDataFrame:
+        """
+        Enriches a census DataFrame with spatial geometry data.
+
+        This function merges census data with geometrical data from a spatial file (e.g., shapefile or GeoJSON).
+        If no file path is provided, it fetches the geometry data from a predefined URL.
+
+        :param census_df: A cleaned census DataFrame to enrich with geometry. Will be converted to pandas if it's a polars DataFrame.
+        :type census_df: pd.DataFrame or polars.DataFrame
+        :param geometry_path: Path to the spatial file containing geometry data. If None, data is fetched from GEOMETRY_DATA_URL.
+        :type geometry_path: str, optional
+        :return: A GeoDataFrame containing both census and spatial data.
+        :rtype: gpd.GeoDataFrame
+
+        Usage
+        --------
+
+        Enrich previously fetched census data with the geometries assigned to the census tracts:
+
+        >>> from mango.clients.ine import INEData
+        >>> import geopandas as gpd
+
+        >>> ine = INEData()
+        >>> census_data = ine.get_national_data("poblacion_sexo_pais_nacimiento_esp_ext", year=2023, clean=True)
+        >>> geometry_gdf = ine.enrich_with_geometry(census_df)
+
+        """
+        logger.info("Enriching census data with geometry.")
+        if geometry_path:
+            logger.debug(f"Using geometry file from path: {geometry_path}")
+        else:
+            logger.debug("Fetching geometry data from predefined URL.")
+
+        if geometry_path is None:
+            try:
+                response = requests.get(GEOMETRY_DATA_URL)
+                response.raise_for_status()
+                geo_bytes = response.content
+            except requests.RequestException as e:
+                logger.error(f"Error fetching data from {GEOMETRY_DATA_URL}: {e}")
+                raise
+
+            with zipfile.ZipFile(BytesIO(geo_bytes)) as zf:
+                shp_file = next((f for f in zf.namelist() if f.endswith(".shp")), None)
+                if not shp_file:
+                    raise ValueError("No shapefile found in the zip archive")
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    zf.extractall(tmpdir)
+                    geometry_data = gpd.read_file(os.path.join(tmpdir, shp_file))
+
+        else:
+            try:
+                geometry_data = gpd.read_file(geometry_path)
+            except Exception as e:
+                logger.error(f"Could not read geometry file: {e}")
+                raise
+
+        if isinstance(census_df, pl.DataFrame):
+            census_df = census_df.to_pandas()
+
+        geometry_with_census = geometry_data.merge(
+            census_df, left_on="CUSEC", right_on="ine_census_tract_code"
+        )
+
+        geometry_with_census = geometry_with_census[
+            [col for col in geometry_with_census.columns if col != "geometry"]
+            + ["geometry"]
+        ]
+
+        logger.info("Census data successfully enrich with geometry.")
+        return geometry_with_census
+
+
+# --- Example Usage ---
+if __name__ == "__main__":
+    ine = INEData(
+        table_codes_json_path=r"../../sandbox/data/processed/ine_table_codes.json"
+    )
+
+    print(ine.get_data_by_table_code("69095", clean=True, nlast=1))
+    print(
+        ine.get_national_data(
+            "poblacion_sexo_pais_nacimiento_esp_ext", year=2023, clean=True
+        )
+    )
