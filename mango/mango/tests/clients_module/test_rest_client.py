@@ -1,8 +1,9 @@
 # Set wait time to 0 to avoid waiting time between requests as it is not needed for testing
 from unittest import TestCase, mock
 
-from mango.clients.rest_client import RESTClient
 from requests import HTTPError
+
+from mango.clients.rest_client import RESTClient
 
 
 class TestRest(TestCase):
