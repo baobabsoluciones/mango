@@ -116,7 +116,7 @@ def reconstruction_error(
 
     if len(autoencoder_output_df) != expected_autoencoder_length:
         raise ValueError(
-            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length"
+            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length "
             f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
         )
     if not np.isclose(train_size + val_size + test_size, 1.0):

@@ -1,31 +1,34 @@
 import os
 import pickle
-from typing import Union, List, Tuple, Any, Optional, Dict
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 import polars as pl
 import tensorflow as tf
 from keras import Sequential
-from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
-from mango.logging import get_configured_logger
-from mango.processing.data_imputer import DataImputer
+from keras.src.optimizers import SGD, Adadelta, Adagrad, Adam, Adamax, Nadam, RMSprop
 from tensorflow.keras.layers import Dense
 
-from mango_time_series.models.modules import encoder, decoder
+import mango_time_series.models.modules.anomaly_detector as ad
+import mango_time_series.models.utils.plots as plots
+from mango.logging import get_configured_logger
+from mango.processing.data_imputer import DataImputer
+from mango_time_series.models.modules import decoder, encoder
 from mango_time_series.models.utils.plots import (
     plot_actual_and_reconstructed,
     plot_loss_history,
     plot_reconstruction_iterations,
 )
 from mango_time_series.models.utils.processing import (
-    time_series_split,
-    convert_data_to_numpy,
     apply_padding,
+    convert_data_to_numpy,
     denormalize_data,
     handle_id_columns,
-    normalize_data_for_training,
     normalize_data_for_prediction,
+    normalize_data_for_training,
+    time_series_split,
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
@@ -2117,6 +2120,81 @@ class AutoEncoder:
             val_split=val_split,
         )
 
+        # Check if there are id_columns through id_data_dict
+        if self.id_data_dict:
+            for id_i in df_actual.id.unique().tolist():
+                # Create subfolders based on id
+                save_path = Path(self._save_path) / str(id_i)
+
+                # Get appropriate actual and reconstructed data based on id
+                df_actual_i = df_actual[df_actual.id == id_i]
+                df_actual_i = pd.pivot(
+                    df_actual_i, columns="feature", index="time_step", values="value"
+                )
+                df_actual_i = df_actual_i.sort_index()
+                df_reconstructed_i = df_reconstructed[df_reconstructed.id == id_i]
+                df_reconstructed_i = pd.pivot(
+                    df_reconstructed_i,
+                    columns="feature",
+                    index="time_step",
+                    values="value",
+                )
+                df_reconstructed_i = df_reconstructed_i.sort_index()
+
+                # Calculate reconstruction error and other metrics comparing reconstruction results to sensor data
+                reconstruction_error_df = ad.reconstruction_error(
+                    actual_data_df=df_actual_i,
+                    autoencoder_output_df=df_reconstructed_i,
+                    context_window=1,
+                    train_size=self._train_size,
+                    val_size=self._val_size,
+                    test_size=self._test_size,
+                    save_path=save_path,
+                )
+                ad.anova_reconstruction_error(reconstruction_error_df)
+                ad.reconstruction_error_summary(
+                    reconstruction_error_df, save_path=save_path
+                )
+                plots.boxplot_reconstruction_error(
+                    reconstruction_error_df, save_path=save_path, show=True
+                )
+        else:
+            id_i = "global"
+
+            # Create subfolders based on id
+            save_path = Path(self._save_path) / str(id_i)
+
+            # Get appropriate actual and reconstructed data based on id
+            df_actual_i = pd.pivot(
+                df_actual, columns="feature", index="time_step", values="value"
+            )
+            df_actual_i = df_actual_i.sort_index()
+            df_reconstructed_i = pd.pivot(
+                df_reconstructed,
+                columns="feature",
+                index="time_step",
+                values="value",
+            )
+            df_reconstructed_i = df_reconstructed_i.sort_index()
+
+            # Calculate reconstruction error and other metrics comparing reconstruction results to sensor data
+            reconstruction_error_df = ad.reconstruction_error(
+                actual_data_df=df_actual_i,
+                autoencoder_output_df=df_reconstructed_i,
+                context_window=1,
+                train_size=self._train_size,
+                val_size=self._val_size,
+                test_size=self._test_size,
+                save_path=save_path,
+            )
+            ad.anova_reconstruction_error(reconstruction_error_df)
+            ad.reconstruction_error_summary(
+                reconstruction_error_df, save_path=save_path
+            )
+            plots.boxplot_reconstruction_error(
+                reconstruction_error_df, save_path=save_path, show=True
+            )
+
         # Plot the data
         plot_actual_and_reconstructed(
             df_actual=df_actual,
@@ -2348,6 +2426,7 @@ class AutoEncoder:
         iterations: int = 1,
         id_columns: Optional[Union[str, int, List[str], List[int]]] = None,
         save_path: Optional[str] = None,
+        reconstruction_diagnostic: bool = False,
     ) -> Dict[str, pd.DataFrame]:
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
@@ -2359,8 +2438,10 @@ class AutoEncoder:
         :type iterations: int
         :param id_columns: Column(s) that define IDs to process reconstruction separately
         :type id_columns: Optional[Union[str, int, List[str], List[int]]]
-        :param save_path: Path to save the reconstructed data plots
+        :param save_path: Path to save the reconstructed data
         :type save_path: Optional[str]
+        :param reconstruction_diagnostic: If True, runs and saves reconstruction diagnostics (errors, plots, ANOVA). Applies per ID if id_columns are used.
+        :type reconstruction_diagnostic: bool
         :return: Dictionary with reconstructed data per ID (or "global" if no ID)
         :rtype: Dict[str, pd.DataFrame]
         :raises ValueError: If no model is loaded or if id_columns format is invalid
@@ -2445,6 +2526,36 @@ class AutoEncoder:
                 id_iter=None,
                 save_path=save_path,
             )
+
+        # Run reconstruction diagnostics by calculating errors and plots
+        if reconstruction_diagnostic:
+            # use keys from reconstructed_results to get approriate data from id_data_dict
+            for id_key, autoencoder_output_df in reconstructed_results.items():
+                actual_data_array = id_data_dict[id_key]
+                actual_data_df = pd.DataFrame(
+                    actual_data_array, columns=autoencoder_output_df.columns
+                )
+
+                # Create subfolders based on id_key
+                id_save_path = Path(save_path) / str(id_key) if save_path else None
+
+                # Calculate reconstruction error and other metrics comparing reconstruction results to sensor data
+                reconstruction_error_df = ad.reconstruction_error(
+                    actual_data_df=actual_data_df,
+                    autoencoder_output_df=autoencoder_output_df,
+                    context_window=self._context_window,
+                    train_size=self._train_size,
+                    val_size=self._val_size,
+                    test_size=self._test_size,
+                    save_path=id_save_path,
+                )
+                ad.anova_reconstruction_error(reconstruction_error_df)
+                ad.reconstruction_error_summary(
+                    reconstruction_error_df, save_path=id_save_path
+                )
+                plots.boxplot_reconstruction_error(
+                    reconstruction_error_df, save_path=id_save_path, show=True
+                )
 
         return reconstructed_results
 
