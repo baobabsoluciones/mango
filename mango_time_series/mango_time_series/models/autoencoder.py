@@ -1,33 +1,36 @@
 import os
 import pickle
-from typing import Union, List, Tuple, Any, Optional, Dict
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 import polars as pl
 import tensorflow as tf
 from keras import Sequential
-from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
-from mango.logging import get_configured_logger
-from mango.processing.data_imputer import DataImputer
+from keras.src.optimizers import SGD, Adadelta, Adagrad, Adam, Adamax, Nadam, RMSprop
 from tensorflow.keras.layers import Dense
 
-from mango_time_series.models.modules import encoder, decoder
+from mango.logging import get_configured_logger
+from mango.processing.data_imputer import DataImputer
+from mango_time_series.models.modules import decoder, encoder
 from mango_time_series.models.utils.plots import (
     plot_actual_and_reconstructed,
     plot_loss_history,
     plot_reconstruction_iterations,
 )
 from mango_time_series.models.utils.processing import (
-    time_series_split,
-    convert_data_to_numpy,
     apply_padding,
+    convert_data_to_numpy,
     denormalize_data,
     handle_id_columns,
-    normalize_data_for_training,
     normalize_data_for_prediction,
+    normalize_data_for_training,
+    time_series_split,
 )
-from mango_time_series.models.utils.sequences import time_series_to_sequence
+from mango_time_series.models.utils.sequences import (
+    time_series_to_sequence,
+    time_series_to_sequence_v2,
+)
 
 logger = get_configured_logger()
 
@@ -2845,9 +2848,12 @@ class AutoEncoder:
                         self._test_size,
                     )
 
-            seq_mask_train = time_series_to_sequence(mask_train, context_window)
-            seq_mask_val = time_series_to_sequence(mask_val, context_window)
-            seq_mask_test = time_series_to_sequence(mask_test, context_window)
+            # seq_mask_train = time_series_to_sequence(mask_train, context_window)
+            # seq_mask_val = time_series_to_sequence(mask_val, context_window)
+            # seq_mask_test = time_series_to_sequence(mask_test, context_window)
+            seq_mask_train, seq_mask_val, seq_mask_test = time_series_to_sequence_v2(
+                mask_train, mask_val, mask_test, context_window
+            )
 
         if normalize:
             x_train, x_val, x_test, norm_values = normalize_data_for_training(
@@ -2873,9 +2879,12 @@ class AutoEncoder:
             x_val = np.nan_to_num(x_val)
             x_test = np.nan_to_num(x_test)
 
-        seq_x_train = time_series_to_sequence(x_train, context_window)
-        seq_x_val = time_series_to_sequence(x_val, context_window)
-        seq_x_test = time_series_to_sequence(x_test, context_window)
+        # seq_x_train = time_series_to_sequence(x_train, context_window)
+        # seq_x_val = time_series_to_sequence(x_val, context_window)
+        # seq_x_test = time_series_to_sequence(x_test, context_window)
+        seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence_v2(
+            x_train, x_val, x_test, context_window
+        )
 
         if id_iter is not None:
             self.data[id_iter] = (x_train, x_val, x_test)
