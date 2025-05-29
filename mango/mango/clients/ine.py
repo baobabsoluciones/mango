@@ -164,88 +164,68 @@ class INEData:
     def _clean_csv_to_dataframe(self, csv_content_string, dataset_key, year=None):
         """
         Cleans the CSV content from INE into a polars DataFrame.
-
-        :param csv_content_string: The CSV content as a string.
-        :type csv_content_string: str
-        :param dataset_key: The key identifying the dataset type (influences cleaning logic).
-        :type dataset_key: str
-        :param year: The year to filter the data for. If None, no filtering is applied.
-        :type year: int, optional
-        :return: Cleaned data as a polars DataFrame.
-        :rtype: polars.DataFrame
         """
         try:
             df = None
             for enc in ["utf-8", "latin-1", "cp1252"]:
                 try:
-                    df = pl.read_csv(
-                        StringIO(csv_content_string), separator=";", encoding=enc
-                    )
+                    df = pl.read_csv(StringIO(csv_content_string), separator=";", encoding=enc)
                     logger.info(f"Successfully read CSV with encoding: {enc}")
                     break
                 except Exception as e:
                     logger.warning(f"Failed to parse CSV with encoding {enc}: {e}")
 
             if df is None:
-                logger.error(
-                    f"Could not parse CSV for {dataset_key} with attempted encodings."
-                )
+                logger.error(f"Could not parse CSV for {dataset_key} with attempted encodings.")
                 return pl.DataFrame()
 
+            # Drop nulls and possibly remove 'Total Nacional' column
             df = df.drop_nulls()
-
             if df.columns[0] == "Total Nacional":
                 df = df.drop(df.columns[0])
 
-            df = df.filter(
-                ~pl.col(df.columns[3]).str.contains("Total")
-                & ~pl.col(df.columns[4]).str.contains("Total")
-            )
+            # Remove rows where 4th or 5th columns contain 'Total'
+            if len(df.columns) >= 5:
+                df = df.filter(
+                    ~pl.col(df.columns[3]).str.contains("Total") &
+                    ~pl.col(df.columns[4]).str.contains("Total")
+                )
 
+            # Filter by year
             if year is not None:
                 try:
                     year = int(year)
                     df = df.filter(pl.col("Periodo") == year)
                     if df.is_empty():
-                        logger.warning(
-                            f"No data found for year {year} in {dataset_key}."
-                        )
+                        logger.warning(f"No data found for year {year} in {dataset_key}.")
                 except ValueError:
                     logger.error(f"Year '{year}' is not a valid integer")
                     raise
 
-            if "Total" in df.columns:
-                df = df.with_columns(
-                    pl.col("Total")
-                    .str.replace_all(r"\.", "")
-                    .str.replace_all(r"^$", "0")
-                    .cast(pl.Int64)
-                    .alias("population_count")
-                )
+            # Clean numeric and temporal data
+            df = df.with_columns([
+                pl.col("Total")
+                .str.replace_all(r"\.", "")
+                .str.replace_all(r"^$", "0")
+                .cast(pl.Int64)
+                .alias("population_count")
+                if "Total" in df.columns else pl.lit(None).alias("population_count"),
 
-            if "Periodo" in df.columns:
-                df = df.with_columns(pl.col("Periodo").cast(pl.Int64))
+                pl.col("Periodo").cast(pl.Int64).alias("year")
+                if "Periodo" in df.columns else pl.lit(None).alias("year")
+            ])
 
-            df = df.with_columns(
-                pl.col("Provincias")
-                .str.extract(r"(\d{2})", 1)
-                .alias("ine_province_code"),
+            # Extract codes and clean names
+            df = df.with_columns([
+                pl.col("Provincias").str.extract(r"(\d{2})", 1).alias("ine_province_code"),
                 pl.col("Provincias").str.slice(3).alias("ine_province_name"),
-            )
-            df = df.with_columns(
-                pl.col("Municipios")
-                .str.extract(r"(\d{5})", 1)
-                .alias("ine_municipality_code"),
+                pl.col("Municipios").str.extract(r"(\d{5})", 1).alias("ine_municipality_code"),
                 pl.col("Municipios").str.slice(6).alias("ine_municipality_name"),
-            )
-            df = df.with_columns(
-                pl.col("Secciones")
-                .str.extract(r"(\d{10})", 1)
-                .alias("ine_census_tract_code")
-            )
+                pl.col("Secciones").str.extract(r"(\d{10})", 1).alias("ine_census_tract_code"),
+                pl.col("Sexo").alias("sex") if "Sexo" in df.columns else pl.lit("Unknown").alias("sex")
+            ])
 
-            df = df.with_columns(pl.col("Sexo").alias("sex"))
-
+            # Map demographic group column
             group_map = {
                 "Lugar de nacimiento": "birth_country",
                 "Nacionalidad": "nationality",
@@ -254,52 +234,31 @@ class INEData:
                 "Relación entre lugar de nacimiento y lugar de residencia": "birth_residence_relation",
                 "Edad": "age_group",
             }
+            group_column = next((col for col in group_map if col in df.columns), None)
+            if group_column:
+                df = df.rename({group_column: group_map[group_column]})
 
-            group_column = None
-            for key, value in group_map.items():
-                if key in df.columns:
-                    group_column = key
-                    break
+            # Left join to add standardized municipality codes
+            if hasattr(self, "municipalities"):
+                muni_df = pl.from_pandas(
+                    self.municipalities[["ine_municipality_code", "ine_municipality_name"]]
+                )
+                df = df.join(muni_df, on="ine_municipality_name", how="left")
 
-            df = df.rename({group_column: group_map[group_column], "Periodo": "year"})
-
-            df = df.join(
-                pl.from_pandas(
-                    self.municipalities[
-                        ["ine_municipality_code", "ine_municipality_name"]
-                    ]
-                ),
-                how="left",
-                left_on="ine_municipality_name",
-                right_on="ine_municipality_name",
-            )
-
-            df = df.select(
-                [
-                    "ine_province_code",
-                    "ine_province_name",
-                    "ine_municipality_code",
-                    "ine_municipality_name",
-                    "ine_census_tract_code",
-                    "year",
-                    "sex",
-                    group_map[group_column],
-                    "population_count",
-                ]
-            )
+            # Final selection
+            select_columns = [
+                "ine_province_code", "ine_province_name", "ine_municipality_code",
+                "ine_municipality_name", "ine_census_tract_code", "year",
+                "sex", group_map.get(group_column, "unknown_group"), "population_count"
+            ]
+            df = df.select([col for col in select_columns if col in df.columns])
 
             if df.is_empty():
-                logger.warning(
-                    f"DataFrame is empty after initial load and drop_nulls for {dataset_key}."
-                )
-                return df
-
+                logger.warning(f"DataFrame is empty after processing for {dataset_key}.")
             return df
 
         except Exception as e:
-            logger.error(
-                f"An unexpected error occurred while cleaning CSV for {dataset_key}: {e}"
-            )
+            logger.error(f"An unexpected error occurred while cleaning CSV for {dataset_key}: {e}")
             return pl.DataFrame()
 
     def _is_valid_table_code(self, table_code):
@@ -327,6 +286,21 @@ class INEData:
         logger.error(f"Table code {table_code} not found in provincial codes.")
         return False
 
+    def _get_province_by_table_id(self, table_id: str) -> str | None:
+        """
+        Retrieves the province name by dataset key.
+
+        :param table_id: The table id to look up.
+        :type table_id: str
+        :return: The province name corresponding to the dataset key, or None if not found.
+        :rtype: str or None
+        """
+        for province, items in self.provincial_codes.items():
+            for item in items:
+                if item.get("code") == table_id:
+                    return province
+        return None
+
     def _get_title_by_code(self, target_code: str) -> str | None:
         """
         Retrieves the title of a dataset by its code.
@@ -342,7 +316,7 @@ class INEData:
                     return item.get("title")
         return None
 
-    def _clean_api_data(self, raw_data, dataset_key):
+    def _clean_api_data(self, raw_data, dataset_key, table_code):
         """
         Cleans the raw data retrieved from the API.
 
@@ -353,194 +327,127 @@ class INEData:
         :return: Cleaned data as a polars DataFrame.
         :rtype: polars.DataFrame
         """
-        df = (
-            pl.DataFrame(raw_data)
-            .explode("Data")
-            .filter(
-                pl.col("Nombre").str.contains(r"\b\d{5}\b")
-                & ~pl.col("Nombre").str.contains(
-                    "Todas las edades"
-                    if dataset_key == "Población por sexo y edad (grupos quinquenales)"
-                    else "Total"
-                )
-            )
-            .with_columns(
-                [
-                    pl.col("Nombre").str.split(by=". ").alias("split"),
-                    pl.col("Data").struct.field("Valor").alias("population_count"),
-                    pl.col("Data").struct.field("Anyo").alias("year"),
-                ]
-            )
-            .with_columns(
-                [
-                    pl.col("population_count").cast(pl.Int64),
-                    pl.col("split").list.get(0).alias("Section Name"),
-                    pl.col("split").list.get(1).alias("sex"),
-                ]
-            )
-            .with_columns(
-                [
-                    pl.col("Section Name")
-                    .str.split_exact(" sección ", n=1)
-                    .struct.field("field_0")
-                    .alias("ine_municipality_name"),
-                    pl.col("Section Name")
-                    .str.split_exact(" sección ", n=1)
-                    .struct.field("field_1")
-                    .alias("ine_census_tract_code"),
-                ]
-            )
+        df = pl.DataFrame(raw_data).explode("Data")
+
+        # Filter rows with postal codes and exclude "Total"/"Todas las edades"
+        filter_keyword = "Todas las edades" if "edad" in dataset_key else "Total"
+        df = df.filter(
+            pl.col("Nombre").str.contains(r"\b\d{5}\b") &
+            ~pl.col("Nombre").str.contains(filter_keyword)
         )
 
+        # Extract components from struct and string columns
+        df = df.with_columns([
+            pl.col("Nombre").str.split(by=". ").alias("split"),
+            pl.col("Data").struct.field("Valor").cast(pl.Int64).alias("population_count"),
+            pl.col("Data").struct.field("Anyo").alias("year"),
+        ])
+
+        # Extract Section Name and sex
+        df = df.with_columns([
+            pl.col("split").list.get(0).alias("Section Name"),
+            pl.col("split").list.get(1).alias("sex"),
+        ])
+
+        # Extract municipality and census tract
+        df = df.with_columns([
+            pl.col("Section Name").str.split_exact(" sección ", n=1).struct.field("field_0").alias(
+                "ine_municipality_name"),
+            pl.col("Section Name").str.split_exact(" sección ", n=1).struct.field("field_1").alias(
+                "ine_census_tract_code"),
+        ])
+
+        # Add province name
+        province_name = self._get_province_by_table_id(table_code)
+        if province_name:
+            df = df.with_columns(pl.lit(province_name).alias("ine_province_name"))
+        else:
+            logger.warning(
+                f"Province name not found for dataset key: {dataset_key}. This may affect the data cleaning process.")
+
+        # Join with municipalities
         df = df.join(
-            pl.from_pandas(
-                self.municipalities[["ine_municipality_code", "ine_municipality_name"]]
-            ),
+            pl.from_pandas(self.municipalities[["ine_municipality_code", "ine_municipality_name"]]),
             how="left",
-            on="ine_municipality_name",
-        )
+            on="ine_municipality_name"
+        ).with_columns([
+            pl.col("ine_municipality_code").str.replace(" ", "").alias("ine_municipality_code"),
+            pl.col("ine_municipality_code").str.extract(r"(\d{2})", 1).alias("ine_province_code"),
+            (pl.col("ine_municipality_code").cast(pl.Utf8) + pl.col("ine_census_tract_code")).alias(
+                "ine_census_tract_code"),
+        ])
 
-        df = df.with_columns(
-            pl.col("ine_municipality_code")
-            .str.replace(" ", "")
-            .alias("ine_municipality_code")
-        )
-
-        if dataset_key == "Población por sexo y nacionalidad (española/extranjera)":
-            df = df.with_columns(
-                [
-                    pl.col("split")
-                    .list.slice(2, 2)
-                    .list.eval(
-                        pl.element().filter(
-                            pl.element().is_in(["Española", "Extranjera"])
-                        )
-                    )
-                    .list.first()
-                    .alias("nationality"),
+        # Handle dataset-specific columns and column ordering
+        dataset_config = {
+            "Población por sexo y nacionalidad (española/extranjera)": {
+                "new_column": pl.col("split").list.slice(2, 2)
+                .list.eval(pl.element().filter(pl.element().is_in(["Española", "Extranjera"])))
+                .list.first()
+                .alias("nationality"),
+                "columns": [
+                    "ine_province_code", "ine_province_name", "ine_municipality_code",
+                    "ine_municipality_name", "ine_census_tract_code", "year",
+                    "sex", "nationality", "population_count"
                 ]
-            )
-
-            desired_columns_in_order = [
-                "ine_municipality_name",
-                "ine_census_tract_code",
-                "year",
-                "sex",
-                "nationality",
-                "population_count",
-            ]
-            df = df.select(desired_columns_in_order)
-
-        elif (
-                dataset_key == "Población por sexo y país de nacimiento (España/extranjero)"
-        ):
-            df = df.with_columns(
-                [
-                    pl.col("split")
-                    .list.slice(2, 2)
-                    .list.eval(
-                        pl.element().filter(
-                            pl.element().is_in(["España", "Extranjera"])
-                        )
-                    )
-                    .list.first()
-                    .alias("birth_country"),
+            },
+            "Población por sexo y país de nacimiento (España/extranjero)": {
+                "new_column": pl.col("split").list.slice(2, 2)
+                .list.eval(pl.element().filter(pl.element().is_in(["España", "Extranjera"])))
+                .list.first()
+                .alias("birth_country"),
+                "columns": [
+                    "ine_province_code", "ine_province_name", "ine_municipality_code",
+                    "ine_municipality_name", "ine_census_tract_code", "year",
+                    "sex", "birth_country", "population_count"
                 ]
-            )
-
-            desired_columns_in_order = [
-                "ine_municipality_name",
-                "ine_census_tract_code",
-                "year",
-                "sex",
-                "birth_country",
-                "population_count",
-            ]
-            df = df.select(desired_columns_in_order)
-
-        elif (
-                dataset_key
-                == "Población por sexo y país de nacionalidad (principales países)"
-        ):
-            df = df.with_columns(
-                [
-                    pl.col("split")
-                    .list.slice(2, 2)
-                    .list.eval(pl.element().filter(pl.element() != "Todas las edades"))
-                    .list.first()
-                    .alias("nationality"),
+            },
+            "Población por sexo y país de nacionalidad (principales países)": {
+                "new_column": pl.col("split").list.slice(2, 2)
+                .list.eval(pl.element().filter(pl.element() != "Todas las edades"))
+                .list.first()
+                .alias("nationality"),
+                "columns": [
+                    "ine_province_code", "ine_province_name", "ine_municipality_code",
+                    "ine_municipality_name", "ine_census_tract_code", "year",
+                    "sex", "nationality", "population_count"
                 ]
-            )
-
-            desired_columns_in_order = [
-                "ine_municipality_name",
-                "ine_census_tract_code",
-                "year",
-                "sex",
-                "nationality",
-                "population_count",
-            ]
-            df = df.select(desired_columns_in_order)
-
-        elif (
-                dataset_key
-                == "Población por sexo y país de nacimiento (principales países)"
-        ):
-            df = df.with_columns(
-                [
-                    pl.col("split")
-                    .list.slice(2, 2)
-                    .list.eval(pl.element().filter(pl.element() != "Todas las edades"))
-                    .list.first()
-                    .alias("birth_country"),
+            },
+            "Población por sexo y país de nacimiento (principales países)": {
+                "new_column": pl.col("split").list.slice(2, 2)
+                .list.eval(pl.element().filter(pl.element() != "Todas las edades"))
+                .list.first()
+                .alias("birth_country"),
+                "columns": [
+                    "ine_province_code", "ine_province_name", "ine_municipality_code",
+                    "ine_municipality_name", "ine_census_tract_code", "year",
+                    "sex", "birth_country", "population_count"
                 ]
-            )
+            },
+            "Población por sexo y relación entre lugar de nacimiento y lugar de residencia": {
+                "new_column": pl.col("split").list.get(3).alias("birth_residence_relation"),
+                "columns": [
+                    "ine_province_code", "ine_province_name", "ine_municipality_code",
+                    "ine_municipality_name", "ine_census_tract_code", "year",
+                    "sex", "birth_residence_relation", "population_count"
+                ]
+            },
+            "Población por sexo y edad (grupos quinquenales)": {
+                "new_column": pl.col("split").list.get(2).alias("age_group"),
+                "columns": [
+                    "ine_province_code", "ine_province_name", "ine_municipality_code",
+                    "ine_municipality_name", "ine_census_tract_code", "year",
+                    "sex", "age_group", "population_count"
+                ]
+            },
+        }
 
-            desired_columns_in_order = [
-                "ine_municipality_name",
-                "ine_census_tract_code",
-                "year",
-                "sex",
-                "birth_country",
-                "population_count",
-            ]
-            df = df.select(desired_columns_in_order)
-
-        elif (
-                dataset_key
-                == "Población por sexo y relación entre lugar de nacimiento y lugar de residencia"
-        ):
-            df = df.with_columns(
-                pl.col("split").list.get(3).alias("birth_residence_relation"),
-            )
-
-            desired_columns_in_order = [
-                "ine_municipality_name",
-                "ine_census_tract_code",
-                "year",
-                "sex",
-                "birth_residence_relation",
-                "population_count",
-            ]
-            df = df.select(desired_columns_in_order)
-
-        elif dataset_key == "Población por sexo y edad (grupos quinquenales)":
-            df = df.with_columns(
-                pl.col("split").list.get(2).alias("age_group"),
-            )
-
-            desired_columns_in_order = [
-                "ine_municipality_name",
-                "ine_census_tract_code",
-                "year",
-                "sex",
-                "age_group",
-                "population_count",
-            ]
-            df = df.select(desired_columns_in_order)
-
+        if dataset_key in dataset_config:
+            cfg = dataset_config[dataset_key]
+            df = df.with_columns(cfg["new_column"])
+            df = df.select(cfg["columns"])
         else:
             logger.error(f"Unknown dataset key: {dataset_key}")
+            return pl.DataFrame()  # safer fallback
 
         return df
 
@@ -731,7 +638,7 @@ class INEData:
             return None
 
         if clean:
-            return self._clean_api_data(raw_data, self._get_title_by_code(table_code))
+            return self._clean_api_data(raw_data, self._get_title_by_code(table_code), table_code)
         else:
             return raw_data
 
@@ -797,12 +704,12 @@ class INEData:
         if isinstance(census_df, pl.DataFrame):
             census_df = census_df.to_pandas()
 
-        geometry_with_census = geometry_data.merge(
+        geometry_with_census = geometry_data[["CUSEC","geometry"]].merge(
             census_df, left_on="CUSEC", right_on="ine_census_tract_code"
         )
 
         geometry_with_census = geometry_with_census[
-            [col for col in geometry_with_census.columns if col != "geometry"]
+            [col for col in geometry_with_census.columns if col not in ["geometry", "CUSEC"]]
             + ["geometry"]
         ]
 
@@ -822,3 +729,4 @@ if __name__ == "__main__":
             "poblacion_sexo_pais_nacimiento_esp_ext", year=2023, clean=True
         )
     )
+
