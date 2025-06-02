@@ -2679,11 +2679,12 @@ class AutoEncoder:
 
             # Apply padding and store results
             padded_reconstructed = apply_padding(
-                data[:, self._feature_to_check],
-                reconstructed_data,
-                self._context_window,
-                self._time_step_to_check,
+                data=data[:, self._feature_to_check],
+                reconstructed=reconstructed_data,
+                context_window=self._context_window,
+                time_step_to_check=self._time_step_to_check,
             )
+
             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
 
             # Record reconstruction progress
@@ -3103,7 +3104,9 @@ class AutoEncoder:
 
         # Apply feature-specific weights if provided
         if feature_weights is not None:
-            feature_weights = tf.convert_to_tensor(value=feature_weights, dtype=tf.float32)
+            feature_weights = tf.convert_to_tensor(
+                value=feature_weights, dtype=tf.float32
+            )
             squared_error = squared_error * feature_weights
 
         # Compute mean only over observed values if mask is provided

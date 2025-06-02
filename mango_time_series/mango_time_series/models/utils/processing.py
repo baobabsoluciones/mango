@@ -314,7 +314,7 @@ def apply_padding(
     if isinstance(time_step_to_check, list):
         time_step_to_check = time_step_to_check[0]
 
-    if time_step_to_check < 0 or time_step_to_check >= context_window - 1:
+    if time_step_to_check < 0 or time_step_to_check > context_window - 1:
         raise ValueError(
             f"time_step_to_check must be between 0 and {context_window - 1}, "
             f"but got {time_step_to_check}"
