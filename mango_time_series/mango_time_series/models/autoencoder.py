@@ -2716,7 +2716,9 @@ class AutoEncoder:
                 )
 
                 data[i, col_idx] = (
-                    normalized_reconstructed[i, j] if self._normalization_method else recon_value
+                    normalized_reconstructed[i, j]
+                    if self._normalization_method
+                    else recon_value
                 )
 
         # Final reconstruction step
