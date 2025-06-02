@@ -2688,31 +2688,36 @@ class AutoEncoder:
             reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
 
             # Record reconstruction progress
+            normalized_reconstructed = None
+            if self._normalization_method:
+                normalized_reconstructed = normalize_data_for_prediction(
+                    normalization_method=self.normalization_method,
+                    data=padded_reconstructed,
+                    feature_to_check_filter=True,
+                    feature_to_check=self._feature_to_check,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
+                )
+
             for i, j in zip(*np.where(nan_positions)):
+                col_idx = self._feature_to_check[j]
+                recon_value = padded_reconstructed[i, j]
+
                 reconstruction_records.append(
                     {
                         "ID": id_iter if id_iter else "global",
                         "Column": j + 1,
                         "Timestep": i,
                         "Iteration": iter_num,
-                        "Reconstructed value": padded_reconstructed[i, j],
+                        "Reconstructed value": recon_value,
                     }
                 )
 
-                # Update data with reconstructed values
-                if self._normalization_method:
-                    data[i, self._feature_to_check[j]] = normalize_data_for_prediction(
-                        normalization_method=self.normalization_method,
-                        data=padded_reconstructed,
-                        feature_to_check_filter=True,
-                        feature_to_check=self._feature_to_check[j],
-                        min_x=self.min_x,
-                        max_x=self.max_x,
-                        mean_=self.mean_,
-                        std_=self.std_,
-                    )[i, j]
-                else:
-                    data[i, self._feature_to_check[j]] = padded_reconstructed[i, j]
+                data[i, col_idx] = (
+                    normalized_reconstructed[i, j] if self._normalization_method else recon_value
+                )
 
         # Final reconstruction step
         if self.imputer is not None:
