@@ -8,10 +8,10 @@ import polars as pl
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import SGD, Adadelta, Adagrad, Adam, Adamax, Nadam, RMSprop
-from tensorflow.keras.layers import Dense
-
 from mango.logging import get_configured_logger
 from mango.processing.data_imputer import DataImputer
+from tensorflow.keras.layers import Dense
+
 from mango_time_series.models.modules import decoder, encoder
 from mango_time_series.models.utils.plots import (
     plot_actual_and_reconstructed,
@@ -27,10 +27,7 @@ from mango_time_series.models.utils.processing import (
     normalize_data_for_training,
     time_series_split,
 )
-from mango_time_series.models.utils.sequences import (
-    time_series_to_sequence,
-    time_series_to_sequence_v2,
-)
+from mango_time_series.models.utils.sequences import time_series_to_sequence
 
 logger = get_configured_logger()
 
@@ -63,6 +60,7 @@ class AutoEncoder:
         :rtype: None
         """
         # Path settings
+        self._num_layers = None
         self.root_dir = os.path.abspath(os.getcwd())
         self._save_path = None
 
@@ -1095,25 +1093,25 @@ class AutoEncoder:
         """
         if self._use_mask:
             train_dataset = tf.data.Dataset.from_tensor_slices(
-                (self.x_train, self.mask_train)
+                tensors=(self.x_train, self.mask_train)
             )
             val_dataset = tf.data.Dataset.from_tensor_slices(
-                (self.x_val, self.mask_val)
+                tensors=(self.x_val, self.mask_val)
             )
             test_dataset = tf.data.Dataset.from_tensor_slices(
-                (self.x_test, self.mask_test)
+                tensors=(self.x_test, self.mask_test)
             )
         else:
-            train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
-            val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
-            test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
+            train_dataset = tf.data.Dataset.from_tensor_slices(tensors=self.x_train)
+            val_dataset = tf.data.Dataset.from_tensor_slices(tensors=self.x_val)
+            test_dataset = tf.data.Dataset.from_tensor_slices(tensors=self.x_test)
 
         if self._shuffle:
             train_dataset = train_dataset.shuffle(buffer_size=self._shuffle_buffer_size)
 
-        self.train_dataset = train_dataset.cache().batch(batch_size)
-        self.val_dataset = val_dataset.cache().batch(batch_size)
-        self.test_dataset = test_dataset.cache().batch(batch_size)
+        self.train_dataset = train_dataset.cache().batch(batch_size=batch_size)
+        self.val_dataset = val_dataset.cache().batch(batch_size=batch_size)
+        self.test_dataset = test_dataset.cache().batch(batch_size=batch_size)
 
     def build_model(
         self,
@@ -1241,7 +1239,7 @@ class AutoEncoder:
         self.shuffle_buffer_size = shuffle_buffer_size
 
         # Extract names and convert data to numpy
-        self.data, extracted_feature_names = convert_data_to_numpy(data)
+        self.data, extracted_feature_names = convert_data_to_numpy(data=data)
         self.features_name = (
             feature_names
             or extracted_feature_names
@@ -1257,7 +1255,10 @@ class AutoEncoder:
 
         (self.data, self.id_data, self.id_data_dict, self.id_columns_indices) = (
             handle_id_columns(
-                self._data, id_columns, self._features_name, self._context_window
+                data=self._data,
+                id_columns=id_columns,
+                features_name=self._features_name,
+                context_window=self._context_window,
             )
         )
 
@@ -1265,10 +1266,10 @@ class AutoEncoder:
             custom_mask, _ = convert_data_to_numpy(custom_mask)
             custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
                 handle_id_columns(
-                    custom_mask,
-                    id_columns,
-                    self._features_name,
-                    self._context_window,
+                    data=custom_mask,
+                    id_columns=id_columns,
+                    features_name=self._features_name,
+                    context_window=self._context_window,
                 )
             )
             self.custom_mask = custom_mask
@@ -1276,7 +1277,11 @@ class AutoEncoder:
         if self.id_data_dict:
             self.concatenate_by_id()
         else:
-            self.prepare_datasets(self._data, self._context_window, self._normalize)
+            self.prepare_datasets(
+                data=self._data,
+                context_window=self._context_window,
+                normalize=self._normalize,
+            )
 
         if self._shuffle and self._shuffle_buffer_size is None:
             self.shuffle_buffer_size = len(self.x_train)
@@ -1404,11 +1409,11 @@ class AutoEncoder:
             :rtype: tf.Tensor
             """
             with tf.GradientTape() as tape:
-                loss, _ = forward_pass(x, mask)
+                loss, _ = forward_pass(x=x, mask=mask)
 
             autoencoder_gradient = tape.gradient(loss, self.model.trainable_variables)
             self.model_optimizer.apply_gradients(
-                zip(autoencoder_gradient, self.model.trainable_variables)
+                grads_and_vars=zip(autoencoder_gradient, self.model.trainable_variables)
             )
 
             return loss
@@ -1427,7 +1432,7 @@ class AutoEncoder:
             :return: Loss value
             :rtype: tf.Tensor
             """
-            loss, _ = forward_pass(x, mask)
+            loss, _ = forward_pass(x=x, mask=mask)
             return loss
 
         # Run training loop
@@ -1486,7 +1491,11 @@ class AutoEncoder:
             if use_early_stopping:
                 should_stop, best_val_loss, patience_counter = (
                     self._check_early_stopping(
-                        epoch, avg_val_loss, best_val_loss, patience_counter, patience
+                        epoch=epoch,
+                        avg_val_loss=avg_val_loss,
+                        best_val_loss=best_val_loss,
+                        patience_counter=patience_counter,
+                        patience=patience,
                     )
                 )
                 if should_stop:
@@ -1822,8 +1831,8 @@ class AutoEncoder:
 
                 # Denormalize predictions
                 x_hat_train = denormalize_data(
-                    x_hat_train,
-                    self._normalization_method,
+                    data=x_hat_train,
+                    normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
                     mean_=(
@@ -1838,8 +1847,8 @@ class AutoEncoder:
                     ),
                 )
                 x_hat_val = denormalize_data(
-                    x_hat_val,
-                    self._normalization_method,
+                    data=x_hat_val,
+                    normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
                     mean_=(
@@ -1854,8 +1863,8 @@ class AutoEncoder:
                     ),
                 )
                 x_hat_test = denormalize_data(
-                    x_hat_test,
-                    self._normalization_method,
+                    data=x_hat_test,
+                    normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
                     mean_=(
@@ -1872,8 +1881,8 @@ class AutoEncoder:
 
                 # Denormalize original data
                 x_train_converted = denormalize_data(
-                    x_train_converted,
-                    self._normalization_method,
+                    data=x_train_converted,
+                    normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
                     mean_=(
@@ -1888,8 +1897,8 @@ class AutoEncoder:
                     ),
                 )
                 x_val_converted = denormalize_data(
-                    x_val_converted,
-                    self._normalization_method,
+                    data=x_val_converted,
+                    normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
                     mean_=(
@@ -1904,8 +1913,8 @@ class AutoEncoder:
                     ),
                 )
                 x_test_converted = denormalize_data(
-                    x_test_converted,
-                    self._normalization_method,
+                    data=x_test_converted,
+                    normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
                     max_x=norm_values["max_x"][self._feature_to_check],
                     mean_=(
@@ -1968,8 +1977,8 @@ class AutoEncoder:
 
                     # Denormalize data for this ID
                     id_x_hat_train = denormalize_data(
-                        id_x_hat_train,
-                        self._normalization_method,
+                        data=id_x_hat_train,
+                        normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
                         mean_=(
@@ -1984,8 +1993,8 @@ class AutoEncoder:
                         ),
                     )
                     id_x_hat_val = denormalize_data(
-                        id_x_hat_val,
-                        self._normalization_method,
+                        data=id_x_hat_val,
+                        normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
                         mean_=(
@@ -2000,8 +2009,8 @@ class AutoEncoder:
                         ),
                     )
                     id_x_hat_test = denormalize_data(
-                        id_x_hat_test,
-                        self._normalization_method,
+                        data=id_x_hat_test,
+                        normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
                         mean_=(
@@ -2017,8 +2026,8 @@ class AutoEncoder:
                     )
 
                     id_x_train = denormalize_data(
-                        id_x_train,
-                        self._normalization_method,
+                        data=id_x_train,
+                        normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
                         mean_=(
@@ -2033,8 +2042,8 @@ class AutoEncoder:
                         ),
                     )
                     id_x_val = denormalize_data(
-                        id_x_val,
-                        self._normalization_method,
+                        data=id_x_val,
+                        normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
                         mean_=(
@@ -2049,8 +2058,8 @@ class AutoEncoder:
                         ),
                     )
                     id_x_test = denormalize_data(
-                        id_x_test,
-                        self._normalization_method,
+                        data=id_x_test,
+                        normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
                         max_x=norm_values["max_x"][self._feature_to_check],
                         mean_=(
@@ -2373,7 +2382,7 @@ class AutoEncoder:
                 "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
             )
 
-        data, feature_names = convert_data_to_numpy(data)
+        data, feature_names = convert_data_to_numpy(data=data)
 
         # Create features_names_to_check, excluding ID columns if they exist
         if id_columns is not None and feature_names:
@@ -2415,7 +2424,10 @@ class AutoEncoder:
         # Handle ID columns
         if id_columns is not None:
             data, _, id_data_dict, self.id_columns_indices = handle_id_columns(
-                data, id_columns, feature_names, self.context_window
+                data=data,
+                id_columns=id_columns,
+                features_name=feature_names,
+                context_window=self.context_window,
             )
         else:
             id_data_dict = {"global": data}
@@ -2500,7 +2512,10 @@ class AutoEncoder:
             x_train = x_val = x_test = data
 
             _, _, _, normalization_values = normalize_data_for_training(
-                x_train, x_val, x_test, self.normalization_method
+                x_train=x_train,
+                x_val=x_val,
+                x_test=x_test,
+                normalization_method=self.normalization_method,
             )
 
         # Set normalization parameters
@@ -2524,12 +2539,14 @@ class AutoEncoder:
                 except Exception as e:
                     raise ValueError(f"Error during normalization: {e}")
 
-            data_seq = time_series_to_sequence(data, self._context_window)
+            data_seq = time_series_to_sequence(
+                data=data, context_window=self._context_window
+            )
             reconstructed_data = self.model.predict(data_seq)
 
             if self._normalization_method:
                 reconstructed_data = denormalize_data(
-                    reconstructed_data,
+                    data=reconstructed_data,
                     normalization_method=self._normalization_method,
                     min_x=(
                         self.min_x[self._feature_to_check]
@@ -2554,10 +2571,10 @@ class AutoEncoder:
                 )
 
             padded_reconstructed = apply_padding(
-                data[:, self._feature_to_check],
-                reconstructed_data,
-                self._context_window,
-                self._time_step_to_check,
+                data=data[:, self._feature_to_check],
+                reconstructed=reconstructed_data,
+                context_window=self._context_window,
+                time_step_to_check=self._time_step_to_check,
             )
 
             # Generate plot path based on ID
@@ -2624,17 +2641,19 @@ class AutoEncoder:
         for iter_num in range(1, iterations):
             # Handle missing values
             if self.imputer is not None:
-                data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
+                data = self.imputer.apply_imputation(data=pd.DataFrame(data)).to_numpy()
             else:
                 data = np.nan_to_num(data, nan=0)
 
             # Generate sequence and predict
-            data_seq = time_series_to_sequence(data, self._context_window)
+            data_seq = time_series_to_sequence(
+                data=data, context_window=self._context_window
+            )
             reconstructed_data = self.model.predict(data_seq)
 
             if self._normalization_method:
                 reconstructed_data = denormalize_data(
-                    reconstructed_data,
+                    data=reconstructed_data,
                     normalization_method=self._normalization_method,
                     min_x=(
                         self.min_x[self._feature_to_check]
@@ -2700,7 +2719,9 @@ class AutoEncoder:
         else:
             data = np.nan_to_num(data, nan=0)
 
-        data_seq = time_series_to_sequence(data, self._context_window)
+        data_seq = time_series_to_sequence(
+            data=data, context_window=self._context_window
+        )
         reconstructed_data_final = self.model.predict(data_seq)
 
         if self._normalization_method:
@@ -2728,10 +2749,10 @@ class AutoEncoder:
             )
 
         padded_reconstructed_final = apply_padding(
-            data[:, self._feature_to_check],
-            reconstructed_data_final,
-            self._context_window,
-            self._time_step_to_check,
+            data=data[:, self._feature_to_check],
+            reconstructed=reconstructed_data_final,
+            context_window=self._context_window,
+            time_step_to_check=self._time_step_to_check,
         )
         reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
 
@@ -2823,7 +2844,10 @@ class AutoEncoder:
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
             x_train, x_val, x_test = time_series_split(
-                data, self._train_size, self._val_size, self._test_size
+                data=data,
+                train_size=self._train_size,
+                val_size=self._val_size,
+                test_size=self._test_size,
             )
             data = tuple([x_train, x_val, x_test])
         else:
@@ -2832,7 +2856,12 @@ class AutoEncoder:
                     "Data must be a numpy array or a tuple with three numpy arrays"
                 )
 
-        return self._prepare_dataset(data, context_window, normalize, id_iter=id_iter)
+        return self._prepare_dataset(
+            data=data,
+            context_window=context_window,
+            normalize=normalize,
+            id_iter=id_iter,
+        )
 
     def _prepare_dataset(
         self,
@@ -2873,21 +2902,21 @@ class AutoEncoder:
                         mask_train, mask_val, mask_test = self._custom_mask
                 else:
                     mask_train, mask_val, mask_test = time_series_split(
-                        (
+                        data=(
                             self.id_data_dict_mask[id_iter]
                             if id_iter is not None
                             else self._custom_mask
                         ),
-                        self._train_size,
-                        self._val_size,
-                        self._test_size,
+                        train_size=self._train_size,
+                        val_size=self._val_size,
+                        test_size=self._test_size,
                     )
 
-            # seq_mask_train = time_series_to_sequence(mask_train, context_window)
-            # seq_mask_val = time_series_to_sequence(mask_val, context_window)
-            # seq_mask_test = time_series_to_sequence(mask_test, context_window)
-            seq_mask_train, seq_mask_val, seq_mask_test = time_series_to_sequence_v2(
-                mask_train, mask_val, mask_test, context_window
+            seq_mask_train, seq_mask_val, seq_mask_test = time_series_to_sequence(
+                data=mask_train,
+                val_data=mask_val,
+                test_data=mask_test,
+                context_window=context_window,
             )
 
         if normalize:
@@ -2904,21 +2933,21 @@ class AutoEncoder:
                 self.normalization_values = {"global": norm_values}
 
         if self._use_mask and self.imputer is not None:
-            import pandas as pd
-
-            x_train = self.imputer.apply_imputation(pd.DataFrame(x_train)).to_numpy()
-            x_val = self.imputer.apply_imputation(pd.DataFrame(x_val)).to_numpy()
-            x_test = self.imputer.apply_imputation(pd.DataFrame(x_test)).to_numpy()
+            x_train = self.imputer.apply_imputation(
+                data=pd.DataFrame(x_train)
+            ).to_numpy()
+            x_val = self.imputer.apply_imputation(data=pd.DataFrame(x_val)).to_numpy()
+            x_test = self.imputer.apply_imputation(data=pd.DataFrame(x_test)).to_numpy()
         else:
             x_train = np.nan_to_num(x_train)
             x_val = np.nan_to_num(x_val)
             x_test = np.nan_to_num(x_test)
 
-        # seq_x_train = time_series_to_sequence(x_train, context_window)
-        # seq_x_val = time_series_to_sequence(x_val, context_window)
-        # seq_x_test = time_series_to_sequence(x_test, context_window)
-        seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence_v2(
-            x_train, x_val, x_test, context_window
+        seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
+            data=x_train,
+            val_data=x_val,
+            test_data=x_test,
+            context_window=context_window,
         )
 
         if id_iter is not None:
@@ -2963,7 +2992,10 @@ class AutoEncoder:
         self.length_datasets = {}
         for id_iter, d in self.id_data_dict.items():
             self.prepare_datasets(
-                d, self._context_window, self._normalize, id_iter=id_iter
+                data=d,
+                context_window=self._context_window,
+                normalize=self._normalize,
+                id_iter=id_iter,
             )
             self.length_datasets[id_iter] = {
                 "train": len(self.x_train[id_iter]),
@@ -3071,7 +3103,7 @@ class AutoEncoder:
 
         # Apply feature-specific weights if provided
         if feature_weights is not None:
-            feature_weights = tf.convert_to_tensor(feature_weights, dtype=tf.float32)
+            feature_weights = tf.convert_to_tensor(value=feature_weights, dtype=tf.float32)
             squared_error = squared_error * feature_weights
 
         # Compute mean only over observed values if mask is provided
