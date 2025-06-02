@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple, Union, Dict
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -176,7 +176,7 @@ def normalize_data_for_training(
     x_train: np.ndarray,
     x_val: np.ndarray,
     x_test: np.ndarray,
-    normalization_method: str
+    normalization_method: str,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
     """
     Normalize training, validation and test data using the specified method.
@@ -314,7 +314,7 @@ def apply_padding(
     if isinstance(time_step_to_check, list):
         time_step_to_check = time_step_to_check[0]
 
-    if time_step_to_check < 0 or time_step_to_check >= context_window:
+    if time_step_to_check < 0 or time_step_to_check >= context_window - 1:
         raise ValueError(
             f"time_step_to_check must be between 0 and {context_window - 1}, "
             f"but got {time_step_to_check}"

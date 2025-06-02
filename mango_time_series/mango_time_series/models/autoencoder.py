@@ -2584,9 +2584,24 @@ class AutoEncoder:
                 feature_labels=feature_names,
             )
 
-            # Remove padding rows after plotting
-            valid_reconstructed = padded_reconstructed[self._context_window - 1 :]
-            return pd.DataFrame(valid_reconstructed, columns=feature_names)
+            if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+                feature_names
+            ):
+                raise ValueError(
+                    f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                    f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
+                )
+
+            # Remove padding rows
+            reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
+            reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+            if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
+                raise ValueError(
+                    f"Reconstructed data has {len(reconstructed_df)} rows."
+                    f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
+                )
+
+            return reconstructed_df
 
         # Case 2: With NaNs - Iterative reconstruction
         reconstruction_records = []
@@ -2753,11 +2768,31 @@ class AutoEncoder:
             id_iter=id_iter,
         )
 
-        # Remove padding rows after plotting
-        valid_reconstructed_final = padded_reconstructed_final[
-            self._context_window - 1 :
-        ]
-        return pd.DataFrame(valid_reconstructed_final, columns=feature_names)
+        # Remove padding rows
+        reconstructed_df = pd.DataFrame(
+            padded_reconstructed_final, columns=feature_names
+        )
+        actual_df = pd.DataFrame(
+            data_original[:, self._feature_to_check], columns=feature_names
+        )
+
+        if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+            feature_names
+        ):
+            raise ValueError(
+                f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
+            )
+
+        # reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
+        reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+        if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
+            raise ValueError(
+                f"Reconstructed data has {len(reconstructed_df)} rows."
+                f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
+            )
+
+        return reconstructed_df
 
     def prepare_datasets(
         self,
