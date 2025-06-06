@@ -1657,82 +1657,41 @@ class AutoEncoder:
 
         # Process data with IDs if provided
         if self.id_data_dict != {}:
+            # Initialize current position in x_converted and x_hat
             current_pos = 0
-            for id_value in sorted(self.length_datasets.keys()):
-                train_len = self.length_datasets[id_value]["train"]
-                val_len = self.length_datasets[id_value]["val"]
-                test_len = self.length_datasets[id_value]["test"]
+            # Initialize time step in respective datasets
+            time_step = {id_: 0 for id_ in self.length_datasets.keys()}
+            for data_split in ["train", "validation", "test"]:
+                for id_value in sorted(self.length_datasets.keys()):
+                    # Get length of dataset
+                    if data_split == "validation":
+                        split_len = self.length_datasets[id_value]["val"]
+                    else:
+                        split_len = self.length_datasets[id_value][data_split]
+                    for i in range(split_len):
+                        t = time_step[id_value]
+                        for feature_idx, feature_name in enumerate(feature_labels):
+                            data_points_actual.append(
+                                {
+                                    "id": id_value,
+                                    "feature": feature_name,
+                                    "time_step": t,
+                                    "value": x_converted[feature_idx, current_pos],
+                                    "dataset": data_split,
+                                }
+                            )
+                            data_points_reconstructed.append(
+                                {
+                                    "id": id_value,
+                                    "feature": feature_name,
+                                    "time_step": t,
+                                    "value": x_hat[feature_idx, current_pos],
+                                    "dataset": data_split,
+                                }
+                            )
+                        current_pos = current_pos + 1
+                        time_step[id_value] = time_step[id_value] + 1
 
-                # Add data points for each feature
-                for feature_idx, feature_name in enumerate(feature_labels):
-                    # Process actual values
-                    for t in range(train_len):
-                        data_points_actual.append(
-                            {
-                                "id": id_value,
-                                "feature": feature_name,
-                                "time_step": t,
-                                "value": x_converted[feature_idx, current_pos + t],
-                                "dataset": "train",
-                            }
-                        )
-                        data_points_reconstructed.append(
-                            {
-                                "id": id_value,
-                                "feature": feature_name,
-                                "time_step": t,
-                                "value": x_hat[feature_idx, current_pos + t],
-                                "dataset": "train",
-                            }
-                        )
-
-                    for t in range(val_len):
-                        t_offset = t + train_len
-                        data_points_actual.append(
-                            {
-                                "id": id_value,
-                                "feature": feature_name,
-                                "time_step": t_offset,
-                                "value": x_converted[
-                                    feature_idx, current_pos + t_offset
-                                ],
-                                "dataset": "validation",
-                            }
-                        )
-                        data_points_reconstructed.append(
-                            {
-                                "id": id_value,
-                                "feature": feature_name,
-                                "time_step": t_offset,
-                                "value": x_hat[feature_idx, current_pos + t_offset],
-                                "dataset": "validation",
-                            }
-                        )
-
-                    for t in range(test_len):
-                        t_offset = t + train_len + val_len
-                        data_points_actual.append(
-                            {
-                                "id": id_value,
-                                "feature": feature_name,
-                                "time_step": t_offset,
-                                "value": x_converted[
-                                    feature_idx, current_pos + t_offset
-                                ],
-                                "dataset": "test",
-                            }
-                        )
-                        data_points_reconstructed.append(
-                            {
-                                "id": id_value,
-                                "feature": feature_name,
-                                "time_step": t_offset,
-                                "value": x_hat[feature_idx, current_pos + t_offset],
-                                "dataset": "test",
-                            }
-                        )
-
-                current_pos += train_len + val_len + test_len
         else:
             # Process data without IDs
             for feature_idx, feature_name in enumerate(feature_labels):
@@ -2158,6 +2117,7 @@ class AutoEncoder:
                     actual_data_df=df_actual_i,
                     autoencoder_output_df=df_reconstructed_i,
                     context_window=1,
+                    time_step_to_check=[0],
                     train_size=self._train_size,
                     val_size=self._val_size,
                     test_size=self._test_size,
@@ -2194,6 +2154,7 @@ class AutoEncoder:
                 actual_data_df=df_actual_i,
                 autoencoder_output_df=df_reconstructed_i,
                 context_window=1,
+                time_step_to_check=[0],
                 train_size=self._train_size,
                 val_size=self._val_size,
                 test_size=self._test_size,
@@ -2559,6 +2520,7 @@ class AutoEncoder:
                     actual_data_df=actual_data_df,
                     autoencoder_output_df=autoencoder_output_df,
                     context_window=self._context_window,
+                    time_step_to_check=self._time_step_to_check,
                     train_size=self._train_size,
                     val_size=self._val_size,
                     test_size=self._test_size,
