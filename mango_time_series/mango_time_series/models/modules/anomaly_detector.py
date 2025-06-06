@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -81,6 +81,7 @@ def reconstruction_error(
     actual_data_df: pd.DataFrame,
     autoencoder_output_df: pd.DataFrame,
     context_window: int = 10,
+    time_step_to_check: Union[int, List[int]] = [9],
     train_size: float = 0.8,
     val_size: float = 0.1,
     test_size: float = 0.1,
@@ -96,6 +97,8 @@ def reconstruction_error(
     :type autoencoder_output_df: pd.DataFrame
     :param context_window: Number of initial rows used as context by the AE
     :type context_window: int
+    :param time_step_to_check: Time step to predict within the window
+    :type time_step_to_check: Union[int, List[int]]
     :param train_size: Proportion of training data
     :type train_size: float
     :param val_size: Proportion of validation data
@@ -119,21 +122,29 @@ def reconstruction_error(
             f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length "
             f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
         )
+    if isinstance(time_step_to_check, list):
+        time_step_to_check = time_step_to_check[0]
     if not np.isclose(train_size + val_size + test_size, 1.0):
         raise ValueError(
             f"train_size + val_size + test_size must equal 1, but got {train_size + val_size + test_size}"
+        )
+    if time_step_to_check < 0 or time_step_to_check > context_window - 1:
+        raise ValueError(
+            f"time_step_to_check must be between 0 and {context_window - 1}, "
+            f"but got {time_step_to_check}"
         )
     if context_window < 1:
         raise ValueError("context_window must be a positive integer")
     if not autoencoder_output_df.columns.equals(actual_data_df.columns):
         raise ValueError(
             f"Autoencoder output columns ({autoencoder_output_df.columns})"
-            f" do match actual data columns ({actual_data_df.columns})"
+            f" do not match actual data columns ({actual_data_df.columns})"
         )
 
     try:
-        # Drop first context_window rows from actual data
-        actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
+        actual_data_df = actual_data_df.iloc[
+            time_step_to_check : time_step_to_check + len(autoencoder_output_df)
+        ].reset_index(drop=True)
 
         # Drop the 'type'=reconstructed column
         if "type" in autoencoder_output_df.columns:
@@ -262,7 +273,7 @@ def reconstruction_error_summary(
     reconstruction_error_df: pd.DataFrame,
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error_summary.csv",
-    threshold: float = 0.3,
+    threshold: float = 0.5,
 ) -> pd.DataFrame:
     """
     Generate and optionally save summary statistics (mean and std) for reconstruction error
@@ -314,13 +325,13 @@ def reconstruction_error_summary(
             std_values = row[std_columns].dropna()
             if len(mean_values) >= 2:
                 diff_mean = mean_values.max() - mean_values.min()
-                if diff_mean > threshold:
+                if diff_mean / mean_values.max() > threshold:
                     logger.warning(
                         f"Sensor {sensor} has a high difference in mean reconstruction error across splits."
                     )
             if len(std_values) >= 2:
                 diff_std = std_values.max() - std_values.min()
-                if diff_std > threshold:
+                if diff_std / std_values.max() > threshold:
                     logger.warning(
                         f"Sensor {sensor} has a high difference in std reconstruction error across splits."
                     )
