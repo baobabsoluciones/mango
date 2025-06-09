@@ -1661,10 +1661,7 @@ class AutoEncoder:
             for data_split in ["train", "validation", "test"]:
                 for id_value in sorted(self.length_datasets.keys()):
                     # Get length of dataset
-                    if data_split == "validation":
-                        split_len = self.length_datasets[id_value]["val"]
-                    else:
-                        split_len = self.length_datasets[id_value][data_split]
+                    split_len = self.length_datasets[id_value][data_split]
                     for i in range(split_len):
                         t = time_step[id_value]
                         for feature_idx, feature_name in enumerate(feature_labels):
@@ -1688,67 +1685,42 @@ class AutoEncoder:
                             )
                         current_pos = current_pos + 1
                         time_step[id_value] = time_step[id_value] + 1
+
         else:
             # Process data without IDs
-            for feature_idx, feature_name in enumerate(feature_labels):
-                # Add train data points
-                for t in range(train_split):
-                    data_points_actual.append(
-                        {
-                            "feature": feature_name,
-                            "time_step": t,
-                            "value": x_converted[feature_idx, t],
-                            "dataset": "train",
-                        }
-                    )
-                    data_points_reconstructed.append(
-                        {
-                            "feature": feature_name,
-                            "time_step": t,
-                            "value": x_hat[feature_idx, t],
-                            "dataset": "train",
-                        }
-                    )
+            current_pos = 0
+            split_len_dic = {
+                "train": train_split,
+                "validation": val_split - train_split,
+                "test": x_converted.shape[1] - val_split,
+            }
+            for data_split in ["train", "validation", "test"]:
+                split_len = split_len_dic[data_split]
+                for i in range(split_len):
+                    for feature_idx, feature_name in enumerate(feature_labels):
+                        data_points_actual.append(
+                            {
+                                "feature": feature_name,
+                                "time_step": current_pos,
+                                "value": x_converted[feature_idx, current_pos],
+                                "dataset": data_split,
+                            }
+                        )
+                        data_points_reconstructed.append(
+                            {
+                                "feature": feature_name,
+                                "time_step": current_pos,
+                                "value": x_hat[feature_idx, current_pos],
+                                "dataset": data_split,
+                            }
+                        )
+                    current_pos = current_pos + 1
 
-                # Add validation data points
-                for t in range(val_split - train_split):
-                    t_offset = t + train_split
-                    data_points_actual.append(
-                        {
-                            "feature": feature_name,
-                            "time_step": t_offset,
-                            "value": x_converted[feature_idx, t_offset],
-                            "dataset": "validation",
-                        }
-                    )
-                    data_points_reconstructed.append(
-                        {
-                            "feature": feature_name,
-                            "time_step": t_offset,
-                            "value": x_hat[feature_idx, t_offset],
-                            "dataset": "validation",
-                        }
-                    )
-
-                # Add test data points
-                for t in range(x_converted.shape[1] - val_split):
-                    t_offset = t + val_split
-                    data_points_actual.append(
-                        {
-                            "feature": feature_name,
-                            "time_step": t_offset,
-                            "value": x_converted[feature_idx, t_offset],
-                            "dataset": "test",
-                        }
-                    )
-                    data_points_reconstructed.append(
-                        {
-                            "feature": feature_name,
-                            "time_step": t_offset,
-                            "value": x_hat[feature_idx, t_offset],
-                            "dataset": "test",
-                        }
-                    )
+        if current_pos != x_converted.shape[1]:
+            raise ValueError(
+                f"Indices to create data points are misaligned."
+                f"Expected {x_converted.shape[1]} but got {current_pos}"
+            )
 
         return pd.DataFrame(data_points_actual), pd.DataFrame(data_points_reconstructed)
 
@@ -1917,7 +1889,7 @@ class AutoEncoder:
 
                     # Get dataset lengths for this ID
                     train_length = self.length_datasets[id_key]["train"]
-                    val_length = self.length_datasets[id_key]["val"]
+                    val_length = self.length_datasets[id_key]["validation"]
                     test_length = self.length_datasets[id_key]["test"]
 
                     # Extract segments for this ID
@@ -2965,7 +2937,7 @@ class AutoEncoder:
             )
             self.length_datasets[id_iter] = {
                 "train": len(self.x_train[id_iter]),
-                "val": len(self.x_val[id_iter]),
+                "validation": len(self.x_val[id_iter]),
                 "test": len(self.x_test[id_iter]),
             }
 
