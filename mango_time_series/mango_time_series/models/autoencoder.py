@@ -1653,7 +1653,7 @@ class AutoEncoder:
         data_points_reconstructed = []
 
         # Process data with IDs if provided
-        if self.id_data_dict != {}:
+        if self.id_data_dict:
             # Initialize current position in x_converted and x_hat
             current_pos = 0
             # Initialize time step in respective datasets
@@ -2824,6 +2824,19 @@ class AutoEncoder:
         :raises ValueError: If mask shapes do not match data shapes or if custom mask format is invalid
         """
         x_train, x_val, x_test = data
+
+        # Make sure train, validation, and test sizes are at least context window length
+        for split_name, split_data in zip(
+            ["train", "validation", "test"], [x_train, x_val, x_test]
+        ):
+            if split_data is None:
+                raise ValueError(
+                    f"{split_name} data is None. Check your data splitting configuration."
+                )
+            if len(split_data) < context_window:
+                raise ValueError(
+                    f"Length of {split_name} data ({len(split_data)}) must be at least context window ({context_window})."
+                )
 
         if self._use_mask:
             if getattr(self, "_custom_mask", None) is None:
