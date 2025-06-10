@@ -901,6 +901,24 @@ class TestAutoEncoderCases(unittest.TestCase):
                             reconstructed_df.index.min(), initial_context_offset
                         )
 
+                    # Check multiple reconstructions
+                    reconstructed_results = model.reconstruct_new_data(
+                        data=data,
+                        iterations=2,
+                        save_path=None,
+                        id_columns=id_columns,
+                    )
+                    for id_i, reconstructed_df in reconstructed_results.items():
+                        reconstructed_df = reconstructed_results[id_i]
+                        data_i = data[data["id"] == id_i]
+                        expected_data = data_i.iloc[
+                            initial_context_offset : len(data_i) - ending_context_offset
+                        ]
+                        self.assertEqual(len(reconstructed_df), len(expected_data))
+                        self.assertEqual(
+                            reconstructed_df.index.min(), initial_context_offset
+                        )
+
                 # Case with single dataset (with_ids=False)
                 else:
                     # Check df_actual
