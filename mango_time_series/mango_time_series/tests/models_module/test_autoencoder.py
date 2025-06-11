@@ -800,7 +800,7 @@ class TestAutoEncoderCases(unittest.TestCase):
         """
         Test reconstruct() and reconstruct_new_data() functions for different cases
         of time_step_to_check and data (with and without ids). Ensures that the original
-        data is not altered and reconstruction has same dimensions as expected.
+        data is not altered and reconstruction has expected dimensions.
 
         :return: None
         :rtype: None
