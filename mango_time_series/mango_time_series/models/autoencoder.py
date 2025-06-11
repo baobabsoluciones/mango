@@ -1,671 +1,1516 @@
-import logging
 import os
-from typing import Union, List, Tuple, Any, Optional
+import pickle
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
+import polars as pl
 import tensorflow as tf
 from keras import Sequential
-from keras.src.optimizers import Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam
-from tensorflow.keras.models import load_model
+from keras.src.optimizers import SGD, Adadelta, Adagrad, Adam, Adamax, Nadam, RMSprop
+from tensorflow.keras.layers import Dense
 
-from mango_time_series.models.losses import mean_squared_error
-from mango_time_series.models.modules import encoder, decoder
+from mango.logging import get_configured_logger
+from mango.processing.data_imputer import DataImputer
+from mango_time_series.models.modules import decoder, encoder
 from mango_time_series.models.utils.plots import (
     plot_actual_and_reconstructed,
     plot_loss_history,
+    plot_reconstruction_iterations,
+)
+from mango_time_series.models.utils.processing import (
+    apply_padding,
+    convert_data_to_numpy,
+    denormalize_data,
+    handle_id_columns,
+    normalize_data_for_prediction,
+    normalize_data_for_training,
+    time_series_split,
 )
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
-logger = logging.getLogger(__name__)
+logger = get_configured_logger()
 
 
 class AutoEncoder:
     """
-    Autoencoder model
+    Autoencoder model for time series data reconstruction and anomaly detection.
 
-    This Autoencoder model can be highly configurable but is already set up so
-    that quick training and profiling can be done.
+    An autoencoder is a neural network that learns to compress and reconstruct data.
+    This implementation is designed specifically for time series data, allowing for
+    sequence-based encoding and decoding with various architectures (LSTM, GRU, RNN).
+
+    The model can be highly configurable but is already set up for quick training
+    and profiling. It supports data normalization, masking for missing values,
+    and various training options including early stopping and checkpointing.
     """
 
-    def __init__(
-        self,
-        form: str = "dense",
-        data: Any = None,
-        context_window: int = None,
-        time_step_to_check: Union[int, List[int]] = 0,
-        feature_to_check: Union[int, List[int]] = 0,
-        num_layers: int = None,
-        hidden_dim: Union[int, List[int]] = None,
-        bidirectional_encoder: bool = False,
-        bidirectional_decoder: bool = False,
-        activation_encoder: str = None,
-        activation_decoder: str = None,
-        normalize: bool = True,
-        normalization_method: str = "minmax",
-        optimizer: str = "adam",
-        batch_size: int = 32,
-        split_size: float = 0.7,
-        epochs: int = 100,
-        save_path: str = None,
-        checkpoint: int = 10,
-        use_early_stopping: bool = True,
-        patience: int = 10,
-        verbose: bool = False,
-        feature_names: Optional[List[str]] = None,
-    ):
-        """
-        Initialize the Autoencoder model
+    TRAIN_SIZE = 0.8
+    VAL_SIZE = 0.1
+    TEST_SIZE = 0.1
 
-        :param form: type of encoder, one of "dense", "rnn", "gru" or "lstm".
-          Currently, these types of cells are both used on the encoder and
-          decoder. In the future each part could have a different structure?
-        :type form: str
-        :param data: data to train the model. It can be:
-          - A single numpy array, pandas DataFrame, or polars DataFrame
-            from which train, validation and test splits are created
-          - A tuple with three numpy arrays, pandas DataFrames, or polars DataFrames
-            for train, validation, and test sets respectively
-        :type data: Any
-        :param context_window: context window for the model. This is used
-          to transform the tabular data into a sequence of data
-          (from 2D tensor to 3D tensor)
-        :type context_window: int
-        :param time_step_to_check: time steps to check for the autoencoder.
-          Currently only int value is supported and it should be the index
-          of the context window to check. In the future this could be a list of
-          indices to check. For taking only the last timestep of the context
-          window this should be set to -1.
-        :type time_step_to_check: Union[int, List[int]]
-        :param num_layers: number of internal layers. This number is used to
-          know the number of encoding layers after the input (the result of
-          the last layer is going to be the embedding of the autoencoder) and
-          the number of decoding layers before the output (the result of the
-          last layer is going to be the reconstructed data).
-        :type num_layers: int
-        :param hidden_dim: number of hidden dimensions in the internal layers.
-          It can be a single integer (same for all layers) or a list of
-          dimensions for each layer.
-        :type hidden_dim: Union[int, List[int]]
-        :param bidirectional_encoder: whether to use bidirectional LSTM in the
-            encoder part of the model.
-        :type bidirectional_encoder: bool
-        :param bidirectional_decoder: whether to use bidirectional LSTM in the
-            decoder part of the model.
-        :type bidirectional_decoder: bool
-        :param activation_encoder: activation function for the encoder layers.
-        :type activation_encoder: str
-        :param activation_decoder: activation function for the decoder layers.
-        :type activation_decoder: str
-        :param normalize: whether to normalize the data or not.
-        :type normalize: bool
-        :param normalization_method: method to normalize the data. It can be
-            "minmax" or "zscore".
-        :type normalization_method: str
-        :param batch_size: batch size for the model
-        :type batch_size: int
-        :param split_size: size of the split for the train (train + validation,
-          validation always 10% of total data) and test datasets.
-          Default value is 60% train, 10% validation and 30% test.
-        :type split_size: float
-        :param epochs: number of epochs to train the model
-        :type epochs: int
-        :param save_path: folder path to save the model checkpoints
-        :type save_path: str
-        :param checkpoint: number of epochs to save the model checkpoints.
-        :type checkpoint: int
-        :param patience: number of epochs to wait before early stopping
-        :type patience: int
-        :param verbose: whether to log model summary and model training.
-        :type verbose: bool
-        :param feature_names: optional list of feature names to use for the model.
-            If provided, these names will be used instead of automatically extracted ones.
-        :type feature_names: Optional[List[str]]
+    def __init__(self) -> None:
         """
+        Initialize the Autoencoder model with default parameters.
 
-        root_dir = os.path.abspath(os.getcwd())
-        self.save_path = (
-            save_path if save_path else os.path.join(root_dir, "autoencoder")
-        )
+        Initializes internal state variables including paths, model configuration,
+        and normalization settings.
+
+        :return: None
+        :rtype: None
+        """
+        # Path settings
+        self._num_layers = None
+        self.root_dir = os.path.abspath(os.getcwd())
+        self._save_path = None
+
+        # Model architecture settings
+        self._form = "lstm"
+        self.model = None
+        self.layers = []
+        self._model_optimizer = None
+        self._bidirectional_encoder = False
+        self._bidirectional_decoder = False
+        self._activation_encoder = None
+        self._activation_decoder = None
+
+        # Data processing settings
+        self._normalization_method = None
+        self.normalization_values = {}
+        self._normalize = False
+        self.imputer = None
+        self._id_columns_indices = None
+        self._data = None
+        self._features_name = None
+        self._feature_weights = None
+        self._id_data = None
+        self._id_data_dict = None
+        self._id_data_mask = None
+        self._id_data_dict_mask = None
+
+        # Dataset splits
+        self.x_train = None
+        self.x_val = None
+        self.x_test = None
+
+        # Mask settings
+        self._mask_train = None
+        self._mask_val = None
+        self._mask_test = None
+
+        # Training settings
+        self._verbose = False
+        self._shuffle_buffer_size = None
+        self._x_train_no_shuffle = None
+        self._feature_to_check = None
+        self._time_step_to_check = None
+        self._context_window = None
+        self._hidden_dim = None
+        self._train_size = self.TRAIN_SIZE
+        self._val_size = self.VAL_SIZE
+        self._test_size = self.TEST_SIZE
+        self._use_mask = False
+        self._custom_mask = None
+        self._shuffle = False
+
+    @property
+    def save_path(self) -> Optional[str]:
+        """
+        Get the path where model artifacts will be saved.
+
+        :return: Path to save model or None if not set
+        :rtype: Optional[str]
+        """
+        return self._save_path
+
+    @save_path.setter
+    def save_path(self, path: Optional[str]) -> None:
+        """
+        Set the path where model artifacts will be saved.
+
+        :param path: Directory path for saving model artifacts
+        :type path: Optional[str]
+        :return: None
+        :rtype: None
+        """
+        self._save_path = path or os.path.join(self.root_dir, "autoencoder")
 
         self.create_folder_structure(
             [
-                os.path.join(self.save_path, "models"),
-                os.path.join(self.save_path, "plots"),
+                os.path.join(self._save_path, "models"),
+                os.path.join(self._save_path, "plots"),
             ]
         )
 
-        # First we check if hidden dim is a list it has a number of elements
-        # equal to num_layers
-        if isinstance(hidden_dim, list):
-            if len(hidden_dim) != num_layers:
+    @property
+    def form(self) -> str:
+        """
+        Get the encoder/decoder architecture type.
+
+        :return: Architecture type ('lstm', 'gru', 'rnn', or 'dense')
+        :rtype: str
+        """
+        return self._form
+
+    @form.setter
+    def form(self, value: str) -> None:
+        """
+        Set the encoder/decoder architecture type.
+
+        :param value: Architecture type ('lstm', 'gru', 'rnn', or 'dense')
+        :type value: str
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not one of the supported architectures or if
+                           attempting to change after model is built
+        """
+        self._validate_form_change(value)
+        self._form = value
+
+    def _validate_form_change(self, value: str) -> None:
+        """
+        Validate that the form can be changed to the specified value.
+
+        :param value: The new form value to validate
+        :type value: str
+        :raises ValueError: If the form cannot be changed to the specified value
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError(
+                "Cannot change form after model is built. "
+                "Call build_model() with the new form instead."
+            )
+
+        valid_forms = ["lstm", "gru", "rnn", "dense"]
+        if value not in valid_forms:
+            raise ValueError(f"Form must be one of {valid_forms}")
+
+        if value == "dense":
+            raise NotImplementedError("Dense model type is not yet implemented")
+
+    @property
+    def time_step_to_check(self) -> Optional[List[int]]:
+        """
+        Get the time step indices to check during reconstruction.
+
+        :return: Time step indices
+        :rtype: Optional[List[int]]
+        """
+        if not hasattr(self, "_time_step_to_check"):
+            return None
+        return self._time_step_to_check
+
+    @time_step_to_check.setter
+    def time_step_to_check(self, value: List[int]) -> None:
+        """
+        Set the time step indices to check during reconstruction.
+
+        :param value: Time step indices to check
+        :type value: List[int]
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not valid or if attempting to change after model is built
+        """
+        # If model is built, don't allow changes
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError(
+                "Cannot change time_step_to_check after model is built. "
+                "Call build_model() with the new time_step_to_check instead."
+            )
+
+        if not isinstance(value, list):
+            raise ValueError("time_step_to_check must be a list of integers")
+
+        if len(value) != 1:
+            raise NotImplementedError(
+                "Currently time_step_to_check is implemented to consider only one integer index."
+            )
+
+        # Validate all values are integers
+        if not all(isinstance(t, int) for t in value):
+            raise ValueError("All elements in time_step_to_check must be integers")
+
+        # If context_window is set, validate indices are in range
+        if not hasattr(self, "_context_window"):
+            raise ValueError("Context window is not set")
+        if self._context_window is not None:
+            if any(t < 0 or t >= self._context_window for t in value):
                 raise ValueError(
-                    "hidden_dim must have a number of elements equal to num_layers"
+                    "time_step_to_check contains invalid indices. "
+                    f"Must be between 0 and {self._context_window - 1}."
                 )
 
-        # If hidden dim is not a list, we check if it is an integer and if it is greater
-        #  than 0
-        elif isinstance(hidden_dim, int):
-            if hidden_dim <= 0:
-                raise ValueError("hidden_dim must be greater than 0")
-            else:
-                hidden_dim = [hidden_dim] * num_layers
+        self._time_step_to_check = value
 
-        # If hidden dim is not a list or an integer, we raise an error
-        else:
-            raise ValueError("hidden_dim must be a list of integers or an integer")
+    @property
+    def context_window(self) -> Optional[int]:
+        """
+        Get the context window size.
 
-        # Convert data to numpy arrays if it's a pandas or polars DataFrame
-        # and extract feature names if available
-        data, extracted_feature_names = self._convert_data_to_numpy(data)
+        :return: Context window size or None if not initialized
+        :rtype: Optional[int]
+        """
+        return self._context_window
 
-        # Store feature names or generate default names
-        if feature_names:
-            # Use user-provided feature names
-            self.features_name = feature_names
-        elif extracted_feature_names and len(extracted_feature_names) > 0:
-            # Use extracted feature names from DataFrame
-            self.features_name = extracted_feature_names
-        else:
-            # If data is provided, create generic feature names based on the number of features
-            if isinstance(data, np.ndarray) and data.ndim >= 2:
-                num_features = data.shape[1]
-                self.features_name = [f"feature_{i}" for i in range(num_features)]
-            elif (
-                isinstance(data, tuple)
-                and all(isinstance(d, np.ndarray) for d in data)
-                and data[0].ndim >= 2
-            ):
-                num_features = data[0].shape[1]
-                self.features_name = [f"feature_{i}" for i in range(num_features)]
-            else:
-                self.features_name = []
+    @context_window.setter
+    def context_window(self, value: int) -> None:
+        """
+        Set the context window size.
 
-        # Now we check if data is a single numpy array or a tuple with three numpy arrays
-        if isinstance(data, tuple):
-            if len(data) != 3:
+        :param value: Context window size
+        :type value: int
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not a positive integer or if attempting to change after model is built
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change context_window after model is built")
+
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError("Context window must be a positive integer")
+
+        self._context_window = value
+
+    @property
+    def feature_weights(self) -> Optional[List[float]]:
+        """
+        Get the feature weights.
+
+        :return: Feature weights
+        :rtype: Optional[List[float]]
+        """
+        return self._feature_weights
+
+    @feature_weights.setter
+    def feature_weights(self, value: Optional[List[float]]) -> None:
+        """
+        Set the feature weights.
+        """
+        self._feature_weights = value
+
+    @property
+    def features_name(self) -> Optional[List[str]]:
+        """
+        Get the features name used for training the model.
+        """
+        return self._features_name
+
+    @features_name.setter
+    def features_name(self, value: List[str]) -> None:
+        """
+        Set the features name used for training the model.
+
+        :param value: List of feature names
+        :type value: List[str]
+        :return: None
+        :rtype: None
+        """
+        self._features_name = value
+
+    @property
+    def data(self) -> Optional[np.ndarray]:
+        """
+        Get the data used for training the model.
+
+        :return: Data used for training the model
+        :rtype: Optional[np.ndarray]
+        """
+        return self._data
+
+    @data.setter
+    def data(self, value: Optional[np.ndarray]) -> None:
+        """
+        Set the data used for training the model.
+        """
+        # Validate that data is a single array or a tuple of three arrays
+        if isinstance(value, tuple):
+            if len(value) != 3:
                 raise ValueError("Data must be a tuple with three numpy arrays")
-        elif isinstance(data, np.ndarray):
-            pass
-        else:
+        elif not isinstance(value, np.ndarray):
             raise ValueError(
                 "Data must be a numpy array or a tuple with three numpy arrays"
             )
 
-        bidirectional_allowed = {"lstm", "gru", "rnn"}
+        self._data = value
 
-        if form not in bidirectional_allowed:
-            if bidirectional_encoder and bidirectional_decoder:
-                raise ValueError(
-                    f"Bidirectional is not supported for encoder and decoder type '{form}'."
-                )
-            elif bidirectional_encoder:
-                raise ValueError(
-                    f"Bidirectional is not supported for encoder type '{form}'."
-                )
-            elif bidirectional_decoder:
-                raise ValueError(
-                    f"Bidirectional is not supported for decoder type '{form}'."
-                )
+    @property
+    def feature_to_check(self) -> Optional[List[int]]:
+        """
+        Get the feature index or indices to check during reconstruction.
 
-        if normalization_method not in ["minmax", "zscore"]:
+        :return: Feature index or indices to check
+        :rtype: Optional[Union[int, List[int]]]
+        """
+        return self._feature_to_check
+
+    @feature_to_check.setter
+    def feature_to_check(self, value: List[int]) -> None:
+        """
+        Set the feature index or indices to check during reconstruction.
+
+        :param value: Feature index or indices to check
+        :type value: List[int]
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not valid or if attempting to change after model is built
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change feature_to_check after model is built")
+
+        if not isinstance(value, list):
+            raise ValueError("feature_to_check must be a list of integers")
+
+        self._feature_to_check = value
+
+    @property
+    def normalize(self) -> bool:
+        """
+        Get the normalization flag.
+
+        :return: Normalization flag
+        :rtype: bool
+        """
+        return self._normalize
+
+    @normalize.setter
+    def normalize(self, value: bool) -> None:
+        """
+        Set the normalization flag.
+
+        :param value: Normalization flag
+        :type value: bool
+        """
+        self._normalize = value
+
+    @property
+    def normalization_method(self) -> Optional[str]:
+        """
+        Get the normalization method.
+
+        :return: Normalization method
+        :rtype: Optional[str]
+        """
+        return self._normalization_method
+
+    @normalization_method.setter
+    def normalization_method(self, value: str) -> None:
+        """
+        Set the normalization method.
+
+        :param value: Normalization method
+        :type value: str
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change normalization_method after model is built")
+
+        if value not in ["minmax", "zscore"]:
             raise ValueError(
                 "Invalid normalization method. Choose 'minmax' or 'zscore'."
             )
 
-        self.normalization_method = normalization_method
-        self.prepare_datasets(data, context_window, normalize, split_size)
+        self._normalization_method = value
 
-        if isinstance(feature_to_check, int):
-            feature_to_check = [feature_to_check]
-        self.feature_to_check = feature_to_check
+    @property
+    def hidden_dim(self) -> Optional[Union[int, List[int]]]:
+        """
+        Get the hidden dimensions.
 
-        self.input_features = self.x_train.shape[2]
-        self.output_features = len(self.feature_to_check)
+        :return: Hidden dimensions
+        :rtype: Optional[Union[int, List[int]]]
+        """
+        return self._hidden_dim
 
-        train_dataset = tf.data.Dataset.from_tensor_slices(self.x_train)
-        train_dataset = train_dataset.cache().batch(batch_size)
+    @hidden_dim.setter
+    def hidden_dim(self, value: Union[int, List[int]]) -> None:
+        """
+        Set the hidden dimensions.
 
-        val_dataset = tf.data.Dataset.from_tensor_slices(self.x_val)
-        val_dataset = val_dataset.cache().batch(batch_size)
+        :param value: Hidden dimensions
+        :type value: Union[int, List[int]]
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change hidden_dim after model is built")
 
-        test_dataset = tf.data.Dataset.from_tensor_slices(self.x_test)
-        test_dataset = test_dataset.cache().batch(batch_size)
+        if not isinstance(value, (int, list)):
+            raise ValueError("hidden_dim must be an int or list of ints")
 
-        self.bidirectional_encoder = bidirectional_encoder
-        self.bidirectional_decoder = bidirectional_decoder
+        if isinstance(value, int):
+            value = [value]
 
-        self.activation_encoder = activation_encoder
-        self.activation_decoder = activation_decoder
+        self._hidden_dim = value
 
-        model = Sequential(
-            [
-                encoder(
-                    form=form,
-                    context_window=context_window,
-                    features=self.input_features,
-                    hidden_dim=hidden_dim,
-                    num_layers=num_layers,
-                    use_bidirectional=self.bidirectional_encoder,
-                    activation=self.activation_encoder,
-                    verbose=verbose,
-                ),
-                decoder(
-                    form=form,
-                    context_window=context_window,
-                    features=self.output_features,
-                    hidden_dim=hidden_dim,
-                    num_layers=num_layers,
-                    use_bidirectional=self.bidirectional_decoder,
-                    activation=self.activation_decoder,
-                    verbose=verbose,
-                ),
-            ],
-            name="autoencoder",
-        )
-        model.build()
+    @property
+    def bidirectional_encoder(self) -> bool:
+        """
+        Get the bidirectional encoder flag.
 
-        if verbose:
-            logger.info(f"The model has the following structure: {model.summary()}")
+        :return: Bidirectional encoder flag
+        :rtype: bool
+        """
+        return self._bidirectional_encoder
 
-        self.form = form
-        self.model = model
+    @bidirectional_encoder.setter
+    def bidirectional_encoder(self, value: bool) -> None:
+        """
+        Set the bidirectional encoder flag.
 
-        self.optimizer_name = optimizer
-        self.model_optimizer = self._get_optimizer(optimizer)
+        :param value: Bidirectional encoder flag
+        :type value: bool
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change bidirectional_encoder after model is built")
 
-        self.context_window = context_window
-        if isinstance(time_step_to_check, int):
-            time_step_to_check = [time_step_to_check]
-        self.time_step_to_check = time_step_to_check
+        bidirectional_allowed = {"lstm", "gru", "rnn"}
+        if getattr(self, "_form") not in bidirectional_allowed:
+            raise ValueError(
+                f"Bidirectional not supported for encoder/decoder type '{self.form}'"
+            )
 
-        self.hidden_dim = hidden_dim
-        self.num_layers = num_layers
+        self._bidirectional_encoder = value
 
-        self.train_dataset = train_dataset
-        self.val_dataset = val_dataset
-        self.test_dataset = test_dataset
+    @property
+    def bidirectional_decoder(self) -> bool:
+        """
+        Get the bidirectional decoder flag.
 
-        self.split_size = split_size
+        :return: Bidirectional decoder flag
+        :rtype: bool
+        """
+        return self._bidirectional_decoder
 
-        self.last_epoch = 0
-        self.epochs = epochs
+    @bidirectional_decoder.setter
+    def bidirectional_decoder(self, value: bool) -> None:
+        """
+        Set the bidirectional decoder flag.
 
-        self.save_path = save_path
-        self.checkpoint = checkpoint
+        :param value: Bidirectional decoder flag
+        :type value: bool
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change bidirectional_decoder after model is built")
 
-        self.verbose = verbose
+        bidirectional_allowed = {"lstm", "gru", "rnn"}
+        if getattr(self, "_form") not in bidirectional_allowed:
+            raise ValueError(
+                f"Bidirectional not supported for encoder/decoder type '{self.form}'"
+            )
 
-        self.train_loss_history = None
-        self.val_loss_history = None
+        self._bidirectional_decoder = value
 
-        self.use_early_stopping = use_early_stopping
-        self.patience = patience
+    @property
+    def activation_encoder(self) -> Optional[str]:
+        """
+        Get the activation function for the encoder.
+
+        :return: Activation function
+        :rtype: Optional[str]
+        """
+        return self._activation_encoder
+
+    @activation_encoder.setter
+    def activation_encoder(self, value: Optional[str]) -> None:
+        """
+        Set the activation function for the encoder.
+
+        :param value: Activation function
+        :type value: str
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change activation_encoder after model is built")
+
+        valid_activations = {
+            "relu",
+            "sigmoid",
+            "softmax",
+            "softplus",
+            "softsign",
+            "tanh",
+            "selu",
+            "elu",
+            "exponential",
+            "linear",
+            "swish",
+        }
+        if value is not None and value not in valid_activations:
+            raise ValueError(
+                f"Invalid activation_encoder '{value}'. Must be one of: {sorted(valid_activations)}"
+            )
+
+        self._activation_encoder = value
+
+    @property
+    def activation_decoder(self) -> Optional[str]:
+        """
+        Get the activation function for the decoder.
+
+        :return: Activation function
+        :rtype: Optional[str]
+        """
+        return self._activation_decoder
+
+    @activation_decoder.setter
+    def activation_decoder(self, value: Optional[str]) -> None:
+        """
+        Set the activation function for the decoder.
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change activation_decoder after model is built")
+
+        valid_activations = {
+            "relu",
+            "sigmoid",
+            "softmax",
+            "softplus",
+            "softsign",
+            "tanh",
+            "selu",
+            "elu",
+            "exponential",
+            "linear",
+            "swish",
+        }
+        if value is not None and value not in valid_activations:
+            raise ValueError(
+                f"Invalid activation_decoder '{value}'. Must be one of: {sorted(valid_activations)}"
+            )
+
+        self._activation_decoder = value
+
+    @property
+    def verbose(self) -> bool:
+        """
+        Get the verbose flag.
+
+        :return: Verbose flag
+        :rtype: bool
+        """
+        return self._verbose
+
+    @verbose.setter
+    def verbose(self, value: bool) -> None:
+        """
+        Set the verbose flag.
+
+        :param value: Verbose flag
+        :type value: bool
+        :return: None
+        :rtype: None
+        """
+        self._verbose = value
+
+    @property
+    def train_size(self) -> float:
+        """
+        Get the training set size proportion.
+
+        :return: Training set size (0.0-1.0)
+        :rtype: float
+        """
+        return self._train_size
+
+    @train_size.setter
+    def train_size(self, value: float) -> None:
+        """
+        Set the training set size proportion.
+
+        :param value: Training set size (0.0-1.0)
+        :type value: float
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not between 0 and 1
+        """
+        if not 0 <= value <= 1:
+            raise ValueError("train_size must be between 0 and 1")
+
+        self._train_size = value
+
+    @property
+    def val_size(self) -> float:
+        """
+        Get the validation set size proportion.
+
+        :return: Validation set size (0.0-1.0)
+        :rtype: float
+        """
+        return self._val_size
+
+    @val_size.setter
+    def val_size(self, value: float) -> None:
+        """
+        Set the validation set size proportion.
+
+        :param value: Validation set size (0.0-1.0)
+        :type value: float
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not between 0 and 1
+        """
+        if not 0 <= value <= 1:
+            raise ValueError("val_size must be between 0 and 1")
+
+        self._val_size = value
+
+    @property
+    def test_size(self) -> float:
+        """
+        Get the test set size proportion.
+
+        :return: Test set size (0.0-1.0)
+        :rtype: float
+        """
+        return self._test_size
+
+    @test_size.setter
+    def test_size(self, value: float) -> None:
+        """
+        Set the test set size proportion.
+
+        :param value: Test set size (0.0-1.0)
+        :type value: float
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not between 0 and 1
+        """
+        if not 0 <= value <= 1:
+            raise ValueError("test_size must be between 0 and 1")
+
+        self._test_size = value
+
+    @property
+    def num_layers(self) -> int:
+        """
+        Get the number of layers.
+        """
+        if self._hidden_dim is None:
+            return 0
+        return len(self._hidden_dim)
+
+    @num_layers.setter
+    def num_layers(self, value: int) -> None:
+        """
+        Set the number of layers.
+        """
+        self._num_layers = value
+
+    @property
+    def id_data(self) -> Optional[np.ndarray]:
+        """
+        Get the ID data.
+        """
+        return self._id_data
+
+    @id_data.setter
+    def id_data(self, value: Optional[np.ndarray]) -> None:
+        """
+        Set the ID data.
+        """
+        self._id_data = value
+
+    @property
+    def id_data_dict(self) -> Optional[Dict[str, np.ndarray]]:
+        """
+        Get the ID data dictionary.
+        """
+        return self._id_data_dict
+
+    @id_data_dict.setter
+    def id_data_dict(self, value: Optional[Dict[str, np.ndarray]]) -> None:
+        """
+        Set the ID data dictionary.
+        """
+        self._id_data_dict = value
+
+    @property
+    def id_data_mask(self) -> Optional[np.ndarray]:
+        """
+        Get the ID data mask.
+        """
+        return self._id_data_mask
+
+    @id_data_mask.setter
+    def id_data_mask(self, value: Optional[np.ndarray]) -> None:
+        """
+        Set the ID data mask.
+        """
+        self._id_data_mask = value
+
+    @property
+    def id_data_dict_mask(self) -> Optional[Dict[str, np.ndarray]]:
+        """
+        Get the ID data mask dictionary.
+        """
+        return self._id_data_dict_mask
+
+    @id_data_dict_mask.setter
+    def id_data_dict_mask(self, value: Optional[Dict[str, np.ndarray]]) -> None:
+        """
+        Set the ID data mask dictionary.
+        """
+        self._id_data_dict_mask = value
+
+    @property
+    def id_columns_indices(self) -> List[int]:
+        """
+        Get the indices of the ID columns.
+        """
+        return self._id_columns_indices
+
+    @id_columns_indices.setter
+    def id_columns_indices(self, value: List[int]) -> None:
+        """
+        Set the indices of the ID columns.
+        """
+        self._id_columns_indices = value
+
+    @property
+    def use_mask(self) -> bool:
+        """
+        Get the use_mask flag.
+        """
+        return self._use_mask
+
+    @use_mask.setter
+    def use_mask(self, value: bool) -> None:
+        """
+        Set the use_mask flag.
+        """
+        if not value and getattr(self, "_data", False):
+            arrays_to_check = (
+                self._data if isinstance(self._data, tuple) else [self._data]
+            )
+            if any(np.isnan(arr).any() for arr in arrays_to_check):
+                raise ValueError(
+                    "Data contains NaNs but use_mask is False. Clean or impute data."
+                )
+
+        self._use_mask = value
+
+    @property
+    def custom_mask(self) -> Optional[np.ndarray]:
+        """
+        Get the custom mask.
+        """
+        return self._custom_mask
+
+    @custom_mask.setter
+    def custom_mask(self, value: Optional[np.ndarray]) -> None:
+        """
+        Set the custom mask.
+        """
+        if self._use_mask and value is not None and self.id_data is not None:
+            if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
+                for id_d, id_m in zip(self.id_data, self.id_data_mask):
+                    if (id_d != id_m).any():
+                        raise ValueError("The mask must have the same IDs as the data.")
+            elif (self.id_data_mask != self.id_data).any():
+                raise ValueError("The mask must have the same IDs as the data.")
+
+        if value is not None:
+            if isinstance(self._data, tuple) and (
+                not isinstance(value, tuple) or len(value) != 3
+            ):
+                raise ValueError(
+                    "If data is a tuple, custom_mask must also be a tuple of the same length (train, val, test)."
+                )
+
+            if not isinstance(self._data, tuple) and isinstance(
+                self.custom_mask, tuple
+            ):
+                raise ValueError(
+                    "If data is a single array, custom_mask cannot be a tuple."
+                )
+
+            if isinstance(value, tuple):
+                if (
+                    value[0].shape != self._data[0].shape
+                    or value[1].shape != self._data[1].shape
+                    or value[2].shape != self._data[2].shape
+                ):
+                    raise ValueError(
+                        "Each element of custom_mask must have the same shape as its corresponding dataset "
+                        "(mask_train with x_train, mask_val with x_val, mask_test with x_test)."
+                    )
+            else:
+                if value.shape != self._data.shape:
+                    raise ValueError(
+                        "custom_mask must have the same shape as the original input data before transformation"
+                    )
+
+        self._custom_mask = value
+
+    @property
+    def mask_train(self) -> np.ndarray:
+        """
+        Get the training mask.
+        """
+        return self._mask_train
+
+    @mask_train.setter
+    def mask_train(self, value: np.ndarray) -> None:
+        """
+        Set the training mask.
+        """
+        if hasattr(value, "shape"):
+            if value.shape != self.x_train.shape:
+                raise ValueError(
+                    "mask_train must have the same shape as x_train after transformation."
+                )
+        self._mask_train = value
+
+    @property
+    def mask_val(self) -> np.ndarray:
+        """
+        Get the validation mask.
+        """
+        return self._mask_val
+
+    @mask_val.setter
+    def mask_val(self, value: np.ndarray) -> None:
+        """
+        Set the validation mask.
+        """
+        if hasattr(value, "shape"):
+            if value.shape != self.x_val.shape:
+                raise ValueError(
+                    "mask_val must have the same shape as x_val after transformation."
+                )
+        self._mask_val = value
+
+    @property
+    def mask_test(self) -> np.ndarray:
+        """
+        Get the test mask.
+        """
+        return self._mask_test
+
+    @mask_test.setter
+    def mask_test(self, value: np.ndarray) -> None:
+        """
+        Set the test mask.
+        """
+        if hasattr(value, "shape"):
+            if value.shape != self.x_test.shape:
+                raise ValueError(
+                    "mask_test must have the same shape as x_test after transformation."
+                )
+        self._mask_test = value
+
+    @property
+    def imputer(self) -> Optional[DataImputer]:
+        """
+        Get the imputer.
+        """
+        return self._imputer
+
+    @imputer.setter
+    def imputer(self, value: Optional[DataImputer]) -> None:
+        """
+        Set the imputer.
+        """
+        self._imputer = value
+
+    @property
+    def shuffle(self) -> bool:
+        """
+        Get the shuffle flag.
+        """
+        return self._shuffle
+
+    @shuffle.setter
+    def shuffle(self, value: bool) -> None:
+        """
+        Set the shuffle flag.
+        """
+        self._shuffle = value
+
+    @property
+    def shuffle_buffer_size(self) -> Optional[int]:
+        """
+        Get the shuffle buffer size.
+        """
+        return self._shuffle_buffer_size
+
+    @shuffle_buffer_size.setter
+    def shuffle_buffer_size(self, value: Optional[int]) -> None:
+        """
+        Set the shuffle buffer size.
+        """
+        if value is not None:
+            if not isinstance(value, int) or value <= 0:
+                raise ValueError("shuffle_buffer_size must be a positive integer.")
+
+        self._shuffle_buffer_size = value
+
+    @property
+    def x_train_no_shuffle(self) -> np.ndarray:
+        """
+        Get the x_train_no_shuffle.
+        """
+        if self._x_train_no_shuffle is None:
+            return self.x_train
+        return self._x_train_no_shuffle
+
+    @x_train_no_shuffle.setter
+    def x_train_no_shuffle(self, value: np.ndarray) -> None:
+        """
+        Set the x_train_no_shuffle.
+        """
+        self._x_train_no_shuffle = value
+
+    @property
+    def checkpoint(self) -> int:
+        """
+        Get the checkpoint value.
+
+        :return: Number of epochs between checkpoints (0 to disable)
+        :rtype: int
+        """
+        return getattr(self, "_checkpoint", 0)
+
+    @checkpoint.setter
+    def checkpoint(self, value: int) -> None:
+        """
+        Set the checkpoint value.
+
+        :param value: Number of epochs between checkpoints (0 to disable)
+        :type value: int
+        :raises ValueError: If value is negative
+        """
+        if not isinstance(value, int):
+            raise ValueError("checkpoint must be an integer")
+        if value < 0:
+            raise ValueError("checkpoint cannot be negative")
+        self._checkpoint = value
+
+    @property
+    def model_optimizer(
+        self,
+    ) -> Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]:
+        """
+        Get the model's optimizer.
+
+        :return: The optimizer instance
+        :rtype: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]
+        """
+        return self._model_optimizer
+
+    @model_optimizer.setter
+    def model_optimizer(
+        self, value: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam]
+    ) -> None:
+        """
+        Set the model's optimizer.
+
+        :param value: The optimizer instance or name
+        :type value: Union[Adam, SGD, RMSprop, Adagrad, Adadelta, Adamax, Nadam, str]
+        :return: None
+        :rtype: None
+        :raises ValueError: If optimizer_name is not a valid optimizer
+        """
+        if isinstance(value, str):
+            optimizers = {
+                "adam": Adam(),
+                "sgd": SGD(),
+                "rmsprop": RMSprop(),
+                "adagrad": Adagrad(),
+                "adadelta": Adadelta(),
+                "adamax": Adamax(),
+                "nadam": Nadam(),
+            }
+
+            if value.lower() not in optimizers:
+                raise ValueError(
+                    f"Invalid optimizer '{value}'. Choose from {list(optimizers.keys())}."
+                )
+
+            self._model_optimizer = optimizers[value.lower()]
+        else:
+            self._model_optimizer = value
+
+    @classmethod
+    def load_from_pickle(cls, path: str) -> "AutoEncoder":
+        """
+        Load an AutoEncoder model from a pickle file.
+
+        :param path: Path to the pickle file containing the saved model
+        :type path: str
+        :return: An instance of AutoEncoder with loaded parameters
+        :rtype: AutoEncoder
+        :raises FileNotFoundError: If the pickle file does not exist
+        :raises ValueError: If the pickle file format is invalid
+        :raises RuntimeError: If there's an error loading the model
+        """
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Pickle file not found: {path}")
+
+        try:
+            # Load the model and parameters from the pickle file
+            with open(path, "rb") as f:
+                saved_data = pickle.load(f)
+
+            if "model" not in saved_data or "params" not in saved_data:
+                raise ValueError("Invalid pickle file format: missing required keys.")
+
+            model = saved_data["model"]
+            params = saved_data["params"]
+
+            # Create an instance of AutoEncoder
+            instance = cls()
+
+            # Assign loaded parameters
+            instance.context_window = params.get("context_window")
+            instance.time_step_to_check = params.get("time_step_to_check")
+            instance.normalization_method = params.get("normalization_method")
+            instance.features_name = params.get("features_name", None)
+            instance.feature_to_check = params.get("feature_to_check", None)
+            instance.normalization_values = params.get("normalization_values", {})
+            # Model must be the last element in the saved data
+            instance.model = model
+
+            logger.info(f"Model successfully loaded from {path}")
+
+            return instance
+
+        except Exception as e:
+            raise RuntimeError(f"Error loading the AutoEncoder model: {e}") from e
 
     @staticmethod
-    def create_folder_structure(folder_structure: List[str]):
+    def create_folder_structure(folder_structure: List[str]) -> None:
         """
         Create a folder structure if it does not exist.
 
-        :param folder_structure: List of folders to create
+        :param folder_structure: List of folder paths to create
         :type folder_structure: List[str]
         :return: None
+        :rtype: None
         """
         for path in folder_structure:
             os.makedirs(path, exist_ok=True)
 
-    @staticmethod
-    def _convert_data_to_numpy(data):
+    def _create_datasets(self, batch_size: int) -> None:
         """
-        Convert data to numpy array format.
+        Create training, validation and test datasets.
 
-        Handles pandas and polars DataFrames, converting them to numpy arrays.
-        If data is a tuple, converts each element in the tuple.
-
-        :param data: Input data that can be pandas DataFrame, polars DataFrame,
-            numpy array, or tuple of these types
-        :type data: Any
-        :return: Data converted to numpy array(s) and feature names if available
-        :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
+        :param batch_size: Size of batches for training
+        :type batch_size: int
+        :return: None
+        :rtype: None
         """
-        try:
-            import pandas as pd
-
-            has_pandas = True
-        except ImportError:
-            has_pandas = False
-
-        try:
-            import polars as pl
-
-            has_polars = True
-        except ImportError:
-            has_polars = False
-
-        if data is None:
-            return data, []
-
-        feature_names = []
-
-        if has_pandas and hasattr(data, "columns"):
-            feature_names = data.columns.tolist()
-        elif has_polars and hasattr(data, "columns"):
-            feature_names = data.columns
-        elif isinstance(data, tuple) and len(data) > 0:
-            # For tuple, try to get column names from first element
-            first_item = data[0]
-            if has_pandas and hasattr(first_item, "columns"):
-                feature_names = first_item.columns.tolist()
-            elif has_polars and hasattr(first_item, "columns"):
-                feature_names = first_item.columns
-
-        if isinstance(data, tuple):
-            converted_data = tuple(
-                AutoEncoder._convert_single_data_to_numpy(item, has_pandas, has_polars)
-                for item in data
+        if self._use_mask:
+            train_dataset = tf.data.Dataset.from_tensor_slices(
+                tensors=(self.x_train, self.mask_train)
             )
-            return converted_data, feature_names
+            val_dataset = tf.data.Dataset.from_tensor_slices(
+                tensors=(self.x_val, self.mask_val)
+            )
+            test_dataset = tf.data.Dataset.from_tensor_slices(
+                tensors=(self.x_test, self.mask_test)
+            )
         else:
-            converted_data = AutoEncoder._convert_single_data_to_numpy(
-                data, has_pandas, has_polars
-            )
-            return converted_data, feature_names
+            train_dataset = tf.data.Dataset.from_tensor_slices(tensors=self.x_train)
+            val_dataset = tf.data.Dataset.from_tensor_slices(tensors=self.x_val)
+            test_dataset = tf.data.Dataset.from_tensor_slices(tensors=self.x_test)
 
-    @staticmethod
-    def _convert_single_data_to_numpy(data_item, has_pandas, has_polars):
-        """
-        Convert a single data item to numpy array.
+        if self._shuffle:
+            train_dataset = train_dataset.shuffle(buffer_size=self._shuffle_buffer_size)
 
-        :param data_item: Single data item to convert
-        :type data_item: Any
-        :param has_pandas: Whether pandas is available
-        :type has_pandas: bool
-        :param has_polars: Whether polars is available
-        :type has_polars: bool
-        :return: Data converted to numpy array
-        :rtype: np.ndarray
-        """
-        if has_pandas and hasattr(data_item, "to_numpy"):
-            return data_item.to_numpy()
-        elif has_polars and hasattr(data_item, "to_numpy"):
-            return data_item.to_numpy()
-        elif isinstance(data_item, np.ndarray):
-            return data_item
-        else:
-            raise ValueError(
-                f"Unsupported data type: {type(data_item)}. "
-                f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
-            )
+        self.train_dataset = train_dataset.cache().batch(batch_size=batch_size)
+        self.val_dataset = val_dataset.cache().batch(batch_size=batch_size)
+        self.test_dataset = test_dataset.cache().batch(batch_size=batch_size)
 
-    def prepare_datasets(
+    def build_model(
         self,
-        data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
         context_window: int,
-        normalize: bool,
-        split_size: float,
-    ):
+        data: Union[
+            np.ndarray,
+            pd.DataFrame,
+            pl.DataFrame,
+            Tuple[np.ndarray, np.ndarray, np.ndarray],
+        ],
+        time_step_to_check: Union[int, List[int]],
+        feature_to_check: Union[int, List[int]],
+        hidden_dim: Union[int, List[int]],
+        form: str = "lstm",
+        bidirectional_encoder: bool = False,
+        bidirectional_decoder: bool = False,
+        activation_encoder: Optional[str] = None,
+        activation_decoder: Optional[str] = None,
+        normalize: bool = False,
+        normalization_method: str = "minmax",
+        optimizer: str = "adam",
+        batch_size: int = 32,
+        save_path: Optional[str] = None,
+        verbose: bool = False,
+        feature_names: Optional[List[str]] = None,
+        feature_weights: Optional[List[float]] = None,
+        shuffle: bool = False,
+        shuffle_buffer_size: Optional[int] = None,
+        use_mask: bool = False,
+        custom_mask: Any = None,
+        imputer: Optional[DataImputer] = None,
+        train_size: float = TRAIN_SIZE,
+        val_size: float = VAL_SIZE,
+        test_size: float = TEST_SIZE,
+        id_columns: Union[str, int, List[str], List[int], None] = None,
+        use_post_decoder_dense: bool = False,
+    ) -> None:
         """
-        Prepare the datasets for the model training and testing.
-        :param data: data to train the model. It can be a single numpy array
-            with the whole dataset from which a train, validation and test split
-            is created, or a tuple with three numpy arrays, one for
-            the train, one for the validation and one for the test.
-        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-        :param context_window: context window for the model
+        Build the Autoencoder model with specified configuration.
+
+        :param context_window: Size of the context window for sequence transformation
         :type context_window: int
-        :param normalize: whether to normalize the data or not
+        :param form: Type of encoder architecture to use
+        :type form: str
+        :param data: Input data for model training. Can be:
+            * A single numpy array/pandas DataFrame for automatic train/val/test split
+            * A tuple of three arrays/DataFrames for predefined splits
+        :type data: Union[np.ndarray, pd.DataFrame, pl.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param time_step_to_check: Index or indices of time steps to check in prediction
+        :type time_step_to_check: Union[int, List[int]]
+        :param feature_to_check: Index or indices of features to check in prediction
+        :type feature_to_check: Union[int, List[int]]
+        :param hidden_dim: Dimensions of hidden layers. Can be single int or list of ints
+        :type hidden_dim: Union[int, List[int]]
+        :param bidirectional_encoder: Whether to use bidirectional layers in encoder
+        :type bidirectional_encoder: bool
+        :param bidirectional_decoder: Whether to use bidirectional layers in decoder
+        :type bidirectional_decoder: bool
+        :param activation_encoder: Activation function for encoder layers
+        :type activation_encoder: Optional[str]
+        :param activation_decoder: Activation function for decoder layers
+        :type activation_decoder: Optional[str]
+        :param normalize: Whether to normalize input data
         :type normalize: bool
-        :param split_size: size of the split for the train, validation and test datasets
-        :type split_size: float
-        :return: True if the datasets are prepared successfully
+        :param normalization_method: Method for data normalization ('minmax' or 'zscore')
+        :type normalization_method: str
+        :param optimizer: Name of optimizer to use for training
+        :type optimizer: str
+        :param batch_size: Size of batches for training
+        :type batch_size: int
+        :param save_path: Directory path to save model checkpoints
+        :type save_path: Optional[str]
+        :param verbose: Whether to print detailed information during training
+        :type verbose: bool
+        :param feature_names: Custom names for features
+        :type feature_names: Optional[List[str]]
+        :param feature_weights: Weights for each feature in loss calculation
+        :type feature_weights: Optional[List[float]]
+        :param shuffle: Whether to shuffle training data
+        :type shuffle: bool
+        :param shuffle_buffer_size: Size of buffer for shuffling
+        :type shuffle_buffer_size: Optional[int]
+        :param use_mask: Whether to use masking for missing values
+        :type use_mask: bool
+        :param custom_mask: Custom mask for missing values
+        :type custom_mask: Any
+        :param imputer: Instance of DataImputer for handling missing values
+        :type imputer: Optional[DataImputer]
+        :param train_size: Proportion of data for training (0-1)
+        :type train_size: float
+        :param val_size: Proportion of data for validation (0-1)
+        :type val_size: float
+        :param test_size: Proportion of data for testing (0-1)
+        :type test_size: float
+        :param id_columns: Column(s) to use for grouping data
+        :type id_columns: Union[str, int, List[str], List[int], None]
+        :param use_post_decoder_dense: Whether to add dense layer after decoder
+        :type use_post_decoder_dense: bool
+
+        :raises NotImplementedError: If form='dense' is specified
+        :raises ValueError: If invalid parameters are provided
+        :return: None
+        :rtype: None
         """
-        # we need to set up two functions to prepare the datasets. One when data is a
-        # single numpy array and one when data is a tuple with three numpy arrays.
-        if isinstance(data, np.ndarray):
-            return self._prepare_numpy_dataset(
-                data, context_window, normalize, split_size
-            )
-        elif (
-            isinstance(data, tuple)
-            and len(data) == 3
-            and all(isinstance(i, np.ndarray) for i in data)
-        ):
-            return self._prepare_tuple_dataset(data, context_window, normalize)
-        else:
-            raise ValueError(
-                "Data must be a numpy array or a tuple with three numpy arrays"
-            )
+        self.form = form
+        self.save_path = save_path
+        self.context_window = context_window
+        self.time_step_to_check = time_step_to_check
+        self.feature_to_check = feature_to_check
+        self.normalize = normalize
+        self.normalization_method = normalization_method
+        self.hidden_dim = hidden_dim
+        self.bidirectional_encoder = bidirectional_encoder
+        self.bidirectional_decoder = bidirectional_decoder
+        self.activation_encoder = activation_encoder
+        self.activation_decoder = activation_decoder
+        self.verbose = verbose
+        self.feature_weights = feature_weights
+        self.train_size = train_size
+        self.val_size = val_size
+        self.test_size = test_size
+        self.use_mask = use_mask
+        self.imputer = imputer
+        self.shuffle = shuffle
+        self.shuffle_buffer_size = shuffle_buffer_size
 
-    def _prepare_numpy_dataset(
-        self, data: np.array, context_window: int, normalize: bool, split_size: float
-    ):
-        """
-        Prepare the dataset for the model training and testing when the data is a single numpy array.
-        :param data: numpy array with the data
-        :type data: np.array
-        :param context_window: context window for the model
-        :type context_window: int
-        :param normalize: whether to normalize the data or not
-        :type normalize: bool
-        :param split_size: size of the split for the train, validation and test datasets
-        :type split_size: float
-        :return: True if the dataset is prepared successfully
-        """
-        # If normalize is True, we need to normalize the data before splitting it into train, validation and test datasets and transforming it into a sequence of data.
-        # Normalization can be done using minmax or zscore methods.
-        # minmax method scales the data between 0 and 1, while zscore method scales the data to have a mean of 0 and a standard deviation of 1. We store the min and max values of the data for later use.
-        if normalize:
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
-
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                # Avoid division by zero
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
-
-        # We need to transform the data into a sequence of data.
-        self.data = np.copy(data)
-        temp_data = time_series_to_sequence(self.data, context_window)
-
-        # We need to split the data into train, validation and test datasets.
-        # Validation should be 10% of the total data,
-        # so train is split_size - 10% and test is 100% - split_size
-        self.samples = temp_data.shape[0]
-
-        train_split_point = round((split_size - 0.1) * self.samples)
-        val_split_point = train_split_point + round(0.1 * self.samples)
-
-        self.x_train = temp_data[:train_split_point, :, :]
-        self.x_val = temp_data[train_split_point:val_split_point, :, :]
-        self.x_test = temp_data[val_split_point:, :, :]
-
-        return True
-
-    def _prepare_tuple_dataset(
-        self,
-        data: Tuple[np.ndarray, np.ndarray, np.ndarray],
-        context_window: int,
-        normalize: bool,
-    ):
-        """
-        Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
-        :param data: tuple with three numpy arrays for the train, validation and test datasets
-        :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
-        :param context_window: context window for the model
-        :type context_window: int
-        :param normalize: whether to normalize the data or not
-        :type normalize: bool
-        :return: True if the dataset is prepared successfully
-        """
-        if normalize:
-            train = data[0].shape[0]
-            val = data[1].shape[0]
-
-            data = np.concatenate((data[0], data[1], data[2]), axis=0)
-
-            if self.normalization_method == "minmax":
-                self.max_x = np.max(data, axis=0)
-                self.min_x = np.min(data, axis=0)
-                data = (data - self.min_x) / (self.max_x - self.min_x)
-            elif self.normalization_method == "zscore":
-                self.mean_ = np.mean(data, axis=0)
-                self.std_ = np.std(data, axis=0) + 1e-8
-                data = (data - self.mean_) / self.std_
-
-            data_train = data[:train, :]
-            data_val = data[train : train + val, :]
-            data_test = data[train + val :, :]
-
-            data = tuple([data_train, data_val, data_test])
-
-        self.data = data
-
-        self.x_train = time_series_to_sequence(data[0], context_window)
-        self.x_val = time_series_to_sequence(data[1], context_window)
-        self.x_test = time_series_to_sequence(data[2], context_window)
-
-        self.samples = (
-            self.x_train.shape[0] + self.x_val.shape[0] + self.x_test.shape[0]
+        # Extract names and convert data to numpy
+        self.data, extracted_feature_names = convert_data_to_numpy(data=data)
+        self.features_name = (
+            feature_names
+            or extracted_feature_names
+            or [
+                f"feature_{i}"
+                for i in range(
+                    self._data[0].shape[1]
+                    if isinstance(self._data, tuple)
+                    else self._data.shape[1]
+                )
+            ]
         )
 
-        return True
+        (self.data, self.id_data, self.id_data_dict, self.id_columns_indices) = (
+            handle_id_columns(
+                data=self._data,
+                id_columns=id_columns,
+                features_name=self._features_name,
+                context_window=self._context_window,
+            )
+        )
 
-    @staticmethod
-    def _get_optimizer(optimizer_name: str):
-        """
-        Returns the optimizer based on the given name.
-        """
-        optimizers = {
-            "adam": Adam(),
-            "sgd": SGD(),
-            "rmsprop": RMSprop(),
-            "adagrad": Adagrad(),
-            "adadelta": Adadelta(),
-            "adamax": Adamax(),
-            "nadam": Nadam(),
-        }
+        if self._use_mask and custom_mask is not None:
+            custom_mask, _ = convert_data_to_numpy(custom_mask)
+            custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
+                handle_id_columns(
+                    data=custom_mask,
+                    id_columns=id_columns,
+                    features_name=self._features_name,
+                    context_window=self._context_window,
+                )
+            )
+            self.custom_mask = custom_mask
 
-        if optimizer_name.lower() not in optimizers:
-            raise ValueError(
-                f"Invalid optimizer '{optimizer_name}'. Choose from {list(optimizers.keys())}."
+        if self.id_data_dict:
+            self.concatenate_by_id()
+        else:
+            self.prepare_datasets(
+                data=self._data,
+                context_window=self._context_window,
+                normalize=self._normalize,
             )
 
-        return optimizers[optimizer_name.lower()]
+        if self._shuffle and self._shuffle_buffer_size is None:
+            self.shuffle_buffer_size = len(self.x_train)
 
-    def train(self):
+        self.x_train_no_shuffle = np.copy(self.x_train)
+
+        #########################################################
+        ################# BUILD MODEL ###########################
+        #########################################################
+        self.num_layers = len(self._hidden_dim)
+        self.layers = [
+            encoder(
+                form=self._form,
+                context_window=self._context_window,
+                features=self.x_train.shape[2],
+                hidden_dim=self._hidden_dim,
+                num_layers=self.num_layers,
+                use_bidirectional=self._bidirectional_encoder,
+                activation=self._activation_encoder,
+                verbose=self._verbose,
+            ),
+            decoder(
+                form=self._form,
+                context_window=self._context_window,
+                features=len(self._feature_to_check),
+                hidden_dim=self._hidden_dim,
+                num_layers=self.num_layers,
+                use_bidirectional=self._bidirectional_decoder,
+                activation=self._activation_decoder,
+                verbose=self._verbose,
+            ),
+        ]
+
+        if use_post_decoder_dense:
+            self.layers.append(
+                Dense(len(self._feature_to_check), name="post_decoder_dense")
+            )
+
+        self.model = Sequential(self.layers, name="autoencoder")
+        self.model.build()
+        self.model_optimizer = optimizer
+
+        self._create_datasets(batch_size)
+
+    def train(
+        self,
+        epochs: int = 100,
+        checkpoint: int = 10,
+        use_early_stopping: bool = True,
+        patience: int = 10,
+    ) -> None:
         """
         Train the model using the train and validation datasets and save the best model.
+
+        :param epochs: Number of epochs to train the model
+        :type epochs: int
+        :param checkpoint: Number of epochs to save a checkpoint (0 to disable)
+        :type checkpoint: int
+        :param use_early_stopping: Whether to use early stopping or not
+        :type use_early_stopping: bool
+        :param patience: Number of epochs to wait before stopping the training
+        :type patience: int
+        :return: None
+        :rtype: None
         """
+        self.last_epoch = 0
+        self.epochs = epochs
+        self.checkpoint = checkpoint
+        self.train_loss_history = None
+        self.val_loss_history = None
+        self.use_early_stopping = use_early_stopping
+        self.patience = patience
 
+        # Define training functions
         @tf.function
-        def train_step(x):
+        def forward_pass(
+            x: tf.Tensor, mask: Optional[tf.Tensor] = None
+        ) -> Tuple[tf.Tensor, tf.Tensor]:
             """
-            Training step for the model.
-            :param x: input data
-            """
-            with tf.GradientTape() as autoencoder_tape:
-                x = tf.cast(x, tf.float32)
+            Perform a forward pass through the model.
 
-                hx = self.model.get_layer(f"{self.form}_encoder")(x)
-                x_hat = self.model.get_layer(f"{self.form}_decoder")(hx)
-
-                # Gather all required time steps
-                x_real = tf.gather(x, self.time_step_to_check, axis=1)
-                x_real = tf.gather(x_real, self.feature_to_check, axis=2)
-
-                x_pred = tf.expand_dims(x_hat, axis=1)
-
-                # Calculate mean loss across all selected points
-                train_loss = mean_squared_error(x_real, x_pred)
-
-            autoencoder_gradient = autoencoder_tape.gradient(
-                train_loss, self.model.trainable_variables
-            )
-
-            self.model_optimizer.apply_gradients(
-                zip(autoencoder_gradient, self.model.trainable_variables)
-            )
-
-            return train_loss
-
-        @tf.function
-        def validation_step(x):
-            """
-            Validation step for the model.
-            :param x: input data
+            :param x: Input data
+            :type x: tf.Tensor
+            :param mask: Optional binary mask for missing values
+            :type mask: Optional[tf.Tensor]
+            :return: Tuple of (loss, x_hat)
+            :rtype: Tuple[tf.Tensor, tf.Tensor]
             """
             x = tf.cast(x, tf.float32)
 
-            hx = self.model.get_layer(f"{self.form}_encoder")(x)
-            x_hat = self.model.get_layer(f"{self.form}_decoder")(hx)
+            hx = self.model.get_layer(f"{self._form}_encoder")(x)
+            x_hat = self.model.get_layer(f"{self._form}_decoder")(hx)
+
+            if "post_decoder_dense" in [layer.name for layer in self.model.layers]:
+                x_hat = self.model.get_layer("post_decoder_dense")(x_hat)
 
             # Gather all required time steps
-            x_real = tf.gather(x, self.time_step_to_check, axis=1)
-            x_real = tf.gather(x_real, self.feature_to_check, axis=2)
+            x_real = tf.gather(x, self._time_step_to_check, axis=1)
+            x_real = tf.gather(x_real, self._feature_to_check, axis=2)
 
             x_pred = tf.expand_dims(x_hat, axis=1)
+
             # Calculate mean loss across all selected points
-            val_loss = mean_squared_error(x_real, x_pred)
+            loss = self.masked_weighted_mse(
+                y_true=x_real,
+                y_pred=x_pred,
+                feature_weights=self._feature_weights,
+                feature_to_check=self._feature_to_check,
+                time_step_to_check=self._time_step_to_check,
+                mask=mask,
+            )
 
-            return val_loss
+            return loss, x_hat
 
+        @tf.function
+        def train_step(x: tf.Tensor, mask: Optional[tf.Tensor] = None) -> tf.Tensor:
+            """
+            Single step for model training.
+
+            :param x: Input data
+            :type x: tf.Tensor
+            :param mask: Optional binary mask for missing values
+            :type mask: Optional[tf.Tensor]
+            :return: Loss value
+            :rtype: tf.Tensor
+            """
+            with tf.GradientTape() as tape:
+                loss, _ = forward_pass(x=x, mask=mask)
+
+            autoencoder_gradient = tape.gradient(loss, self.model.trainable_variables)
+            self.model_optimizer.apply_gradients(
+                grads_and_vars=zip(autoencoder_gradient, self.model.trainable_variables)
+            )
+
+            return loss
+
+        @tf.function
+        def validation_step(
+            x: tf.Tensor, mask: Optional[tf.Tensor] = None
+        ) -> tf.Tensor:
+            """
+            Single step for model validation.
+
+            :param x: Input data
+            :type x: tf.Tensor
+            :param mask: Optional binary mask for missing values
+            :type mask: Optional[tf.Tensor]
+            :return: Loss value
+            :rtype: tf.Tensor
+            """
+            loss, _ = forward_pass(x=x, mask=mask)
+            return loss
+
+        # Run training loop
+        self._run_training_loop(
+            train_step=train_step,
+            validation_step=validation_step,
+            epochs=epochs,
+            checkpoint=checkpoint,
+            use_early_stopping=use_early_stopping,
+            patience=patience,
+        )
+
+    def _run_training_loop(
+        self,
+        train_step: callable,
+        validation_step: callable,
+        epochs: int,
+        checkpoint: int,
+        use_early_stopping: bool,
+        patience: int,
+    ) -> None:
+        """
+        Run the training loop for the model.
+
+        :param train_step: Function to perform a training step
+        :type train_step: callable
+        :param validation_step: Function to perform a validation step
+        :type validation_step: callable
+        :param epochs: Number of epochs to train
+        :type epochs: int
+        :param checkpoint: Number of epochs between checkpoints
+        :type checkpoint: int
+        :param use_early_stopping: Whether to use early stopping
+        :type use_early_stopping: bool
+        :param patience: Number of epochs to wait before early stopping
+        :type patience: int
+        """
         # Lists to store loss history
         train_loss_history = []
         val_loss_history = []
         best_val_loss = float("inf")
         patience_counter = 0
 
-        for epoch in range(1, self.epochs + 1):
+        for epoch in range(1, epochs + 1):
             # Training loop
-            epoch_train_losses = []
-            for data in self.train_dataset:
-                loss = train_step(data)
-                epoch_train_losses.append(float(loss))
-
-            # Calculate average training loss for the epoch
-            avg_train_loss = sum(epoch_train_losses) / len(epoch_train_losses)
+            avg_train_loss = self._run_epoch_training(train_step)
             train_loss_history.append(avg_train_loss)
 
             # Validation loop
-            epoch_val_losses = []
-            for data in self.val_dataset:
-                val_loss = validation_step(data)
-                epoch_val_losses.append(float(val_loss))
-
-            # Calculate average validation loss for the epoch
-            avg_val_loss = sum(epoch_val_losses) / len(epoch_val_losses)
+            avg_val_loss = self._run_epoch_validation(validation_step)
             val_loss_history.append(avg_val_loss)
 
             self.last_epoch = epoch
 
             # Early stopping logic
-            if self.use_early_stopping:
-                if avg_val_loss < best_val_loss:
-                    best_val_loss = avg_val_loss
-                    patience_counter = 0
-                    self.save(filename="best_model.keras")
-                else:
-                    patience_counter += 1
-
-                if patience_counter >= self.patience:
-                    logger.info(
-                        f"Early stopping at epoch {epoch} | Best Validation Loss: {best_val_loss:.6f}"
+            if use_early_stopping:
+                should_stop, best_val_loss, patience_counter = (
+                    self._check_early_stopping(
+                        epoch=epoch,
+                        avg_val_loss=avg_val_loss,
+                        best_val_loss=best_val_loss,
+                        patience_counter=patience_counter,
+                        patience=patience,
                     )
+                )
+                if should_stop:
                     break
 
-            if epoch % self.checkpoint == 0:
-                if self.verbose:
-                    logger.info(
-                        f"Epoch {epoch:4d} | "
-                        f"Training Loss: {avg_train_loss:.6f} | "
-                        f"Validation Loss: {avg_val_loss:.6f}"
-                    )
+            # Checkpoint logic
+            if epoch % checkpoint == 0:
+                self._handle_checkpoint(epoch, avg_train_loss, avg_val_loss)
 
-                self.save(filename=f"{epoch}.keras")
-
-                # Store the loss history in the model instance
+        # Store the loss history in the model instance
         self.train_loss_history = train_loss_history
         self.val_loss_history = val_loss_history
 
@@ -673,17 +1518,227 @@ class AutoEncoder:
         plot_loss_history(
             train_loss=train_loss_history,
             val_loss=val_loss_history,
-            save_path=os.path.join(self.save_path, "plots"),
+            save_path=os.path.join(self._save_path, "plots"),
         )
 
-        self.save()
+        self.save(filename=f"{self.last_epoch}.pkl")
 
-    def reconstruct(self):
+    def _run_epoch_training(self, train_step: callable) -> float:
+        """
+        Run a single epoch of training.
+
+        :param train_step: Function to perform a training step
+        :type train_step: callable
+        :return: Average training loss for the epoch
+        :rtype: float
+        """
+        epoch_train_losses = []
+        for batch in self.train_dataset:
+            if self._use_mask:
+                data, mask = batch
+            else:
+                data = batch
+                mask = None
+
+            loss = train_step(x=data, mask=mask)
+            epoch_train_losses.append(float(loss))
+
+        # Calculate average training loss for the epoch
+        return sum(epoch_train_losses) / len(epoch_train_losses)
+
+    def _run_epoch_validation(self, validation_step: callable) -> float:
+        """
+        Run a single epoch of validation.
+
+        :param validation_step: Function to perform a validation step
+        :type validation_step: callable
+        :return: Average validation loss for the epoch
+        :rtype: float
+        """
+        epoch_val_losses = []
+        for batch in self.val_dataset:
+            if self._use_mask:
+                data, mask = batch
+            else:
+                data = batch
+                mask = None
+
+            val_loss = validation_step(x=data, mask=mask)
+            epoch_val_losses.append(float(val_loss))
+
+        # Calculate average validation loss for the epoch
+        return sum(epoch_val_losses) / len(epoch_val_losses)
+
+    def _check_early_stopping(
+        self,
+        epoch: int,
+        avg_val_loss: float,
+        best_val_loss: float,
+        patience_counter: int,
+        patience: int,
+    ) -> Tuple[bool, float, int]:
+        """
+        Check if early stopping should be applied.
+
+        :param epoch: Current epoch
+        :type epoch: int
+        :param avg_val_loss: Average validation loss for the current epoch
+        :type avg_val_loss: float
+        :param best_val_loss: Best validation loss so far
+        :type best_val_loss: float
+        :param patience_counter: Counter for patience
+        :type patience_counter: int
+        :param patience: Number of epochs to wait before early stopping
+        :type patience: int
+        :return: Tuple of (should_stop, best_val_loss, patience_counter)
+        :rtype: Tuple[bool, float, int]
+        """
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            patience_counter = 0
+            self.save(filename="best_model.pkl")
+        else:
+            patience_counter += 1
+
+        if patience_counter >= patience:
+            logger.info(
+                f"Early stopping at epoch {epoch} | Best Validation Loss: {best_val_loss:.6f}"
+            )
+            return True, best_val_loss, patience_counter
+
+        return False, best_val_loss, patience_counter
+
+    def _handle_checkpoint(
+        self, epoch: int, avg_train_loss: float, avg_val_loss: float
+    ) -> None:
+        """
+        Handle checkpoint saving and logging.
+
+        :param epoch: Current epoch
+        :type epoch: int
+        :param avg_train_loss: Average training loss for the current epoch
+        :type avg_train_loss: float
+        :param avg_val_loss: Average validation loss for the current epoch
+        :type avg_val_loss: float
+        """
+        if self._verbose:
+            logger.info(
+                f"Epoch {epoch:4d} | "
+                f"Training Loss: {avg_train_loss:.6f} | "
+                f"Validation Loss: {avg_val_loss:.6f}"
+            )
+
+        self.save(filename=f"{epoch}.pkl")
+
+    def _create_data_points_df(
+        self,
+        x_converted: np.ndarray,
+        x_hat: np.ndarray,
+        feature_labels: List[str],
+        train_split: int,
+        val_split: int,
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Create a DataFrame containing all data points for plotting.
+
+        :param x_converted: Original data array
+        :type x_converted: np.ndarray
+        :param x_hat: Reconstructed data array
+        :type x_hat: np.ndarray
+        :param feature_labels: List of feature names
+        :type feature_labels: List[str]
+        :param train_split: Index where training data ends
+        :type train_split: int
+        :param val_split: Index where validation data ends
+        :type val_split: int
+        :return: DataFrames for actual and reconstructed data points
+        :rtype: Tuple[pd.DataFrame, pd.DataFrame]
+        """
+        data_points_actual = []
+        data_points_reconstructed = []
+
+        # Process data with IDs if provided
+        if self.id_data_dict:
+            # Initialize current position in x_converted and x_hat
+            current_pos = 0
+            # Initialize time step in respective datasets
+            time_step = {id_: 0 for id_ in self.length_datasets.keys()}
+            for data_split in ["train", "validation", "test"]:
+                for id_value in sorted(self.length_datasets.keys()):
+                    # Get length of dataset
+                    split_len = self.length_datasets[id_value][data_split]
+                    for i in range(split_len):
+                        t = time_step[id_value]
+                        for feature_idx, feature_name in enumerate(feature_labels):
+                            data_points_actual.append(
+                                {
+                                    "id": id_value,
+                                    "feature": feature_name,
+                                    "time_step": t,
+                                    "value": x_converted[feature_idx, current_pos],
+                                    "dataset": data_split,
+                                }
+                            )
+                            data_points_reconstructed.append(
+                                {
+                                    "id": id_value,
+                                    "feature": feature_name,
+                                    "time_step": t,
+                                    "value": x_hat[feature_idx, current_pos],
+                                    "dataset": data_split,
+                                }
+                            )
+                        current_pos = current_pos + 1
+                        time_step[id_value] = time_step[id_value] + 1
+
+        else:
+            # Process data without IDs
+            current_pos = 0
+            split_len_dic = {
+                "train": train_split,
+                "validation": val_split - train_split,
+                "test": x_converted.shape[1] - val_split,
+            }
+            for data_split in ["train", "validation", "test"]:
+                split_len = split_len_dic[data_split]
+                for i in range(split_len):
+                    for feature_idx, feature_name in enumerate(feature_labels):
+                        data_points_actual.append(
+                            {
+                                "feature": feature_name,
+                                "time_step": current_pos,
+                                "value": x_converted[feature_idx, current_pos],
+                                "dataset": data_split,
+                            }
+                        )
+                        data_points_reconstructed.append(
+                            {
+                                "feature": feature_name,
+                                "time_step": current_pos,
+                                "value": x_hat[feature_idx, current_pos],
+                                "dataset": data_split,
+                            }
+                        )
+                    current_pos = current_pos + 1
+
+        if current_pos != x_converted.shape[1]:
+            raise ValueError(
+                f"Indices to create data points are misaligned."
+                f"Expected {x_converted.shape[1]} but got {current_pos}"
+            )
+
+        return pd.DataFrame(data_points_actual), pd.DataFrame(data_points_reconstructed)
+
+    def reconstruct(self) -> bool:
         """
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
+
+        :return: True if reconstruction was successful
+        :rtype: bool
         """
         # Calculate fitted values for each dataset
-        x_hat_train = self.model(self.x_train)
+        # We use the original data for the training set to avoid shuffling in reconstruction step
+        x_hat_train = self.model(self.x_train_no_shuffle)
         x_hat_val = self.model(self.x_val)
         x_hat_test = self.model(self.x_test)
 
@@ -692,81 +1747,1330 @@ class AutoEncoder:
         x_hat_val = x_hat_val.numpy()
         x_hat_test = x_hat_test.numpy()
 
-        if self.normalization_method == "minmax":
-            scale_max = self.max_x[self.feature_to_check]
-            scale_min = self.min_x[self.feature_to_check]
-            x_hat_train = x_hat_train * (scale_max - scale_min) + scale_min
-            x_hat_val = x_hat_val * (scale_max - scale_min) + scale_min
-            x_hat_test = x_hat_test * (scale_max - scale_min) + scale_min
-        elif self.normalization_method == "zscore":
-            scale_mean = self.mean_[self.feature_to_check]
-            scale_std = self.std_[self.feature_to_check]
-            x_hat_train = x_hat_train * scale_std + scale_mean
-            x_hat_val = x_hat_val * scale_std + scale_mean
-            x_hat_test = x_hat_test * scale_std + scale_mean
-
-        x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
-
+        # Get the original data for comparison
         x_train_converted = np.copy(
-            self.x_train[:, self.time_step_to_check, self.feature_to_check]
+            self.x_train[:, self._time_step_to_check, self._feature_to_check]
         )
         x_val_converted = np.copy(
-            self.x_val[:, self.time_step_to_check, self.feature_to_check]
+            self.x_val[:, self._time_step_to_check, self._feature_to_check]
         )
         x_test_converted = np.copy(
-            self.x_test[:, self.time_step_to_check, self.feature_to_check]
+            self.x_test[:, self._time_step_to_check, self._feature_to_check]
         )
 
-        if self.normalization_method == "minmax":
-            x_train_converted = x_train_converted * (scale_max - scale_min) + scale_min
-            x_val_converted = x_val_converted * (scale_max - scale_min) + scale_min
-            x_test_converted = x_test_converted * (scale_max - scale_min) + scale_min
-        elif self.normalization_method == "zscore":
-            x_train_converted = x_train_converted * scale_std + scale_mean
-            x_val_converted = x_val_converted * scale_std + scale_mean
-            x_test_converted = x_test_converted * scale_std + scale_mean
+        # Handle denormalization if normalization was applied
+        if self._normalize:
+            # Use the global normalization values if ID-based normalization wasn't used
+            if "global" in self.normalization_values:
+                norm_values = self.normalization_values["global"]
 
+                # Denormalize predictions
+                x_hat_train = denormalize_data(
+                    data=x_hat_train,
+                    normalization_method=self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_hat_val = denormalize_data(
+                    data=x_hat_val,
+                    normalization_method=self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_hat_test = denormalize_data(
+                    data=x_hat_test,
+                    normalization_method=self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+
+                # Denormalize original data
+                x_train_converted = denormalize_data(
+                    data=x_train_converted,
+                    normalization_method=self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_val_converted = denormalize_data(
+                    data=x_val_converted,
+                    normalization_method=self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+                x_test_converted = denormalize_data(
+                    data=x_test_converted,
+                    normalization_method=self._normalization_method,
+                    min_x=norm_values["min_x"][self._feature_to_check],
+                    max_x=norm_values["max_x"][self._feature_to_check],
+                    mean_=(
+                        norm_values["mean_"][self._feature_to_check]
+                        if "mean_" in norm_values
+                        else None
+                    ),
+                    std_=(
+                        norm_values["std_"][self._feature_to_check]
+                        if "std_" in norm_values
+                        else None
+                    ),
+                )
+
+            # If we used ID-based normalization and need to reconstruct by ID
+            elif self.id_data is not None and hasattr(self, "length_datasets"):
+                logger.info("Performing ID-based denormalization")
+
+                # Initialize arrays to store denormalized data
+                denorm_x_hat_train = []
+                denorm_x_hat_val = []
+                denorm_x_hat_test = []
+                denorm_x_train = []
+                denorm_x_val = []
+                denorm_x_test = []
+
+                # Keep track of current positions in the datasets
+                train_start_idx = 0
+                val_start_idx = 0
+                test_start_idx = 0
+
+                # Process each ID separately
+                for id_key in sorted(self.length_datasets.keys()):
+                    # Get the normalization values for this ID
+                    if id_key not in self.normalization_values:
+                        logger.warning(
+                            f"No normalization values found for {id_key}, skipping"
+                        )
+                        continue
+
+                    norm_values = self.normalization_values[id_key]
+
+                    # Get dataset lengths for this ID
+                    train_length = self.length_datasets[id_key]["train"]
+                    val_length = self.length_datasets[id_key]["validation"]
+                    test_length = self.length_datasets[id_key]["test"]
+
+                    # Extract segments for this ID
+                    train_end_idx = train_start_idx + train_length
+                    val_end_idx = val_start_idx + val_length
+                    test_end_idx = test_start_idx + test_length
+
+                    id_x_hat_train = x_hat_train[train_start_idx:train_end_idx]
+                    id_x_hat_val = x_hat_val[val_start_idx:val_end_idx]
+                    id_x_hat_test = x_hat_test[test_start_idx:test_end_idx]
+
+                    id_x_train = x_train_converted[train_start_idx:train_end_idx]
+                    id_x_val = x_val_converted[val_start_idx:val_end_idx]
+                    id_x_test = x_test_converted[test_start_idx:test_end_idx]
+
+                    # Denormalize data for this ID
+                    id_x_hat_train = denormalize_data(
+                        data=id_x_hat_train,
+                        normalization_method=self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_hat_val = denormalize_data(
+                        data=id_x_hat_val,
+                        normalization_method=self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_hat_test = denormalize_data(
+                        data=id_x_hat_test,
+                        normalization_method=self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+
+                    id_x_train = denormalize_data(
+                        data=id_x_train,
+                        normalization_method=self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_val = denormalize_data(
+                        data=id_x_val,
+                        normalization_method=self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+                    id_x_test = denormalize_data(
+                        data=id_x_test,
+                        normalization_method=self._normalization_method,
+                        min_x=norm_values["min_x"][self._feature_to_check],
+                        max_x=norm_values["max_x"][self._feature_to_check],
+                        mean_=(
+                            norm_values["mean_"][self._feature_to_check]
+                            if "mean_" in norm_values
+                            else None
+                        ),
+                        std_=(
+                            norm_values["std_"][self._feature_to_check]
+                            if "std_" in norm_values
+                            else None
+                        ),
+                    )
+
+                    # Store denormalized data
+                    denorm_x_hat_train.append(id_x_hat_train)
+                    denorm_x_hat_val.append(id_x_hat_val)
+                    denorm_x_hat_test.append(id_x_hat_test)
+                    denorm_x_train.append(id_x_train)
+                    denorm_x_val.append(id_x_val)
+                    denorm_x_test.append(id_x_test)
+
+                    # Update indices for next iteration
+                    train_start_idx += train_length
+                    val_start_idx += val_length
+                    test_start_idx += test_length
+
+                # Concatenate all denormalized data
+                if denorm_x_hat_train:
+                    x_hat_train = np.concatenate(denorm_x_hat_train, axis=0)
+                    x_hat_val = np.concatenate(denorm_x_hat_val, axis=0)
+                    x_hat_test = np.concatenate(denorm_x_hat_test, axis=0)
+                    x_train_converted = np.concatenate(denorm_x_train, axis=0)
+                    x_val_converted = np.concatenate(denorm_x_val, axis=0)
+                    x_test_converted = np.concatenate(denorm_x_test, axis=0)
+                else:
+                    logger.warning("No IDs were successfully denormalized")
+
+        # Combine the datasets
+        x_hat = np.concatenate((x_hat_train.T, x_hat_val.T, x_hat_test.T), axis=1)
         x_converted = np.concatenate(
             (x_train_converted.T, x_val_converted.T, x_test_converted.T), axis=1
         )
 
-        # Get feature labels for the selected features
-        if hasattr(self, "features_name") and self.features_name:
-            # If we have feature names, extract only those that correspond to feature_to_check
-            feature_labels = [self.features_name[i] for i in self.feature_to_check]
-        else:
-            feature_labels = None
+        # Get feature labels for the selected features, if we have feature names, extract only those that correspond to feature_to_check
+        features_names_without_id = [
+            feature
+            for i, feature in enumerate(self._features_name)
+            if i not in self.id_columns_indices
+        ]
+        feature_labels = (
+            [features_names_without_id[i] for i in self._feature_to_check]
+            if hasattr(self, "features_name")
+            else None
+        )
 
-        plot_actual_and_reconstructed(
-            actual=x_converted,
-            reconstructed=x_hat,
-            save_path=os.path.join(self.save_path, "plots"),
+        # Get the split indices
+        train_split = self.x_train.shape[0]
+        val_split = train_split + self.x_val.shape[0]
+
+        # Create DataFrame with all data points
+        df_actual, df_reconstructed = self._create_data_points_df(
+            x_converted=x_converted,
+            x_hat=x_hat,
             feature_labels=feature_labels,
-            split_size=self.split_size,
+            train_split=train_split,
+            val_split=val_split,
+        )
+
+        # Plot the data
+        plot_actual_and_reconstructed(
+            df_actual=df_actual,
+            df_reconstructed=df_reconstructed,
+            save_path=os.path.join(self._save_path, "plots"),
+            feature_labels=feature_labels,
         )
 
         return True
 
-    def save(self, save_path: str = None, filename: str = None):
+    def save(
+        self, save_path: Optional[str] = None, filename: str = "model.pkl"
+    ) -> None:
         """
-        Save the model to the specified path.
-        :param save_path: path to save the model
-        :type save_path: str
-        :param filename: name of the file to save the model
+        Save the model (Keras model + training parameters) into a single .pkl file.
+
+        :param save_path: Path to save the model
+        :type save_path: Optional[str]
+        :param filename: Name of the file to save the model
         :type filename: str
+        :raises Exception: If there's an error saving the model
+        :return: None
+        :rtype: None
         """
         try:
-            save_path = save_path or self.save_path
-            filename = filename or f"{self.last_epoch}.keras"
-            self.model.save(os.path.join(save_path, "models", filename))
+            save_path = save_path or self._save_path
+            os.makedirs(os.path.join(save_path, "models"), exist_ok=True)
+
+            model_path = os.path.join(save_path, "models", filename)
+
+            training_params = {
+                "context_window": self._context_window,
+                "time_step_to_check": self._time_step_to_check,
+                "normalization_method": (
+                    self._normalization_method if self._normalize else None
+                ),
+                "normalization_values": {},
+                "features_name": self._features_name,
+                "feature_to_check": self._feature_to_check,
+            }
+
+            if self._normalize:
+                if hasattr(self, "normalization_values") and isinstance(
+                    self.normalization_values, dict
+                ):
+                    training_params["normalization_values"] = self.normalization_values
+                else:
+                    training_params["normalization_values"]["global"] = {
+                        "min_x": (
+                            self.min_x.tolist() if self.min_x is not None else None
+                        ),
+                        "max_x": (
+                            self.max_x.tolist() if self.max_x is not None else None
+                        ),
+                        "mean_": (
+                            self.mean_.tolist() if self.mean_ is not None else None
+                        ),
+                        "std_": self.std_.tolist() if self.std_ is not None else None,
+                    }
+
+            with open(model_path, "wb") as f:
+                pickle.dump({"model": self.model, "params": training_params}, f)
+
+            logger.info(f"Model and parameters saved in: {model_path}")
+
         except Exception as e:
             logger.error(f"Error saving the model: {e}")
             raise
 
-    def load(self, model_path: str):
+    def build_and_train(
+        self,
+        context_window: int,
+        data: Union[
+            np.ndarray,
+            pd.DataFrame,
+            pl.DataFrame,
+            Tuple[np.ndarray, np.ndarray, np.ndarray],
+        ],
+        time_step_to_check: Union[int, List[int]],
+        feature_to_check: Union[int, List[int]],
+        hidden_dim: Union[int, List[int]],
+        form: str = "lstm",
+        bidirectional_encoder: bool = False,
+        bidirectional_decoder: bool = False,
+        activation_encoder: Optional[str] = None,
+        activation_decoder: Optional[str] = None,
+        normalize: bool = False,
+        normalization_method: str = "minmax",
+        optimizer: str = "adam",
+        batch_size: int = 32,
+        save_path: Optional[str] = None,
+        verbose: bool = False,
+        feature_names: Optional[List[str]] = None,
+        feature_weights: Optional[List[float]] = None,
+        shuffle: bool = False,
+        shuffle_buffer_size: Optional[int] = None,
+        use_mask: bool = False,
+        custom_mask: Any = None,
+        imputer: Optional[DataImputer] = None,
+        train_size: float = TRAIN_SIZE,
+        val_size: float = VAL_SIZE,
+        test_size: float = TEST_SIZE,
+        id_columns: Union[str, int, List[str], List[int], None] = None,
+        epochs: int = 100,
+        checkpoint: int = 10,
+        use_early_stopping: bool = True,
+        patience: int = 10,
+        use_post_decoder_dense: bool = False,
+    ) -> "AutoEncoder":
         """
-        Load the model from the specified path.
-        :param model_path: path to load the model
-        :type model_path: str
+        Build and train the Autoencoder model in a single step.
+
+        This method combines the functionality of `build_model` and `train` methods,
+        allowing for a more streamlined workflow.
+
+        :param context_window: Context window for the model used to transform
+            tabular data into sequence data (2D tensor to 3D tensor)
+        :type context_window: int
+        :param data: Data to train the model. It can be:
+            * A single numpy array/pandas DataFrame for automatic train/val/test split
+            * A tuple of three arrays/DataFrames for predefined splits
+        :type data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param time_step_to_check: Time steps to check for the autoencoder
+        :type time_step_to_check: Union[int, List[int]]
+        :param feature_to_check: Features to check in the autoencoder
+        :type feature_to_check: Union[int, List[int]]
+        :param form: Type of encoder, one of "dense", "rnn", "gru" or "lstm"
+        :type form: str
+        :param hidden_dim: Number of hidden dimensions in the internal layers
+        :type hidden_dim: Union[int, List[int]]
+        :param bidirectional_encoder: Whether to use bidirectional LSTM in encoder
+        :type bidirectional_encoder: bool
+        :param bidirectional_decoder: Whether to use bidirectional LSTM in decoder
+        :type bidirectional_decoder: bool
+        :param activation_encoder: Activation function for the encoder layers
+        :type activation_encoder: Optional[str]
+        :param activation_decoder: Activation function for the decoder layers
+        :type activation_decoder: Optional[str]
+        :param normalize: Whether to normalize the data
+        :type normalize: bool
+        :param normalization_method: Method to normalize the data "minmax" or "zscore"
+        :type normalization_method: str
+        :param optimizer: Optimizer to use for training
+        :type optimizer: str
+        :param batch_size: Batch size for training
+        :type batch_size: int
+        :param save_path: Folder path to save model checkpoints
+        :type save_path: Optional[str]
+        :param verbose: Whether to log model summary and training progress
+        :type verbose: bool
+        :param feature_names: List of feature names to use
+        :type feature_names: Optional[List[str]]
+        :param feature_weights: List of feature weights for loss scaling
+        :type feature_weights: Optional[List[float]]
+        :param shuffle: Whether to shuffle the training dataset
+        :type shuffle: bool
+        :param shuffle_buffer_size: Buffer size for shuffling
+        :type shuffle_buffer_size: Optional[int]
+        :param use_mask: Whether to use a mask for missing values
+        :type use_mask: bool
+        :param custom_mask: Custom mask to use for missing values
+        :type custom_mask: Any
+        :param imputer: Imputer to use for missing values
+        :type imputer: Optional[DataImputer]
+        :param train_size: Proportion of dataset for training
+        :type train_size: float
+        :param val_size: Proportion of dataset for validation
+        :type val_size: float
+        :param test_size: Proportion of dataset for testing
+        :type test_size: float
+        :param id_columns: Column(s) to process data by groups
+        :type id_columns: Union[str, int, List[str], List[int], None]
+        :param epochs: Number of epochs for training
+        :type epochs: int
+        :param checkpoint: Number of epochs between model checkpoints
+        :type checkpoint: int
+        :param use_early_stopping: Whether to use early stopping
+        :type use_early_stopping: bool
+        :param patience: Number of epochs to wait before early stopping
+        :type patience: int
+        :param use_post_decoder_dense: Whether to use a dense layer after the decoder
+        :type use_post_decoder_dense: bool
+        :return: Self for method chaining
+        :rtype: AutoEncoder
         """
-        self.model = load_model(model_path)
+        self.build_model(
+            form=form,
+            data=data,
+            context_window=context_window,
+            time_step_to_check=time_step_to_check,
+            feature_to_check=feature_to_check,
+            hidden_dim=hidden_dim,
+            bidirectional_encoder=bidirectional_encoder,
+            bidirectional_decoder=bidirectional_decoder,
+            activation_encoder=activation_encoder,
+            activation_decoder=activation_decoder,
+            normalize=normalize,
+            normalization_method=normalization_method,
+            optimizer=optimizer,
+            batch_size=batch_size,
+            save_path=save_path,
+            verbose=verbose,
+            feature_names=feature_names,
+            feature_weights=feature_weights,
+            shuffle=shuffle,
+            shuffle_buffer_size=shuffle_buffer_size,
+            use_mask=use_mask,
+            custom_mask=custom_mask,
+            imputer=imputer,
+            train_size=train_size,
+            val_size=val_size,
+            test_size=test_size,
+            id_columns=id_columns,
+            use_post_decoder_dense=use_post_decoder_dense,
+        )
+
+        self.train(
+            epochs=epochs,
+            checkpoint=checkpoint,
+            use_early_stopping=use_early_stopping,
+            patience=patience,
+        )
+
+        return self
+
+    def reconstruct_new_data(
+        self,
+        data: Union[np.ndarray, pd.DataFrame, pl.DataFrame],
+        iterations: int = 1,
+        id_columns: Optional[Union[str, int, List[str], List[int]]] = None,
+        save_path: Optional[str] = None,
+    ) -> Dict[str, pd.DataFrame]:
+        """
+        Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
+        Uses stored `context_window`, normalization parameters, and the trained model.
+
+        :param data: Input data (numpy array or pandas DataFrame or polars DataFrame)
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param iterations: Number of reconstruction iterations (None = no iteration)
+        :type iterations: int
+        :param id_columns: Column(s) that define IDs to process reconstruction separately
+        :type id_columns: Optional[Union[str, int, List[str], List[int]]]
+        :param save_path: Path to save the reconstructed data plots
+        :type save_path: Optional[str]
+        :return: Dictionary with reconstructed data per ID (or "global" if no ID)
+        :rtype: Dict[str, pd.DataFrame]
+        :raises ValueError: If no model is loaded or if id_columns format is invalid
+        """
+        if self.model is None:
+            raise ValueError(
+                "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
+            )
+
+        data, feature_names = convert_data_to_numpy(data=data)
+
+        # Create features_names_to_check, excluding ID columns if they exist
+        if id_columns is not None and feature_names:
+            if isinstance(id_columns, (str, int)):
+                id_columns = [id_columns]
+
+            if not isinstance(id_columns, list):
+                raise ValueError("id_columns must be a list of strings or integers")
+
+            # Get indices of ID columns
+            id_indices = [
+                feature_names.index(col) if isinstance(col, str) else col
+                for col in id_columns
+                if isinstance(col, str) and col in feature_names or isinstance(col, int)
+            ]
+            # Remove ID columns from feature names
+            feature_names_without_id = [
+                name for i, name in enumerate(feature_names) if i not in id_indices
+            ]
+            # Filter out ID columns from features_names_to_check
+            features_names_to_check = (
+                [feature_names_without_id[i] for i in self._feature_to_check]
+                if feature_names_without_id
+                else None
+            )
+        else:
+            if self.id_data is not None and len(self.id_data) > 0:
+                raise ValueError(
+                    "The input data contains more columns than expected, "
+                    "but 'id_columns' was not provided. Please specify which columns "
+                    "are identifiers using the 'id_columns' parameter."
+                )
+            features_names_to_check = (
+                [feature_names[i] for i in self._feature_to_check]
+                if feature_names
+                else None
+            )
+
+        # Handle ID columns
+        if id_columns is not None:
+            data, _, id_data_dict, self.id_columns_indices = handle_id_columns(
+                data=data,
+                id_columns=id_columns,
+                features_name=feature_names,
+                context_window=self.context_window,
+            )
+        else:
+            id_data_dict = {"global": data}
+
+        reconstructed_results = {}
+
+        if id_columns is not None:
+            for id_iter, data_id in id_data_dict.items():
+                nan_positions_id = np.isnan(data_id)
+                has_nans_id = np.any(nan_positions_id)
+
+                reconstructed_results[id_iter] = self._reconstruct_single_dataset(
+                    data=data_id,
+                    feature_names=features_names_to_check,
+                    nan_positions=nan_positions_id[:, self._feature_to_check],
+                    has_nans=has_nans_id,
+                    iterations=iterations,
+                    id_iter=id_iter,
+                    save_path=save_path,
+                )
+        else:
+            nan_positions = np.isnan(data)
+            has_nans = np.any(nan_positions)
+            reconstructed_results["global"] = self._reconstruct_single_dataset(
+                data=data,
+                feature_names=features_names_to_check,
+                nan_positions=nan_positions[:, self._feature_to_check],
+                has_nans=has_nans,
+                iterations=iterations,
+                id_iter=None,
+                save_path=save_path,
+            )
+
+        return reconstructed_results
+
+    def _reconstruct_single_dataset(
+        self,
+        data: np.ndarray,
+        feature_names: Optional[List[str]],
+        nan_positions: np.ndarray,
+        has_nans: bool,
+        iterations: int = 1,
+        id_iter: Optional[str] = None,
+        save_path: Optional[str] = None,
+    ) -> pd.DataFrame:
+        """
+        Reconstruct missing values for a single dataset (either global or for a specific ID).
+
+        :param data: Subset of data to reconstruct (global dataset or per ID)
+        :type data: np.ndarray
+        :param feature_names: Feature labels
+        :type feature_names: Optional[List[str]]
+        :param nan_positions: Boolean mask indicating NaN positions
+        :type nan_positions: np.ndarray
+        :param has_nans: Boolean flag indicating if the dataset contains NaNs
+        :type has_nans: bool
+        :param iterations: Number of iterations for reconstruction
+        :type iterations: int
+        :param id_iter: ID of the subset being reconstructed (or None for global)
+        :type id_iter: Optional[str]
+        :param save_path: Path to save the reconstructed data plots
+        :type save_path: Optional[str]
+        :return: Reconstructed dataset as a pandas DataFrame
+        :rtype: pd.DataFrame
+        :raises ValueError: If normalization fails or if there are issues with the reconstruction process
+        """
+        data_original = np.copy(data)
+        reconstructed_iterations = {}
+
+        # Get normalization values for the current ID or global
+        normalization_values = (
+            self.normalization_values.get(f"{id_iter}")
+            if id_iter
+            else self.normalization_values.get("global")
+        ) or {}
+
+        if not normalization_values:
+            if self.normalization_method not in ["minmax", "zscore"]:
+                raise ValueError("Invalid normalization method.")
+
+            # Simulate train/val/test split using only current data
+            x_train = x_val = x_test = data
+
+            _, _, _, normalization_values = normalize_data_for_training(
+                x_train=x_train,
+                x_val=x_val,
+                x_test=x_test,
+                normalization_method=self.normalization_method,
+            )
+
+        # Set normalization parameters
+        self.min_x = normalization_values.get("min_x", None)
+        self.max_x = normalization_values.get("max_x", None)
+        self.mean_ = normalization_values.get("mean_", None)
+        self.std_ = normalization_values.get("std_", None)
+
+        # Case 1: No NaNs - Simple prediction
+        if not has_nans:
+            if self._normalization_method:
+                try:
+                    data = normalize_data_for_prediction(
+                        normalization_method=self.normalization_method,
+                        data=data,
+                        min_x=self.min_x,
+                        max_x=self.max_x,
+                        mean_=self.mean_,
+                        std_=self.std_,
+                    )
+                except Exception as e:
+                    raise ValueError(f"Error during normalization: {e}")
+
+            data_seq = time_series_to_sequence(
+                data=data, context_window=self._context_window
+            )
+            reconstructed_data = self.model.predict(data_seq)
+
+            if self._normalization_method:
+                reconstructed_data = denormalize_data(
+                    data=reconstructed_data,
+                    normalization_method=self._normalization_method,
+                    min_x=(
+                        self.min_x[self._feature_to_check]
+                        if self.min_x is not None
+                        else None
+                    ),
+                    max_x=(
+                        self.max_x[self._feature_to_check]
+                        if self.max_x is not None
+                        else None
+                    ),
+                    mean_=(
+                        self.mean_[self._feature_to_check]
+                        if self.mean_ is not None
+                        else None
+                    ),
+                    std_=(
+                        self.std_[self._feature_to_check]
+                        if self.std_ is not None
+                        else None
+                    ),
+                )
+
+            padded_reconstructed = apply_padding(
+                data=data[:, self._feature_to_check],
+                reconstructed=reconstructed_data,
+                context_window=self._context_window,
+                time_step_to_check=self._time_step_to_check,
+            )
+
+            # Generate plot path based on ID
+            plot_path = (
+                os.path.join(save_path or self.root_dir, "plots", str(id_iter))
+                if id_iter
+                else os.path.join(save_path or self.root_dir, "plots")
+            )
+
+            # Plot actual vs reconstructed data
+            # Create DataFrame with actual and reconstructed data
+            actual_df = pd.DataFrame(
+                data_original[:, self._feature_to_check], columns=feature_names
+            )
+            actual_df["type"] = "actual"
+
+            reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
+            reconstructed_df["type"] = "reconstructed"
+
+            plot_actual_and_reconstructed(
+                df_actual=actual_df,
+                df_reconstructed=reconstructed_df,
+                save_path=plot_path,
+                feature_labels=feature_names,
+            )
+
+            if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+                feature_names
+            ):
+                raise ValueError(
+                    f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                    f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
+                )
+
+            # Remove padding rows
+            reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
+            reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+            if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
+                raise ValueError(
+                    f"Reconstructed data has {len(reconstructed_df)} rows."
+                    f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
+                )
+
+            return reconstructed_df
+
+        # Case 2: With NaNs - Iterative reconstruction
+        reconstruction_records = []
+        reconstructed_iterations[0] = np.copy(data[:, self._feature_to_check])
+
+        if self._normalization_method:
+            try:
+                data = normalize_data_for_prediction(
+                    normalization_method=self.normalization_method,
+                    data=data,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
+                )
+            except Exception as e:
+                raise ValueError(f"Error during normalization for ID {id_iter}: {e}")
+
+        # Iterative reconstruction loop
+        for iter_num in range(1, iterations):
+            # Handle missing values
+            if self.imputer is not None:
+                data = self.imputer.apply_imputation(data=pd.DataFrame(data)).to_numpy()
+            else:
+                data = np.nan_to_num(data, nan=0)
+
+            # Generate sequence and predict
+            data_seq = time_series_to_sequence(
+                data=data, context_window=self._context_window
+            )
+            reconstructed_data = self.model.predict(data_seq)
+
+            if self._normalization_method:
+                reconstructed_data = denormalize_data(
+                    data=reconstructed_data,
+                    normalization_method=self._normalization_method,
+                    min_x=(
+                        self.min_x[self._feature_to_check]
+                        if self.min_x is not None
+                        else None
+                    ),
+                    max_x=(
+                        self.max_x[self._feature_to_check]
+                        if self.max_x is not None
+                        else None
+                    ),
+                    mean_=(
+                        self.mean_[self._feature_to_check]
+                        if self.mean_ is not None
+                        else None
+                    ),
+                    std_=(
+                        self.std_[self._feature_to_check]
+                        if self.std_ is not None
+                        else None
+                    ),
+                )
+
+            # Apply padding and store results
+            padded_reconstructed = apply_padding(
+                data=data[:, self._feature_to_check],
+                reconstructed=reconstructed_data,
+                context_window=self._context_window,
+                time_step_to_check=self._time_step_to_check,
+            )
+
+            reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
+
+            # Record reconstruction progress
+            normalized_reconstructed = None
+            if self._normalization_method:
+                normalized_reconstructed = normalize_data_for_prediction(
+                    normalization_method=self.normalization_method,
+                    data=padded_reconstructed,
+                    feature_to_check_filter=True,
+                    feature_to_check=self._feature_to_check,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
+                )
+
+            for i, j in zip(*np.where(nan_positions)):
+                col_idx = self._feature_to_check[j]
+                recon_value = padded_reconstructed[i, j]
+
+                reconstruction_records.append(
+                    {
+                        "ID": id_iter if id_iter else "global",
+                        "Column": j + 1,
+                        "Timestep": i,
+                        "Iteration": iter_num,
+                        "Reconstructed value": recon_value,
+                    }
+                )
+
+                data[i, col_idx] = (
+                    normalized_reconstructed[i, j]
+                    if self._normalization_method
+                    else recon_value
+                )
+
+        # Final reconstruction step
+        if self.imputer is not None:
+            data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
+        else:
+            data = np.nan_to_num(data, nan=0)
+
+        data_seq = time_series_to_sequence(
+            data=data, context_window=self._context_window
+        )
+        reconstructed_data_final = self.model.predict(data_seq)
+
+        if self._normalization_method:
+            reconstructed_data_final = denormalize_data(
+                reconstructed_data_final,
+                normalization_method=self._normalization_method,
+                min_x=(
+                    self.min_x[self._feature_to_check]
+                    if self.min_x is not None
+                    else None
+                ),
+                max_x=(
+                    self.max_x[self._feature_to_check]
+                    if self.max_x is not None
+                    else None
+                ),
+                mean_=(
+                    self.mean_[self._feature_to_check]
+                    if self.mean_ is not None
+                    else None
+                ),
+                std_=(
+                    self.std_[self._feature_to_check] if self.std_ is not None else None
+                ),
+            )
+
+        padded_reconstructed_final = apply_padding(
+            data=data[:, self._feature_to_check],
+            reconstructed=reconstructed_data_final,
+            context_window=self._context_window,
+            time_step_to_check=self._time_step_to_check,
+        )
+        reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
+
+        # Record final reconstruction results
+        for i, j in zip(*np.where(nan_positions)):
+            reconstruction_records.append(
+                {
+                    "ID": id_iter if id_iter else "global",
+                    "Column": j + 1,
+                    "Timestep": i,
+                    "Iteration": iterations,
+                    "Reconstructed value": padded_reconstructed_final[i, j],
+                }
+            )
+
+        # Save reconstruction progress
+        progress_df = pd.DataFrame(reconstruction_records)
+        file_path = os.path.join(
+            save_path if save_path else self.root_dir,
+            "reconstruction_progress",
+            f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
+        )
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        progress_df.to_excel(file_path, index=False)
+
+        # Plot reconstruction iterations
+        plot_reconstruction_iterations(
+            original_data=data_original[:, self._feature_to_check].T,
+            reconstructed_iterations={
+                k: v.T for k, v in reconstructed_iterations.items()
+            },
+            save_path=os.path.join(save_path if save_path else self.root_dir, "plots"),
+            feature_labels=feature_names,
+            id_iter=id_iter,
+        )
+
+        # Remove padding rows
+        reconstructed_df = pd.DataFrame(
+            padded_reconstructed_final, columns=feature_names
+        )
+        actual_df = pd.DataFrame(
+            data_original[:, self._feature_to_check], columns=feature_names
+        )
+
+        if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+            feature_names
+        ):
+            raise ValueError(
+                f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
+            )
+
+        # reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
+        reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+        if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
+            raise ValueError(
+                f"Reconstructed data has {len(reconstructed_df)} rows."
+                f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
+            )
+
+        return reconstructed_df
+
+    def prepare_datasets(
+        self,
+        data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+        context_window: int,
+        normalize: bool,
+        id_iter: Optional[Union[str, int]] = None,
+    ) -> bool:
+        """
+        Prepare the datasets for the model training and testing.
+
+        :param data: Data to train the model. It can be a single numpy array
+            with the whole dataset from which a train, validation and test split
+            is created, or a tuple with three numpy arrays, one for
+            the train, one for the validation and one for the test.
+        :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+        :param context_window: Context window for the model
+        :type context_window: int
+        :param normalize: Whether to normalize the data or not
+        :type normalize: bool
+        :param id_iter: ID of the iteration
+        :type id_iter: Optional[Union[str, int]]
+        :return: True if the datasets are prepared successfully
+        :rtype: bool
+        :raises ValueError: If data format is invalid or if NaNs are present when use_mask is False
+        """
+        # we need to set up two functions to prepare the datasets. One when data is a
+        # single numpy array and one when data is a tuple with three numpy arrays.
+        if isinstance(data, np.ndarray):
+            x_train, x_val, x_test = time_series_split(
+                data=data,
+                train_size=self._train_size,
+                val_size=self._val_size,
+                test_size=self._test_size,
+            )
+            data = tuple([x_train, x_val, x_test])
+        else:
+            if not isinstance(data, tuple) or len(data) != 3:
+                raise ValueError(
+                    "Data must be a numpy array or a tuple with three numpy arrays"
+                )
+
+        return self._prepare_dataset(
+            data=data,
+            context_window=context_window,
+            normalize=normalize,
+            id_iter=id_iter,
+        )
+
+    def _prepare_dataset(
+        self,
+        data: Tuple[np.ndarray, np.ndarray, np.ndarray],
+        context_window: int,
+        normalize: bool,
+        id_iter: Optional[Union[str, int]] = None,
+    ) -> bool:
+        """
+        Prepare the dataset for the model training and testing when the data is a tuple with three numpy arrays.
+
+        :param data: Tuple with three numpy arrays for the train, validation and test datasets
+        :type data: Tuple[np.ndarray, np.ndarray, np.ndarray]
+        :param context_window: Context window for the model
+        :type context_window: int
+        :param normalize: Whether to normalize the data or not
+        :type normalize: bool
+        :param id_iter: ID of the iteration
+        :type id_iter: Optional[Union[str, int]]
+        :return: True if the dataset is prepared successfully
+        :rtype: bool
+        :raises ValueError: If mask shapes do not match data shapes or if custom mask format is invalid
+        """
+        x_train, x_val, x_test = data
+
+        # Make sure train, validation, and test sizes are at least context window length
+        for split_name, split_data in zip(
+            ["train", "validation", "test"], [x_train, x_val, x_test]
+        ):
+            if split_data is None:
+                raise ValueError(
+                    f"{split_name} data is None. Check your data splitting configuration."
+                )
+            if len(split_data) < context_window:
+                raise ValueError(
+                    f"Length of {split_name} data ({len(split_data)}) must be at least context window ({context_window})."
+                )
+
+        if self._use_mask:
+            if getattr(self, "_custom_mask", None) is None:
+                mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
+                mask_val = np.where(np.isnan(np.copy(x_val)), 0, 1)
+                mask_test = np.where(np.isnan(np.copy(x_test)), 0, 1)
+            else:
+                if isinstance(self._custom_mask, tuple):
+                    if id_iter is not None:
+                        mask_train = self.id_data_dict_mask[id_iter][0]
+                        mask_val = self.id_data_dict_mask[id_iter][1]
+                        mask_test = self.id_data_dict_mask[id_iter][2]
+                    else:
+                        mask_train, mask_val, mask_test = self._custom_mask
+                else:
+                    mask_train, mask_val, mask_test = time_series_split(
+                        data=(
+                            self.id_data_dict_mask[id_iter]
+                            if id_iter is not None
+                            else self._custom_mask
+                        ),
+                        train_size=self._train_size,
+                        val_size=self._val_size,
+                        test_size=self._test_size,
+                    )
+
+            seq_mask_train, seq_mask_val, seq_mask_test = time_series_to_sequence(
+                data=mask_train,
+                val_data=mask_val,
+                test_data=mask_test,
+                context_window=context_window,
+            )
+
+        if normalize:
+            x_train, x_val, x_test, norm_values = normalize_data_for_training(
+                x_train=x_train,
+                x_val=x_val,
+                x_test=x_test,
+                normalization_method=self.normalization_method,
+            )
+
+            if id_iter is not None:
+                self.normalization_values[id_iter] = norm_values
+            else:
+                self.normalization_values = {"global": norm_values}
+
+        if self._use_mask and self.imputer is not None:
+            x_train = self.imputer.apply_imputation(
+                data=pd.DataFrame(x_train)
+            ).to_numpy()
+            x_val = self.imputer.apply_imputation(data=pd.DataFrame(x_val)).to_numpy()
+            x_test = self.imputer.apply_imputation(data=pd.DataFrame(x_test)).to_numpy()
+        else:
+            x_train = np.nan_to_num(x_train)
+            x_val = np.nan_to_num(x_val)
+            x_test = np.nan_to_num(x_test)
+
+        seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
+            data=x_train,
+            val_data=x_val,
+            test_data=x_test,
+            context_window=context_window,
+        )
+
+        if id_iter is not None:
+            self.data[id_iter] = (x_train, x_val, x_test)
+            self.x_train[id_iter] = seq_x_train
+            self.x_val[id_iter] = seq_x_val
+            self.x_test[id_iter] = seq_x_test
+            if self._use_mask:
+                self.mask_train[id_iter] = seq_mask_train
+                self.mask_val[id_iter] = seq_mask_val
+                self.mask_test[id_iter] = seq_mask_test
+        else:
+            self.data = (seq_x_train, seq_x_val, seq_x_test)
+            self.x_train = seq_x_train
+            self.x_val = seq_x_val
+            self.x_test = seq_x_test
+            if self._use_mask:
+                self.custom_mask = (seq_mask_train, seq_mask_val, seq_mask_test)
+                self.mask_train = seq_mask_train
+                self.mask_val = seq_mask_val
+                self.mask_test = seq_mask_test
+
+        return True
+
+    def concatenate_by_id(self) -> None:
+        """
+        Concatenate datasets by ID.
+        This method combines the training, validation, and test datasets
+        for each ID into a single dataset.
+        It also concatenates the masks if they are used.
+
+        :return: None
+        :rtype: None
+        """
+        self._data = {}
+        self.x_train = {}
+        self.x_val = {}
+        self.x_test = {}
+        self.mask_train = {}
+        self.mask_val = {}
+        self.mask_test = {}
+        self.length_datasets = {}
+        for id_iter, d in self.id_data_dict.items():
+            self.prepare_datasets(
+                data=d,
+                context_window=self._context_window,
+                normalize=self._normalize,
+                id_iter=id_iter,
+            )
+            self.length_datasets[id_iter] = {
+                "train": len(self.x_train[id_iter]),
+                "validation": len(self.x_val[id_iter]),
+                "test": len(self.x_test[id_iter]),
+            }
+
+        # Concat all the datasets
+        self.x_train = np.concatenate(
+            [self.x_train[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        self.x_val = np.concatenate(
+            [self.x_val[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        self.x_test = np.concatenate(
+            [self.x_test[id_iter] for id_iter in sorted(self.id_data_dict.keys())],
+            axis=0,
+        )
+        if self._use_mask:
+            self.mask_train = np.concatenate(
+                [
+                    self.mask_train[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_val = np.concatenate(
+                [
+                    self.mask_val[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+            self.mask_test = np.concatenate(
+                [
+                    self.mask_test[id_iter]
+                    for id_iter in sorted(self.id_data_dict.keys())
+                ],
+                axis=0,
+            )
+
+    @staticmethod
+    def masked_weighted_mse(
+        y_true: tf.Tensor,
+        y_pred: tf.Tensor,
+        time_step_to_check: Union[int, List[int]],
+        feature_to_check: Union[int, List[int]],
+        feature_weights: Optional[tf.Tensor] = None,
+        mask: Optional[tf.Tensor] = None,
+    ) -> tf.Tensor:
+        """
+        Compute Mean Squared Error (MSE) with optional masking and feature weights.
+
+        :param y_true: Ground truth values with shape (batch_size, seq_length, num_features)
+        :type y_true: tf.Tensor
+        :param y_pred: Predicted values with shape (batch_size, seq_length, num_features)
+        :type y_pred: tf.Tensor
+        :param time_step_to_check: Time step to check
+        :type time_step_to_check: Union[int, List[int]]
+        :param feature_to_check: Feature to check
+        :type feature_to_check: Union[int, List[int]]
+        :param feature_weights: Feature weights
+        :type feature_weights: Optional[tf.Tensor]
+        :param mask: Optional binary mask with shape (batch_size, seq_length, num_features)
+                    1 for observed values, 0 for missing values
+        :type mask: Optional[tf.Tensor]
+        :return: Masked and weighted MSE loss value
+        :rtype: tf.Tensor
+        """
+        y_true = tf.cast(y_true, tf.float32)
+        y_pred = tf.cast(y_pred, tf.float32)
+
+        # Apply mask if provided
+        if mask is not None:
+            mask = tf.cast(mask, tf.float32)
+
+            # Select the same time steps and features from the mask as we're using from the data
+            # First select the time steps
+            mask_selected = tf.gather(
+                mask,
+                (
+                    [time_step_to_check]
+                    if isinstance(time_step_to_check, int)
+                    else time_step_to_check
+                ),
+                axis=1,
+            )
+            # Then select the features
+            mask_selected = tf.gather(
+                mask_selected,
+                (
+                    [feature_to_check]
+                    if isinstance(feature_to_check, int)
+                    else feature_to_check
+                ),
+                axis=2,
+            )
+            # Apply the mask to both true and predicted values
+            y_true = tf.where(mask_selected > 0, y_true, tf.zeros_like(y_true))
+            y_pred = tf.where(mask_selected > 0, y_pred, tf.zeros_like(y_pred))
+
+        squared_error = tf.square(y_true - y_pred)
+
+        # Apply feature-specific weights if provided
+        if feature_weights is not None:
+            feature_weights = tf.convert_to_tensor(
+                value=feature_weights, dtype=tf.float32
+            )
+            squared_error = squared_error * feature_weights
+
+        # Compute mean only over observed values if mask is provided
+        if mask is not None:
+            # Use the selected mask dimensions
+            loss = tf.reduce_sum(squared_error) / (
+                tf.reduce_sum(mask_selected + tf.keras.backend.epsilon())
+            )
+        else:
+            loss = tf.reduce_mean(squared_error)
+
+        return loss

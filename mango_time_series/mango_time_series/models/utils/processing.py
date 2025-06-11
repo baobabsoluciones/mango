@@ -1,0 +1,421 @@
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+
+
+def time_series_split(
+    data: np.ndarray, train_size: float, val_size: float, test_size: float
+) -> Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
+    """
+    Splits data into training, validation, and test sets according to the specified percentages.
+
+    :param data: Array-like data to split
+    :type data: np.ndarray
+    :param train_size: Proportion of the dataset to include in the training set (0-1)
+    :type train_size: float
+    :param val_size: Proportion of the dataset to include in the validation set (0-1)
+    :type val_size: float
+    :param test_size: Proportion of the dataset to include in the test set (0-1)
+    :type test_size: float
+    :return: The training, validation, and test sets as numpy arrays
+    :rtype: Tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]
+    :raises ValueError: If train_size, val_size, or test_size are None or their sum is not 1.0
+    """
+    if train_size is None or val_size is None or test_size is None:
+        raise ValueError(
+            "train_size, val_size, and test_size must be specified and not None."
+        )
+
+    if not np.isclose(train_size + val_size + test_size, 1.0):
+        raise ValueError(
+            "The sum of train_size, val_size, and test_size must be 1.0, "
+            f"but got {train_size + val_size + test_size}."
+        )
+
+    # Original implementation for sequential split
+    n = len(data)
+    train_end = int(n * train_size)
+    val_end = train_end + int(n * val_size)
+
+    train_set = data[:train_end]
+    val_set = data[train_end:val_end] if val_size > 0 else None
+    test_set = data[val_end:] if test_size > 0 else None
+
+    return train_set, val_set, test_set
+
+
+def convert_data_to_numpy(
+    data: Any,
+) -> Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]:
+    """
+    Convert data to numpy array format.
+
+    Handles pandas and polars DataFrames, converting them to numpy arrays.
+    If data is a tuple, converts each element in the tuple.
+
+    :param data: Input data that can be pandas DataFrame, polars DataFrame,
+        numpy array, or tuple of these types
+    :type data: Any
+    :return: Data converted to numpy array(s) and feature names if available
+    :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
+    :raises ValueError: If data type is not supported
+    """
+    try:
+        import pandas as pd
+
+        has_pandas = True
+    except ImportError:
+        has_pandas = False
+
+    try:
+        import polars as pl
+
+        has_polars = True
+    except ImportError:
+        has_polars = False
+
+    if data is None:
+        return data, []
+
+    feature_names = []
+
+    if has_pandas and hasattr(data, "columns"):
+        feature_names = data.columns.tolist()
+    elif has_polars and hasattr(data, "columns"):
+        feature_names = data.columns
+    elif isinstance(data, tuple) and len(data) > 0:
+        # For tuple, try to get column names from first element
+        first_item = data[0]
+        if has_pandas and hasattr(first_item, "columns"):
+            feature_names = first_item.columns.tolist()
+        elif has_polars and hasattr(first_item, "columns"):
+            feature_names = first_item.columns
+
+    if isinstance(data, tuple):
+        converted_data = tuple(
+            convert_single_data_to_numpy(item, has_pandas, has_polars) for item in data
+        )
+        return converted_data, feature_names
+    else:
+        converted_data = convert_single_data_to_numpy(data, has_pandas, has_polars)
+        return converted_data, feature_names
+
+
+def convert_single_data_to_numpy(
+    data_item: Any, has_pandas: bool, has_polars: bool
+) -> np.ndarray:
+    """
+    Convert a single data item to numpy array.
+
+    :param data_item: Single data item to convert
+    :type data_item: Any
+    :param has_pandas: Whether pandas is available
+    :type has_pandas: bool
+    :param has_polars: Whether polars is available
+    :type has_polars: bool
+    :return: Data converted to numpy array
+    :rtype: np.ndarray
+    :raises ValueError: If data type is not supported
+    """
+    if has_pandas and hasattr(data_item, "to_numpy"):
+        return data_item.to_numpy()
+    elif has_polars and hasattr(data_item, "to_numpy"):
+        return data_item.to_numpy()
+    elif isinstance(data_item, np.ndarray):
+        return data_item
+    else:
+        raise ValueError(
+            f"Unsupported data type: {type(data_item)}. "
+            f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
+        )
+
+
+def denormalize_data(
+    data: np.ndarray,
+    normalization_method: str,
+    min_x: Optional[np.ndarray] = None,
+    max_x: Optional[np.ndarray] = None,
+    mean_: Optional[np.ndarray] = None,
+    std_: Optional[np.ndarray] = None,
+) -> np.ndarray:
+    """
+    Denormalize data using stored normalization parameters.
+    Assumes `normalize_data` was used during training to store min_x/max_x or mean_/std_.
+
+    :param data: Normalized data to denormalize
+    :type data: np.ndarray
+    :param normalization_method: Method used for normalization ('minmax' or 'zscore')
+    :type normalization_method: str
+    :param min_x: Minimum values for minmax normalization
+    :type min_x: Optional[np.ndarray]
+    :param max_x: Maximum values for minmax normalization
+    :type max_x: Optional[np.ndarray]
+    :param mean_: Mean values for zscore normalization
+    :type mean_: Optional[np.ndarray]
+    :param std_: Standard deviation values for zscore normalization
+    :type std_: Optional[np.ndarray]
+    :return: Denormalized data
+    :rtype: np.ndarray
+    :raises ValueError: If normalization method is invalid or parameters are missing
+    """
+    if normalization_method not in ["minmax", "zscore"]:
+        raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
+
+    if min_x is None and mean_ is None:
+        raise ValueError(
+            "No normalization parameters found. Ensure the model was trained with normalization."
+        )
+
+    if normalization_method == "minmax":
+        return data * (max_x - min_x) + min_x
+    elif normalization_method == "zscore":
+        return data * std_ + mean_
+
+
+def normalize_data_for_training(
+    x_train: np.ndarray,
+    x_val: np.ndarray,
+    x_test: np.ndarray,
+    normalization_method: str,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
+    """
+    Normalize training, validation and test data using the specified method.
+    Computes and stores normalization parameters during training.
+
+    :param x_train: Training data to normalize
+    :type x_train: np.ndarray
+    :param x_val: Validation data to normalize
+    :type x_val: np.ndarray
+    :param x_test: Test data to normalize
+    :type x_test: np.ndarray
+    :param normalization_method: Method to use for normalization ('minmax' or 'zscore')
+    :type normalization_method: str
+    :param id_iter: ID of the iteration for group-specific normalization
+    :type id_iter: Optional[Union[str, int]]
+    :return: Tuple containing normalized training, validation and test data, and normalization values
+    :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]
+    :raises ValueError: If normalization method is invalid
+    """
+    if normalization_method not in ["minmax", "zscore"]:
+        raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
+
+    normalization_values = {}
+
+    if normalization_method == "minmax":
+        min_x = np.nanmin(x_train, axis=0)
+        max_x = np.nanmax(x_train, axis=0)
+        range_x = max_x - min_x
+        x_train = (x_train - min_x) / range_x
+        x_val = (x_val - min_x) / range_x
+        x_test = (x_test - min_x) / range_x
+        normalization_values = {"min_x": min_x, "max_x": max_x}
+    elif normalization_method == "zscore":
+        mean_ = np.nanmean(x_train, axis=0)
+        std_ = np.nanstd(x_train, axis=0)
+        x_train = (x_train - mean_) / std_
+        x_val = (x_val - mean_) / std_
+        x_test = (x_test - mean_) / std_
+        normalization_values = {"mean_": mean_, "std_": std_}
+
+    return x_train, x_val, x_test, normalization_values
+
+
+def normalize_data_for_prediction(
+    data: np.ndarray,
+    normalization_method: str,
+    min_x: Optional[np.ndarray] = None,
+    max_x: Optional[np.ndarray] = None,
+    mean_: Optional[np.ndarray] = None,
+    std_: Optional[np.ndarray] = None,
+    feature_to_check: Optional[Union[int, List[int]]] = None,
+    feature_to_check_filter: bool = False,
+) -> np.ndarray:
+    """
+    Normalize new data using stored normalization parameters.
+    If parameters are not available, computes them from input data.
+
+    :param data: New data to normalize
+    :type data: np.ndarray
+    :param normalization_method: Method to use for normalization ('minmax' or 'zscore')
+    :type normalization_method: str
+    :param min_x: Minimum values for minmax normalization
+    :type min_x: Optional[np.ndarray]
+    :param max_x: Maximum values for minmax normalization
+    :type max_x: Optional[np.ndarray]
+    :param mean_: Mean values for zscore normalization
+    :type mean_: Optional[np.ndarray]
+    :param std_: Standard deviation values for zscore normalization
+    :type std_: Optional[np.ndarray]
+    :param feature_to_check: Feature indices to check
+    :type feature_to_check: Optional[Union[int, List[int]]]
+    :param feature_to_check_filter: Whether to filter features for checking
+    :type feature_to_check_filter: bool
+    :return: Normalized data
+    :rtype: np.ndarray
+    :raises ValueError: If normalization method is invalid
+    """
+    if normalization_method not in ["minmax", "zscore"]:
+        raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
+
+    if normalization_method == "minmax":
+        if min_x is None or max_x is None:
+            min_x = np.nanmin(data, axis=0)
+            max_x = np.nanmax(data, axis=0)
+            range_x = max_x - min_x
+            return (data - min_x) / range_x
+        else:
+            if feature_to_check_filter and feature_to_check is not None:
+                range_x = max_x[feature_to_check] - min_x[feature_to_check]
+                return (data - min_x[feature_to_check]) / range_x
+            else:
+                range_x = max_x - min_x
+                return (data - min_x) / range_x
+
+    elif normalization_method == "zscore":
+        if mean_ is None or std_ is None:
+            mean_ = np.nanmean(data, axis=0)
+            std_ = np.nanstd(data, axis=0)
+            return (data - mean_) / std_
+        else:
+            if feature_to_check_filter and feature_to_check is not None:
+                return (data - mean_[feature_to_check]) / std_[feature_to_check]
+            else:
+                return (data - mean_) / std_
+
+
+def apply_padding(
+    data: np.ndarray,
+    reconstructed: np.ndarray,
+    context_window: int,
+    time_step_to_check: Union[int, List[int]],
+) -> np.ndarray:
+    """
+    Apply padding dynamically based on time_step_to_check and context_window.
+
+    This method handles the padding of reconstructed data to match the original data shape,
+    taking into account the context window and the specific time step being predicted.
+
+    :param data: Original dataset with shape (num_samples, num_features)
+    :type data: np.ndarray
+    :param reconstructed: Predicted values with shape (num_samples - context_window, num_features)
+    :type reconstructed: np.ndarray
+    :param context_window: Size of the context window used for prediction
+    :type context_window: int
+    :param time_step_to_check: Time step to predict within the window
+    :type time_step_to_check: Union[int, List[int]]
+    :return: Padded reconstructed dataset with shape matching the original data
+    :rtype: np.ndarray
+    :raises ValueError: If time_step_to_check is not within valid range
+    """
+    num_samples, num_features = data.shape
+    padded_reconstructed = np.full((num_samples, num_features), np.nan)
+
+    # Determine the offset based on time_step_to_check
+    if isinstance(time_step_to_check, list):
+        time_step_to_check = time_step_to_check[0]
+
+    if time_step_to_check < 0 or time_step_to_check > context_window - 1:
+        raise ValueError(
+            f"time_step_to_check must be between 0 and {context_window - 1}, "
+            f"but got {time_step_to_check}"
+        )
+
+    if time_step_to_check == 0:
+        padded_reconstructed[: num_samples - (context_window - 1)] = reconstructed
+    elif time_step_to_check == context_window - 1:
+        padded_reconstructed[context_window - 1 :] = reconstructed
+    else:
+        before = time_step_to_check
+        after = context_window - 1 - time_step_to_check
+        padded_reconstructed[before : num_samples - after] = reconstructed
+
+    return padded_reconstructed
+
+
+def handle_id_columns(
+    data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+    id_columns: Union[str, int, List[str], List[int], None],
+    features_name: Optional[List[str]],
+    context_window: Optional[int],
+) -> Tuple[
+    Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]],
+    Optional[np.ndarray],
+    Dict[str, np.ndarray],
+    List[int],
+]:
+    """
+    Handle id_columns processing for data grouping.
+
+    :param data: Data to process, can be single array or tuple of arrays
+    :type data: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
+    :param id_columns: Column(s) to process the data by groups
+    :type id_columns: Union[str, int, List[str], List[int], None]
+    :param features_name: List of feature names
+    :type features_name: Optional[List[str]]
+    :param context_window: Context window for the model
+    :type context_window: Optional[int]
+    :return: Tuple containing:
+        - Processed data (with ID columns removed)
+        - ID mapping array
+        - Dictionary with grouped data by ID
+        - List of column indices
+    :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], Optional[np.ndarray], Dict[str, np.ndarray], List[int]]
+    :raises ValueError: If id_columns format is invalid or if minimum samples per ID is less than context_window
+    """
+    if id_columns is None:
+        return data, None, {}, []
+
+    id_columns = [id_columns] if isinstance(id_columns, (str, int)) else id_columns
+
+    if all(isinstance(i, str) for i in id_columns):
+        id_column_indices = [
+            i for i, value in enumerate(features_name) if value in id_columns
+        ]
+    elif all(isinstance(i, int) for i in id_columns):
+        id_column_indices = id_columns
+    else:
+        raise ValueError("id_columns must be a list of strings or integers")
+
+    if isinstance(data, tuple):
+        id_data = tuple(
+            np.array([f"__".join(map(str, row)) for row in d[:, id_column_indices]])
+            for d in data
+        )
+        data = tuple(
+            np.delete(d, id_column_indices, axis=1).astype(np.float64) for d in data
+        )
+    else:
+        id_data = np.array(
+            [f"__".join(map(str, row)) for row in data[:, id_column_indices]]
+        )
+        data = np.delete(data, id_column_indices, axis=1).astype(np.float64)
+
+    if isinstance(id_data, tuple):
+        unique_ids = np.unique(id_data[0])
+        id_data_dict = {
+            unique_id: (
+                data[0][id_data[0] == unique_id],
+                data[1][id_data[1] == unique_id],
+                data[2][id_data[2] == unique_id],
+            )
+            for unique_id in unique_ids
+        }
+        min_samples_all_ids = min(
+            [
+                np.min(np.unique(id_data_item, return_counts=True)[1])
+                for id_data_item in id_data
+            ]
+        )
+    else:
+        unique_ids = np.unique(id_data)
+        id_data_dict = {uid: data[id_data == uid] for uid in unique_ids}
+        min_samples_all_ids = np.min(np.unique(id_data, return_counts=True)[1])
+
+    if min_samples_all_ids < context_window:
+        raise ValueError(
+            f"The minimum number of samples of all IDs is {min_samples_all_ids}, "
+            f"but the context_window is {context_window}. "
+            "Reduce the context_window or ensure each ID has enough data."
+        )
+
+    return data, id_data, id_data_dict, id_column_indices
