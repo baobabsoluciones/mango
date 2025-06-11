@@ -133,7 +133,7 @@ The following parameters are mandatory when calling `build_model` or `build_and_
        
        **Pre-split format**: A tuple of three arrays (train_data, val_data, test_data). In this case, you provide the data already split into training, validation, and test sets. The autoencoder will use these pre-split datasets without performing any additional splitting. This gives you full control over how the data is divided and is useful when you have specific splitting requirements. The train_size, val_size, and test_size parameters are ignored when using this format.
    * - **time_step_to_check**
-     - Index of time step to check in prediction. This is the index in the context window we are interested in predicting. Note that time_step_to_check must be within context window, possible values are in [0, context_window -1]. Future implementation will also support multiple indices.
+     - Index of time step to check in prediction. This is the index in the context window we are interested in predicting. Note that time_step_to_check must be within context window, possible values are in [0, context_window - 1]. Future implementation will also support multiple indices.
    * - **feature_to_check**
      - Index or indices of features to check in prediction.
    * - **hidden_dim**
