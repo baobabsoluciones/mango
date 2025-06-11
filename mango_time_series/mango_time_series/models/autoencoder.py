@@ -221,6 +221,11 @@ class AutoEncoder:
         if not isinstance(value, list):
             raise ValueError("time_step_to_check must be a list of integers")
 
+        if len(value) != 1:
+            raise NotImplementedError(
+                "Currently time_step_to_check is implemented to consider only one integer index."
+            )
+
         # Validate all values are integers
         if not all(isinstance(t, int) for t in value):
             raise ValueError("All elements in time_step_to_check must be integers")
