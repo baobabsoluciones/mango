@@ -133,7 +133,7 @@ The following parameters are mandatory when calling `build_model` or `build_and_
        
        **Pre-split format**: A tuple of three arrays (train_data, val_data, test_data). In this case, you provide the data already split into training, validation, and test sets. The autoencoder will use these pre-split datasets without performing any additional splitting. This gives you full control over how the data is divided and is useful when you have specific splitting requirements. The train_size, val_size, and test_size parameters are ignored when using this format.
    * - **time_step_to_check**
-     - Index or indices of time steps to check in prediction.
+     - Index of time step to check in prediction. This is the index in the context window we are interested in predicting. Note that time_step_to_check must be within context window, possible values are in [0, context_window -1]. Future implementation will also support multiple indices.
    * - **feature_to_check**
      - Index or indices of features to check in prediction.
    * - **hidden_dim**
@@ -384,7 +384,7 @@ Input data examples
     autoencoder.build_and_train(
         context_window=10,
         data=time_series_df,  # DataFrame with shape (100, 3)
-        time_step_to_check=[0, 1, 2],
+        time_step_to_check=[0],
         feature_to_check=[0, 1],
         hidden_dim=64,
         form="lstm",
@@ -419,7 +419,7 @@ Input data examples
     autoencoder.build_and_train(
         context_window=10,
         data=(train_data, val_data, test_data),  # Tuple of three DataFrames
-        time_step_to_check=[0, 1, 2],
+        time_step_to_check=[0],
         feature_to_check=[0, 1],
         hidden_dim=64,
         form="lstm"
@@ -437,7 +437,7 @@ Input data examples
     autoencoder.build_and_train(
         context_window=10,
         data=time_series_df,  # DataFrame with missing values
-        time_step_to_check=[0, 1, 2],
+        time_step_to_check=[0],
         feature_to_check=[0, 1],
         hidden_dim=[128, 64, 32],
         form="lstm",
@@ -482,7 +482,7 @@ The simplest way to use the autoencoder is with the combined `build_and_train` m
     autoencoder.build_and_train(
         context_window=10,
         data=time_series_df,  # DataFrame with shape (100, 3)
-        time_step_to_check=[0, 1, 2],
+        time_step_to_check=[0],
         feature_to_check=[0, 1],
         hidden_dim=64,
         form="lstm",
@@ -521,7 +521,7 @@ For more control over the process, you can separate the model building and train
     autoencoder.build_model(
         context_window=10,
         data=time_series_df,  # DataFrame with shape (100, 3)
-        time_step_to_check=[0, 1, 2],
+        time_step_to_check=[0],
         feature_to_check=[0, 1],
         hidden_dim=64,
         form="lstm",
