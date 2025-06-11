@@ -13,23 +13,10 @@ from tensorflow.keras.layers import Dense
 
 import mango_time_series.models.modules.anomaly_detector as ad
 import mango_time_series.models.utils.plots as plots
+import mango_time_series.models.utils.processing as processing
 from mango.logging import get_configured_logger
 from mango.processing.data_imputer import DataImputer
 from mango_time_series.models.modules import decoder, encoder
-from mango_time_series.models.utils.plots import (
-    plot_actual_and_reconstructed,
-    plot_loss_history,
-    plot_reconstruction_iterations,
-)
-from mango_time_series.models.utils.processing import (
-    apply_padding,
-    convert_data_to_numpy,
-    denormalize_data,
-    handle_id_columns,
-    normalize_data_for_prediction,
-    normalize_data_for_training,
-    time_series_split,
-)
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
 logger = get_configured_logger()
@@ -1247,7 +1234,7 @@ class AutoEncoder:
         self.shuffle_buffer_size = shuffle_buffer_size
 
         # Extract names and convert data to numpy
-        self.data, extracted_feature_names = convert_data_to_numpy(data=data)
+        self.data, extracted_feature_names = processing.convert_data_to_numpy(data=data)
         self.features_name = (
             feature_names
             or extracted_feature_names
@@ -1262,7 +1249,7 @@ class AutoEncoder:
         )
 
         (self.data, self.id_data, self.id_data_dict, self.id_columns_indices) = (
-            handle_id_columns(
+            processing.handle_id_columns(
                 data=self._data,
                 id_columns=id_columns,
                 features_name=self._features_name,
@@ -1271,9 +1258,9 @@ class AutoEncoder:
         )
 
         if self._use_mask and custom_mask is not None:
-            custom_mask, _ = convert_data_to_numpy(custom_mask)
+            custom_mask, _ = processing.convert_data_to_numpy(custom_mask)
             custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
-                handle_id_columns(
+                processing.handle_id_columns(
                     data=custom_mask,
                     id_columns=id_columns,
                     features_name=self._features_name,
@@ -1518,7 +1505,7 @@ class AutoEncoder:
         self.val_loss_history = val_loss_history
 
         # Plot loss history
-        plot_loss_history(
+        plots.plot_loss_history(
             train_loss=train_loss_history,
             val_loss=val_loss_history,
             save_path=os.path.join(self._save_path, "plots"),
@@ -1768,7 +1755,7 @@ class AutoEncoder:
                 norm_values = self.normalization_values["global"]
 
                 # Denormalize predictions
-                x_hat_train = denormalize_data(
+                x_hat_train = processing.denormalize_data(
                     data=x_hat_train,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1784,7 +1771,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_hat_val = denormalize_data(
+                x_hat_val = processing.denormalize_data(
                     data=x_hat_val,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1800,7 +1787,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_hat_test = denormalize_data(
+                x_hat_test = processing.denormalize_data(
                     data=x_hat_test,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1818,7 +1805,7 @@ class AutoEncoder:
                 )
 
                 # Denormalize original data
-                x_train_converted = denormalize_data(
+                x_train_converted = processing.denormalize_data(
                     data=x_train_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1834,7 +1821,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_val_converted = denormalize_data(
+                x_val_converted = processing.denormalize_data(
                     data=x_val_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1850,7 +1837,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_test_converted = denormalize_data(
+                x_test_converted = processing.denormalize_data(
                     data=x_test_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1914,7 +1901,7 @@ class AutoEncoder:
                     id_x_test = x_test_converted[test_start_idx:test_end_idx]
 
                     # Denormalize data for this ID
-                    id_x_hat_train = denormalize_data(
+                    id_x_hat_train = processing.denormalize_data(
                         data=id_x_hat_train,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1930,7 +1917,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_hat_val = denormalize_data(
+                    id_x_hat_val = processing.denormalize_data(
                         data=id_x_hat_val,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1946,7 +1933,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_hat_test = denormalize_data(
+                    id_x_hat_test = processing.denormalize_data(
                         data=id_x_hat_test,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1963,7 +1950,7 @@ class AutoEncoder:
                         ),
                     )
 
-                    id_x_train = denormalize_data(
+                    id_x_train = processing.denormalize_data(
                         data=id_x_train,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1979,7 +1966,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_val = denormalize_data(
+                    id_x_val = processing.denormalize_data(
                         data=id_x_val,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1995,7 +1982,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_test = denormalize_data(
+                    id_x_test = processing.denormalize_data(
                         data=id_x_test,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -2145,7 +2132,7 @@ class AutoEncoder:
             )
 
         # Plot the data
-        plot_actual_and_reconstructed(
+        plots.plot_actual_and_reconstructed(
             df_actual=df_actual,
             df_reconstructed=df_reconstructed,
             save_path=os.path.join(self._save_path, "plots"),
@@ -2400,7 +2387,7 @@ class AutoEncoder:
                 "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
             )
 
-        data, feature_names = convert_data_to_numpy(data=data)
+        data, feature_names = processing.convert_data_to_numpy(data=data)
 
         # Create features_names_to_check, excluding ID columns if they exist
         if id_columns is not None and feature_names:
@@ -2441,11 +2428,13 @@ class AutoEncoder:
 
         # Handle ID columns
         if id_columns is not None:
-            data, _, id_data_dict, self.id_columns_indices = handle_id_columns(
-                data=data,
-                id_columns=id_columns,
-                features_name=feature_names,
-                context_window=self.context_window,
+            data, _, id_data_dict, self.id_columns_indices = (
+                processing.handle_id_columns(
+                    data=data,
+                    id_columns=id_columns,
+                    features_name=feature_names,
+                    context_window=self.context_window,
+                )
             )
         else:
             id_data_dict = {"global": data}
@@ -2560,7 +2549,7 @@ class AutoEncoder:
             # Simulate train/val/test split using only current data
             x_train = x_val = x_test = data
 
-            _, _, _, normalization_values = normalize_data_for_training(
+            _, _, _, normalization_values = processing.normalize_data_for_training(
                 x_train=x_train,
                 x_val=x_val,
                 x_test=x_test,
@@ -2577,7 +2566,7 @@ class AutoEncoder:
         if not has_nans:
             if self._normalization_method:
                 try:
-                    data = normalize_data_for_prediction(
+                    data = processing.normalize_data_for_prediction(
                         normalization_method=self.normalization_method,
                         data=data,
                         min_x=self.min_x,
@@ -2594,7 +2583,7 @@ class AutoEncoder:
             reconstructed_data = self.model.predict(data_seq)
 
             if self._normalization_method:
-                reconstructed_data = denormalize_data(
+                reconstructed_data = processing.denormalize_data(
                     data=reconstructed_data,
                     normalization_method=self._normalization_method,
                     min_x=(
@@ -2619,7 +2608,7 @@ class AutoEncoder:
                     ),
                 )
 
-            padded_reconstructed = apply_padding(
+            padded_reconstructed = processing.apply_padding(
                 data=data[:, self._feature_to_check],
                 reconstructed=reconstructed_data,
                 context_window=self._context_window,
@@ -2643,7 +2632,7 @@ class AutoEncoder:
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
             reconstructed_df["type"] = "reconstructed"
 
-            plot_actual_and_reconstructed(
+            plots.plot_actual_and_reconstructed(
                 df_actual=actual_df,
                 df_reconstructed=reconstructed_df,
                 save_path=plot_path,
@@ -2675,7 +2664,7 @@ class AutoEncoder:
 
         if self._normalization_method:
             try:
-                data = normalize_data_for_prediction(
+                data = processing.normalize_data_for_prediction(
                     normalization_method=self.normalization_method,
                     data=data,
                     min_x=self.min_x,
@@ -2701,7 +2690,7 @@ class AutoEncoder:
             reconstructed_data = self.model.predict(data_seq)
 
             if self._normalization_method:
-                reconstructed_data = denormalize_data(
+                reconstructed_data = processing.denormalize_data(
                     data=reconstructed_data,
                     normalization_method=self._normalization_method,
                     min_x=(
@@ -2727,7 +2716,7 @@ class AutoEncoder:
                 )
 
             # Apply padding and store results
-            padded_reconstructed = apply_padding(
+            padded_reconstructed = processing.apply_padding(
                 data=data[:, self._feature_to_check],
                 reconstructed=reconstructed_data,
                 context_window=self._context_window,
@@ -2739,7 +2728,7 @@ class AutoEncoder:
             # Record reconstruction progress
             normalized_reconstructed = None
             if self._normalization_method:
-                normalized_reconstructed = normalize_data_for_prediction(
+                normalized_reconstructed = processing.normalize_data_for_prediction(
                     normalization_method=self.normalization_method,
                     data=padded_reconstructed,
                     feature_to_check_filter=True,
@@ -2782,7 +2771,7 @@ class AutoEncoder:
         reconstructed_data_final = self.model.predict(data_seq)
 
         if self._normalization_method:
-            reconstructed_data_final = denormalize_data(
+            reconstructed_data_final = processing.denormalize_data(
                 reconstructed_data_final,
                 normalization_method=self._normalization_method,
                 min_x=(
@@ -2805,7 +2794,7 @@ class AutoEncoder:
                 ),
             )
 
-        padded_reconstructed_final = apply_padding(
+        padded_reconstructed_final = processing.apply_padding(
             data=data[:, self._feature_to_check],
             reconstructed=reconstructed_data_final,
             context_window=self._context_window,
@@ -2836,7 +2825,7 @@ class AutoEncoder:
         progress_df.to_excel(file_path, index=False)
 
         # Plot reconstruction iterations
-        plot_reconstruction_iterations(
+        plots.plot_reconstruction_iterations(
             original_data=data_original[:, self._feature_to_check].T,
             reconstructed_iterations={
                 k: v.T for k, v in reconstructed_iterations.items()
@@ -2900,7 +2889,7 @@ class AutoEncoder:
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
-            x_train, x_val, x_test = time_series_split(
+            x_train, x_val, x_test = processing.time_series_split(
                 data=data,
                 train_size=self._train_size,
                 val_size=self._val_size,
@@ -2971,7 +2960,7 @@ class AutoEncoder:
                     else:
                         mask_train, mask_val, mask_test = self._custom_mask
                 else:
-                    mask_train, mask_val, mask_test = time_series_split(
+                    mask_train, mask_val, mask_test = processing.time_series_split(
                         data=(
                             self.id_data_dict_mask[id_iter]
                             if id_iter is not None
@@ -2990,11 +2979,13 @@ class AutoEncoder:
             )
 
         if normalize:
-            x_train, x_val, x_test, norm_values = normalize_data_for_training(
-                x_train=x_train,
-                x_val=x_val,
-                x_test=x_test,
-                normalization_method=self.normalization_method,
+            x_train, x_val, x_test, norm_values = (
+                processing.normalize_data_for_training(
+                    x_train=x_train,
+                    x_val=x_val,
+                    x_test=x_test,
+                    normalization_method=self.normalization_method,
+                )
             )
 
             if id_iter is not None:
