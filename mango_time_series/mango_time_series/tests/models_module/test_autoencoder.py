@@ -871,24 +871,26 @@ class TestAutoEncoderCases(unittest.TestCase):
                             index="time_step",
                             values="value",
                         )
-                        data_i = data[data["id"] == id_i]
 
+                        data_i = data[data["id"] == id_i]
                         expected_data = data_i.drop(columns="id")
                         expected_data = expected_data.iloc[
                             initial_context_offset : len(expected_data)
                             - ending_context_offset
                         ]
+
                         df_actual_i.sort_index(inplace=True)
                         df_actual_i.reset_index(drop=True, inplace=True)
                         expected_data.sort_index(inplace=True)
                         expected_data.reset_index(drop=True, inplace=True)
+
                         pd.testing.assert_frame_equal(
                             df_actual_i.astype(float).round(6),
                             expected_data.astype(float).round(6),
                             check_names=False,
                         )
 
-                        # Check reconstruct_new_data results
+                        # Check single reconstruction
                         reconstructed_results = model.reconstruct_new_data(
                             data=data_i,
                             iterations=2,
@@ -928,17 +930,19 @@ class TestAutoEncoderCases(unittest.TestCase):
                     expected_data = data.iloc[
                         initial_context_offset : len(data) - ending_context_offset
                     ]
+
                     df_actual_i.sort_index(inplace=True)
                     df_actual_i.reset_index(drop=True, inplace=True)
                     expected_data.sort_index(inplace=True)
                     expected_data.reset_index(drop=True, inplace=True)
+
                     pd.testing.assert_frame_equal(
                         df_actual_i.astype(float).round(6),
                         expected_data.astype(float).round(6),
                         check_names=False,
                     )
 
-                    # Check reconstruct_new_data results
+                    # Check single reconstruction
                     reconstructed_results = model.reconstruct_new_data(
                         data=data,
                         iterations=2,

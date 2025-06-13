@@ -1666,7 +1666,7 @@ class AutoEncoder:
                                     "feature": feature_name,
                                     "time_step": t,
                                     "value": x_converted[feature_idx, current_pos],
-                                    "dataset": data_split,
+                                    "data_split": data_split,
                                 }
                             )
                             data_points_reconstructed.append(
@@ -1675,7 +1675,7 @@ class AutoEncoder:
                                     "feature": feature_name,
                                     "time_step": t,
                                     "value": x_hat[feature_idx, current_pos],
-                                    "dataset": data_split,
+                                    "data_split": data_split,
                                 }
                             )
                         current_pos = current_pos + 1
@@ -1698,7 +1698,7 @@ class AutoEncoder:
                                 "feature": feature_name,
                                 "time_step": current_pos,
                                 "value": x_converted[feature_idx, current_pos],
-                                "dataset": data_split,
+                                "data_split": data_split,
                             }
                         )
                         data_points_reconstructed.append(
@@ -1706,7 +1706,7 @@ class AutoEncoder:
                                 "feature": feature_name,
                                 "time_step": current_pos,
                                 "value": x_hat[feature_idx, current_pos],
-                                "dataset": data_split,
+                                "data_split": data_split,
                             }
                         )
                     current_pos = current_pos + 1
@@ -2059,83 +2059,88 @@ class AutoEncoder:
         # Display and save reconstruction errors
         if reconstruction_diagnostic:
             # Check if there are id_columns through id_data_dict
+            save_path = os.path.join(self._save_path, "reconstruct")
+            # cols = df_actual.feature.unique().tolist()
             if self.id_data_dict:
                 for id_i in df_actual.id.unique().tolist():
-                    # Create subfolders based on id
-                    save_path = Path(self._save_path) / str(id_i)
-
                     # Get appropriate actual and reconstructed data based on id
                     df_actual_i = df_actual[df_actual.id == id_i]
                     df_actual_i = pd.pivot(
                         df_actual_i,
                         columns="feature",
-                        index="time_step",
+                        index=["time_step", "data_split"],
                         values="value",
                     )
-                    df_actual_i = df_actual_i.sort_index()
+                    df_actual_i.reset_index(level=["data_split"], inplace=True)
+                    df_actual_i.sort_index(inplace=True)
                     df_reconstructed_i = df_reconstructed[df_reconstructed.id == id_i]
                     df_reconstructed_i = pd.pivot(
                         df_reconstructed_i,
                         columns="feature",
-                        index="time_step",
+                        index=["time_step", "data_split"],
                         values="value",
                     )
-                    df_reconstructed_i = df_reconstructed_i.sort_index()
+                    df_reconstructed_i.reset_index(level=["data_split"], inplace=True)
+                    df_reconstructed_i.sort_index(inplace=True)
 
-                    # Calculate reconstruction error and other metrics comparing reconstruction results to sensor data
+                    # Calculate reconstruction error and other metrics
                     reconstruction_error_df = ad.reconstruction_error(
                         actual_data_df=df_actual_i,
                         autoencoder_output_df=df_reconstructed_i,
-                        context_window=1,
-                        time_step_to_check=[0],
-                        train_size=self._train_size,
-                        val_size=self._val_size,
-                        test_size=self._test_size,
                         save_path=save_path,
+                        filename=f"{id_i}_reconstruction_error.csv",
                     )
                     ad.anova_reconstruction_error(reconstruction_error_df)
                     ad.reconstruction_error_summary(
-                        reconstruction_error_df, save_path=save_path
+                        reconstruction_error_df,
+                        save_path=save_path,
+                        filename=f"{id_i}_reconstruction_error_summary.csv",
                     )
                     plots.boxplot_reconstruction_error(
-                        reconstruction_error_df, save_path=save_path, show=True
+                        reconstruction_error_df,
+                        save_path=save_path,
+                        filename=f"{id_i}_reconstruction_error_boxplot.html",
+                        show=True,
                     )
             else:
                 id_i = "global"
 
-                # Create subfolders based on id
-                save_path = Path(self._save_path) / str(id_i)
-
                 # Get appropriate actual and reconstructed data based on id
                 df_actual_i = pd.pivot(
-                    df_actual, columns="feature", index="time_step", values="value"
+                    df_actual,
+                    columns="feature",
+                    index=["time_step", "data_split"],
+                    values="value",
                 )
-                df_actual_i = df_actual_i.sort_index()
+                df_actual_i.reset_index(level=["data_split"], inplace=True)
+                df_actual_i.sort_index(inplace=True)
                 df_reconstructed_i = pd.pivot(
                     df_reconstructed,
                     columns="feature",
-                    index="time_step",
+                    index=["time_step", "data_split"],
                     values="value",
                 )
-                df_reconstructed_i = df_reconstructed_i.sort_index()
+                df_reconstructed_i.reset_index(level=["data_split"], inplace=True)
+                df_reconstructed_i.sort_index(inplace=True)
 
-                # Calculate reconstruction error and other metrics comparing reconstruction results to sensor data
+                # Calculate reconstruction error and other metrics
                 reconstruction_error_df = ad.reconstruction_error(
                     actual_data_df=df_actual_i,
                     autoencoder_output_df=df_reconstructed_i,
-                    context_window=1,
-                    time_step_to_check=[0],
-                    train_size=self._train_size,
-                    val_size=self._val_size,
-                    test_size=self._test_size,
                     save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error.csv",
                 )
                 ad.anova_reconstruction_error(reconstruction_error_df)
                 ad.reconstruction_error_summary(
-                    reconstruction_error_df, save_path=save_path
+                    reconstruction_error_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_summary.csv",
                 )
                 plots.boxplot_reconstruction_error(
-                    reconstruction_error_df, save_path=save_path, show=True
+                    reconstruction_error_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_boxplot.html",
+                    show=True,
                 )
 
         # Plot the data
@@ -2440,7 +2445,7 @@ class AutoEncoder:
                     data=data,
                     id_columns=id_columns,
                     features_name=feature_names,
-                    context_window=self.context_window,
+                    context_window=self._context_window,
                 )
             )
         else:
@@ -2477,34 +2482,51 @@ class AutoEncoder:
 
         # Display and save reconstruction errors
         if reconstruction_diagnostic:
+            # Define save path
+            if save_path is None:
+                save_path = Path(self._save_path)
+            # Define context offset
+            initial_context_offset = self._time_step_to_check[0]
+            ending_context_offset = self._context_window - 1 - initial_context_offset
             # use keys from reconstructed_results to get approriate data from id_data_dict
-            for id_key, autoencoder_output_df in reconstructed_results.items():
-                actual_data_array = id_data_dict[id_key]
+            for id_i, autoencoder_output_df in reconstructed_results.items():
+                actual_data_array = id_data_dict[id_i]
                 actual_data_df = pd.DataFrame(
                     actual_data_array, columns=autoencoder_output_df.columns
                 )
+                actual_data_df.sort_index(inplace=True)
+                actual_data_df = actual_data_df[
+                    initial_context_offset : len(actual_data_df) - ending_context_offset
+                ]
+                actual_data_df.reset_index(drop=True, inplace=True)
+                autoencoder_output_df.sort_index(inplace=True)
+                autoencoder_output_df.reset_index(drop=True, inplace=True)
 
-                # Create subfolders based on id_key
-                id_save_path = Path(save_path) / str(id_key) if save_path else None
-
-                # Calculate reconstruction error and other metrics comparing reconstruction results to sensor data
+                # Calculate reconstruction error and other metrics
                 reconstruction_error_df = ad.reconstruction_error(
                     actual_data_df=actual_data_df,
                     autoencoder_output_df=autoencoder_output_df,
-                    context_window=self._context_window,
-                    time_step_to_check=self.time_step_to_check,
-                    train_size=self._train_size,
-                    val_size=self._val_size,
-                    test_size=self._test_size,
-                    save_path=id_save_path,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error.csv",
                 )
-                ad.anova_reconstruction_error(reconstruction_error_df)
                 ad.reconstruction_error_summary(
-                    reconstruction_error_df, save_path=id_save_path
+                    reconstruction_error_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_summary.csv",
                 )
                 plots.boxplot_reconstruction_error(
-                    reconstruction_error_df, save_path=id_save_path, show=True
+                    reconstruction_error_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_boxplot.html",
+                    show=True,
                 )
+                path = Path(save_path)
+                path.mkdir(parents=True, exist_ok=True)
+                file_path = path / f"{id_i}_reconstructed_results.csv"
+                autoencoder_output_df.to_csv(
+                    file_path, index=False, float_format="%.4f"
+                )
+                logger.info(f"Reconstruction data saved to {file_path}")
 
         return reconstructed_results
 
@@ -2550,7 +2572,7 @@ class AutoEncoder:
         ) or {}
 
         if not normalization_values:
-            if self.normalization_method not in ["minmax", "zscore"]:
+            if self._normalization_method not in ["minmax", "zscore"]:
                 raise ValueError("Invalid normalization method.")
 
             # Simulate train/val/test split using only current data
@@ -2560,7 +2582,7 @@ class AutoEncoder:
                 x_train=x_train,
                 x_val=x_val,
                 x_test=x_test,
-                normalization_method=self.normalization_method,
+                normalization_method=self._normalization_method,
             )
 
         # Set normalization parameters
@@ -2574,7 +2596,7 @@ class AutoEncoder:
             if self._normalization_method:
                 try:
                     data = processing.normalize_data_for_prediction(
-                        normalization_method=self.normalization_method,
+                        normalization_method=self._normalization_method,
                         data=data,
                         min_x=self.min_x,
                         max_x=self.max_x,
@@ -2646,11 +2668,11 @@ class AutoEncoder:
                 feature_labels=feature_names,
             )
 
-            if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+            if reconstructed_df.isna().sum().sum() != (self._context_window - 1) * len(
                 feature_names
             ):
                 raise ValueError(
-                    f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                    f"Expect context_window-1={(self._context_window - 1)} NaN values per feature."
                     f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
                 )
 
@@ -2672,7 +2694,7 @@ class AutoEncoder:
         if self._normalization_method:
             try:
                 data = processing.normalize_data_for_prediction(
-                    normalization_method=self.normalization_method,
+                    normalization_method=self._normalization_method,
                     data=data,
                     min_x=self.min_x,
                     max_x=self.max_x,
@@ -2736,7 +2758,7 @@ class AutoEncoder:
             normalized_reconstructed = None
             if self._normalization_method:
                 normalized_reconstructed = processing.normalize_data_for_prediction(
-                    normalization_method=self.normalization_method,
+                    normalization_method=self._normalization_method,
                     data=padded_reconstructed,
                     feature_to_check_filter=True,
                     feature_to_check=self._feature_to_check,
@@ -2850,11 +2872,11 @@ class AutoEncoder:
             data_original[:, self._feature_to_check], columns=feature_names
         )
 
-        if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+        if reconstructed_df.isna().sum().sum() != (self._context_window - 1) * len(
             feature_names
         ):
             raise ValueError(
-                f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                f"Expect context_window-1={(self._context_window - 1)} NaN values per feature."
                 f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
             )
 
@@ -2991,7 +3013,7 @@ class AutoEncoder:
                     x_train=x_train,
                     x_val=x_val,
                     x_test=x_test,
-                    normalization_method=self.normalization_method,
+                    normalization_method=self._normalization_method,
                 )
             )
 

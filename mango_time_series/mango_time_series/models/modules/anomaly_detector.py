@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,6 @@ from scipy.stats import f_oneway
 
 from mango.logging import get_configured_logger
 from mango_time_series.models.utils.plots import create_error_analysis_dashboard
-from mango_time_series.models.utils.processing import time_series_split
 
 logger = get_configured_logger()
 
@@ -80,11 +79,6 @@ def analyze_error_by_columns(
 def reconstruction_error(
     actual_data_df: pd.DataFrame,
     autoencoder_output_df: pd.DataFrame,
-    context_window: int = 10,
-    time_step_to_check: Union[int, List[int]] = [9],
-    train_size: float = 0.8,
-    val_size: float = 0.1,
-    test_size: float = 0.1,
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error.csv",
 ) -> pd.DataFrame:
@@ -95,97 +89,40 @@ def reconstruction_error(
     :type actual_data_df: pd.DataFrame
     :param autoencoder_output_df: Autoencoder output
     :type autoencoder_output_df: pd.DataFrame
-    :param context_window: Number of initial rows used as context by the AE
-    :type context_window: int
-    :param time_step_to_check: Time step to predict within the window
-    :type time_step_to_check: Union[int, List[int]]
-    :param train_size: Proportion of training data
-    :type train_size: float
-    :param val_size: Proportion of validation data
-    :type val_size: float
-    :param test_size: Proportion of test data
-    :type test_size: float
     :param save_path: Optional directory to save the output CSV
     :type save_path: Optional[str]
     :param filename: Filename for saved CSV
     :type filename: str
     :return: DataFrame with reconstruction error and associated data_split
     :rtype: pd.DataFrame
-    :raises ValueError: If input DataFrames have different lengths or if split sizes don't sum to 1
+    :raises ValueError: If input DataFrames have different lengths or columns
     """
     # Validate input parameters
-    context_offset = context_window - 1
-    expected_autoencoder_length = len(actual_data_df) - context_offset
-
-    if len(autoencoder_output_df) != expected_autoencoder_length:
+    if len(autoencoder_output_df) != len(actual_data_df):
         raise ValueError(
-            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length "
-            f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
+            f"Autoencoder output rows ({len(autoencoder_output_df)}) "
+            f"do not match actual data rows ({len(actual_data_df)})"
         )
-    if isinstance(time_step_to_check, list):
-        time_step_to_check = time_step_to_check[0]
-    if not np.isclose(train_size + val_size + test_size, 1.0):
-        raise ValueError(
-            f"train_size + val_size + test_size must equal 1, but got {train_size + val_size + test_size}"
-        )
-    if time_step_to_check < 0 or time_step_to_check > context_window - 1:
-        raise ValueError(
-            f"time_step_to_check must be between 0 and {context_window - 1}, "
-            f"but got {time_step_to_check}"
-        )
-    if context_window < 1:
-        raise ValueError("context_window must be a positive integer")
     if not autoencoder_output_df.columns.equals(actual_data_df.columns):
         raise ValueError(
-            f"Autoencoder output columns ({autoencoder_output_df.columns})"
-            f" do not match actual data columns ({actual_data_df.columns})"
+            f"Autoencoder output columns ({autoencoder_output_df.columns}) "
+            f"do not match actual data columns ({actual_data_df.columns})"
         )
 
     try:
-        actual_data_df = actual_data_df.iloc[
-            time_step_to_check : time_step_to_check + len(autoencoder_output_df)
-        ].reset_index(drop=True)
-
-        # Drop the 'type'=reconstructed column
-        if "type" in autoencoder_output_df.columns:
-            autoencoder_output_df = autoencoder_output_df.drop(columns=["type"])
-
-        # Define data splits ( train, validation, test) for autoencoder output
-        autoencoder_train_df, autoencoder_val_df, autoencoder_test_df = (
-            time_series_split(autoencoder_output_df, train_size, val_size, test_size)
-        )
-
-        autoencoder_train_df = autoencoder_train_df.copy()
-        autoencoder_val_df = autoencoder_val_df.copy()
-        autoencoder_test_df = autoencoder_test_df.copy()
-
-        autoencoder_train_df.loc[:, "data_split"] = "train"
-        autoencoder_val_df.loc[:, "data_split"] = "validation"
-        autoencoder_test_df.loc[:, "data_split"] = "test"
-
-        # Combine dataframes
-        autoencoder_output_df = pd.concat(
-            [autoencoder_train_df, autoencoder_val_df, autoencoder_test_df], axis=0
-        ).reset_index(drop=True)
-
-        autoencoder_output_df.loc[:, "data_split"] = pd.Categorical(
-            autoencoder_output_df["data_split"],
-            categories=["train", "validation", "test"],
-            ordered=True,
-        )
-
+        sensor_columns = [
+            col for col in autoencoder_output_df.columns if col != "data_split"
+        ]
         # Generate reconstruction error DataFrame
         reconstruction_error_df = (
-            autoencoder_output_df.drop(columns=["data_split"]) - actual_data_df
+            autoencoder_output_df[sensor_columns] - actual_data_df[sensor_columns]
         )
-        reconstruction_error_df.loc[:, "data_split"] = autoencoder_output_df[
-            "data_split"
-        ]
+
+        # Add back data_split if it was originally present
+        if "data_split" in actual_data_df.columns:
+            reconstruction_error_df["data_split"] = actual_data_df["data_split"]
 
         # Warn if some sensors have higher reconstruction error than others
-        sensor_columns = [
-            col for col in reconstruction_error_df.columns if col != "data_split"
-        ]
         mean_errors = reconstruction_error_df[sensor_columns].abs().mean()
         median_mean_error = mean_errors.median()
         threshold = 3 * median_mean_error
@@ -226,6 +163,12 @@ def anova_reconstruction_error(
     :return: DataFrame with F-statistics and p-values per sensor
     :rtype: pd.DataFrame
     """
+    if "data_split" not in reconstruction_error_df.columns:
+        raise ValueError(
+            "Anova calculation requires reconstruction_error_df to have data_split "
+            "(i.e. train, validation, test)"
+        )
+
     try:
         results = []
         sensor_columns = [
@@ -277,9 +220,9 @@ def reconstruction_error_summary(
 ) -> pd.DataFrame:
     """
     Generate and optionally save summary statistics (mean and std) for reconstruction error
-    grouped by data split.
+    grouped by data split (if provided).
 
-    :param reconstruction_error_df: DataFrame with reconstruction error and 'data_split' column
+    :param reconstruction_error_df: DataFrame with reconstruction error
     :type reconstruction_error_df: pd.DataFrame
     :param save_path: Optional path to save the summary CSV
     :type save_path: Optional[str]
@@ -289,52 +232,55 @@ def reconstruction_error_summary(
     :type threshold: float
     :return: Summary statistics MultiIndex column DataFrame
     :rtype: pd.DataFrame
-    :raises ValueError: If required columns are missing or if data is empty
+    :raises ValueError: If data is empty
     """
     if reconstruction_error_df.empty:
         raise ValueError("Input DataFrame cannot be empty")
-    if "data_split" not in reconstruction_error_df.columns:
-        raise ValueError("Input DataFrame must contain 'data_split' column")
 
     try:
-        summary_stats = reconstruction_error_df.groupby("data_split").agg(
-            ["mean", "std"]
-        )
+        if "data_split" in reconstruction_error_df.columns:
+            summary_stats = reconstruction_error_df.groupby("data_split").agg(
+                ["mean", "std"]
+            )
+            summary_stats = summary_stats.T
+            summary_stats = summary_stats.unstack(level=1)
+            summary_stats.index.rename("sensor", inplace=True)
+            summary_stats.columns = [
+                f"{split}_{stat}" for split, stat in summary_stats.columns
+            ]
 
-        summary_stats = summary_stats.T
-        summary_stats.index.names = ["sensor", "statistic"]
-        summary_stats = summary_stats.unstack(level=1)
-        summary_stats.columns = [
-            f"{split}_{stat}" for split, stat in summary_stats.columns
-        ]
+            # Reorder columns to group by statistic (mean, then std)
+            split_order = ["train", "validation", "test"]
+            column_order = [
+                f"{split}_{stat}" for stat in ["mean", "std"] for split in split_order
+            ]
+            summary_stats = summary_stats[
+                [col for col in column_order if col in summary_stats.columns]
+            ]
 
-        # Reorder columns to group by statistic (mean, then std)
-        split_order = ["train", "validation", "test"]
-        column_order = [
-            f"{split}_{stat}" for stat in ["mean", "std"] for split in split_order
-        ]
-        summary_stats = summary_stats[
-            [col for col in column_order if col in summary_stats.columns]
-        ]
+            mean_columns = [
+                col for col in summary_stats.columns if col.endswith("_mean")
+            ]
+            std_columns = [col for col in summary_stats.columns if col.endswith("_std")]
 
-        mean_columns = [col for col in summary_stats.columns if col.endswith("_mean")]
-        std_columns = [col for col in summary_stats.columns if col.endswith("_std")]
-
-        for sensor, row in summary_stats.iterrows():
-            mean_values = row[mean_columns].dropna()
-            std_values = row[std_columns].dropna()
-            if len(mean_values) >= 2:
-                diff_mean = mean_values.max() - mean_values.min()
-                if diff_mean / mean_values.max() > threshold:
-                    logger.warning(
-                        f"Sensor {sensor} has a high difference in mean reconstruction error across splits."
-                    )
-            if len(std_values) >= 2:
-                diff_std = std_values.max() - std_values.min()
-                if diff_std / std_values.max() > threshold:
-                    logger.warning(
-                        f"Sensor {sensor} has a high difference in std reconstruction error across splits."
-                    )
+            for sensor, row in summary_stats.iterrows():
+                mean_values = row[mean_columns].dropna()
+                std_values = row[std_columns].dropna()
+                if len(mean_values) >= 2 and len(std_values) >= 2:
+                    diff_mean = mean_values.max() - mean_values.min()
+                    if diff_mean / mean_values.max() > threshold:
+                        logger.warning(
+                            f"{sensor} mean error varies significantly across data splits: range={diff_mean:.3f}, values={mean_values.tolist()}"
+                        )
+                    diff_std = std_values.max() - std_values.min()
+                    if diff_std / std_values.max() > threshold:
+                        logger.warning(
+                            f"{sensor} std error varies significantly across data splits: range={diff_std:.3f}, values={std_values.tolist()}"
+                        )
+        else:
+            summary_stats = reconstruction_error_df.agg(["mean", "std"])
+            summary_stats = summary_stats.T
+            summary_stats.index.rename("sensor", inplace=True)
 
         # Save if a path is provided
         if save_path:

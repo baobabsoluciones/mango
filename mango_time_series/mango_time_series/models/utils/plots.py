@@ -88,7 +88,7 @@ def plot_actual_and_reconstructed(
     has_ids = "id" in df_actual.columns
 
     # Check if we have dataset splits
-    has_splits = "dataset" in df_actual.columns
+    has_splits = "data_split" in df_actual.columns
 
     if not has_splits:
         # Simple case: just actual vs reconstructed without splits
@@ -171,7 +171,7 @@ def plot_actual_and_reconstructed(
                 # Add reconstructed values for each dataset
                 for dataset in ["train", "validation", "test"]:
                     dataset_df_reconstructed = feature_df_reconstructed[
-                        (feature_df_reconstructed["dataset"] == dataset)
+                        (feature_df_reconstructed["data_split"] == dataset)
                     ]
 
                     if not dataset_df_reconstructed.empty:
@@ -227,7 +227,7 @@ def plot_actual_and_reconstructed(
                 # Add reconstructed values for each dataset
                 for dataset in ["train", "validation", "test"]:
                     dataset_df_reconstructed = feature_df_reconstructed[
-                        feature_df_reconstructed["dataset"] == dataset
+                        feature_df_reconstructed["data_split"] == dataset
                     ]
 
                     if not dataset_df_reconstructed.empty:
@@ -292,7 +292,7 @@ def plot_actual_and_reconstructed(
             # Add the reconstructed line plots for each dataset
             for dataset in ["train", "validation", "test"]:
                 dataset_df_reconstructed = feature_df_reconstructed[
-                    feature_df_reconstructed["dataset"] == dataset
+                    feature_df_reconstructed["data_split"] == dataset
                 ]
 
                 if not dataset_df_reconstructed.empty:
@@ -337,7 +337,7 @@ def plot_actual_and_reconstructed(
             # Add reconstructed values for each dataset
             for dataset in ["train", "validation", "test"]:
                 dataset_df_reconstructed = feature_df_reconstructed[
-                    feature_df_reconstructed["dataset"] == dataset
+                    feature_df_reconstructed["data_split"] == dataset
                 ]
 
                 if not dataset_df_reconstructed.empty:
@@ -391,7 +391,7 @@ def plot_actual_and_reconstructed(
             # Add reconstructed values for each dataset
             for dataset in ["train", "validation", "test"]:
                 dataset_df_reconstructed = feature_df_reconstructed[
-                    feature_df_reconstructed["dataset"] == dataset
+                    feature_df_reconstructed["data_split"] == dataset
                 ]
 
                 if not dataset_df_reconstructed.empty:
@@ -686,7 +686,7 @@ def boxplot_reconstruction_error(
     """
     Generate and optionally save a boxplot for reconstruction error using Plotly.
 
-    :param reconstruction_error_df: DataFrame with reconstruction error values and 'data_split'
+    :param reconstruction_error_df: DataFrame with reconstruction error values
     :type reconstruction_error_df: pd.DataFrame
     :param save_path: Optional path to save the plot
     :type save_path: Optional[str]
@@ -702,39 +702,69 @@ def boxplot_reconstruction_error(
     :type template: str
     :param xaxis_tickangle: Angle for x-axis labels
     :type xaxis_tickangle: int
+    :param color_palette: Optional color mapping
+    :type color_palette: Optional[Dict[str, str]]
     :return: Plotly figure object
     :rtype: go.Figure
     """
     if reconstruction_error_df.empty:
         raise ValueError("Input DataFrame cannot be empty")
-    if "data_split" not in reconstruction_error_df.columns:
-        raise ValueError("Input DataFrame must contain 'data_split' column")
 
     try:
-        # Melt the DataFrame
-        melted_df = reconstruction_error_df.melt(
-            id_vars=["data_split"], var_name="sensor", value_name="AE_error"
-        )
+        if "data_split" in reconstruction_error_df.columns:
+            # Melt the DataFrame
+            melted_df = reconstruction_error_df.melt(
+                id_vars=["data_split"], var_name="sensor", value_name="AE_error"
+            )
 
-        # Create the boxplot using Plotly
-        fig = px.box(
-            melted_df,
-            x="sensor",
-            y="AE_error",
-            color="data_split",
-            title="Autoencoder Reconstruction Error",
-            labels={
-                "sensor": "",
-                "AE_error": "Reconstruction Error (Autoencoder - Actual)",
-                "data_split": "Dataset Split",
-            },
-            template=template,
-        )
+            # Create the boxplot using Plotly
+            fig = px.box(
+                melted_df,
+                x="sensor",
+                y="AE_error",
+                color="data_split",
+                labels={
+                    "sensor": "",
+                    "AE_error": "Reconstruction Error (Autoencoder - Actual)",
+                    "data_split": "Dataset Split",
+                },
+                template=template,
+                color_discrete_map=color_palette,
+            )
+
+        else:
+            melted_df = reconstruction_error_df.melt(
+                var_name="sensor", value_name="AE_error"
+            )
+
+            fig = px.box(
+                melted_df,
+                x="sensor",
+                y="AE_error",
+                color="sensor",
+                labels={
+                    "sensor": "",
+                    "AE_error": "Reconstruction Error (Autoencoder - Actual)",
+                },
+                template=template,
+            )
+
+            if color_palette is None:
+                uniform_color = "#636EFA"
+            else:
+                uniform_color = color_palette[0]
+            fig.for_each_trace(
+                lambda t: t.update(marker_color=uniform_color, line_color=uniform_color)
+            )
+
+        if "data_split" in reconstruction_error_df.columns:
+            showlegend = True
+        else:
+            showlegend = False
 
         # Update layout for better visualization and responsiveness
         fig.update_layout(
-            showlegend=True,
-            legend_title="Dataset Split",
+            showlegend=showlegend,
             xaxis_tickangle=xaxis_tickangle,
             title=dict(
                 text="Autoencoder Reconstruction Error", x=0.5, xanchor="center"
@@ -744,6 +774,7 @@ def boxplot_reconstruction_error(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             hovermode="x unified",
+            hoverlabel=dict(bgcolor="white"),
             # Make the plot responsive to container size
             height=height,
             width=width,
@@ -763,9 +794,8 @@ def boxplot_reconstruction_error(
         )
 
         fig.update_traces(
-            hovertemplate="reconstruction error: %{y:.4f}<extra></extra>",
+            hovertemplate=None,
             marker=dict(size=3),
-            showlegend=True,
         )
 
         if save_path:
@@ -782,6 +812,7 @@ def boxplot_reconstruction_error(
             logger.info(f"Reconstruction error boxplot saved to {full_path}")
 
         if show:
+            logger.info("Displaying reconstruction error boxplot.")
             fig.show()
 
         return fig
