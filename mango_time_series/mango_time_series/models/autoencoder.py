@@ -2102,6 +2102,13 @@ class AutoEncoder:
                         filename=f"{id_i}_reconstruction_error_boxplot.html",
                         show=True,
                     )
+                    path = Path(save_path)
+                    path.mkdir(parents=True, exist_ok=True)
+                    file_path = path / f"{id_i}_reconstructed_results.csv"
+                    df_reconstructed_i.to_csv(
+                        file_path, index=False, float_format="%.4f"
+                    )
+                    logger.info(f"Reconstruction data saved to {file_path}")
             else:
                 id_i = "global"
 
@@ -2142,6 +2149,11 @@ class AutoEncoder:
                     filename=f"{id_i}_reconstruction_error_boxplot.html",
                     show=True,
                 )
+                path = Path(save_path)
+                path.mkdir(parents=True, exist_ok=True)
+                file_path = path / f"{id_i}_reconstructed_results.csv"
+                df_reconstructed_i.to_csv(file_path, index=False, float_format="%.4f")
+                logger.info(f"Reconstruction data saved to {file_path}")
 
         # Plot the data
         plots.plot_actual_and_reconstructed(
