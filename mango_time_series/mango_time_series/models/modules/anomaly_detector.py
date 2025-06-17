@@ -93,7 +93,7 @@ def reconstruction_error(
     :type save_path: Optional[str]
     :param filename: Filename for saved CSV
     :type filename: str
-    :return: DataFrame with reconstruction error and associated data_split
+    :return: DataFrame with reconstruction error
     :rtype: pd.DataFrame
     :raises ValueError: If input DataFrames have different lengths or columns
     """

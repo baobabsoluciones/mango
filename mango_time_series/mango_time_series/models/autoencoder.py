@@ -2061,7 +2061,6 @@ class AutoEncoder:
         if reconstruction_diagnostic:
             # Check if there are id_columns through id_data_dict
             save_path = os.path.join(self._save_path, "reconstruct")
-            # cols = df_actual.feature.unique().tolist()
             if self.id_data_dict:
                 for id_i in df_actual.id.unique().tolist():
                     # Get appropriate actual and reconstructed data based on id
@@ -3021,6 +3020,7 @@ class AutoEncoder:
                     f"Length of {split_name} data ({len(split_data)}) must be at least context window ({context_window})."
                 )
 
+        # Save positions where there are NaNs (used in reconstruct())
         x_data = np.concatenate((x_train, x_val, x_test), axis=0)
         id_key = id_iter if id_iter is not None else "global"
         feature_data = x_data[:, self._feature_to_check]
