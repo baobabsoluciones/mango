@@ -102,6 +102,7 @@ class AutoEncoder:
         self._use_mask = False
         self._custom_mask = None
         self._shuffle = False
+        self._nan_positions = {}
 
     @property
     def save_path(self) -> Optional[str]:
@@ -2073,6 +2074,16 @@ class AutoEncoder:
                     )
                     df_actual_i.reset_index(level=["data_split"], inplace=True)
                     df_actual_i.sort_index(inplace=True)
+
+                    # Turn nulls in original data back into nulls
+                    for row_idx, col_idx in self._nan_positions[id_i]:
+                        adjusted_row_idx = row_idx - self._time_step_to_check[0]
+                        adjusted_col_idx = col_idx + 1
+                        if 0 <= adjusted_row_idx < len(df_actual_i):
+                            df_actual_i.iloc[adjusted_row_idx, adjusted_col_idx] = (
+                                np.nan
+                            )
+
                     df_reconstructed_i = df_reconstructed[df_reconstructed.id == id_i]
                     df_reconstructed_i = pd.pivot(
                         df_reconstructed_i,
@@ -2121,6 +2132,14 @@ class AutoEncoder:
                 )
                 df_actual_i.reset_index(level=["data_split"], inplace=True)
                 df_actual_i.sort_index(inplace=True)
+
+                # Turn nulls in original data back into nulls
+                for row_idx, col_idx in self._nan_positions[id_i]:
+                    adjusted_row_idx = row_idx - self._time_step_to_check[0]
+                    adjusted_col_idx = col_idx + 1
+                    if 0 <= adjusted_row_idx < len(df_actual_i):
+                        df_actual_i.iloc[adjusted_row_idx, adjusted_col_idx] = np.nan
+
                 df_reconstructed_i = pd.pivot(
                     df_reconstructed,
                     columns="feature",
@@ -3002,6 +3021,12 @@ class AutoEncoder:
                     f"Length of {split_name} data ({len(split_data)}) must be at least context window ({context_window})."
                 )
 
+        x_data = np.concatenate((x_train, x_val, x_test), axis=0)
+        id_key = id_iter if id_iter is not None else "global"
+        feature_data = x_data[:, self._feature_to_check]
+        nan_positions = np.argwhere(np.isnan(feature_data))
+        self._nan_positions[id_key] = nan_positions
+
         if self._use_mask:
             if getattr(self, "_custom_mask", None) is None:
                 mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
@@ -3049,6 +3074,11 @@ class AutoEncoder:
             else:
                 self.normalization_values = {"global": norm_values}
 
+        # Calculate NaNs before imputation
+        train_nan_before = np.isnan(x_train).sum(axis=0)
+        val_nan_before = np.isnan(x_val).sum(axis=0)
+        test_nan_before = np.isnan(x_test).sum(axis=0)
+
         if self._use_mask and self.imputer is not None:
             x_train = self.imputer.apply_imputation(
                 data=pd.DataFrame(x_train)
@@ -3059,6 +3089,28 @@ class AutoEncoder:
             x_train = np.nan_to_num(x_train)
             x_val = np.nan_to_num(x_val)
             x_test = np.nan_to_num(x_test)
+
+        # Calculate NaNs after imputation
+        train_nan_after = np.isnan(x_train).sum(axis=0)
+        val_nan_after = np.isnan(x_val).sum(axis=0)
+        test_nan_after = np.isnan(x_test).sum(axis=0)
+
+        nan_summary = pd.DataFrame(
+            {
+                "feature": np.arange(len(train_nan_before)),
+                "train_nan_before": train_nan_before,
+                "train_nan_after": train_nan_after,
+                "val_nan_before": val_nan_before,
+                "val_nan_after": val_nan_after,
+                "test_nan_before": test_nan_before,
+                "test_nan_after": test_nan_after,
+            }
+        )
+
+        logger.info(
+            f"{id_key} number of NaNs before and after imputation:\n"
+            + nan_summary.to_string(index=False)
+        )
 
         seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
             data=x_train,
