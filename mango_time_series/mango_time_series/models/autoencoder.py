@@ -2410,6 +2410,8 @@ class AutoEncoder:
             raise ValueError(
                 "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
             )
+        if iterations < 1:
+            raise ValueError("iterations must be at least 1")
 
         data, feature_names = processing.convert_data_to_numpy(data=data)
 
@@ -2420,6 +2422,17 @@ class AutoEncoder:
 
             if not isinstance(id_columns, list):
                 raise ValueError("id_columns must be a list of strings or integers")
+
+            id_indices = []
+            for id_col in id_columns:
+                if isinstance(id_col, str) and id_col not in feature_names:
+                    raise ValueError(
+                        f"{id_col} in id_columns not found in feature_names ({feature_names})"
+                    )
+                elif isinstance(id_col, int) and not (0 <= id_col < len(feature_names)):
+                    raise ValueError(
+                        f"{id_col} in id_columns not within length of feature_names ({len(feature_names)})"
+                    )
 
             # Get indices of ID columns
             id_indices = [
@@ -2463,6 +2476,13 @@ class AutoEncoder:
         else:
             id_data_dict = {"global": data}
 
+        for _id, subset in id_data_dict.items():
+            if len(subset) < self._context_window:
+                raise ValueError(
+                    f"Sequence {_id} has length {len(subset)} but needs to be "
+                    f"at least context window ({self._context_window}) in length"
+                )
+
         reconstructed_results = {}
 
         if id_columns is not None:
@@ -2502,7 +2522,7 @@ class AutoEncoder:
             ending_context_offset = self._context_window - 1 - initial_context_offset
             # use keys from reconstructed_results to get approriate data from id_data_dict
             for id_i, autoencoder_output_df in reconstructed_results.items():
-                actual_data_array = id_data_dict[id_i]
+                actual_data_array = id_data_dict[id_i][:, self._feature_to_check]
                 actual_data_df = pd.DataFrame(
                     actual_data_array, columns=autoencoder_output_df.columns
                 )
@@ -2574,6 +2594,12 @@ class AutoEncoder:
         :raises ValueError: If normalization fails or if there are issues with the reconstruction process
         """
         data_original = np.copy(data)
+        # Handle missing values
+        if self.imputer is not None:
+            data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
+        else:
+            data = np.nan_to_num(data, nan=0)
+
         reconstructed_iterations = {}
 
         # Get normalization values for the current ID or global
@@ -2718,12 +2744,6 @@ class AutoEncoder:
 
         # Iterative reconstruction loop
         for iter_num in range(1, iterations):
-            # Handle missing values
-            if self.imputer is not None:
-                data = self.imputer.apply_imputation(data=pd.DataFrame(data)).to_numpy()
-            else:
-                data = np.nan_to_num(data, nan=0)
-
             # Generate sequence and predict
             data_seq = time_series_to_sequence(
                 data=data, context_window=self._context_window
@@ -2801,11 +2821,6 @@ class AutoEncoder:
                 )
 
         # Final reconstruction step
-        if self.imputer is not None:
-            data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
-        else:
-            data = np.nan_to_num(data, nan=0)
-
         data_seq = time_series_to_sequence(
             data=data, context_window=self._context_window
         )
