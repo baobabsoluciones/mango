@@ -105,6 +105,20 @@ class AutoEncoder:
         self._nan_positions = {}
 
     @property
+    def nan_positions(self) -> Dict:
+        """
+        Get the NaN positions from the input data.
+
+        Dictionary maps each id (id_columns or global if not used)
+        to a NumPy array of shape (n, 2), where each row contains the
+        [row_index, column_index] of a NaN found in the input data.
+
+        :return: Dictionary mapping id to array of NaN positions
+        :rtype: Dict
+        """
+        return self._nan_positions
+
+    @property
     def save_path(self) -> Optional[str]:
         """
         Get the path where model artifacts will be saved.
@@ -2059,8 +2073,8 @@ class AutoEncoder:
 
         # Display and save reconstruction errors
         if reconstruction_diagnostic:
-            # Check if there are id_columns through id_data_dict
             save_path = os.path.join(self._save_path, "reconstruct")
+            # Check if there are id_columns through id_data_dict
             if self.id_data_dict:
                 for id_i in df_actual.id.unique().tolist():
                     # Get appropriate actual and reconstructed data based on id
@@ -2985,6 +2999,7 @@ class AutoEncoder:
 
     def _prepare_dataset(
         self,
+        *,
         data: Tuple[np.ndarray, np.ndarray, np.ndarray],
         context_window: int,
         normalize: bool,
@@ -3059,21 +3074,6 @@ class AutoEncoder:
                 context_window=context_window,
             )
 
-        if normalize:
-            x_train, x_val, x_test, norm_values = (
-                processing.normalize_data_for_training(
-                    x_train=x_train,
-                    x_val=x_val,
-                    x_test=x_test,
-                    normalization_method=self._normalization_method,
-                )
-            )
-
-            if id_iter is not None:
-                self.normalization_values[id_iter] = norm_values
-            else:
-                self.normalization_values = {"global": norm_values}
-
         # Calculate NaNs before imputation
         train_nan_before = np.isnan(x_train).sum(axis=0)
         val_nan_before = np.isnan(x_val).sum(axis=0)
@@ -3111,6 +3111,22 @@ class AutoEncoder:
             f"{id_key} number of NaNs before and after imputation:\n"
             + nan_summary.to_string(index=False)
         )
+
+        # After determining mask and doing imputation, do normalization
+        if normalize:
+            x_train, x_val, x_test, norm_values = (
+                processing.normalize_data_for_training(
+                    x_train=x_train,
+                    x_val=x_val,
+                    x_test=x_test,
+                    normalization_method=self._normalization_method,
+                )
+            )
+
+            if id_iter is not None:
+                self.normalization_values[id_iter] = norm_values
+            else:
+                self.normalization_values = {"global": norm_values}
 
         seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
             data=x_train,

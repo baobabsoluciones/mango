@@ -811,14 +811,48 @@ class TestAutoEncoderCases(unittest.TestCase):
             # Generate data for a single dataset (with_ids=False) and multiple (with_ids=True)
             data_cases = [
                 self.generate_synthetic_data_standard(
-                    num_samples=111, num_features=8, with_ids=False, with_nans=False
-                )[0],
+                    num_samples=111,
+                    num_features=8,
+                    with_ids=False,
+                    with_nans=False,
+                    mask_type=None,
+                ),
                 self.generate_synthetic_data_standard(
-                    num_samples=1111, num_features=8, with_ids=True, with_nans=False
-                )[0],
+                    num_samples=1111,
+                    num_features=8,
+                    with_ids=True,
+                    with_nans=False,
+                    mask_type=None,
+                ),
+                self.generate_synthetic_data_standard(
+                    num_samples=111,
+                    num_features=8,
+                    with_ids=False,
+                    with_nans=True,
+                    mask_type="auto",
+                ),
+                self.generate_synthetic_data_standard(
+                    num_samples=1111,
+                    num_features=8,
+                    with_ids=True,
+                    with_nans=True,
+                    mask_type="auto",
+                ),
             ]
-            for data in data_cases:
+            for data, use_mask, mask in data_cases:
                 id_columns = "id" if "id" in data.columns else None
+                len_features = (
+                    len(data.columns) - 1 if id_columns == "id" else len(data.columns)
+                )
+                rnd_iterations = 1
+                print(
+                    "tstc:",
+                    time_step_to_check,
+                    "id_columns",
+                    id_columns,
+                    "use_mask:",
+                    use_mask,
+                )
                 model = AutoEncoder()
                 model.build_model(
                     form="lstm",
@@ -826,7 +860,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                     context_window=context_window,
                     time_step_to_check=time_step_to_check,
                     hidden_dim=[8, 4],
-                    feature_to_check=list(range(min(8, len(data.columns)))),
+                    feature_to_check=list(range(len_features)),
                     id_columns=id_columns,
                     bidirectional_encoder=True,
                     bidirectional_decoder=False,
@@ -835,7 +869,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                     batch_size=16,
                     save_path=None,
                     verbose=False,
-                    use_mask=False,
+                    use_mask=use_mask,
                     shuffle=True,
                 )
 
@@ -849,12 +883,15 @@ class TestAutoEncoderCases(unittest.TestCase):
                         *args, **kargs
                     )
                     stored_data["df_actual"] = df_actual.copy()
+                    stored_data["df_reconstructed"] = df_reconstructed.copy()
                     return df_actual, df_reconstructed
 
                 model._create_data_points_df = edited_create_data_points_df
                 model.reconstruct()
                 model._create_data_points_df = original_create_data_points
+                nan_positions = model.nan_positions
                 df_actual = stored_data["df_actual"]
+                df_reconstructed = stored_data["df_reconstructed"]
 
                 # Define context offset
                 initial_context_offset = time_step_to_check[0]
@@ -884,6 +921,14 @@ class TestAutoEncoderCases(unittest.TestCase):
                         expected_data.sort_index(inplace=True)
                         expected_data.reset_index(drop=True, inplace=True)
 
+                        for row_idx, col_idx in nan_positions[id_i]:
+                            adjusted_row_idx = row_idx - initial_context_offset
+                            adjusted_col_idx = col_idx
+                            if 0 <= adjusted_row_idx < len(df_actual_i):
+                                df_actual_i.iloc[adjusted_row_idx, adjusted_col_idx] = (
+                                    np.nan
+                                )
+
                         pd.testing.assert_frame_equal(
                             df_actual_i.astype(float).round(6),
                             expected_data.astype(float).round(6),
@@ -891,34 +936,55 @@ class TestAutoEncoderCases(unittest.TestCase):
                         )
 
                         # Check single reconstruction
-                        reconstructed_results = model.reconstruct_new_data(
+                        df_reconstruct_i = df_reconstructed[df_reconstructed.id == id_i]
+                        df_reconstruct_i = pd.pivot(
+                            df_reconstruct_i,
+                            columns="feature",
+                            index=["time_step"],
+                            values="value",
+                        )
+                        reconstruct_new_data = model.reconstruct_new_data(
                             data=data_i,
-                            iterations=2,
+                            iterations=rnd_iterations,
                             save_path=None,
                             id_columns=id_columns,
                         )
-                        reconstructed_df = reconstructed_results[id_i]
-                        self.assertEqual(len(reconstructed_df), len(expected_data))
+                        df_reconstruct_new_data_i = reconstruct_new_data[id_i]
                         self.assertEqual(
-                            reconstructed_df.index.min(), initial_context_offset
+                            len(df_reconstruct_new_data_i), len(expected_data)
+                        )
+                        self.assertEqual(
+                            df_reconstruct_new_data_i.index.min(),
+                            initial_context_offset,
+                        )
+
+                        df_reconstruct_i.reset_index(drop=True, inplace=True)
+                        df_reconstruct_new_data_i.reset_index(drop=True, inplace=True)
+
+                        pd.testing.assert_frame_equal(
+                            df_reconstruct_i.astype(float).round(4),
+                            df_reconstruct_new_data_i.astype(float).round(4),
+                            check_names=False,
                         )
 
                     # Check multiple reconstructions
-                    reconstructed_results = model.reconstruct_new_data(
+                    reconstruct_new_data = model.reconstruct_new_data(
                         data=data,
-                        iterations=2,
+                        iterations=rnd_iterations,
                         save_path=None,
                         id_columns=id_columns,
                     )
-                    for id_i, reconstructed_df in reconstructed_results.items():
-                        reconstructed_df = reconstructed_results[id_i]
+                    for id_i, df_reconstruct_new_data_i in reconstruct_new_data.items():
                         data_i = data[data["id"] == id_i]
                         expected_data = data_i.iloc[
                             initial_context_offset : len(data_i) - ending_context_offset
                         ]
-                        self.assertEqual(len(reconstructed_df), len(expected_data))
                         self.assertEqual(
-                            reconstructed_df.index.min(), initial_context_offset
+                            len(df_reconstruct_new_data_i), len(expected_data)
+                        )
+                        self.assertEqual(
+                            df_reconstruct_new_data_i.index.min(),
+                            initial_context_offset,
                         )
 
                 # Case with single dataset (with_ids=False)
@@ -936,6 +1002,14 @@ class TestAutoEncoderCases(unittest.TestCase):
                     expected_data.sort_index(inplace=True)
                     expected_data.reset_index(drop=True, inplace=True)
 
+                    for row_idx, col_idx in nan_positions["global"]:
+                        adjusted_row_idx = row_idx - initial_context_offset
+                        adjusted_col_idx = col_idx
+                        if 0 <= adjusted_row_idx < len(df_actual_i):
+                            df_actual_i.iloc[adjusted_row_idx, adjusted_col_idx] = (
+                                np.nan
+                            )
+
                     pd.testing.assert_frame_equal(
                         df_actual_i.astype(float).round(6),
                         expected_data.astype(float).round(6),
@@ -943,16 +1017,32 @@ class TestAutoEncoderCases(unittest.TestCase):
                     )
 
                     # Check single reconstruction
-                    reconstructed_results = model.reconstruct_new_data(
+                    df_reconstruct_i = df_reconstructed
+                    df_reconstruct_i = pd.pivot(
+                        df_reconstruct_i,
+                        columns="feature",
+                        index=["time_step"],
+                        values="value",
+                    )
+                    reconstruct_new_data = model.reconstruct_new_data(
                         data=data,
-                        iterations=2,
+                        iterations=rnd_iterations,
                         save_path=None,
                         id_columns=id_columns,
                     )
-                    reconstructed_df = reconstructed_results["global"]
-                    self.assertEqual(len(reconstructed_df), len(expected_data))
+                    df_reconstruct_new_data_i = reconstruct_new_data["global"]
+                    self.assertEqual(len(df_reconstruct_new_data_i), len(expected_data))
                     self.assertEqual(
-                        reconstructed_df.index.min(), initial_context_offset
+                        df_reconstruct_new_data_i.index.min(), initial_context_offset
+                    )
+
+                    df_reconstruct_i.reset_index(drop=True, inplace=True)
+                    df_reconstruct_new_data_i.reset_index(drop=True, inplace=True)
+
+                    pd.testing.assert_frame_equal(
+                        df_reconstruct_i.astype(float).round(4),
+                        df_reconstruct_new_data_i.astype(float).round(4),
+                        check_names=False,
                     )
 
 
