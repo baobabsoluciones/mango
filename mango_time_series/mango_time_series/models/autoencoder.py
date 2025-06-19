@@ -2999,7 +2999,6 @@ class AutoEncoder:
 
     def _prepare_dataset(
         self,
-        *,
         data: Tuple[np.ndarray, np.ndarray, np.ndarray],
         context_window: int,
         normalize: bool,
