@@ -1,6 +1,103 @@
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
+from mango.logging import get_configured_logger
+
+logger = get_configured_logger()
+
+
+def reintroduce_nans(self, df: pd.DataFrame, id: str) -> pd.DataFrame:
+    """
+    When preparing the datasets NaNs are removed. This function adds
+    the NaNs back to the data based on self._nan_coordinates.
+
+    :param df: Data to reintroduce NaNs back into
+    :type df: pd.DataFrame
+    :param id: Identifier of dataset ("global" is only one dataset)
+    :type id: str
+    :return: Data with reintroduced NaNs
+    :rtype: pd.DataFrame
+    :raises ValueError: If "id" not in self._nan_coordinates
+    """
+    if id not in self._nan_coordinates:
+        raise ValueError(f"{id} not found in _nan_coordinates.")
+
+    for row, col in self._nan_coordinates[id]:
+        adj_row = row - self._time_step_to_check[0]
+
+        if df.columns[0] == "data_split":
+            adj_col = col + 1
+        else:
+            adj_col = col
+
+        if 0 <= adj_row < len(df):
+            df.iloc[adj_row, adj_col] = np.nan
+
+    return df
+
+
+def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
+    """
+    Select subset of data based on id and then pivot on that data
+    in order to produced desired format with time_step as rows
+    and features as columns.
+
+    :param df: Data
+    :type df: pd.DataFrame
+    :param id: Identifier of dataset ("global" is only one dataset)
+    :type id: str
+    :return: Data subset in desired format
+    :rtype: pd.DataFrame
+    :raises ValueError: If df does not have required columns
+    """
+    required_cols = {"id", "feature", "time_step", "data_split"}
+    if not required_cols.issubset(df.columns):
+        raise ValueError(f"DataFrame must contain columns: {required_cols}")
+
+    df = df[df.id == id]
+    df = pd.pivot(
+        df, columns="feature", index=["time_step", "data_split"], values="value"
+    )
+    df.reset_index(level=["data_split"], inplace=True)
+
+    return df
+
+
+def save_csv(
+    data: pd.DataFrame,
+    save_path: str,
+    filename: str,
+    save_index: bool = False,
+    float_format: str = "%.4f",
+    logger_msg: str = "standard",
+) -> None:
+    """
+    Save a DataFrame as a csv based on parameters provided.
+
+    :param data: Data to save
+    :type data: pd.DataFrame
+    :param save_path: Path to save data
+    :type save_path: str
+    :param filename: Name to use to save file
+    :type filename: str
+    :param save_index: Whether to save the index of the DataFrame
+    :type save_index: bool
+    :param float_format: Format string for floating point numbers
+    :type float_format: str
+    :param logger_msg: Logger message to use
+    :type logger_msg: str
+    """
+    path = Path(save_path)
+    path.mkdir(parents=True, exist_ok=True)
+    file_path = path / filename
+    data.to_csv(file_path, index=save_index, float_format=float_format)
+
+    if logger_msg == "standard":
+        logger.info(f"{filename} saved to {path}")
+    else:
+        logger.info(logger_msg)
 
 
 def time_series_split(

@@ -807,6 +807,7 @@ class TestAutoEncoderCases(unittest.TestCase):
         :rtype: None
         """
         # Set parameters, data cases, and loop through each
+        # Reconstruction should align when reconstruct_new_data iterations is 1
         context_window = 10
         rec_new_data_iterations = 1
         time_step_to_check_list = [[0], [5], [9]]
@@ -844,6 +845,14 @@ class TestAutoEncoderCases(unittest.TestCase):
                     ),
                 ]
                 for data, use_mask, mask in data_cases:
+                    print(
+                        "ftc:",
+                        feature_to_check,
+                        "tstc:",
+                        time_step_to_check,
+                        "use_mask:",
+                        use_mask,
+                    )
                     id_columns = "id" if "id" in data.columns else None
                     model = AutoEncoder()
                     model.build_model(
@@ -881,7 +890,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                     model._create_data_points_df = edited_create_data_points_df
                     model.reconstruct()
                     model._create_data_points_df = original_create_data_points
-                    nan_positions = model.nan_positions
+                    nan_positions = model._nan_coordinates
                     df_actual = stored_data["df_actual"]
                     df_reconstructed = stored_data["df_reconstructed"]
 
@@ -964,9 +973,12 @@ class TestAutoEncoderCases(unittest.TestCase):
 
                             # Check that reconstructions match
                             pd.testing.assert_frame_equal(
-                                df_reconstruct_i.astype(float).round(4),
-                                df_reconstruct_new_data_i.astype(float).round(4),
+                                df_reconstruct_i,
+                                df_reconstruct_new_data_i,
                                 check_names=False,
+                                check_exact=False,
+                                atol=0.0001,
+                                rtol=0,
                             )
 
                         # Check multiple reconstructions
@@ -985,12 +997,37 @@ class TestAutoEncoderCases(unittest.TestCase):
                                 initial_context_offset : len(data_i)
                                 - ending_context_offset
                             ]
+
                             self.assertEqual(
                                 len(df_reconstruct_new_data_i), len(expected_data)
                             )
                             self.assertEqual(
                                 df_reconstruct_new_data_i.index.min(),
                                 initial_context_offset,
+                            )
+
+                            df_reconstruct_i = df_reconstructed[
+                                df_reconstructed.id == id_i
+                            ]
+                            df_reconstruct_i = pd.pivot(
+                                df_reconstruct_i,
+                                columns="feature",
+                                index=["time_step"],
+                                values="value",
+                            )
+                            df_reconstruct_i.reset_index(drop=True, inplace=True)
+                            df_reconstruct_new_data_i.reset_index(
+                                drop=True, inplace=True
+                            )
+
+                            # Check that reconstructions match
+                            pd.testing.assert_frame_equal(
+                                df_reconstruct_i,
+                                df_reconstruct_new_data_i,
+                                check_names=False,
+                                check_exact=False,
+                                atol=0.0001,
+                                rtol=0,
                             )
 
                     # Case with single dataset (with_ids=False)
@@ -1059,9 +1096,12 @@ class TestAutoEncoderCases(unittest.TestCase):
 
                         # Check that reconstructions match
                         pd.testing.assert_frame_equal(
-                            df_reconstruct_i.astype(float).round(4),
-                            df_reconstruct_new_data_i.astype(float).round(4),
+                            df_reconstruct_i,
+                            df_reconstruct_new_data_i,
                             check_names=False,
+                            check_exact=False,
+                            atol=0.0001,
+                            rtol=0,
                         )
 
 

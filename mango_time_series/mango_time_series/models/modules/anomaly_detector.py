@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import List, Optional
 
 import numpy as np
@@ -7,6 +6,7 @@ from scipy.stats import f_oneway
 
 from mango.logging import get_configured_logger
 from mango_time_series.models.utils.plots import create_error_analysis_dashboard
+from mango_time_series.models.utils.processing import save_csv
 
 logger = get_configured_logger()
 
@@ -135,12 +135,13 @@ def reconstruction_error(
                 )
             )
 
+        # Save if a path is provided
         if save_path:
-            path = Path(save_path)
-            path.mkdir(parents=True, exist_ok=True)
-            file_path = path / filename
-            reconstruction_error_df.to_csv(file_path, index=False, float_format="%.4f")
-            logger.info(f"Reconstruction error saved to {file_path}")
+            save_csv(
+                data=reconstruction_error_df,
+                save_path=save_path,
+                filename=filename,
+            )
 
         return reconstruction_error_df
 
@@ -284,11 +285,12 @@ def reconstruction_error_summary(
 
         # Save if a path is provided
         if save_path:
-            path = Path(save_path)
-            path.mkdir(parents=True, exist_ok=True)
-            full_path = path / filename
-            summary_stats.to_csv(full_path, index=True, float_format="%.4f")
-            logger.info(f"Reconstruction error summary saved to {full_path}")
+            save_csv(
+                data=summary_stats,
+                save_path=save_path,
+                filename=filename,
+                save_index=True,
+            )
 
         return summary_stats
 
@@ -358,15 +360,15 @@ def std_error_threshold(
         )
 
         # Save if a path is provided
-        if save_path:
-            path = Path(save_path)
-            path.mkdir(parents=True, exist_ok=True)
-            mask_full_path = path / anomaly_mask_filename
-            prop_full_path = path / anomaly_proportions_filename
-            anomaly_mask.to_csv(mask_full_path, index=False, float_format="%.4f")
-            anomaly_proportions.to_csv(prop_full_path, index=True, float_format="%.4f")
-            logger.info(f"Anomaly mask saved to {mask_full_path}")
-            logger.info(f"Anomaly proportions saved to {prop_full_path}")
+        # if save_path:
+        #     path = Path(save_path)
+        #     path.mkdir(parents=True, exist_ok=True)
+        #     mask_full_path = path / anomaly_mask_filename
+        #     prop_full_path = path / anomaly_proportions_filename
+        #     anomaly_mask.to_csv(mask_full_path, index=False, float_format="%.4f")
+        #     anomaly_proportions.to_csv(prop_full_path, index=True, float_format="%.4f")
+        #     logger.info(f"Anomaly mask saved to {mask_full_path}")
+        #     logger.info(f"Anomaly proportions saved to {prop_full_path}")
 
         return anomaly_mask
 
@@ -452,13 +454,13 @@ def corrected_data(
             [initial_rows_df, corrected_data_df], axis=0
         ).reset_index(drop=True)
 
-        # Save if a path is provided
-        if save_path:
-            path = Path(save_path)
-            path.mkdir(parents=True, exist_ok=True)
-            full_path = path / filename
-            corrected_data_df.to_csv(full_path, index=False, float_format="%.4f")
-            logger.info(f"Corrected data saved to {full_path}")
+        # # Save if a path is provided
+        # if save_path:
+        #     path = Path(save_path)
+        #     path.mkdir(parents=True, exist_ok=True)
+        #     full_path = path / filename
+        #     corrected_data_df.to_csv(full_path, index=False, float_format="%.4f")
+        #     logger.info(f"Corrected data saved to {full_path}")
 
         return corrected_data_df
 

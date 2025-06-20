@@ -102,12 +102,12 @@ class AutoEncoder:
         self._use_mask = False
         self._custom_mask = None
         self._shuffle = False
-        self._nan_positions = {}
+        self._nan_coordinates = {}
 
     @property
-    def nan_positions(self) -> Dict:
+    def nan_coordinates(self) -> Dict:
         """
-        Get the NaN positions from the input data.
+        Get the NaN coordinates from the input data.
 
         Dictionary maps each id (id_columns or global if not used)
         to a NumPy array of shape (n, 2), where each row contains the
@@ -116,7 +116,7 @@ class AutoEncoder:
         :return: Dictionary mapping id to array of NaN positions
         :rtype: Dict
         """
-        return self._nan_positions
+        return self._nan_coordinates
 
     @property
     def save_path(self) -> Optional[str]:
@@ -1734,11 +1734,17 @@ class AutoEncoder:
 
         return pd.DataFrame(data_points_actual), pd.DataFrame(data_points_reconstructed)
 
-    def reconstruct(self, reconstruction_diagnostic: bool = False) -> bool:
+    def reconstruct(
+        self,
+        save_path: Optional[str] = None,
+        reconstruction_diagnostic: bool = False,
+    ) -> bool:
         """
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
 
-        :param reconstruction_diagnostic: If True, displays and saves reconstruction errors
+        :param save_path: Path to save reconstruction results, plots, and diagnostics
+        :type save_path: Optional[str]
+        :param reconstruction_diagnostic: If True, shows and optionally saves reconstruction error data and plots
         :type reconstruction_diagnostic: bool
         :return: True if reconstruction was successful
         :rtype: bool
@@ -2071,41 +2077,25 @@ class AutoEncoder:
             val_split=val_split,
         )
 
+        # Define save_path
+        if save_path is not None:
+            save_path = os.path.join(save_path, "reconstruct")
+
         # Display and save reconstruction errors
         if reconstruction_diagnostic:
-            save_path = os.path.join(self._save_path, "reconstruct")
             # Check if there are id_columns through id_data_dict
             if self.id_data_dict:
                 for id_i in df_actual.id.unique().tolist():
                     # Get appropriate actual and reconstructed data based on id
-                    df_actual_i = df_actual[df_actual.id == id_i]
-                    df_actual_i = pd.pivot(
-                        df_actual_i,
-                        columns="feature",
-                        index=["time_step", "data_split"],
-                        values="value",
+                    df_actual_i = processing.id_pivot(df=df_actual, id=id_i)
+                    df_reconstructed_i = processing.id_pivot(
+                        df=df_reconstructed, id=id_i
                     )
-                    df_actual_i.reset_index(level=["data_split"], inplace=True)
-                    df_actual_i.sort_index(inplace=True)
 
-                    # Turn nulls in original data back into nulls
-                    for row_idx, col_idx in self._nan_positions[id_i]:
-                        adjusted_row_idx = row_idx - self._time_step_to_check[0]
-                        adjusted_col_idx = col_idx + 1
-                        if 0 <= adjusted_row_idx < len(df_actual_i):
-                            df_actual_i.iloc[adjusted_row_idx, adjusted_col_idx] = (
-                                np.nan
-                            )
-
-                    df_reconstructed_i = df_reconstructed[df_reconstructed.id == id_i]
-                    df_reconstructed_i = pd.pivot(
-                        df_reconstructed_i,
-                        columns="feature",
-                        index=["time_step", "data_split"],
-                        values="value",
+                    # Reintroduce nulls from original data (before imputation)
+                    df_actual_i = processing.reintroduce_nans(
+                        self, df=df_actual_i, id=id_i
                     )
-                    df_reconstructed_i.reset_index(level=["data_split"], inplace=True)
-                    df_reconstructed_i.sort_index(inplace=True)
 
                     # Calculate reconstruction error and other metrics
                     reconstruction_error_df = ad.reconstruction_error(
@@ -2126,41 +2116,17 @@ class AutoEncoder:
                         filename=f"{id_i}_reconstruction_error_boxplot.html",
                         show=True,
                     )
-                    path = Path(save_path)
-                    path.mkdir(parents=True, exist_ok=True)
-                    file_path = path / f"{id_i}_reconstructed_results.csv"
-                    df_reconstructed_i.to_csv(
-                        file_path, index=False, float_format="%.4f"
-                    )
-                    logger.info(f"Reconstruction data saved to {file_path}")
             else:
                 id_i = "global"
+                df_reconstructed["id"] = "global"
+                df_actual["id"] = "global"
 
                 # Get appropriate actual and reconstructed data based on id
-                df_actual_i = pd.pivot(
-                    df_actual,
-                    columns="feature",
-                    index=["time_step", "data_split"],
-                    values="value",
-                )
-                df_actual_i.reset_index(level=["data_split"], inplace=True)
-                df_actual_i.sort_index(inplace=True)
+                df_actual_i = processing.id_pivot(df=df_actual, id=id_i)
+                df_reconstructed_i = processing.id_pivot(df=df_reconstructed, id=id_i)
 
-                # Turn nulls in original data back into nulls
-                for row_idx, col_idx in self._nan_positions[id_i]:
-                    adjusted_row_idx = row_idx - self._time_step_to_check[0]
-                    adjusted_col_idx = col_idx + 1
-                    if 0 <= adjusted_row_idx < len(df_actual_i):
-                        df_actual_i.iloc[adjusted_row_idx, adjusted_col_idx] = np.nan
-
-                df_reconstructed_i = pd.pivot(
-                    df_reconstructed,
-                    columns="feature",
-                    index=["time_step", "data_split"],
-                    values="value",
-                )
-                df_reconstructed_i.reset_index(level=["data_split"], inplace=True)
-                df_reconstructed_i.sort_index(inplace=True)
+                # Reintroduce nulls from original data (before imputation)
+                df_actual_i = processing.reintroduce_nans(self, df=df_actual_i, id=id_i)
 
                 # Calculate reconstruction error and other metrics
                 reconstruction_error_df = ad.reconstruction_error(
@@ -2181,19 +2147,28 @@ class AutoEncoder:
                     filename=f"{id_i}_reconstruction_error_boxplot.html",
                     show=True,
                 )
-                path = Path(save_path)
-                path.mkdir(parents=True, exist_ok=True)
-                file_path = path / f"{id_i}_reconstructed_results.csv"
-                df_reconstructed_i.to_csv(file_path, index=False, float_format="%.4f")
-                logger.info(f"Reconstruction data saved to {file_path}")
 
-        # Plot the data
-        plots.plot_actual_and_reconstructed(
-            df_actual=df_actual,
-            df_reconstructed=df_reconstructed,
-            save_path=os.path.join(self._save_path, "plots"),
-            feature_labels=feature_labels,
-        )
+        # Save reconstruction if save_path is provided
+        if save_path is not None:
+            if "id" in df_reconstructed.columns:
+                ids = df_reconstructed.id.unique().tolist()
+            else:
+                ids = ["global"]
+                df_reconstructed["id"] = "global"
+            for id_i in ids:
+                df_reconstructed_i = processing.id_pivot(df=df_reconstructed, id=id_i)
+                processing.save_csv(
+                    df_reconstructed_i,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstructed.csv",
+                )
+            # Plot the data
+            plots.plot_actual_and_reconstructed(
+                df_actual=df_actual,
+                df_reconstructed=df_reconstructed,
+                save_path=os.path.join(save_path, "plots"),
+                feature_labels=feature_labels,
+            )
 
         return True
 
@@ -2430,9 +2405,9 @@ class AutoEncoder:
         :type iterations: int
         :param id_columns: Column(s) that define IDs to process reconstruction separately
         :type id_columns: Optional[Union[str, int, List[str], List[int]]]
-        :param save_path: Path to save the reconstructed data
+        :param save_path: Path to save reconstruction results, plots, and diagnostics
         :type save_path: Optional[str]
-        :param reconstruction_diagnostic: If True, displays and saves reconstruction errors
+        :param reconstruction_diagnostic: If True, shows and optionally saves reconstruction error data and plots
         :type reconstruction_diagnostic: bool
         :return: Dictionary with reconstructed data per ID (or "global" if no ID)
         :rtype: Dict[str, pd.DataFrame]
@@ -2447,6 +2422,12 @@ class AutoEncoder:
 
         data, feature_names = processing.convert_data_to_numpy(data=data)
 
+        if self.features_name != feature_names:
+            raise ValueError(
+                f"Feature names in recontruct_new_data(): {feature_names} "
+                f"do not match those from build_model(): {self.features_name}"
+            )
+
         # Create features_names_to_check, excluding ID columns if they exist
         if id_columns is not None and feature_names:
             if isinstance(id_columns, (str, int)):
@@ -2454,17 +2435,6 @@ class AutoEncoder:
 
             if not isinstance(id_columns, list):
                 raise ValueError("id_columns must be a list of strings or integers")
-
-            id_indices = []
-            for id_col in id_columns:
-                if isinstance(id_col, str) and id_col not in feature_names:
-                    raise ValueError(
-                        f"{id_col} in id_columns not found in feature_names ({feature_names})"
-                    )
-                elif isinstance(id_col, int) and not (0 <= id_col < len(feature_names)):
-                    raise ValueError(
-                        f"{id_col} in id_columns not within length of feature_names ({len(feature_names)})"
-                    )
 
             # Get indices of ID columns
             id_indices = [
@@ -2544,11 +2514,18 @@ class AutoEncoder:
                 save_path=save_path,
             )
 
+        # Save reconstruction if save_path is provided
+        if save_path is not None:
+            save_path = os.path.join(save_path, "reconstruct_new_data")
+            for id_i, autoencoder_output_df in reconstructed_results.items():
+                processing.save_csv(
+                    autoencoder_output_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstructed.csv",
+                )
+
         # Display and save reconstruction errors
         if reconstruction_diagnostic:
-            # Define save path
-            if save_path is None:
-                save_path = Path(self._save_path)
             # Define context offset
             initial_context_offset = self._time_step_to_check[0]
             ending_context_offset = self._context_window - 1 - initial_context_offset
@@ -2584,13 +2561,6 @@ class AutoEncoder:
                     filename=f"{id_i}_reconstruction_error_boxplot.html",
                     show=True,
                 )
-                path = Path(save_path)
-                path.mkdir(parents=True, exist_ok=True)
-                file_path = path / f"{id_i}_reconstructed_results.csv"
-                autoencoder_output_df.to_csv(
-                    file_path, index=False, float_format="%.4f"
-                )
-                logger.info(f"Reconstruction data saved to {file_path}")
 
         return reconstructed_results
 
@@ -3038,8 +3008,8 @@ class AutoEncoder:
         x_data = np.concatenate((x_train, x_val, x_test), axis=0)
         id_key = id_iter if id_iter is not None else "global"
         feature_data = x_data[:, self._feature_to_check]
-        nan_positions = np.argwhere(np.isnan(feature_data))
-        self._nan_positions[id_key] = nan_positions
+        nan_coordinates = np.argwhere(np.isnan(feature_data))
+        self._nan_coordinates[id_key] = nan_coordinates
 
         if self._use_mask:
             if getattr(self, "_custom_mask", None) is None:

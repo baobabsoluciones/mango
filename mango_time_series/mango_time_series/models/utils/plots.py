@@ -716,7 +716,6 @@ def boxplot_reconstruction_error(
             melted_df = reconstruction_error_df.melt(
                 id_vars=["data_split"], var_name="sensor", value_name="AE_error"
             )
-
             # Create the boxplot using Plotly
             fig = px.box(
                 melted_df,
@@ -736,7 +735,6 @@ def boxplot_reconstruction_error(
             melted_df = reconstruction_error_df.melt(
                 var_name="sensor", value_name="AE_error"
             )
-
             fig = px.box(
                 melted_df,
                 x="sensor",
@@ -748,7 +746,6 @@ def boxplot_reconstruction_error(
                 },
                 template=template,
             )
-
             if color_palette is None:
                 uniform_color = "#636EFA"
             else:
