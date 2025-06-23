@@ -52,7 +52,7 @@ def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
     :rtype: pd.DataFrame
     :raises ValueError: If df does not have required columns
     """
-    required_cols = {"id", "feature", "time_step", "data_split"}
+    required_cols = {"id", "feature", "time_step", "value", "data_split"}
     if not required_cols.issubset(df.columns):
         raise ValueError(f"DataFrame must contain columns: {required_cols}")
 
