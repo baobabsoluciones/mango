@@ -2716,7 +2716,7 @@ class AutoEncoder:
 
             # Remove padding rows
             reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
-            reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+            reconstructed_df = reconstructed_df.dropna(axis=0, how="any")
             if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
                 raise ValueError(
                     f"Reconstructed data has {len(reconstructed_df)} rows."
@@ -2924,13 +2924,14 @@ class AutoEncoder:
                     f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
                 )
 
-            # reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
-            reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+            reconstructed_df = reconstructed_df.dropna(axis=0, how="any")
             if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
                 raise ValueError(
                     f"Reconstructed data has {len(reconstructed_df)} rows."
                     f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
                 )
+            if np.any(np.isnan(reconstructed_df)):
+                raise ValueError("There are NaNs after reconstruction.")
 
         return reconstructed_df
 

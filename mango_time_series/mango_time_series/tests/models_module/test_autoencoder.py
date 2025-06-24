@@ -702,9 +702,9 @@ class TestAutoEncoderCases(unittest.TestCase):
                 reconstruction_result = model.reconstruct()
 
                 # Assertions
-                self.assertTrue(
-                    reconstruction_result,
-                    f"Reconstruction failed for case: {case['desc']}",
+                self.assertFalse(
+                    reconstruction_result.empty,
+                    f"Reconstruction empty for case: {case['desc']}",
                 )
                 self.assertTrue(
                     save_path.exists(),
@@ -787,9 +787,9 @@ class TestAutoEncoderCases(unittest.TestCase):
                 reconstruction_result = model.reconstruct()
 
                 # Assertions
-                self.assertTrue(
-                    reconstruction_result,
-                    f"Reconstruction failed for case: {case['desc']}",
+                self.assertFalse(
+                    reconstruction_result.empty,
+                    f"Reconstruction empty for case: {case['desc']}",
                 )
                 self.assertTrue(
                     save_path.exists(),
@@ -977,7 +977,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                                 df_reconstruct_new_data_i,
                                 check_names=False,
                                 check_exact=False,
-                                atol=0.0001,
+                                atol=0.00001,
                                 rtol=0,
                             )
 
@@ -1026,7 +1026,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                                 df_reconstruct_new_data_i,
                                 check_names=False,
                                 check_exact=False,
-                                atol=0.0001,
+                                atol=0.00001,
                                 rtol=0,
                             )
 
@@ -1100,7 +1100,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                             df_reconstruct_new_data_i,
                             check_names=False,
                             check_exact=False,
-                            atol=0.0001,
+                            atol=0.00001,
                             rtol=0,
                         )
 
