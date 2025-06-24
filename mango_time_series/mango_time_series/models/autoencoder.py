@@ -382,7 +382,13 @@ class AutoEncoder:
 
         :param value: Normalization flag
         :type value: bool
+        :raises ValueError: If trying to enable normalization without a method set
         """
+        if value and self._normalization_method is None:
+            raise ValueError(
+                "Cannot enable normalization without setting a normalization method. "
+                "Set normalization_method first."
+            )
         self._normalize = value
 
     @property
@@ -406,7 +412,7 @@ class AutoEncoder:
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change normalization_method after model is built")
 
-        if value not in ["minmax", "zscore"]:
+        if value not in ["minmax", "zscore", None]:
             raise ValueError(
                 "Invalid normalization method. Choose 'minmax' or 'zscore'."
             )
@@ -1229,8 +1235,8 @@ class AutoEncoder:
         self.context_window = context_window
         self.time_step_to_check = time_step_to_check
         self.feature_to_check = feature_to_check
-        self.normalize = normalize
         self.normalization_method = normalization_method
+        self.normalize = normalize
         self.hidden_dim = hidden_dim
         self.bidirectional_encoder = bidirectional_encoder
         self.bidirectional_decoder = bidirectional_decoder
