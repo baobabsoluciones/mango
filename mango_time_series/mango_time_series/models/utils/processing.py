@@ -91,7 +91,7 @@ def save_csv(
     :type logger_msg: str
     """
     float_format = f"%.{decimals}f"
-    data.round(decimals)
+    data = data.round(decimals)
 
     path = Path(save_path)
     path.mkdir(parents=True, exist_ok=True)
