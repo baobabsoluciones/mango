@@ -71,7 +71,7 @@ def save_csv(
     save_path: str,
     filename: str,
     save_index: bool = False,
-    float_format: str = "%.4f",
+    decimals: int = 4,
     logger_msg: str = "standard",
 ) -> None:
     """
@@ -85,11 +85,14 @@ def save_csv(
     :type filename: str
     :param save_index: Whether to save the index of the DataFrame
     :type save_index: bool
-    :param float_format: Format string for floating point numbers
-    :type float_format: str
+    :param decimals: Number of decimal places for floating point numbers
+    :type decimals: int
     :param logger_msg: Logger message to use
     :type logger_msg: str
     """
+    float_format = f"%.{decimals}f"
+    data.round(decimals)
+
     path = Path(save_path)
     path.mkdir(parents=True, exist_ok=True)
     file_path = path / filename
