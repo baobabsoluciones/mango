@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+import polars as pl
 from mango.logging import get_configured_logger
 
 logger = get_configured_logger()
@@ -157,74 +158,67 @@ def convert_data_to_numpy(
     :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
     :raises ValueError: If data type is not supported
     """
-    try:
-        import pandas as pd
-
-        has_pandas = True
-    except ImportError:
-        has_pandas = False
-
-    try:
-        import polars as pl
-
-        has_polars = True
-    except ImportError:
-        has_polars = False
-
     if data is None:
         return data, []
 
-    feature_names = []
+    elif isinstance(data, tuple):
+        arrays = []
+        feature_names_list = []
+        for data_i in data:
+            array_i, feature_names_i = convert_data_to_numpy(data=data_i)
+            arrays.append(array_i)
+            feature_names_list.append(feature_names_i)
 
-    if has_pandas and hasattr(data, "columns"):
-        feature_names = data.columns.tolist()
-    elif has_polars and hasattr(data, "columns"):
-        feature_names = data.columns
-    elif isinstance(data, tuple) and len(data) > 0:
-        # For tuple, try to get column names from first element
-        first_item = data[0]
-        if has_pandas and hasattr(first_item, "columns"):
-            feature_names = first_item.columns.tolist()
-        elif has_polars and hasattr(first_item, "columns"):
-            feature_names = first_item.columns
+        if (
+            feature_names_list[0] != feature_names_list[1]
+            or feature_names_list[1] != feature_names_list[2]
+        ):
+            raise ValueError(f"Tuple has different feature names: {feature_names_list}")
 
-    if isinstance(data, tuple):
-        converted_data = tuple(
-            convert_single_data_to_numpy(item, has_pandas, has_polars) for item in data
-        )
-        return converted_data, feature_names
+        feature_names = feature_names_list[0]
+        return tuple(arrays), feature_names
+
     else:
-        converted_data = convert_single_data_to_numpy(data, has_pandas, has_polars)
-        return converted_data, feature_names
+        array = _to_numpy(data=data)
+        feature_names = _extract_feature_names(data=data)
+        return array, feature_names
 
 
-def convert_single_data_to_numpy(
-    data_item: Any, has_pandas: bool, has_polars: bool
-) -> np.ndarray:
+def _to_numpy(data: Any) -> np.ndarray:
     """
     Convert a single data item to numpy array.
 
-    :param data_item: Single data item to convert
-    :type data_item: Any
-    :param has_pandas: Whether pandas is available
-    :type has_pandas: bool
-    :param has_polars: Whether polars is available
-    :type has_polars: bool
+    :param data: Single data item to convert
+    :type data: Any
     :return: Data converted to numpy array
     :rtype: np.ndarray
     :raises ValueError: If data type is not supported
     """
-    if has_pandas and hasattr(data_item, "to_numpy"):
-        return data_item.to_numpy()
-    elif has_polars and hasattr(data_item, "to_numpy"):
-        return data_item.to_numpy()
-    elif isinstance(data_item, np.ndarray):
-        return data_item
+    if isinstance(data, np.ndarray):
+        return data
+    elif hasattr(data, "to_numpy"):
+        return data.to_numpy()
     else:
-        raise ValueError(
-            f"Unsupported data type: {type(data_item)}. "
+        raise TypeError(
+            f"Unsupported data type: {type(data)}. "
             f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
         )
+
+
+def _extract_feature_names(data: Any) -> List[str]:
+    """
+    Extract feature names from data by looking at columns.
+
+    :param data: Single data item to convert
+    :type data: Any
+    :return: Data columns as a list
+    :rtype: List[str]
+    """
+    columns = getattr(data, "columns", None)
+    if columns is not None:
+        return list(columns)
+    else:
+        return []
 
 
 def denormalize_data(
