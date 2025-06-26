@@ -72,6 +72,7 @@ def save_csv(
     filename: str,
     save_index: bool = False,
     decimals: int = 4,
+    compression: str = "infer",
     logger_msg: str = "standard",
 ) -> None:
     """
@@ -87,6 +88,8 @@ def save_csv(
     :type save_index: bool
     :param decimals: Number of decimal places for floating point numbers
     :type decimals: int
+    :param compression: Type of compression used by pandas.DataFrame.to_csv
+    :type compression: str
     :param logger_msg: Logger message to use
     :type logger_msg: str
     """
@@ -96,7 +99,9 @@ def save_csv(
     path = Path(save_path)
     path.mkdir(parents=True, exist_ok=True)
     file_path = path / filename
-    data.to_csv(file_path, index=save_index, float_format=float_format)
+    data.to_csv(
+        file_path, index=save_index, float_format=float_format, compression=compression
+    )
 
     if logger_msg == "standard":
         logger.info(f"{filename} saved to {path}")

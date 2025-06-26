@@ -328,7 +328,10 @@ class AutoEncoder:
         # Validate that data is a single array or a tuple of three arrays
         if isinstance(value, tuple):
             if len(value) != 3:
-                raise ValueError("Data must be a tuple with three numpy arrays")
+                raise ValueError(
+                    "If data is a tuple, it must be three numpy arrays. "
+                    "First array is train set, second is validation, and third is test."
+                )
         elif not isinstance(value, np.ndarray):
             raise ValueError(
                 "Data must be a numpy array or a tuple with three numpy arrays"
@@ -2896,25 +2899,38 @@ class AutoEncoder:
 
             # Record final reconstruction results
             for i, j in zip(*np.where(nan_positions)):
+                # Don't update values outside context window
+                if i < self._time_step_to_check[0] or i >= len(data) - (
+                    self._context_window - 1 - self._time_step_to_check[0]
+                ):
+                    continue
+
+                recon_value = padded_reconstructed_final[i, j]
+
                 reconstruction_records.append(
                     {
                         "ID": id_iter if id_iter else "global",
                         "Column": j + 1,
                         "Timestep": i,
                         "Iteration": iterations,
-                        "Reconstructed value": padded_reconstructed_final[i, j],
+                        "Reconstructed value": recon_value,
                     }
                 )
 
             # Save reconstruction progress
-            # progress_df = pd.DataFrame(reconstruction_records)
-            # file_path = os.path.join(
-            #     save_path if save_path else self.root_dir,
-            #     "reconstruction_progress",
-            #     f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
-            # )
-            # os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            # progress_df.to_excel(file_path, index=False)
+            if save_path:
+                progress_df = pd.DataFrame(reconstruction_records)
+                filename = (
+                    f"{id_iter}_reconstruction_progress.csv.zip"
+                    if id_iter
+                    else "global_reconstruction_progress.csv.zip"
+                )
+                processing.save_csv(
+                    data=progress_df,
+                    save_path=save_path,
+                    filename=filename,
+                    compression="zip",
+                )
 
             # Plot reconstruction iterations
             plots.plot_reconstruction_iterations(
