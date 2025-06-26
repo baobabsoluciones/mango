@@ -825,8 +825,8 @@ def create_actual_vs_reconstructed_plot(
     save_path: Optional[str] = None,
     filename: str = "actual_vs_reconstructed.html",
     show: bool = True,
-    height: int = 800,
-    width: int = 1200,
+    height: Optional[int] = None,
+    width: Optional[int] = None,
     template: str = "plotly_white",
 ) -> go.Figure:
     """

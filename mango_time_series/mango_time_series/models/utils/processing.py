@@ -290,7 +290,7 @@ def normalize_data_for_training(
     :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]
     :raises ValueError: If normalization method is invalid
     """
-    if normalization_method not in ["minmax", "zscore"]:
+    if normalization_method not in ["minmax", "zscore", None]:
         raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
 
     normalization_values = {}

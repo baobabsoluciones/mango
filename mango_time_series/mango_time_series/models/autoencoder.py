@@ -1753,6 +1753,12 @@ class AutoEncoder:
         :return: Reconstruction results
         :rtype: pd.DataFrame
         """
+        if self.x_train_no_shuffle is None:
+            raise ValueError(
+                "self.x_train_no_shuffle is None so reconstruction on training data can't be done. "
+                "recontruct() can only be done after build_model() and train_autoencoder() have been run."
+            )
+
         # Calculate fitted values for each dataset
         # We use the original data for the training set to avoid shuffling in reconstruction step
         x_hat_train = self.model(self.x_train_no_shuffle)
@@ -2423,8 +2429,17 @@ class AutoEncoder:
             )
         if iterations < 1:
             raise ValueError("iterations must be at least 1")
+        if not isinstance(data, (np.ndarray, pd.DataFrame, pl.DataFrame)):
+            raise ValueError(
+                f"Unsupported data type: {type(data)}. "
+                "Expect np.ndarray, pd.DataFrame, or pl.DataFrame"
+            )
 
         data, feature_names = processing.convert_data_to_numpy(data=data)
+
+        if feature_names == []:
+            feature_count = data.shape[1]
+            feature_names = [f"feature_{i}" for i in range(feature_count)]
 
         if self.features_name != feature_names:
             raise ValueError(
@@ -2616,7 +2631,7 @@ class AutoEncoder:
         ) or {}
 
         if not normalization_values:
-            if self._normalization_method not in ["minmax", "zscore"]:
+            if self._normalization_method not in ["minmax", "zscore", None]:
                 raise ValueError("Invalid normalization method.")
 
             # Simulate train/val/test split using only current data
@@ -2892,14 +2907,14 @@ class AutoEncoder:
                 )
 
             # Save reconstruction progress
-            progress_df = pd.DataFrame(reconstruction_records)
-            file_path = os.path.join(
-                save_path if save_path else self.root_dir,
-                "reconstruction_progress",
-                f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
-            )
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            progress_df.to_excel(file_path, index=False)
+            # progress_df = pd.DataFrame(reconstruction_records)
+            # file_path = os.path.join(
+            #     save_path if save_path else self.root_dir,
+            #     "reconstruction_progress",
+            #     f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
+            # )
+            # os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            # progress_df.to_excel(file_path, index=False)
 
             # Plot reconstruction iterations
             plots.plot_reconstruction_iterations(
