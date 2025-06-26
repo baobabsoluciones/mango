@@ -489,7 +489,7 @@ def merge_catastro_census(
                 geometry=[row.geometry_address],
                 crs=mismatched.crs,
             )
-            filtered_census = census_data[census_data["CUSEC"] != row["CUSEC"]]
+            filtered_census = census_data[census_data["ine_census_tract_code"] != row["ine_census_tract_code"]]
 
             corrected = gpd.sjoin_nearest(single_building, filtered_census, how="left")
 
@@ -535,18 +535,18 @@ def distribute_population_by_dwellings(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFram
 
     # total number of dwellings in each census tract (CUSEC)
     total_dwellings_per_cusec = (
-        gdf.groupby("CUSEC")["dwellings_per_entrance"]
+        gdf.groupby("ine_census_tract_code")["dwellings_per_entrance"]
         .sum()
         .reset_index(name="total_dwellings_in_cusec")
     )
 
     # merge the total dwellings per census tract back to the original dataframe
-    gdf = gdf.merge(total_dwellings_per_cusec, on="CUSEC", how="left")
+    gdf = gdf.merge(total_dwellings_per_cusec, on="ine_census_tract_code", how="left")
 
     # population per entrance by distributing the total population of the census tract
     # proportionally to the number of dwellings assigned to each entrance
     gdf["population_per_entrance"] = (
-        gdf["ine_population"]
+            gdf["population_count"]
         / gdf["total_dwellings_in_cusec"]
         * gdf["dwellings_per_entrance"]
     )
