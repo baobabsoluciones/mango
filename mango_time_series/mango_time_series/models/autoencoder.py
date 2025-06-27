@@ -2117,7 +2117,6 @@ class AutoEncoder:
                         save_path=save_path,
                         filename=f"{id_i}_reconstruction_error.csv",
                     )
-                    anomaly_detector.anova_reconstruction_error(reconstruction_error_df)
                     anomaly_detector.reconstruction_error_summary(
                         reconstruction_error_df,
                         save_path=save_path,
@@ -2148,7 +2147,6 @@ class AutoEncoder:
                     save_path=save_path,
                     filename=f"{id_i}_reconstruction_error.csv",
                 )
-                anomaly_detector.anova_reconstruction_error(reconstruction_error_df)
                 anomaly_detector.reconstruction_error_summary(
                     reconstruction_error_df,
                     save_path=save_path,

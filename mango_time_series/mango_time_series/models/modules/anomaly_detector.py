@@ -2,7 +2,6 @@ from typing import List, Optional
 
 import numpy as np
 import pandas as pd
-from scipy.stats import f_oneway
 
 from mango.logging import get_configured_logger
 from mango_time_series.models.utils.plots import create_error_analysis_dashboard
@@ -152,73 +151,6 @@ def reconstruction_error(
 
     except Exception as e:
         logger.error(f"Error calculating reconstruction error: {str(e)}")
-        raise
-
-
-def anova_reconstruction_error(
-    reconstruction_error_df: pd.DataFrame,
-    p_value_threshold: Optional[float] = 0.05,
-    F_stat_threshold: Optional[float] = None,
-) -> pd.DataFrame:
-    """
-    Perform one-way ANOVA to test if reconstruction errors vary across data splits for each feature.
-
-    :param reconstruction_error_df: DataFrame with reconstruction error and 'data_split' column
-    :type reconstruction_error_df: pd.DataFrame
-    :param p_value_threshold: Maximum p-value to output logger warning
-    :type p_value_threshold: float
-    :param F_stat_threshold: Minimum F-statistic to output logger warning
-    :type F_stat_threshold: float
-    :return: DataFrame with F-statistics and p-values per feature
-    :rtype: pd.DataFrame
-    """
-    if "data_split" not in reconstruction_error_df.columns:
-        raise ValueError(
-            "Anova calculation requires reconstruction_error_df to have data_split "
-            "(i.e. train, validation, test)"
-        )
-    if reconstruction_error_df["data_split"].nunique() != 3:
-        raise ValueError(
-            "data_split should have 3 categories (train, validation, test)"
-        )
-
-    try:
-        results = []
-        feature_columns = [
-            col for col in reconstruction_error_df.columns if col != "data_split"
-        ]
-
-        # Loop through each feature column and perform one-way ANOVA across data splits
-        groups = reconstruction_error_df.groupby("data_split")
-        for feature in feature_columns:
-            group_i = groups[feature].apply(list)
-
-            # Perform one-way ANOVA
-            f_stat, p_val = f_oneway(*group_i)
-            results.append(
-                {
-                    "feature": feature,
-                    "F_statistic": f_stat,
-                    "p_value": p_val,
-                }
-            )
-
-            # Log if statistics exceed threshold
-            if f_stat and F_stat_threshold and f_stat > F_stat_threshold:
-                logger.warning(
-                    f"{feature}: F_statistic ({f_stat:.4f}) exceeds threshold ({F_stat_threshold})"
-                )
-            if p_val and p_value_threshold and p_val < p_value_threshold:
-                logger.warning(
-                    f"{feature}: p_value ({p_val:.4f}) is below threshold ({p_value_threshold})"
-                )
-
-        return pd.DataFrame(results)
-
-    except Exception as e:
-        logger.error(
-            f"Error computing one-way ANOVA tests across feature data splits: {str(e)}"
-        )
         raise
 
 
