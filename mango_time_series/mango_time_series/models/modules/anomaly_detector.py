@@ -194,7 +194,7 @@ def anova_reconstruction_error(
             group_i = groups[feature].apply(list)
 
             # Perform one-way ANOVA
-            f_stat, p_val = f_oneway(*group_i, nan_policy="omit")
+            f_stat, p_val = f_oneway(*group_i)
             results.append(
                 {
                     "feature": feature,
