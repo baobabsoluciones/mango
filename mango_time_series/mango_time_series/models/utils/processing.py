@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
-import polars as pl
 from mango.logging import get_configured_logger
 
 logger = get_configured_logger()
@@ -57,10 +56,12 @@ def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
     if not required_cols.issubset(df.columns):
         raise ValueError(f"DataFrame must contain columns: {required_cols}")
 
+    # Select id, pivot to have time_step as rows, features as columns
     df = df[df.id == id]
     df = pd.pivot(
         df, columns="feature", index=["time_step", "data_split"], values="value"
     )
+    # Add data_split as a column
     df.reset_index(level=["data_split"], inplace=True)
 
     return df

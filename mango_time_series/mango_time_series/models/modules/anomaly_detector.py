@@ -79,16 +79,19 @@ def analyze_error_by_columns(
 def reconstruction_error(
     actual_data_df: pd.DataFrame,
     autoencoder_output_df: pd.DataFrame,
+    threshold_factor: int = 3,
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error.csv",
 ) -> pd.DataFrame:
     """
-    Calculate and optionally save reconstruction error between actual sensor data and autoencoder output.
+    Calculate and optionally save reconstruction error between actual data and autoencoder output.
 
-    :param actual_data_df: Original sensor data
+    :param actual_data_df: Original data
     :type actual_data_df: pd.DataFrame
     :param autoencoder_output_df: Autoencoder output
     :type autoencoder_output_df: pd.DataFrame
+    :param threshold_factor: Multiplier for median reconstruction error to flag high-error features
+    :type threshold_factor: int
     :param save_path: Optional directory to save the output CSV
     :type save_path: Optional[str]
     :param filename: Filename for saved CSV
@@ -110,27 +113,29 @@ def reconstruction_error(
         )
 
     try:
-        sensor_columns = [
+        feature_columns = [
             col for col in autoencoder_output_df.columns if col != "data_split"
         ]
         # Generate reconstruction error DataFrame
         reconstruction_error_df = (
-            autoencoder_output_df[sensor_columns] - actual_data_df[sensor_columns]
+            autoencoder_output_df[feature_columns] - actual_data_df[feature_columns]
         )
 
         # Add back data_split if it was originally present
         if "data_split" in actual_data_df.columns:
-            reconstruction_error_df["data_split"] = actual_data_df["data_split"]
+            reconstruction_error_df.insert(
+                0, "data_split", actual_data_df["data_split"]
+            )
 
-        # Warn if some sensors have higher reconstruction error than others
-        mean_errors = reconstruction_error_df[sensor_columns].abs().mean()
+        # Warn if some features have higher reconstruction error than others
+        mean_errors = reconstruction_error_df[feature_columns].abs().mean()
         median_mean_error = mean_errors.median()
-        threshold = 3 * median_mean_error
-        high_error_sensors = mean_errors[mean_errors > threshold]
-        if not high_error_sensors.empty:
+        threshold = threshold_factor * median_mean_error
+        high_error_features = mean_errors[mean_errors > threshold]
+        if not high_error_features.empty:
             logger.warning(
-                "Sensors with high reconstruction error compared to others:\n"
-                + high_error_sensors.sort_values(ascending=False).to_string(
+                "Features with high reconstruction error compared to others:\n"
+                + high_error_features.sort_values(ascending=False).to_string(
                     float_format="%.4f"
                 )
             )
@@ -152,16 +157,19 @@ def reconstruction_error(
 
 def anova_reconstruction_error(
     reconstruction_error_df: pd.DataFrame,
-    f_stat_threshold: float = 300.0,
+    p_value_threshold: Optional[float] = 0.05,
+    F_stat_threshold: Optional[float] = None,
 ) -> pd.DataFrame:
     """
-    Perform one-way ANOVA to test if reconstruction errors vary across data splits for each sensor.
+    Perform one-way ANOVA to test if reconstruction errors vary across data splits for each feature.
 
     :param reconstruction_error_df: DataFrame with reconstruction error and 'data_split' column
     :type reconstruction_error_df: pd.DataFrame
-    :param F_threshold: Minimum F-statistic to consider the variability practically significant
-    :type F_threshold: float
-    :return: DataFrame with F-statistics and p-values per sensor
+    :param p_value_threshold: Maximum p-value to output logger warning
+    :type p_value_threshold: float
+    :param F_stat_threshold: Minimum F-statistic to output logger warning
+    :type F_stat_threshold: float
+    :return: DataFrame with F-statistics and p-values per feature
     :rtype: pd.DataFrame
     """
     if "data_split" not in reconstruction_error_df.columns:
@@ -169,46 +177,47 @@ def anova_reconstruction_error(
             "Anova calculation requires reconstruction_error_df to have data_split "
             "(i.e. train, validation, test)"
         )
+    if reconstruction_error_df["data_split"].nunique() != 3:
+        raise ValueError(
+            "data_split should have 3 categories (train, validation, test)"
+        )
 
     try:
         results = []
-        sensor_columns = [
+        feature_columns = [
             col for col in reconstruction_error_df.columns if col != "data_split"
         ]
 
-        # Loop through each sensor column and perform one-way ANOVA across data splits
-        for sensor in sensor_columns:
-            group = reconstruction_error_df.groupby("data_split")[sensor].apply(list)
-
-            # Skip sensors with less than 2 data splits
-            if len(group) < 2:
-                logger.warning(
-                    f"Not enough data splits to calculate variability for sensor {sensor}. Skipping."
-                )
-                continue
+        # Loop through each feature column and perform one-way ANOVA across data splits
+        groups = reconstruction_error_df.groupby("data_split")
+        for feature in feature_columns:
+            group_i = groups[feature].apply(list)
 
             # Perform one-way ANOVA
-            f_stat, p_val = f_oneway(*group)
+            f_stat, p_val = f_oneway(*group_i, nan_policy="omit")
             results.append(
                 {
-                    "sensor": sensor,
+                    "feature": feature,
                     "F_statistic": f_stat,
                     "p_value": p_val,
                 }
             )
 
-            # Log if F-statistic exceeds threshold
-            if f_stat > f_stat_threshold:
+            # Log if statistics exceed threshold
+            if f_stat and F_stat_threshold and f_stat > F_stat_threshold:
                 logger.warning(
-                    f"Sensor {sensor} has a high F-statistic ({f_stat:.4f}) indicating significant variability in reconstruction error across data splits."
+                    f"{feature}: F_statistic ({f_stat:.4f}) exceeds threshold ({F_stat_threshold})"
+                )
+            if p_val and p_value_threshold and p_val < p_value_threshold:
+                logger.warning(
+                    f"{feature}: p_value ({p_val:.4f}) is below threshold ({p_value_threshold})"
                 )
 
-        results_df = pd.DataFrame(results)
-        return results_df
+        return pd.DataFrame(results)
 
     except Exception as e:
         logger.error(
-            f"Error computing one-way ANOVA tests across sensor data splits: {str(e)}"
+            f"Error computing one-way ANOVA tests across feature data splits: {str(e)}"
         )
         raise
 
@@ -240,48 +249,53 @@ def reconstruction_error_summary(
 
     try:
         if "data_split" in reconstruction_error_df.columns:
+            split_order = ["train", "validation", "test"]
+            if set(split_order) != set(reconstruction_error_df["data_split"].unique()):
+                raise ValueError(
+                    f"data_split in reconstruction_error_df must be train, validation, test."
+                )
             summary_stats = reconstruction_error_df.groupby("data_split").agg(
                 ["mean", "std"]
             )
-            summary_stats = summary_stats.T
-            summary_stats = summary_stats.unstack(level=1)
-            summary_stats.index.rename("sensor", inplace=True)
+            summary_stats = summary_stats.T.unstack(level=1)
+            summary_stats.index.rename("feature", inplace=True)
             summary_stats.columns = [
                 f"{split}_{stat}" for split, stat in summary_stats.columns
             ]
 
-            # Reorder columns to group by statistic (mean, then std)
-            split_order = ["train", "validation", "test"]
+            # Reorder columns: mean then std, across train, val, test
             column_order = [
                 f"{split}_{stat}" for stat in ["mean", "std"] for split in split_order
             ]
-            summary_stats = summary_stats[
-                [col for col in column_order if col in summary_stats.columns]
-            ]
+            summary_stats = summary_stats[column_order]
 
             mean_columns = [
                 col for col in summary_stats.columns if col.endswith("_mean")
             ]
             std_columns = [col for col in summary_stats.columns if col.endswith("_std")]
 
-            for sensor, row in summary_stats.iterrows():
+            for feature, row in summary_stats.iterrows():
                 mean_values = row[mean_columns].dropna()
                 std_values = row[std_columns].dropna()
                 if len(mean_values) >= 2 and len(std_values) >= 2:
                     diff_mean = mean_values.max() - mean_values.min()
-                    if diff_mean / mean_values.max() > threshold:
+                    max_mean = mean_values.max()
+                    if max_mean > 0 and (diff_mean / max_mean) > threshold:
                         logger.warning(
-                            f"{sensor} mean error varies significantly across data splits: range={diff_mean:.3f}, values={mean_values.tolist()}"
+                            f"{feature} relative mean error range across splits ({diff_mean:.3f}) "
+                            f"exceeds threshold ({threshold:.0%}) of maximum ({max_mean:.3f})"
                         )
                     diff_std = std_values.max() - std_values.min()
-                    if diff_std / std_values.max() > threshold:
+                    max_std = std_values.max()
+                    if max_std > 0 and (diff_std / max_std) > threshold:
                         logger.warning(
-                            f"{sensor} std error varies significantly across data splits: range={diff_std:.3f}, values={std_values.tolist()}"
+                            f"{feature} relative std error range across splits ({diff_std:.3f}) "
+                            f"exceeds threshold ({threshold:.0%}) of maximum ({max_std:.3f})"
                         )
         else:
             summary_stats = reconstruction_error_df.agg(["mean", "std"])
             summary_stats = summary_stats.T
-            summary_stats.index.rename("sensor", inplace=True)
+            summary_stats.index.rename("feature", inplace=True)
 
         # Save if a path is provided
         if save_path:
@@ -308,7 +322,7 @@ def std_error_threshold(
 ) -> pd.DataFrame:
     """
     Identify anomalies using a standard deviation threshold over reconstruction error.
-    Considers all time series data for a given sensor.
+    Considers all time series data for a given feature.
 
     :param reconstruction_error_df: DataFrame with AE reconstruction errors and 'data_split'
     :type reconstruction_error_df: pd.DataFrame
@@ -320,7 +334,7 @@ def std_error_threshold(
     :type anomaly_mask_filename: str
     :param anomaly_proportions_filename: CSV filename for anomaly rate summary
     :type anomaly_proportions_filename: str
-    :return: DataFrame boolean mask of anomalies (True for anomalies, False otherwise)
+    :return: Boolean DataFrame mask (True = anomaly, False = normal)
     :rtype: pd.DataFrame
     :raises ValueError: If required columns are missing, if data is empty, or if std_threshold is negative
     """
@@ -328,47 +342,55 @@ def std_error_threshold(
         raise ValueError("Input DataFrame cannot be empty")
     if "data_split" not in reconstruction_error_df.columns:
         raise ValueError("Input DataFrame must contain 'data_split' column")
-    if std_threshold < 0:
-        raise ValueError("std_threshold must be non-negative")
+    if std_threshold <= 0:
+        raise ValueError("std_threshold must be greater than 0")
+    if reconstruction_error_df.isna().any().any():
+        logger.warning(
+            "Missing values in reconstruction_error_df used in std_error_threshold()."
+        )
 
     try:
-        # Calculate mean and std error for each sensor column
-        sensor_columns = [
+        # Calculate mean and std error for each feature column
+        feature_columns = [
             col for col in reconstruction_error_df.columns if col != "data_split"
         ]
-        mean_errors = reconstruction_error_df[sensor_columns].mean()
-        std_errors = reconstruction_error_df[sensor_columns].std()
+        mean_errors = reconstruction_error_df[feature_columns].mean()
+        std_errors = reconstruction_error_df[feature_columns].std()
 
-        # Create sensor based anomaly mask (showing which data points are outside the std threshold)
+        # Create feature based anomaly mask (showing which data points are outside the std threshold)
         anomaly_mask = pd.DataFrame(
-            data=False, index=reconstruction_error_df.index, columns=sensor_columns
+            np.abs(reconstruction_error_df[feature_columns] - mean_errors)
+            > (std_threshold * std_errors),
+            index=reconstruction_error_df.index,
+            columns=feature_columns,
         )
-        for col in sensor_columns:
-            anomaly_mask[col] = np.abs(
-                reconstruction_error_df[col] - mean_errors[col]
-            ) > (std_threshold * std_errors[col])
-        anomaly_mask["data_split"] = reconstruction_error_df["data_split"]
 
-        # Calculate anomalies per sensor and proportion of anomalies
-        anomaly_counts = anomaly_mask.groupby("data_split")[sensor_columns].sum()
-        total_counts = anomaly_mask.groupby("data_split")[sensor_columns].count()
+        # Add back data_split column
+        anomaly_mask.insert(0, "data_split", reconstruction_error_df["data_split"])
+
+        # Calculate anomalies per feature and proportion of anomalies
+        anomaly_groups = anomaly_mask.groupby("data_split")[feature_columns]
+        anomaly_counts = anomaly_groups.sum()
+        total_counts = anomaly_groups.count()
         anomaly_proportions = anomaly_counts / total_counts
-        high_anomaly_sensors = anomaly_proportions.mean().sort_values(ascending=False)
+        high_anomaly_features = anomaly_proportions.mean().sort_values(ascending=False)
         logger.info(
-            "Sensors with highest anomaly proportions (# anomalies / sensor data count):\n"
-            + high_anomaly_sensors.head().to_string(float_format="%.4f")
+            "Features with highest anomaly proportions (# anomalies / feature data count):\n"
+            + high_anomaly_features.head().to_string(float_format="%.4f")
         )
 
         # Save if a path is provided
-        # if save_path:
-        #     path = Path(save_path)
-        #     path.mkdir(parents=True, exist_ok=True)
-        #     mask_full_path = path / anomaly_mask_filename
-        #     prop_full_path = path / anomaly_proportions_filename
-        #     anomaly_mask.to_csv(mask_full_path, index=False, float_format="%.4f")
-        #     anomaly_proportions.to_csv(prop_full_path, index=True, float_format="%.4f")
-        #     logger.info(f"Anomaly mask saved to {mask_full_path}")
-        #     logger.info(f"Anomaly proportions saved to {prop_full_path}")
+        if save_path:
+            save_csv(
+                data=anomaly_mask,
+                save_path=save_path,
+                filename=anomaly_mask_filename,
+            )
+            save_csv(
+                data=anomaly_proportions,
+                save_path=save_path,
+                filename=anomaly_proportions_filename,
+            )
 
         return anomaly_mask
 
@@ -381,86 +403,67 @@ def corrected_data(
     actual_data_df: pd.DataFrame,
     autoencoder_output_df: pd.DataFrame,
     anomaly_mask: pd.DataFrame,
-    context_window: int = 10,
     save_path: Optional[str] = None,
     filename: str = "corrected_data.csv",
 ) -> pd.DataFrame:
     """
-    Replace anomalous values in the original sensor data with autoencoder reconstructed values.
+    Replace anomalous values in the original data with autoencoder reconstructed values.
 
-    :param actual_data_df: Original sensor data
+    :param actual_data_df: Original data
     :type actual_data_df: pd.DataFrame
     :param autoencoder_output_df: Autoencoder output
     :type autoencoder_output_df: pd.DataFrame
     :param anomaly_mask: DataFrame of boolean values indicating where to apply corrections
     :type anomaly_mask: pd.DataFrame
-    :param context_window: Number of rows at the start of the data where AE does not have output
-    :type context_window: int
     :param save_path: Optional path to save the corrected data as CSV
     :type save_path: Optional[str]
     :param filename: Filename to use if saving the corrected data
     :type filename: str
-    :return: DataFrame with corrected sensor data
+    :return: DataFrame with corrected data
     :rtype: pd.DataFrame
-    :raises ValueError: If input DataFrames have different lengths or if context_window is invalid
+    :raises ValueError: If input DataFrames have different lengths or columns
     """
     # Validate input parameters
-    context_offset = context_window - 1
-    expected_autoencoder_length = len(actual_data_df) - context_offset
-
-    if len(autoencoder_output_df) != expected_autoencoder_length:
+    if len(autoencoder_output_df) != len(actual_data_df):
         raise ValueError(
-            f"Autoencoder output rows {len(autoencoder_output_df)} do not match expected length"
-            f"{expected_autoencoder_length} (actual data rows {len(actual_data_df)} minus context offset {context_offset})"
+            f"Autoencoder output length ({len(autoencoder_output_df)}) "
+            f"does not match actual data length ({len(actual_data_df)})."
         )
-    if len(anomaly_mask) != len(actual_data_df) - context_offset:
+    if len(anomaly_mask) != len(actual_data_df):
         raise ValueError(
-            f"Anomaly mask rows {len(anomaly_mask)} do not match actual data rows {len(actual_data_df)} with context offset {context_offset}"
+            f"Anomaly mask length ({len(anomaly_mask)}) "
+            f"does not match actual data length ({len(actual_data_df)})."
         )
-    if context_window < 1:
-        raise ValueError("context_window must be a positive integer")
-    if not autoencoder_output_df.columns.equals(actual_data_df.columns):
+    feature_cols = [col for col in autoencoder_output_df.columns if col != "data_split"]
+    if list(feature_cols) != list(actual_data_df.columns):
         raise ValueError(
-            f"Autoencoder output columns ({autoencoder_output_df.columns})"
-            f" do match actual data columns ({actual_data_df.columns})"
+            f"Autoencoder output feature columns ({feature_cols}) "
+            f"do not match actual data columns ({list(actual_data_df.columns)})"
         )
-    anomaly_cols = [col for col in anomaly_mask.columns if col != "data_split"]
-    actual_cols = list(actual_data_df.columns)
-    if set(anomaly_cols) != set(actual_cols):
+    if not autoencoder_output_df.columns.equals(anomaly_mask.columns):
         raise ValueError(
             f"Anomaly mask columns ({anomaly_mask.columns}) "
-            f"do not match actual data columns ({actual_data_df.columns})"
+            f"do not match autoencoder output columns ({autoencoder_output_df.columns})"
         )
 
     try:
-        # Save initial rows and adjust actual_data_df and anomaly_mask to match autoencoder_output_df
-        initial_rows_df = actual_data_df.iloc[:context_offset].copy()
-        actual_data_df = actual_data_df.iloc[context_offset:].reset_index(drop=True)
-
         # Create corrected dataset where anomalies are replaced with AE output
         corrected_data_df = actual_data_df.copy()
-        for corrected_data_col in corrected_data_df.columns:
-            corrected_data_df.loc[
-                anomaly_mask[corrected_data_col], corrected_data_col
-            ] = autoencoder_output_df.loc[
-                anomaly_mask[corrected_data_col], corrected_data_col
-            ]
-            num_replaced = anomaly_mask[corrected_data_col].sum()
-            logger.info(
-                f"{num_replaced} anomalies corrected in column {corrected_data_col}"
+        corrected_data_df[feature_cols] = actual_data_df[feature_cols].where(
+            ~anomaly_mask[feature_cols], autoencoder_output_df[feature_cols]
+        )
+
+        replaced_counts = anomaly_mask[feature_cols].sum()
+        for col, count in replaced_counts.items():
+            logger.info(f"{count} anomalies corrected in column {col}")
+
+        # Save if a path is provided
+        if save_path:
+            save_csv(
+                data=corrected_data_df,
+                save_path=save_path,
+                filename=filename,
             )
-
-        corrected_data_df = pd.concat(
-            [initial_rows_df, corrected_data_df], axis=0
-        ).reset_index(drop=True)
-
-        # # Save if a path is provided
-        # if save_path:
-        #     path = Path(save_path)
-        #     path.mkdir(parents=True, exist_ok=True)
-        #     full_path = path / filename
-        #     corrected_data_df.to_csv(full_path, index=False, float_format="%.4f")
-        #     logger.info(f"Corrected data saved to {full_path}")
 
         return corrected_data_df
 
