@@ -1,6 +1,9 @@
 import os
 import pickle
+<<<<<<< HEAD
 from pathlib import Path
+=======
+>>>>>>> develop
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -13,8 +16,26 @@ from tensorflow.keras.layers import Dense
 
 from mango.logging import get_configured_logger
 from mango.processing.data_imputer import DataImputer
+<<<<<<< HEAD
 from mango_time_series.models.modules import anomaly_detector, decoder, encoder
 from mango_time_series.models.utils import plots, processing
+=======
+from mango_time_series.models.modules import decoder, encoder
+from mango_time_series.models.utils.plots import (
+    plot_actual_and_reconstructed,
+    plot_loss_history,
+    plot_reconstruction_iterations,
+)
+from mango_time_series.models.utils.processing import (
+    apply_padding,
+    convert_data_to_numpy,
+    denormalize_data,
+    handle_id_columns,
+    normalize_data_for_prediction,
+    normalize_data_for_training,
+    time_series_split,
+)
+>>>>>>> develop
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
 logger = get_configured_logger()
@@ -100,6 +121,7 @@ class AutoEncoder:
         self._use_mask = False
         self._custom_mask = None
         self._shuffle = False
+<<<<<<< HEAD
         self._nan_coordinates = {}
 
     @property
@@ -115,6 +137,8 @@ class AutoEncoder:
         :rtype: Dict
         """
         return self._nan_coordinates
+=======
+>>>>>>> develop
 
     @property
     def save_path(self) -> Optional[str]:
@@ -328,10 +352,14 @@ class AutoEncoder:
         # Validate that data is a single array or a tuple of three arrays
         if isinstance(value, tuple):
             if len(value) != 3:
+<<<<<<< HEAD
                 raise ValueError(
                     "If data is a tuple, it must be three numpy arrays. "
                     "First array is train set, second is validation, and third is test."
                 )
+=======
+                raise ValueError("Data must be a tuple with three numpy arrays")
+>>>>>>> develop
         elif not isinstance(value, np.ndarray):
             raise ValueError(
                 "Data must be a numpy array or a tuple with three numpy arrays"
@@ -385,9 +413,37 @@ class AutoEncoder:
 
         :param value: Normalization flag
         :type value: bool
+<<<<<<< HEAD
         :raises ValueError: If trying to enable normalization without a method set
         """
         if value and self._normalization_method is None:
+=======
+        """
+        self._normalize = value
+
+    @property
+    def normalization_method(self) -> Optional[str]:
+        """
+        Get the normalization method.
+
+        :return: Normalization method
+        :rtype: Optional[str]
+        """
+        return self._normalization_method
+
+    @normalization_method.setter
+    def normalization_method(self, value: str) -> None:
+        """
+        Set the normalization method.
+
+        :param value: Normalization method
+        :type value: str
+        """
+        if hasattr(self, "model") and self.model is not None:
+            raise ValueError("Cannot change normalization_method after model is built")
+
+        if value not in ["minmax", "zscore"]:
+>>>>>>> develop
             raise ValueError(
                 "Cannot enable normalization without setting a normalization method. "
                 "Set normalization_method first."
@@ -1238,8 +1294,13 @@ class AutoEncoder:
         self.context_window = context_window
         self.time_step_to_check = time_step_to_check
         self.feature_to_check = feature_to_check
+<<<<<<< HEAD
         self.normalization_method = normalization_method
         self.normalize = normalize
+=======
+        self.normalize = normalize
+        self.normalization_method = normalization_method
+>>>>>>> develop
         self.hidden_dim = hidden_dim
         self.bidirectional_encoder = bidirectional_encoder
         self.bidirectional_decoder = bidirectional_decoder
@@ -1256,7 +1317,11 @@ class AutoEncoder:
         self.shuffle_buffer_size = shuffle_buffer_size
 
         # Extract names and convert data to numpy
+<<<<<<< HEAD
         self.data, extracted_feature_names = processing.convert_data_to_numpy(data=data)
+=======
+        self.data, extracted_feature_names = convert_data_to_numpy(data=data)
+>>>>>>> develop
         self.features_name = (
             feature_names
             or extracted_feature_names
@@ -1271,7 +1336,11 @@ class AutoEncoder:
         )
 
         (self.data, self.id_data, self.id_data_dict, self.id_columns_indices) = (
+<<<<<<< HEAD
             processing.handle_id_columns(
+=======
+            handle_id_columns(
+>>>>>>> develop
                 data=self._data,
                 id_columns=id_columns,
                 features_name=self._features_name,
@@ -1280,9 +1349,15 @@ class AutoEncoder:
         )
 
         if self._use_mask and custom_mask is not None:
+<<<<<<< HEAD
             custom_mask, _ = processing.convert_data_to_numpy(custom_mask)
             custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
                 processing.handle_id_columns(
+=======
+            custom_mask, _ = convert_data_to_numpy(custom_mask)
+            custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
+                handle_id_columns(
+>>>>>>> develop
                     data=custom_mask,
                     id_columns=id_columns,
                     features_name=self._features_name,
@@ -1688,7 +1763,11 @@ class AutoEncoder:
                                     "feature": feature_name,
                                     "time_step": t,
                                     "value": x_converted[feature_idx, current_pos],
+<<<<<<< HEAD
                                     "data_split": data_split,
+=======
+                                    "dataset": data_split,
+>>>>>>> develop
                                 }
                             )
                             data_points_reconstructed.append(
@@ -1697,7 +1776,11 @@ class AutoEncoder:
                                     "feature": feature_name,
                                     "time_step": t,
                                     "value": x_hat[feature_idx, current_pos],
+<<<<<<< HEAD
                                     "data_split": data_split,
+=======
+                                    "dataset": data_split,
+>>>>>>> develop
                                 }
                             )
                         current_pos = current_pos + 1
@@ -1720,7 +1803,11 @@ class AutoEncoder:
                                 "feature": feature_name,
                                 "time_step": current_pos,
                                 "value": x_converted[feature_idx, current_pos],
+<<<<<<< HEAD
                                 "data_split": data_split,
+=======
+                                "dataset": data_split,
+>>>>>>> develop
                             }
                         )
                         data_points_reconstructed.append(
@@ -1728,7 +1815,11 @@ class AutoEncoder:
                                 "feature": feature_name,
                                 "time_step": current_pos,
                                 "value": x_hat[feature_idx, current_pos],
+<<<<<<< HEAD
                                 "data_split": data_split,
+=======
+                                "dataset": data_split,
+>>>>>>> develop
                             }
                         )
                     current_pos = current_pos + 1
@@ -1741,6 +1832,7 @@ class AutoEncoder:
 
         return pd.DataFrame(data_points_actual), pd.DataFrame(data_points_reconstructed)
 
+<<<<<<< HEAD
     def reconstruct(
         self,
         save_path: Optional[str] = None,
@@ -1755,6 +1847,14 @@ class AutoEncoder:
         :type reconstruction_diagnostic: bool
         :return: Reconstruction results
         :rtype: pd.DataFrame
+=======
+    def reconstruct(self) -> bool:
+        """
+        Reconstruct the data using the trained model and plot the actual and reconstructed values.
+
+        :return: True if reconstruction was successful
+        :rtype: bool
+>>>>>>> develop
         """
         if self.x_train_no_shuffle is None:
             raise ValueError(
@@ -1791,7 +1891,11 @@ class AutoEncoder:
                 norm_values = self.normalization_values["global"]
 
                 # Denormalize predictions
+<<<<<<< HEAD
                 x_hat_train = processing.denormalize_data(
+=======
+                x_hat_train = denormalize_data(
+>>>>>>> develop
                     data=x_hat_train,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1807,7 +1911,11 @@ class AutoEncoder:
                         else None
                     ),
                 )
+<<<<<<< HEAD
                 x_hat_val = processing.denormalize_data(
+=======
+                x_hat_val = denormalize_data(
+>>>>>>> develop
                     data=x_hat_val,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1823,7 +1931,11 @@ class AutoEncoder:
                         else None
                     ),
                 )
+<<<<<<< HEAD
                 x_hat_test = processing.denormalize_data(
+=======
+                x_hat_test = denormalize_data(
+>>>>>>> develop
                     data=x_hat_test,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1841,7 +1953,11 @@ class AutoEncoder:
                 )
 
                 # Denormalize original data
+<<<<<<< HEAD
                 x_train_converted = processing.denormalize_data(
+=======
+                x_train_converted = denormalize_data(
+>>>>>>> develop
                     data=x_train_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1857,7 +1973,11 @@ class AutoEncoder:
                         else None
                     ),
                 )
+<<<<<<< HEAD
                 x_val_converted = processing.denormalize_data(
+=======
+                x_val_converted = denormalize_data(
+>>>>>>> develop
                     data=x_val_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1873,7 +1993,11 @@ class AutoEncoder:
                         else None
                     ),
                 )
+<<<<<<< HEAD
                 x_test_converted = processing.denormalize_data(
+=======
+                x_test_converted = denormalize_data(
+>>>>>>> develop
                     data=x_test_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1937,7 +2061,11 @@ class AutoEncoder:
                     id_x_test = x_test_converted[test_start_idx:test_end_idx]
 
                     # Denormalize data for this ID
+<<<<<<< HEAD
                     id_x_hat_train = processing.denormalize_data(
+=======
+                    id_x_hat_train = denormalize_data(
+>>>>>>> develop
                         data=id_x_hat_train,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1953,7 +2081,11 @@ class AutoEncoder:
                             else None
                         ),
                     )
+<<<<<<< HEAD
                     id_x_hat_val = processing.denormalize_data(
+=======
+                    id_x_hat_val = denormalize_data(
+>>>>>>> develop
                         data=id_x_hat_val,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1969,7 +2101,11 @@ class AutoEncoder:
                             else None
                         ),
                     )
+<<<<<<< HEAD
                     id_x_hat_test = processing.denormalize_data(
+=======
+                    id_x_hat_test = denormalize_data(
+>>>>>>> develop
                         data=id_x_hat_test,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1986,7 +2122,11 @@ class AutoEncoder:
                         ),
                     )
 
+<<<<<<< HEAD
                     id_x_train = processing.denormalize_data(
+=======
+                    id_x_train = denormalize_data(
+>>>>>>> develop
                         data=id_x_train,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -2002,7 +2142,11 @@ class AutoEncoder:
                             else None
                         ),
                     )
+<<<<<<< HEAD
                     id_x_val = processing.denormalize_data(
+=======
+                    id_x_val = denormalize_data(
+>>>>>>> develop
                         data=id_x_val,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -2018,7 +2162,11 @@ class AutoEncoder:
                             else None
                         ),
                     )
+<<<<<<< HEAD
                     id_x_test = processing.denormalize_data(
+=======
+                    id_x_test = denormalize_data(
+>>>>>>> develop
                         data=id_x_test,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -2075,12 +2223,37 @@ class AutoEncoder:
             [features_names_without_id[i] for i in self._feature_to_check]
             if hasattr(self, "features_name")
             else None
+<<<<<<< HEAD
+=======
         )
 
         # Get the split indices
         train_split = self.x_train.shape[0]
         val_split = train_split + self.x_val.shape[0]
 
+        # Create DataFrame with all data points
+        df_actual, df_reconstructed = self._create_data_points_df(
+            x_converted=x_converted,
+            x_hat=x_hat,
+            feature_labels=feature_labels,
+            train_split=train_split,
+            val_split=val_split,
+        )
+
+        # Plot the data
+        plot_actual_and_reconstructed(
+            df_actual=df_actual,
+            df_reconstructed=df_reconstructed,
+            save_path=os.path.join(self._save_path, "plots"),
+            feature_labels=feature_labels,
+>>>>>>> develop
+        )
+
+        # Get the split indices
+        train_split = self.x_train.shape[0]
+        val_split = train_split + self.x_val.shape[0]
+
+<<<<<<< HEAD
         # Create DataFrame with all data points
         df_actual, df_reconstructed = self._create_data_points_df(
             x_converted=x_converted,
@@ -2185,6 +2358,8 @@ class AutoEncoder:
 
         return df_reconstructed
 
+=======
+>>>>>>> develop
     def save(
         self, save_path: Optional[str] = None, filename: str = "model.pkl"
     ) -> None:
@@ -2406,7 +2581,10 @@ class AutoEncoder:
         iterations: int = 1,
         id_columns: Optional[Union[str, int, List[str], List[int]]] = None,
         save_path: Optional[str] = None,
+<<<<<<< HEAD
         reconstruction_diagnostic: bool = False,
+=======
+>>>>>>> develop
     ) -> Dict[str, pd.DataFrame]:
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
@@ -2418,10 +2596,15 @@ class AutoEncoder:
         :type iterations: int
         :param id_columns: Column(s) that define IDs to process reconstruction separately
         :type id_columns: Optional[Union[str, int, List[str], List[int]]]
+<<<<<<< HEAD
         :param save_path: Path to save reconstruction results, plots, and diagnostics
         :type save_path: Optional[str]
         :param reconstruction_diagnostic: If True, shows and optionally saves reconstruction error data and plots
         :type reconstruction_diagnostic: bool
+=======
+        :param save_path: Path to save the reconstructed data plots
+        :type save_path: Optional[str]
+>>>>>>> develop
         :return: Dictionary with reconstructed data per ID (or "global" if no ID)
         :rtype: Dict[str, pd.DataFrame]
         :raises ValueError: If no model is loaded or if id_columns format is invalid
@@ -2430,6 +2613,7 @@ class AutoEncoder:
             raise ValueError(
                 "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
             )
+<<<<<<< HEAD
         if iterations < 1:
             raise ValueError("iterations must be at least 1")
         if not isinstance(data, (np.ndarray, pd.DataFrame, pl.DataFrame)):
@@ -2449,6 +2633,10 @@ class AutoEncoder:
                 f"Feature names in recontruct_new_data(): {feature_names} "
                 f"do not match those from build_model(): {self.features_name}"
             )
+=======
+
+        data, feature_names = convert_data_to_numpy(data=data)
+>>>>>>> develop
 
         # Create features_names_to_check, excluding ID columns if they exist
         if id_columns is not None and feature_names:
@@ -2459,7 +2647,7 @@ class AutoEncoder:
                 raise ValueError("id_columns must be a list of strings or integers")
 
             # Get indices of ID columns
-            id_indices = [
+            id_indices = [ 
                 feature_names.index(col) if isinstance(col, str) else col
                 for col in id_columns
                 if isinstance(col, str) and col in feature_names or isinstance(col, int)
@@ -2489,6 +2677,7 @@ class AutoEncoder:
 
         # Handle ID columns
         if id_columns is not None:
+<<<<<<< HEAD
             data, _, id_data_dict, self.id_columns_indices = (
                 processing.handle_id_columns(
                     data=data,
@@ -2496,6 +2685,13 @@ class AutoEncoder:
                     features_name=feature_names,
                     context_window=self._context_window,
                 )
+=======
+            data, _, id_data_dict, self.id_columns_indices = handle_id_columns(
+                data=data,
+                id_columns=id_columns,
+                features_name=feature_names,
+                context_window=self.context_window,
+>>>>>>> develop
             )
         else:
             id_data_dict = {"global": data}
@@ -2504,12 +2700,15 @@ class AutoEncoder:
 
         if id_columns is not None:
             for id_iter, data_id in id_data_dict.items():
+<<<<<<< HEAD
                 if len(data_id) < self._context_window:
                     raise ValueError(
                         f"{id_iter} has length {len(data_id)} but needs to be "
                         f"at least context window ({self._context_window}) in length"
                     )
 
+=======
+>>>>>>> develop
                 nan_positions_id = np.isnan(data_id)
                 has_nans_id = np.any(nan_positions_id)
 
@@ -2523,12 +2722,15 @@ class AutoEncoder:
                     save_path=save_path,
                 )
         else:
+<<<<<<< HEAD
             if len(data) < self._context_window:
                 raise ValueError(
                     f"Data has length {len(data)} but needs to be "
                     f"at least context window ({self._context_window}) in length"
                 )
 
+=======
+>>>>>>> develop
             nan_positions = np.isnan(data)
             has_nans = np.any(nan_positions)
             reconstructed_results["global"] = self._reconstruct_single_dataset(
@@ -2541,6 +2743,7 @@ class AutoEncoder:
                 save_path=save_path,
             )
 
+<<<<<<< HEAD
         # Save reconstruction if save_path is provided
         if save_path is not None:
             save_path = os.path.join(save_path, "reconstruct_new_data")
@@ -2589,6 +2792,8 @@ class AutoEncoder:
                     show=True,
                 )
 
+=======
+>>>>>>> develop
         return reconstructed_results
 
     def _reconstruct_single_dataset(
@@ -2623,7 +2828,10 @@ class AutoEncoder:
         :raises ValueError: If normalization fails or if there are issues with the reconstruction process
         """
         data_original = np.copy(data)
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
         reconstructed_iterations = {}
 
         # Get normalization values for the current ID or global
@@ -2634,17 +2842,29 @@ class AutoEncoder:
         ) or {}
 
         if not normalization_values:
+<<<<<<< HEAD
             if self._normalization_method not in ["minmax", "zscore", None]:
+=======
+            if self.normalization_method not in ["minmax", "zscore"]:
+>>>>>>> develop
                 raise ValueError("Invalid normalization method.")
 
             # Simulate train/val/test split using only current data
             x_train = x_val = x_test = data
 
+<<<<<<< HEAD
             _, _, _, normalization_values = processing.normalize_data_for_training(
                 x_train=x_train,
                 x_val=x_val,
                 x_test=x_test,
                 normalization_method=self._normalization_method,
+=======
+            _, _, _, normalization_values = normalize_data_for_training(
+                x_train=x_train,
+                x_val=x_val,
+                x_test=x_test,
+                normalization_method=self.normalization_method,
+>>>>>>> develop
             )
 
         # Set normalization parameters
@@ -2657,8 +2877,13 @@ class AutoEncoder:
         if not has_nans:
             if self._normalization_method:
                 try:
+<<<<<<< HEAD
                     data = processing.normalize_data_for_prediction(
                         normalization_method=self._normalization_method,
+=======
+                    data = normalize_data_for_prediction(
+                        normalization_method=self.normalization_method,
+>>>>>>> develop
                         data=data,
                         min_x=self.min_x,
                         max_x=self.max_x,
@@ -2674,7 +2899,11 @@ class AutoEncoder:
             reconstructed_data = self.model.predict(data_seq)
 
             if self._normalization_method:
+<<<<<<< HEAD
                 reconstructed_data = processing.denormalize_data(
+=======
+                reconstructed_data = denormalize_data(
+>>>>>>> develop
                     data=reconstructed_data,
                     normalization_method=self._normalization_method,
                     min_x=(
@@ -2699,7 +2928,11 @@ class AutoEncoder:
                     ),
                 )
 
+<<<<<<< HEAD
             padded_reconstructed = processing.apply_padding(
+=======
+            padded_reconstructed = apply_padding(
+>>>>>>> develop
                 data=data[:, self._feature_to_check],
                 reconstructed=reconstructed_data,
                 context_window=self._context_window,
@@ -2723,30 +2956,47 @@ class AutoEncoder:
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
             reconstructed_df["type"] = "reconstructed"
 
+<<<<<<< HEAD
             plots.plot_actual_and_reconstructed(
+=======
+            plot_actual_and_reconstructed(
+>>>>>>> develop
                 df_actual=actual_df,
                 df_reconstructed=reconstructed_df,
                 save_path=plot_path,
                 feature_labels=feature_names,
             )
 
+<<<<<<< HEAD
             if reconstructed_df.isna().sum().sum() != (self._context_window - 1) * len(
                 feature_names
             ):
                 raise ValueError(
                     f"Expect context_window-1={(self._context_window - 1)} NaN values per feature."
+=======
+            if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+                feature_names
+            ):
+                raise ValueError(
+                    f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+>>>>>>> develop
                     f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
                 )
 
             # Remove padding rows
             reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
+<<<<<<< HEAD
             reconstructed_df = reconstructed_df.dropna(axis=0, how="any")
+=======
+            reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+>>>>>>> develop
             if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
                 raise ValueError(
                     f"Reconstructed data has {len(reconstructed_df)} rows."
                     f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
                 )
 
+<<<<<<< HEAD
         # Case 2: With NaNs - Iterative reconstruction
         else:
             reconstruction_records = []
@@ -2866,6 +3116,44 @@ class AutoEncoder:
             if self._normalization_method:
                 reconstructed_data_final = processing.denormalize_data(
                     reconstructed_data_final,
+=======
+            return reconstructed_df
+
+        # Case 2: With NaNs - Iterative reconstruction
+        reconstruction_records = []
+        reconstructed_iterations[0] = np.copy(data[:, self._feature_to_check])
+
+        if self._normalization_method:
+            try:
+                data = normalize_data_for_prediction(
+                    normalization_method=self.normalization_method,
+                    data=data,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
+                )
+            except Exception as e:
+                raise ValueError(f"Error during normalization for ID {id_iter}: {e}")
+
+        # Iterative reconstruction loop
+        for iter_num in range(1, iterations):
+            # Handle missing values
+            if self.imputer is not None:
+                data = self.imputer.apply_imputation(data=pd.DataFrame(data)).to_numpy()
+            else:
+                data = np.nan_to_num(data, nan=0)
+
+            # Generate sequence and predict
+            data_seq = time_series_to_sequence(
+                data=data, context_window=self._context_window
+            )
+            reconstructed_data = self.model.predict(data_seq)
+
+            if self._normalization_method:
+                reconstructed_data = denormalize_data(
+                    data=reconstructed_data,
+>>>>>>> develop
                     normalization_method=self._normalization_method,
                     min_x=(
                         self.min_x[self._feature_to_check]
@@ -2889,6 +3177,7 @@ class AutoEncoder:
                     ),
                 )
 
+<<<<<<< HEAD
             padded_reconstructed_final = processing.apply_padding(
                 data=data[:, self._feature_to_check],
                 reconstructed=reconstructed_data_final,
@@ -2906,17 +3195,51 @@ class AutoEncoder:
                     continue
 
                 recon_value = padded_reconstructed_final[i, j]
+=======
+            # Apply padding and store results
+            padded_reconstructed = apply_padding(
+                data=data[:, self._feature_to_check],
+                reconstructed=reconstructed_data,
+                context_window=self._context_window,
+                time_step_to_check=self._time_step_to_check,
+            )
+
+            reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
+
+            # Record reconstruction progress
+            normalized_reconstructed = None
+            if self._normalization_method:
+                normalized_reconstructed = normalize_data_for_prediction(
+                    normalization_method=self.normalization_method,
+                    data=padded_reconstructed,
+                    feature_to_check_filter=True,
+                    feature_to_check=self._feature_to_check,
+                    min_x=self.min_x,
+                    max_x=self.max_x,
+                    mean_=self.mean_,
+                    std_=self.std_,
+                )
+
+            for i, j in zip(*np.where(nan_positions)):
+                col_idx = self._feature_to_check[j]
+                recon_value = padded_reconstructed[i, j]
+>>>>>>> develop
 
                 reconstruction_records.append(
                     {
                         "ID": id_iter if id_iter else "global",
                         "Column": j + 1,
                         "Timestep": i,
+<<<<<<< HEAD
                         "Iteration": iterations,
+=======
+                        "Iteration": iter_num,
+>>>>>>> develop
                         "Reconstructed value": recon_value,
                     }
                 )
 
+<<<<<<< HEAD
             # Save reconstruction progress
             if save_path:
                 progress_df = pd.DataFrame(reconstruction_records)
@@ -2969,6 +3292,113 @@ class AutoEncoder:
                 )
             if np.any(np.isnan(reconstructed_df)):
                 raise ValueError("There are NaNs after reconstruction.")
+=======
+                data[i, col_idx] = (
+                    normalized_reconstructed[i, j]
+                    if self._normalization_method
+                    else recon_value
+                )
+
+        # Final reconstruction step
+        if self.imputer is not None:
+            data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
+        else:
+            data = np.nan_to_num(data, nan=0)
+
+        data_seq = time_series_to_sequence(
+            data=data, context_window=self._context_window
+        )
+        reconstructed_data_final = self.model.predict(data_seq)
+
+        if self._normalization_method:
+            reconstructed_data_final = denormalize_data(
+                reconstructed_data_final,
+                normalization_method=self._normalization_method,
+                min_x=(
+                    self.min_x[self._feature_to_check]
+                    if self.min_x is not None
+                    else None
+                ),
+                max_x=(
+                    self.max_x[self._feature_to_check]
+                    if self.max_x is not None
+                    else None
+                ),
+                mean_=(
+                    self.mean_[self._feature_to_check]
+                    if self.mean_ is not None
+                    else None
+                ),
+                std_=(
+                    self.std_[self._feature_to_check] if self.std_ is not None else None
+                ),
+            )
+
+        padded_reconstructed_final = apply_padding(
+            data=data[:, self._feature_to_check],
+            reconstructed=reconstructed_data_final,
+            context_window=self._context_window,
+            time_step_to_check=self._time_step_to_check,
+        )
+        reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
+
+        # Record final reconstruction results
+        for i, j in zip(*np.where(nan_positions)):
+            reconstruction_records.append(
+                {
+                    "ID": id_iter if id_iter else "global",
+                    "Column": j + 1,
+                    "Timestep": i,
+                    "Iteration": iterations,
+                    "Reconstructed value": padded_reconstructed_final[i, j],
+                }
+            )
+
+        # Save reconstruction progress
+        progress_df = pd.DataFrame(reconstruction_records)
+        file_path = os.path.join(
+            save_path if save_path else self.root_dir,
+            "reconstruction_progress",
+            f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
+        )
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        progress_df.to_excel(file_path, index=False)
+
+        # Plot reconstruction iterations
+        plot_reconstruction_iterations(
+            original_data=data_original[:, self._feature_to_check].T,
+            reconstructed_iterations={
+                k: v.T for k, v in reconstructed_iterations.items()
+            },
+            save_path=os.path.join(save_path if save_path else self.root_dir, "plots"),
+            feature_labels=feature_names,
+            id_iter=id_iter,
+        )
+
+        # Remove padding rows
+        reconstructed_df = pd.DataFrame(
+            padded_reconstructed_final, columns=feature_names
+        )
+        actual_df = pd.DataFrame(
+            data_original[:, self._feature_to_check], columns=feature_names
+        )
+
+        if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+            feature_names
+        ):
+            raise ValueError(
+                f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
+            )
+
+        # reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
+        reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+        if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
+            raise ValueError(
+                f"Reconstructed data has {len(reconstructed_df)} rows."
+                f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
+            )
+>>>>>>> develop
 
         return reconstructed_df
 
@@ -3000,7 +3430,11 @@ class AutoEncoder:
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
+<<<<<<< HEAD
             x_train, x_val, x_test = processing.time_series_split(
+=======
+            x_train, x_val, x_test = time_series_split(
+>>>>>>> develop
                 data=data,
                 train_size=self._train_size,
                 val_size=self._val_size,
@@ -3057,6 +3491,7 @@ class AutoEncoder:
                     f"Length of {split_name} data ({len(split_data)}) must be at least context window ({context_window})."
                 )
 
+<<<<<<< HEAD
         # Save positions where there are NaNs (used in reconstruct())
         x_data = np.concatenate((x_train, x_val, x_test), axis=0)
         id_key = id_iter if id_iter is not None else "global"
@@ -3065,6 +3500,8 @@ class AutoEncoder:
         self._nan_coordinates[id_key] = nan_coordinates
 
         # Determine mask
+=======
+>>>>>>> develop
         if self._use_mask:
             if getattr(self, "_custom_mask", None) is None:
                 mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
@@ -3079,7 +3516,11 @@ class AutoEncoder:
                     else:
                         mask_train, mask_val, mask_test = self._custom_mask
                 else:
+<<<<<<< HEAD
                     mask_train, mask_val, mask_test = processing.time_series_split(
+=======
+                    mask_train, mask_val, mask_test = time_series_split(
+>>>>>>> develop
                         data=(
                             self.id_data_dict_mask[id_iter]
                             if id_iter is not None
@@ -3097,6 +3538,7 @@ class AutoEncoder:
                 context_window=context_window,
             )
 
+<<<<<<< HEAD
         # After determining mask, do normalization
         if normalize:
             x_train, x_val, x_test, norm_values = (
@@ -3107,17 +3549,30 @@ class AutoEncoder:
                     normalization_method=self._normalization_method,
                 )
             )
+=======
+        if normalize:
+            x_train, x_val, x_test, norm_values = normalize_data_for_training(
+                x_train=x_train,
+                x_val=x_val,
+                x_test=x_test,
+                normalization_method=self.normalization_method,
+            )
+
+>>>>>>> develop
             if id_iter is not None:
                 self.normalization_values[id_iter] = norm_values
             else:
                 self.normalization_values = {"global": norm_values}
 
+<<<<<<< HEAD
         # Calculate NaNs before imputation
         train_nan_before = np.isnan(x_train).sum(axis=0)
         val_nan_before = np.isnan(x_val).sum(axis=0)
         test_nan_before = np.isnan(x_test).sum(axis=0)
 
         # Impute data
+=======
+>>>>>>> develop
         if self._use_mask and self.imputer is not None:
             x_train = self.imputer.apply_imputation(
                 data=pd.DataFrame(x_train)
@@ -3129,6 +3584,7 @@ class AutoEncoder:
             x_val = np.nan_to_num(x_val)
             x_test = np.nan_to_num(x_test)
 
+<<<<<<< HEAD
         # Calculate NaNs after imputation
         train_nan_after = np.isnan(x_train).sum(axis=0)
         val_nan_after = np.isnan(x_val).sum(axis=0)
@@ -3151,6 +3607,8 @@ class AutoEncoder:
             + nan_summary.to_string(index=False)
         )
 
+=======
+>>>>>>> develop
         seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
             data=x_train,
             val_data=x_val,
