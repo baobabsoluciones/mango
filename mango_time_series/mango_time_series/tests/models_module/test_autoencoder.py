@@ -1,6 +1,7 @@
-import os
+# isort:skip_file
+import tensorflow as tf
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+import os
 
 import shutil
 import tempfile
@@ -9,7 +10,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from keras.src.layers import Bidirectional
 
 from mango_time_series.models.autoencoder import AutoEncoder
