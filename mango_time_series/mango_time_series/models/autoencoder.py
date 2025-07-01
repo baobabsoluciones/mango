@@ -2574,11 +2574,13 @@ class AutoEncoder:
                 reconstruction_error_df = anomaly_detector.reconstruction_error(
                     actual_data_df=actual_data_df,
                     autoencoder_output_df=autoencoder_output_df,
+                    split_column=None,
                     save_path=save_path,
                     filename=f"{id_i}_reconstruction_error.csv",
                 )
                 anomaly_detector.reconstruction_error_summary(
                     reconstruction_error_df,
+                    split_column=None,
                     save_path=save_path,
                     filename=f"{id_i}_reconstruction_error_summary.csv",
                 )

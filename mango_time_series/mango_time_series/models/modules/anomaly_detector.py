@@ -80,6 +80,7 @@ def reconstruction_error(
     actual_data_df: pd.DataFrame,
     autoencoder_output_df: pd.DataFrame,
     threshold_factor: int = 3,
+    split_column: Optional[str] = "data_split",
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error.csv",
 ) -> pd.DataFrame:
@@ -92,6 +93,8 @@ def reconstruction_error(
     :type autoencoder_output_df: pd.DataFrame
     :param threshold_factor: Multiplier for median reconstruction error to flag high-error features
     :type threshold_factor: int
+    :param split_column: Optional name of column that defines split
+    :type split_column: Optional[str]
     :param save_path: Optional directory to save the output CSV
     :type save_path: Optional[str]
     :param filename: Filename for saved CSV
@@ -113,18 +116,19 @@ def reconstruction_error(
         )
 
     try:
+        # If split_column is None, all columns are used for error calculation
         feature_columns = [
-            col for col in autoencoder_output_df.columns if col != "data_split"
+            col for col in autoencoder_output_df.columns if col != split_column
         ]
         # Generate reconstruction error DataFrame
         reconstruction_error_df = (
             autoencoder_output_df[feature_columns] - actual_data_df[feature_columns]
         )
 
-        # Add back data_split if it was originally present
-        if "data_split" in actual_data_df.columns:
+        # Add split_column if it was originally present
+        if split_column in actual_data_df.columns:
             reconstruction_error_df.insert(
-                0, "data_split", actual_data_df["data_split"]
+                0, split_column, actual_data_df[split_column]
             )
 
         # Warn if some features have higher reconstruction error than others
@@ -159,37 +163,37 @@ def anova_reconstruction_error(
     reconstruction_error_df: pd.DataFrame,
     p_value_threshold: Optional[float] = 0.05,
     F_stat_threshold: Optional[float] = None,
+    split_column: str = "data_split",
 ) -> pd.DataFrame:
     """
-    Perform one-way ANOVA to test if reconstruction errors vary across data splits for each feature.
+    Perform one-way ANOVA to test if reconstruction errors vary across split_column for each feature.
 
-    :param reconstruction_error_df: DataFrame with reconstruction error and 'data_split' column
+    :param reconstruction_error_df: DataFrame with reconstruction error and split_column
     :type reconstruction_error_df: pd.DataFrame
     :param p_value_threshold: Maximum p-value to output logger warning
     :type p_value_threshold: float
     :param F_stat_threshold: Minimum F-statistic to output logger warning
     :type F_stat_threshold: float
+    :param split_column: Name of column that defines split
+    :type split_column: str
     :return: DataFrame with F-statistics and p-values per feature
     :rtype: pd.DataFrame
     """
-    if "data_split" not in reconstruction_error_df.columns:
+    if split_column not in reconstruction_error_df.columns:
         raise ValueError(
-            "Anova calculation requires reconstruction_error_df to have data_split "
-            "(i.e. train, validation, test)"
+            f"Anova calculation requires reconstruction_error_df to have {split_column}."
         )
-    if reconstruction_error_df["data_split"].nunique() != 3:
-        raise ValueError(
-            "data_split should have 3 categories (train, validation, test)"
-        )
+    if reconstruction_error_df[split_column].nunique() <= 2:
+        raise ValueError(f"{split_column} should have at least 2 categories.")
 
     try:
         results = []
         feature_columns = [
-            col for col in reconstruction_error_df.columns if col != "data_split"
+            col for col in reconstruction_error_df.columns if col != split_column
         ]
 
-        # Loop through each feature column and perform one-way ANOVA across data splits
-        groups = reconstruction_error_df.groupby("data_split")
+        # Loop through each feature column and perform one-way ANOVA across split_column
+        groups = reconstruction_error_df.groupby(split_column)
         for feature in feature_columns:
             group_i = groups[feature].apply(list)
 
@@ -217,44 +221,55 @@ def anova_reconstruction_error(
 
     except Exception as e:
         logger.error(
-            f"Error computing one-way ANOVA tests across feature data splits: {str(e)}"
+            f"Error computing one-way ANOVA tests across feature split_column: {str(e)}"
         )
         raise
 
 
 def reconstruction_error_summary(
     reconstruction_error_df: pd.DataFrame,
+    threshold: float = 0.5,
+    split_column: Optional[str] = "data_split",
+    split_order: Optional[List[str]] = ["train", "validation", "test"],
     save_path: Optional[str] = None,
     filename: str = "reconstruction_error_summary.csv",
-    threshold: float = 0.5,
 ) -> pd.DataFrame:
     """
     Generate and optionally save summary statistics (mean and std) for reconstruction error
-    grouped by data split (if provided).
+    grouped by split_column (if provided and present in the DataFrame).
 
     :param reconstruction_error_df: DataFrame with reconstruction error
     :type reconstruction_error_df: pd.DataFrame
+    :param threshold: Relative threshold for flagging large differences in mean/std across splits
+    :type threshold: float
+    :param split_column: Optional name of column that defines split
+    :type split_column: Optional[str]
+    :param split_order: Optional order of items in split_column
+    :type split_order: Optional[List[str]]
     :param save_path: Optional path to save the summary CSV
     :type save_path: Optional[str]
     :param filename: Filename to use for the saved CSV
     :type filename: str
-    :param threshold: Relative threshold for flagging large differences in mean/std across splits
-    :type threshold: float
     :return: Summary statistics MultiIndex column DataFrame
     :rtype: pd.DataFrame
     :raises ValueError: If data is empty
     """
     if reconstruction_error_df.empty:
-        raise ValueError("Input DataFrame cannot be empty")
+        raise ValueError("Input DataFrame cannot be empty.")
+    if split_column is not None and split_column not in reconstruction_error_df.columns:
+        raise ValueError(
+            f"{split_column} is not None and is not in "
+            f"reconstruction_error_df columns ({reconstruction_error_df.columns})"
+        )
 
     try:
-        if "data_split" in reconstruction_error_df.columns:
-            split_order = ["train", "validation", "test"]
-            if set(split_order) != set(reconstruction_error_df["data_split"].unique()):
+        if split_column in reconstruction_error_df.columns:
+            if set(split_order) != set(reconstruction_error_df[split_column].unique()):
                 raise ValueError(
-                    f"data_split in reconstruction_error_df must be train, validation, test."
+                    f"split_order set ({split_order}) must be equal to "
+                    f"reconstruction_error_df[{split_column}] set ({reconstruction_error_df[split_column].unique()})"
                 )
-            summary_stats = reconstruction_error_df.groupby("data_split").agg(
+            summary_stats = reconstruction_error_df.groupby(split_column).agg(
                 ["mean", "std"]
             )
             summary_stats = summary_stats.T.unstack(level=1)
@@ -278,15 +293,15 @@ def reconstruction_error_summary(
                 mean_values = row[mean_columns].dropna()
                 std_values = row[std_columns].dropna()
                 if len(mean_values) >= 2 and len(std_values) >= 2:
-                    diff_mean = mean_values.max() - mean_values.min()
                     max_mean = mean_values.max()
+                    diff_mean = max_mean - mean_values.min()
                     if max_mean > 0 and (diff_mean / max_mean) > threshold:
                         logger.warning(
                             f"{feature} relative mean error range across splits ({diff_mean:.3f}) "
                             f"exceeds threshold ({threshold:.0%}) of maximum ({max_mean:.3f})"
                         )
-                    diff_std = std_values.max() - std_values.min()
                     max_std = std_values.max()
+                    diff_std = max_std - std_values.min()
                     if max_std > 0 and (diff_std / max_std) > threshold:
                         logger.warning(
                             f"{feature} relative std error range across splits ({diff_std:.3f}) "
