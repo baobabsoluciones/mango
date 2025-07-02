@@ -2117,7 +2117,6 @@ class AutoEncoder:
                         save_path=save_path,
                         filename=f"{id_i}_reconstruction_error.csv",
                     )
-                    anomaly_detector.anova_reconstruction_error(reconstruction_error_df)
                     anomaly_detector.reconstruction_error_summary(
                         reconstruction_error_df,
                         save_path=save_path,
@@ -2148,7 +2147,6 @@ class AutoEncoder:
                     save_path=save_path,
                     filename=f"{id_i}_reconstruction_error.csv",
                 )
-                anomaly_detector.anova_reconstruction_error(reconstruction_error_df)
                 anomaly_detector.reconstruction_error_summary(
                     reconstruction_error_df,
                     save_path=save_path,
@@ -2562,13 +2560,14 @@ class AutoEncoder:
                 actual_data_df = pd.DataFrame(
                     actual_data_array, columns=autoencoder_output_df.columns
                 )
-                actual_data_df.sort_index(inplace=True)
                 actual_data_df = actual_data_df[
                     initial_context_offset : len(actual_data_df) - ending_context_offset
                 ]
-                actual_data_df.reset_index(drop=True, inplace=True)
-                autoencoder_output_df.sort_index(inplace=True)
-                autoencoder_output_df.reset_index(drop=True, inplace=True)
+                if not actual_data_df.index.equals(autoencoder_output_df.index):
+                    raise ValueError(
+                        f"actual_data_df index ({actual_data_df.index}) "
+                        f"does not equal autoencoder_output_df index ({autoencoder_output_df.index})"
+                    )
 
                 # Calculate reconstruction error and other metrics
                 reconstruction_error_df = anomaly_detector.reconstruction_error(

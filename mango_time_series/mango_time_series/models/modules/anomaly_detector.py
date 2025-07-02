@@ -228,7 +228,6 @@ def anova_reconstruction_error(
 
 def reconstruction_error_summary(
     reconstruction_error_df: pd.DataFrame,
-    threshold: float = 0.5,
     split_column: Optional[str] = "data_split",
     split_order: Optional[List[str]] = ["train", "validation", "test"],
     save_path: Optional[str] = None,
@@ -240,8 +239,6 @@ def reconstruction_error_summary(
 
     :param reconstruction_error_df: DataFrame with reconstruction error
     :type reconstruction_error_df: pd.DataFrame
-    :param threshold: Relative threshold for flagging large differences in mean/std across splits
-    :type threshold: float
     :param split_column: Optional name of column that defines split
     :type split_column: Optional[str]
     :param split_order: Optional order of items in split_column
@@ -264,16 +261,17 @@ def reconstruction_error_summary(
 
     try:
         if split_column in reconstruction_error_df.columns:
-            if set(split_order) != set(reconstruction_error_df[split_column].unique()):
+            unique_splits = reconstruction_error_df[split_column].unique()
+            if set(split_order) != set(unique_splits):
                 raise ValueError(
                     f"split_order set ({split_order}) must be equal to "
-                    f"reconstruction_error_df[{split_column}] set ({reconstruction_error_df[split_column].unique()})"
+                    f"reconstruction_error_df[{split_column}] set ({unique_splits})"
                 )
             summary_stats = reconstruction_error_df.groupby(split_column).agg(
                 ["mean", "std"]
             )
             summary_stats = summary_stats.T.unstack(level=1)
-            summary_stats.index.rename("feature", inplace=True)
+            summary_stats.index = summary_stats.index.rename("feature")
             summary_stats.columns = [
                 f"{split}_{stat}" for split, stat in summary_stats.columns
             ]
@@ -284,33 +282,10 @@ def reconstruction_error_summary(
             ]
             summary_stats = summary_stats[column_order]
 
-            mean_columns = [
-                col for col in summary_stats.columns if col.endswith("_mean")
-            ]
-            std_columns = [col for col in summary_stats.columns if col.endswith("_std")]
-
-            for feature, row in summary_stats.iterrows():
-                mean_values = row[mean_columns].dropna()
-                std_values = row[std_columns].dropna()
-                if len(mean_values) >= 2 and len(std_values) >= 2:
-                    max_mean = mean_values.max()
-                    diff_mean = max_mean - mean_values.min()
-                    if max_mean > 0 and (diff_mean / max_mean) > threshold:
-                        logger.warning(
-                            f"{feature} relative mean error range across splits ({diff_mean:.3f}) "
-                            f"exceeds threshold ({threshold:.0%}) of maximum ({max_mean:.3f})"
-                        )
-                    max_std = std_values.max()
-                    diff_std = max_std - std_values.min()
-                    if max_std > 0 and (diff_std / max_std) > threshold:
-                        logger.warning(
-                            f"{feature} relative std error range across splits ({diff_std:.3f}) "
-                            f"exceeds threshold ({threshold:.0%}) of maximum ({max_std:.3f})"
-                        )
         else:
             summary_stats = reconstruction_error_df.agg(["mean", "std"])
             summary_stats = summary_stats.T
-            summary_stats.index.rename("feature", inplace=True)
+            summary_stats.index = summary_stats.index.rename("feature")
 
         # Save if a path is provided
         if save_path:

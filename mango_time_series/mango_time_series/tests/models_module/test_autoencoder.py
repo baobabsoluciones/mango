@@ -918,11 +918,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                                 - ending_context_offset
                             ]
                             expected_data = expected_data.iloc[:, feature_to_check]
-
-                            df_actual_i.sort_index(inplace=True)
-                            df_actual_i.reset_index(drop=True, inplace=True)
-                            expected_data.sort_index(inplace=True)
-                            expected_data.reset_index(drop=True, inplace=True)
+                            expected_data = expected_data.reset_index(drop=True)
 
                             # Add back NaN positions to df_actual
                             # since reconstruct pipeline imputes them
@@ -966,9 +962,8 @@ class TestAutoEncoderCases(unittest.TestCase):
                                 initial_context_offset,
                             )
 
-                            df_reconstruct_i.reset_index(drop=True, inplace=True)
-                            df_reconstruct_new_data_i.reset_index(
-                                drop=True, inplace=True
+                            df_reconstruct_new_data_i = (
+                                df_reconstruct_new_data_i.reset_index(drop=True)
                             )
 
                             # Check that reconstructions match
@@ -1015,9 +1010,8 @@ class TestAutoEncoderCases(unittest.TestCase):
                                 index=["time_step"],
                                 values="value",
                             )
-                            df_reconstruct_i.reset_index(drop=True, inplace=True)
-                            df_reconstruct_new_data_i.reset_index(
-                                drop=True, inplace=True
+                            df_reconstruct_new_data_i = (
+                                df_reconstruct_new_data_i.reset_index(drop=True)
                             )
 
                             # Check that reconstructions match
@@ -1046,10 +1040,7 @@ class TestAutoEncoderCases(unittest.TestCase):
                         ]
                         expected_data = expected_data.iloc[:, feature_to_check]
 
-                        df_actual_i.sort_index(inplace=True)
-                        df_actual_i.reset_index(drop=True, inplace=True)
-                        expected_data.sort_index(inplace=True)
-                        expected_data.reset_index(drop=True, inplace=True)
+                        expected_data = expected_data.reset_index(drop=True)
 
                         # Add back NaN positions to df_actual
                         # since reconstruct pipeline imputes them
@@ -1091,8 +1082,9 @@ class TestAutoEncoderCases(unittest.TestCase):
                             initial_context_offset,
                         )
 
-                        df_reconstruct_i.reset_index(drop=True, inplace=True)
-                        df_reconstruct_new_data_i.reset_index(drop=True, inplace=True)
+                        df_reconstruct_new_data_i = (
+                            df_reconstruct_new_data_i.reset_index(drop=True)
+                        )
 
                         # Check that reconstructions match
                         pd.testing.assert_frame_equal(

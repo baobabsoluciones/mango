@@ -24,18 +24,18 @@ def reintroduce_nans(self, df: pd.DataFrame, id: str) -> pd.DataFrame:
     if id not in self._nan_coordinates:
         raise ValueError(f"{id} not found in _nan_coordinates.")
 
+    df_nans = df.copy()
+
+    col_offset = 1 if df.columns[0] == "data_split" else 0
+
     for row, col in self._nan_coordinates[id]:
         adj_row = row - self._time_step_to_check[0]
-
-        if df.columns[0] == "data_split":
-            adj_col = col + 1
-        else:
-            adj_col = col
+        adj_col = col + col_offset
 
         if 0 <= adj_row < len(df):
-            df.iloc[adj_row, adj_col] = np.nan
+            df_nans.iloc[adj_row, adj_col] = np.nan
 
-    return df
+    return df_nans
 
 
 def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
@@ -56,15 +56,31 @@ def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
     if not required_cols.issubset(df.columns):
         raise ValueError(f"DataFrame must contain columns: {required_cols}")
 
-    # Select id, pivot to have time_step as rows, features as columns
-    df = df[df.id == id]
-    df = pd.pivot(
-        df, columns="feature", index=["time_step", "data_split"], values="value"
-    )
-    # Add data_split as a column
-    df.reset_index(level=["data_split"], inplace=True)
+    # Select id
+    df_id = df[df.id == id].copy()
 
-    return df
+    # Save feature order since pd.pivot sorts columns automatically
+    df_id_feat = df_id[df_id.time_step == df_id["time_step"][0]]
+    feature_order = df_id_feat["feature"].tolist()
+    feature_column_no_duplicates = df_id["feature"].drop_duplicates().tolist()
+    if feature_order != feature_column_no_duplicates:
+        raise ValueError(
+            f"feature in first time_step ({feature_order}) "
+            f"does not match feature column ({feature_column_no_duplicates})"
+        )
+
+    # Pivot to have time_step as rows, features as columns
+    df_id_pivot = pd.pivot(
+        df_id, columns="feature", index=["time_step", "data_split"], values="value"
+    )
+
+    # Add data_split as a column
+    df_id_pivot = df_id_pivot.reset_index(level=["data_split"])
+
+    # Reorder columns to match original order
+    df_id_pivot = df_id_pivot[["data_split"] + feature_order]
+
+    return df_id_pivot
 
 
 def save_csv(
@@ -94,20 +110,28 @@ def save_csv(
     :param logger_msg: Logger message to use
     :type logger_msg: str
     """
-    float_format = f"%.{decimals}f"
-    data = data.round(decimals)
+    try:
+        float_format = f"%.{decimals}f"
+        data = data.round(decimals)
 
-    path = Path(save_path)
-    path.mkdir(parents=True, exist_ok=True)
-    file_path = path / filename
-    data.to_csv(
-        file_path, index=save_index, float_format=float_format, compression=compression
-    )
+        path = Path(save_path)
+        path.mkdir(parents=True, exist_ok=True)
+        file_path = path / filename
+        data.to_csv(
+            file_path,
+            index=save_index,
+            float_format=float_format,
+            compression=compression,
+        )
 
-    if logger_msg == "standard":
-        logger.info(f"{filename} saved to {path}")
-    else:
-        logger.info(logger_msg)
+        if logger_msg == "standard":
+            logger.info(f"{filename} saved to {path}")
+        else:
+            logger.info(logger_msg)
+
+    except Exception as e:
+        logger.error(f"Error saving csv: {str(e)}")
+        raise
 
 
 def time_series_split(
