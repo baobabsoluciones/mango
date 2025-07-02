@@ -104,16 +104,20 @@ def reconstruction_error(
     :raises ValueError: If input DataFrames have different lengths or columns
     """
     # Validate input parameters
-    if len(autoencoder_output_df) != len(actual_data_df):
+    if not actual_data_df.index.equals(autoencoder_output_df.index):
         raise ValueError(
-            f"Autoencoder output rows ({len(autoencoder_output_df)}) "
-            f"do not match actual data rows ({len(actual_data_df)})"
+            f"Autoencoder output index ({autoencoder_output_df.index}) "
+            f"does not match actual data index ({actual_data_df.index})"
         )
     if not autoencoder_output_df.columns.equals(actual_data_df.columns):
         raise ValueError(
             f"Autoencoder output columns ({autoencoder_output_df.columns}) "
             f"do not match actual data columns ({actual_data_df.columns})"
         )
+    if split_column is not None and split_column not in actual_data_df.columns:
+        raise ValueError(
+            f"{split_column} not found in actual_data_df"
+            )
 
     try:
         # If split_column is None, all columns are used for error calculation
@@ -271,7 +275,7 @@ def reconstruction_error_summary(
                 ["mean", "std"]
             )
             summary_stats = summary_stats.T.unstack(level=1)
-            summary_stats.index = summary_stats.index.rename("feature")
+            summary_stats.index.name = "feature" 
             summary_stats.columns = [
                 f"{split}_{stat}" for split, stat in summary_stats.columns
             ]
@@ -285,7 +289,7 @@ def reconstruction_error_summary(
         else:
             summary_stats = reconstruction_error_df.agg(["mean", "std"])
             summary_stats = summary_stats.T
-            summary_stats.index = summary_stats.index.rename("feature")
+            summary_stats.index.name = "feature" 
 
         # Save if a path is provided
         if save_path:

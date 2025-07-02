@@ -58,6 +58,8 @@ def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
 
     # Select id
     df_id = df[df.id == id].copy()
+    if df_id.empty:
+        raise ValueError(f"No data found for id = {id}")
 
     # Save feature order since pd.pivot sorts columns automatically
     df_id_feat = df_id[df_id.time_step == df_id["time_step"][0]]
@@ -110,6 +112,9 @@ def save_csv(
     :param logger_msg: Logger message to use
     :type logger_msg: str
     """
+    if not (filename.endswith(".csv") or filename.endswith(".csv.zip")):
+        raise ValueError(f"Filename ({filename}) ending needs to be .csv or .csv.zip ")
+    
     try:
         float_format = f"%.{decimals}f"
         data = data.round(decimals)
