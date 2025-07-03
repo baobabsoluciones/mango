@@ -64,7 +64,8 @@ def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
         raise ValueError(f"No data found for id = {id}")
 
     # Save feature order since pd.pivot sorts columns automatically
-    df_id_feat = df_id[df_id.time_step == df_id["time_step"][0]]
+    first_ts = df_id["time_step"].iloc[0]
+    df_id_feat = df_id[df_id.time_step == first_ts]
     feature_order = df_id_feat["feature"].tolist()
     feature_column_no_duplicates = df_id["feature"].drop_duplicates().tolist()
     if feature_order != feature_column_no_duplicates:
