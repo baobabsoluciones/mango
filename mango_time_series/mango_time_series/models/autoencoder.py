@@ -2434,7 +2434,7 @@ class AutoEncoder:
         if iterations < 1:
             raise ValueError("iterations must be at least 1")
         if not isinstance(data, (np.ndarray, pd.DataFrame, pl.DataFrame)):
-            raise ValueError(
+            raise TypeError(
                 f"Unsupported data type: {type(data)}. "
                 "Expect np.ndarray, pd.DataFrame, or pl.DataFrame"
             )
