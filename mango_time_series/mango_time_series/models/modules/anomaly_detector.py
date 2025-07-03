@@ -101,7 +101,7 @@ def reconstruction_error(
     :type filename: str
     :return: DataFrame with reconstruction error
     :rtype: pd.DataFrame
-    :raises ValueError: If input DataFrames have different lengths or columns
+    :raises ValueError: If input DataFrames have different index or columns
     """
     # Validate input parameters
     if not actual_data_df.index.equals(autoencoder_output_df.index):
@@ -115,9 +115,7 @@ def reconstruction_error(
             f"do not match actual data columns ({actual_data_df.columns})"
         )
     if split_column is not None and split_column not in actual_data_df.columns:
-        raise ValueError(
-            f"{split_column} not found in actual_data_df"
-            )
+        raise ValueError(f"{split_column} not found in actual_data_df")
 
     try:
         # If split_column is None, all columns are used for error calculation
@@ -251,7 +249,7 @@ def reconstruction_error_summary(
     :type save_path: Optional[str]
     :param filename: Filename to use for the saved CSV
     :type filename: str
-    :return: Summary statistics MultiIndex column DataFrame
+    :return: Summary statistics (mean and std based on split_column)
     :rtype: pd.DataFrame
     :raises ValueError: If data is empty
     """
@@ -275,7 +273,7 @@ def reconstruction_error_summary(
                 ["mean", "std"]
             )
             summary_stats = summary_stats.T.unstack(level=1)
-            summary_stats.index.name = "feature" 
+            summary_stats.index.name = "feature"
             summary_stats.columns = [
                 f"{split}_{stat}" for split, stat in summary_stats.columns
             ]
@@ -289,7 +287,7 @@ def reconstruction_error_summary(
         else:
             summary_stats = reconstruction_error_df.agg(["mean", "std"])
             summary_stats = summary_stats.T
-            summary_stats.index.name = "feature" 
+            summary_stats.index.name = "feature"
 
         # Save if a path is provided
         if save_path:

@@ -2130,6 +2130,8 @@ class AutoEncoder:
                     )
             else:
                 id_i = "global"
+                df_reconstructed = df_reconstructed.copy()
+                df_actual = df_actual.copy()
                 df_reconstructed["id"] = "global"
                 df_actual["id"] = "global"
 
@@ -2165,6 +2167,7 @@ class AutoEncoder:
                 ids = df_reconstructed.id.unique().tolist()
             else:
                 ids = ["global"]
+                df_reconstructed = df_reconstructed.copy()
                 df_reconstructed["id"] = "global"
             for id_i in ids:
                 df_reconstructed_i = processing.id_pivot(df=df_reconstructed, id=id_i)

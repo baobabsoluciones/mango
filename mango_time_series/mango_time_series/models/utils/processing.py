@@ -26,12 +26,14 @@ def reintroduce_nans(self, df: pd.DataFrame, id: str) -> pd.DataFrame:
 
     df_nans = df.copy()
 
+    # Need to shift one column to right if "data_split" in columns
     col_offset = 1 if df.columns[0] == "data_split" else 0
 
     for row, col in self._nan_coordinates[id]:
         adj_row = row - self._time_step_to_check[0]
         adj_col = col + col_offset
 
+        # Reintroduce NaNs for valid indices in df
         if 0 <= adj_row < len(df):
             df_nans.iloc[adj_row, adj_col] = np.nan
 
@@ -111,10 +113,11 @@ def save_csv(
     :type compression: str
     :param logger_msg: Logger message to use
     :type logger_msg: str
+    :type return: None
     """
     if not (filename.endswith(".csv") or filename.endswith(".csv.zip")):
         raise ValueError(f"Filename ({filename}) ending needs to be .csv or .csv.zip ")
-    
+
     try:
         float_format = f"%.{decimals}f"
         data = data.round(decimals)
