@@ -1,5 +1,6 @@
 import os
 import pickle
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -12,21 +13,8 @@ from tensorflow.keras.layers import Dense
 
 from mango.logging import get_configured_logger
 from mango.processing.data_imputer import DataImputer
-from mango_time_series.models.modules import decoder, encoder
-from mango_time_series.models.utils.plots import (
-    plot_actual_and_reconstructed,
-    plot_loss_history,
-    plot_reconstruction_iterations,
-)
-from mango_time_series.models.utils.processing import (
-    apply_padding,
-    convert_data_to_numpy,
-    denormalize_data,
-    handle_id_columns,
-    normalize_data_for_prediction,
-    normalize_data_for_training,
-    time_series_split,
-)
+from mango_time_series.models.modules import anomaly_detector, decoder, encoder
+from mango_time_series.models.utils import plots, processing
 from mango_time_series.models.utils.sequences import time_series_to_sequence
 
 logger = get_configured_logger()
@@ -112,6 +100,21 @@ class AutoEncoder:
         self._use_mask = False
         self._custom_mask = None
         self._shuffle = False
+        self._nan_coordinates = {}
+
+    @property
+    def nan_coordinates(self) -> Dict:
+        """
+        Get the NaN coordinates from the input data.
+
+        Dictionary maps each id (id_columns or global if not used)
+        to a NumPy array of shape (n, 2), where each row contains the
+        [row_index, column_index] of a NaN found in the input data.
+
+        :return: Dictionary mapping id to array of NaN positions
+        :rtype: Dict
+        """
+        return self._nan_coordinates
 
     @property
     def save_path(self) -> Optional[str]:
@@ -325,7 +328,10 @@ class AutoEncoder:
         # Validate that data is a single array or a tuple of three arrays
         if isinstance(value, tuple):
             if len(value) != 3:
-                raise ValueError("Data must be a tuple with three numpy arrays")
+                raise ValueError(
+                    "If data is a tuple, it must be three numpy arrays. "
+                    "First array is train set, second is validation, and third is test."
+                )
         elif not isinstance(value, np.ndarray):
             raise ValueError(
                 "Data must be a numpy array or a tuple with three numpy arrays"
@@ -379,7 +385,13 @@ class AutoEncoder:
 
         :param value: Normalization flag
         :type value: bool
+        :raises ValueError: If trying to enable normalization without a method set
         """
+        if value and self._normalization_method is None:
+            raise ValueError(
+                "Cannot enable normalization without setting a normalization method. "
+                "Set normalization_method first."
+            )
         self._normalize = value
 
     @property
@@ -403,9 +415,9 @@ class AutoEncoder:
         if hasattr(self, "model") and self.model is not None:
             raise ValueError("Cannot change normalization_method after model is built")
 
-        if value not in ["minmax", "zscore"]:
+        if value not in ["minmax", "zscore", None]:
             raise ValueError(
-                "Invalid normalization method. Choose 'minmax' or 'zscore'."
+                "Invalid normalization method. Choose 'minmax', 'zscore', or None."
             )
 
         self._normalization_method = value
@@ -1226,8 +1238,8 @@ class AutoEncoder:
         self.context_window = context_window
         self.time_step_to_check = time_step_to_check
         self.feature_to_check = feature_to_check
-        self.normalize = normalize
         self.normalization_method = normalization_method
+        self.normalize = normalize
         self.hidden_dim = hidden_dim
         self.bidirectional_encoder = bidirectional_encoder
         self.bidirectional_decoder = bidirectional_decoder
@@ -1244,7 +1256,7 @@ class AutoEncoder:
         self.shuffle_buffer_size = shuffle_buffer_size
 
         # Extract names and convert data to numpy
-        self.data, extracted_feature_names = convert_data_to_numpy(data=data)
+        self.data, extracted_feature_names = processing.convert_data_to_numpy(data=data)
         self.features_name = (
             feature_names
             or extracted_feature_names
@@ -1259,7 +1271,7 @@ class AutoEncoder:
         )
 
         (self.data, self.id_data, self.id_data_dict, self.id_columns_indices) = (
-            handle_id_columns(
+            processing.handle_id_columns(
                 data=self._data,
                 id_columns=id_columns,
                 features_name=self._features_name,
@@ -1268,9 +1280,9 @@ class AutoEncoder:
         )
 
         if self._use_mask and custom_mask is not None:
-            custom_mask, _ = convert_data_to_numpy(custom_mask)
+            custom_mask, _ = processing.convert_data_to_numpy(custom_mask)
             custom_mask, self.id_data_mask, self.id_data_dict_mask, _ = (
-                handle_id_columns(
+                processing.handle_id_columns(
                     data=custom_mask,
                     id_columns=id_columns,
                     features_name=self._features_name,
@@ -1515,7 +1527,7 @@ class AutoEncoder:
         self.val_loss_history = val_loss_history
 
         # Plot loss history
-        plot_loss_history(
+        plots.plot_loss_history(
             train_loss=train_loss_history,
             val_loss=val_loss_history,
             save_path=os.path.join(self._save_path, "plots"),
@@ -1676,7 +1688,7 @@ class AutoEncoder:
                                     "feature": feature_name,
                                     "time_step": t,
                                     "value": x_converted[feature_idx, current_pos],
-                                    "dataset": data_split,
+                                    "data_split": data_split,
                                 }
                             )
                             data_points_reconstructed.append(
@@ -1685,7 +1697,7 @@ class AutoEncoder:
                                     "feature": feature_name,
                                     "time_step": t,
                                     "value": x_hat[feature_idx, current_pos],
-                                    "dataset": data_split,
+                                    "data_split": data_split,
                                 }
                             )
                         current_pos = current_pos + 1
@@ -1708,7 +1720,7 @@ class AutoEncoder:
                                 "feature": feature_name,
                                 "time_step": current_pos,
                                 "value": x_converted[feature_idx, current_pos],
-                                "dataset": data_split,
+                                "data_split": data_split,
                             }
                         )
                         data_points_reconstructed.append(
@@ -1716,7 +1728,7 @@ class AutoEncoder:
                                 "feature": feature_name,
                                 "time_step": current_pos,
                                 "value": x_hat[feature_idx, current_pos],
-                                "dataset": data_split,
+                                "data_split": data_split,
                             }
                         )
                     current_pos = current_pos + 1
@@ -1729,13 +1741,27 @@ class AutoEncoder:
 
         return pd.DataFrame(data_points_actual), pd.DataFrame(data_points_reconstructed)
 
-    def reconstruct(self) -> bool:
+    def reconstruct(
+        self,
+        save_path: Optional[str] = None,
+        reconstruction_diagnostic: bool = False,
+    ) -> pd.DataFrame:
         """
         Reconstruct the data using the trained model and plot the actual and reconstructed values.
 
-        :return: True if reconstruction was successful
-        :rtype: bool
+        :param save_path: Path to save reconstruction results, plots, and diagnostics
+        :type save_path: Optional[str]
+        :param reconstruction_diagnostic: If True, shows and optionally saves reconstruction error data and plots
+        :type reconstruction_diagnostic: bool
+        :return: Reconstruction results
+        :rtype: pd.DataFrame
         """
+        if self.x_train_no_shuffle is None:
+            raise ValueError(
+                "self.x_train_no_shuffle is None so reconstruction on training data can't be done. "
+                "recontruct() can only be done after build_model() and train_autoencoder() have been run."
+            )
+
         # Calculate fitted values for each dataset
         # We use the original data for the training set to avoid shuffling in reconstruction step
         x_hat_train = self.model(self.x_train_no_shuffle)
@@ -1765,7 +1791,7 @@ class AutoEncoder:
                 norm_values = self.normalization_values["global"]
 
                 # Denormalize predictions
-                x_hat_train = denormalize_data(
+                x_hat_train = processing.denormalize_data(
                     data=x_hat_train,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1781,7 +1807,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_hat_val = denormalize_data(
+                x_hat_val = processing.denormalize_data(
                     data=x_hat_val,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1797,7 +1823,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_hat_test = denormalize_data(
+                x_hat_test = processing.denormalize_data(
                     data=x_hat_test,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1815,7 +1841,7 @@ class AutoEncoder:
                 )
 
                 # Denormalize original data
-                x_train_converted = denormalize_data(
+                x_train_converted = processing.denormalize_data(
                     data=x_train_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1831,7 +1857,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_val_converted = denormalize_data(
+                x_val_converted = processing.denormalize_data(
                     data=x_val_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1847,7 +1873,7 @@ class AutoEncoder:
                         else None
                     ),
                 )
-                x_test_converted = denormalize_data(
+                x_test_converted = processing.denormalize_data(
                     data=x_test_converted,
                     normalization_method=self._normalization_method,
                     min_x=norm_values["min_x"][self._feature_to_check],
@@ -1911,7 +1937,7 @@ class AutoEncoder:
                     id_x_test = x_test_converted[test_start_idx:test_end_idx]
 
                     # Denormalize data for this ID
-                    id_x_hat_train = denormalize_data(
+                    id_x_hat_train = processing.denormalize_data(
                         data=id_x_hat_train,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1927,7 +1953,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_hat_val = denormalize_data(
+                    id_x_hat_val = processing.denormalize_data(
                         data=id_x_hat_val,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1943,7 +1969,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_hat_test = denormalize_data(
+                    id_x_hat_test = processing.denormalize_data(
                         data=id_x_hat_test,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1960,7 +1986,7 @@ class AutoEncoder:
                         ),
                     )
 
-                    id_x_train = denormalize_data(
+                    id_x_train = processing.denormalize_data(
                         data=id_x_train,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1976,7 +2002,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_val = denormalize_data(
+                    id_x_val = processing.denormalize_data(
                         data=id_x_val,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -1992,7 +2018,7 @@ class AutoEncoder:
                             else None
                         ),
                     )
-                    id_x_test = denormalize_data(
+                    id_x_test = processing.denormalize_data(
                         data=id_x_test,
                         normalization_method=self._normalization_method,
                         min_x=norm_values["min_x"][self._feature_to_check],
@@ -2064,15 +2090,101 @@ class AutoEncoder:
             val_split=val_split,
         )
 
-        # Plot the data
-        plot_actual_and_reconstructed(
-            df_actual=df_actual,
-            df_reconstructed=df_reconstructed,
-            save_path=os.path.join(self._save_path, "plots"),
-            feature_labels=feature_labels,
-        )
+        # Define save_path
+        if save_path is not None:
+            save_path = os.path.join(save_path, "reconstruct")
 
-        return True
+        # Display and save reconstruction errors
+        if reconstruction_diagnostic:
+            # Check if there are id_columns through id_data_dict
+            if self.id_data_dict:
+                for id_i in df_actual.id.unique().tolist():
+                    # Get appropriate actual and reconstructed data based on id
+                    df_actual_i = processing.id_pivot(df=df_actual, id=id_i)
+                    df_reconstructed_i = processing.id_pivot(
+                        df=df_reconstructed, id=id_i
+                    )
+
+                    # Reintroduce nulls from original data (before imputation)
+                    df_actual_i = processing.reintroduce_nans(
+                        self, df=df_actual_i, id=id_i
+                    )
+
+                    # Calculate reconstruction error and other metrics
+                    reconstruction_error_df = anomaly_detector.reconstruction_error(
+                        actual_data_df=df_actual_i,
+                        autoencoder_output_df=df_reconstructed_i,
+                        save_path=save_path,
+                        filename=f"{id_i}_reconstruction_error.csv",
+                    )
+                    anomaly_detector.reconstruction_error_summary(
+                        reconstruction_error_df,
+                        save_path=save_path,
+                        filename=f"{id_i}_reconstruction_error_summary.csv",
+                    )
+                    plots.boxplot_reconstruction_error(
+                        reconstruction_error_df,
+                        save_path=save_path,
+                        filename=f"{id_i}_reconstruction_error_boxplot.html",
+                        show=True,
+                    )
+            else:
+                id_i = "global"
+                df_reconstructed = df_reconstructed.copy()
+                df_actual = df_actual.copy()
+                df_reconstructed["id"] = "global"
+                df_actual["id"] = "global"
+
+                # Get appropriate actual and reconstructed data based on id
+                df_actual_i = processing.id_pivot(df=df_actual, id=id_i)
+                df_reconstructed_i = processing.id_pivot(df=df_reconstructed, id=id_i)
+
+                # Reintroduce nulls from original data (before imputation)
+                df_actual_i = processing.reintroduce_nans(self, df=df_actual_i, id=id_i)
+
+                # Calculate reconstruction error and other metrics
+                reconstruction_error_df = anomaly_detector.reconstruction_error(
+                    actual_data_df=df_actual_i,
+                    autoencoder_output_df=df_reconstructed_i,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error.csv",
+                )
+                anomaly_detector.reconstruction_error_summary(
+                    reconstruction_error_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_summary.csv",
+                )
+                plots.boxplot_reconstruction_error(
+                    reconstruction_error_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_boxplot.html",
+                    show=True,
+                )
+
+        # Save reconstruction if save_path is provided
+        if save_path is not None:
+            if "id" in df_reconstructed.columns:
+                ids = df_reconstructed.id.unique().tolist()
+            else:
+                ids = ["global"]
+                df_reconstructed = df_reconstructed.copy()
+                df_reconstructed["id"] = "global"
+            for id_i in ids:
+                df_reconstructed_i = processing.id_pivot(df=df_reconstructed, id=id_i)
+                processing.save_csv(
+                    df_reconstructed_i,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_results.csv",
+                )
+            # Plot the data
+            plots.plot_actual_and_reconstructed(
+                df_actual=df_actual,
+                df_reconstructed=df_reconstructed,
+                save_path=os.path.join(save_path, "plots"),
+                feature_labels=feature_labels,
+            )
+
+        return df_reconstructed
 
     def save(
         self, save_path: Optional[str] = None, filename: str = "model.pkl"
@@ -2295,6 +2407,7 @@ class AutoEncoder:
         iterations: int = 1,
         id_columns: Optional[Union[str, int, List[str], List[int]]] = None,
         save_path: Optional[str] = None,
+        reconstruction_diagnostic: bool = False,
     ) -> Dict[str, pd.DataFrame]:
         """
         Predict and reconstruct unknown data, iterating over NaN values to improve predictions.
@@ -2306,8 +2419,10 @@ class AutoEncoder:
         :type iterations: int
         :param id_columns: Column(s) that define IDs to process reconstruction separately
         :type id_columns: Optional[Union[str, int, List[str], List[int]]]
-        :param save_path: Path to save the reconstructed data plots
+        :param save_path: Path to save reconstruction results, plots, and diagnostics
         :type save_path: Optional[str]
+        :param reconstruction_diagnostic: If True, shows and optionally saves reconstruction error data and plots
+        :type reconstruction_diagnostic: bool
         :return: Dictionary with reconstructed data per ID (or "global" if no ID)
         :rtype: Dict[str, pd.DataFrame]
         :raises ValueError: If no model is loaded or if id_columns format is invalid
@@ -2316,8 +2431,25 @@ class AutoEncoder:
             raise ValueError(
                 "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
             )
+        if iterations < 1:
+            raise ValueError("iterations must be at least 1")
+        if not isinstance(data, (np.ndarray, pd.DataFrame, pl.DataFrame)):
+            raise TypeError(
+                f"Unsupported data type: {type(data)}. "
+                "Expect np.ndarray, pd.DataFrame, or pl.DataFrame"
+            )
 
-        data, feature_names = convert_data_to_numpy(data=data)
+        data, feature_names = processing.convert_data_to_numpy(data=data)
+
+        if feature_names == []:
+            feature_count = data.shape[1]
+            feature_names = [f"feature_{i}" for i in range(feature_count)]
+
+        if self.features_name != feature_names:
+            raise ValueError(
+                f"Feature names in recontruct_new_data(): {feature_names} "
+                f"do not match those from build_model(): {self.features_name}"
+            )
 
         # Create features_names_to_check, excluding ID columns if they exist
         if id_columns is not None and feature_names:
@@ -2358,11 +2490,13 @@ class AutoEncoder:
 
         # Handle ID columns
         if id_columns is not None:
-            data, _, id_data_dict, self.id_columns_indices = handle_id_columns(
-                data=data,
-                id_columns=id_columns,
-                features_name=feature_names,
-                context_window=self.context_window,
+            data, _, id_data_dict, self.id_columns_indices = (
+                processing.handle_id_columns(
+                    data=data,
+                    id_columns=id_columns,
+                    features_name=feature_names,
+                    context_window=self._context_window,
+                )
             )
         else:
             id_data_dict = {"global": data}
@@ -2371,6 +2505,12 @@ class AutoEncoder:
 
         if id_columns is not None:
             for id_iter, data_id in id_data_dict.items():
+                if len(data_id) < self._context_window:
+                    raise ValueError(
+                        f"{id_iter} has length {len(data_id)} but needs to be "
+                        f"at least context window ({self._context_window}) in length"
+                    )
+
                 nan_positions_id = np.isnan(data_id)
                 has_nans_id = np.any(nan_positions_id)
 
@@ -2384,6 +2524,12 @@ class AutoEncoder:
                     save_path=save_path,
                 )
         else:
+            if len(data) < self._context_window:
+                raise ValueError(
+                    f"Data has length {len(data)} but needs to be "
+                    f"at least context window ({self._context_window}) in length"
+                )
+
             nan_positions = np.isnan(data)
             has_nans = np.any(nan_positions)
             reconstructed_results["global"] = self._reconstruct_single_dataset(
@@ -2395,6 +2541,57 @@ class AutoEncoder:
                 id_iter=None,
                 save_path=save_path,
             )
+
+        # Save reconstruction if save_path is provided
+        if save_path is not None:
+            save_path = os.path.join(save_path, "reconstruct_new_data")
+            for id_i, autoencoder_output_df in reconstructed_results.items():
+                processing.save_csv(
+                    autoencoder_output_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_results.csv",
+                )
+
+        # Display and save reconstruction errors
+        if reconstruction_diagnostic:
+            # Define context offset
+            initial_context_offset = self._time_step_to_check[0]
+            ending_context_offset = self._context_window - 1 - initial_context_offset
+            # use keys from reconstructed_results to get approriate data from id_data_dict
+            for id_i, autoencoder_output_df in reconstructed_results.items():
+                actual_data_array = id_data_dict[id_i][:, self._feature_to_check]
+                actual_data_df = pd.DataFrame(
+                    actual_data_array, columns=autoencoder_output_df.columns
+                )
+                actual_data_df = actual_data_df[
+                    initial_context_offset : len(actual_data_df) - ending_context_offset
+                ]
+                if not actual_data_df.index.equals(autoencoder_output_df.index):
+                    raise ValueError(
+                        f"actual_data_df index ({actual_data_df.index}) "
+                        f"does not equal autoencoder_output_df index ({autoencoder_output_df.index})"
+                    )
+
+                # Calculate reconstruction error and other metrics
+                reconstruction_error_df = anomaly_detector.reconstruction_error(
+                    actual_data_df=actual_data_df,
+                    autoencoder_output_df=autoencoder_output_df,
+                    split_column=None,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error.csv",
+                )
+                anomaly_detector.reconstruction_error_summary(
+                    reconstruction_error_df,
+                    split_column=None,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_summary.csv",
+                )
+                plots.boxplot_reconstruction_error(
+                    reconstruction_error_df,
+                    save_path=save_path,
+                    filename=f"{id_i}_reconstruction_error_boxplot.html",
+                    show=True,
+                )
 
         return reconstructed_results
 
@@ -2430,6 +2627,7 @@ class AutoEncoder:
         :raises ValueError: If normalization fails or if there are issues with the reconstruction process
         """
         data_original = np.copy(data)
+
         reconstructed_iterations = {}
 
         # Get normalization values for the current ID or global
@@ -2440,17 +2638,17 @@ class AutoEncoder:
         ) or {}
 
         if not normalization_values:
-            if self.normalization_method not in ["minmax", "zscore"]:
+            if self._normalization_method not in ["minmax", "zscore", None]:
                 raise ValueError("Invalid normalization method.")
 
             # Simulate train/val/test split using only current data
             x_train = x_val = x_test = data
 
-            _, _, _, normalization_values = normalize_data_for_training(
+            _, _, _, normalization_values = processing.normalize_data_for_training(
                 x_train=x_train,
                 x_val=x_val,
                 x_test=x_test,
-                normalization_method=self.normalization_method,
+                normalization_method=self._normalization_method,
             )
 
         # Set normalization parameters
@@ -2463,8 +2661,8 @@ class AutoEncoder:
         if not has_nans:
             if self._normalization_method:
                 try:
-                    data = normalize_data_for_prediction(
-                        normalization_method=self.normalization_method,
+                    data = processing.normalize_data_for_prediction(
+                        normalization_method=self._normalization_method,
                         data=data,
                         min_x=self.min_x,
                         max_x=self.max_x,
@@ -2480,7 +2678,7 @@ class AutoEncoder:
             reconstructed_data = self.model.predict(data_seq)
 
             if self._normalization_method:
-                reconstructed_data = denormalize_data(
+                reconstructed_data = processing.denormalize_data(
                     data=reconstructed_data,
                     normalization_method=self._normalization_method,
                     min_x=(
@@ -2505,7 +2703,7 @@ class AutoEncoder:
                     ),
                 )
 
-            padded_reconstructed = apply_padding(
+            padded_reconstructed = processing.apply_padding(
                 data=data[:, self._feature_to_check],
                 reconstructed=reconstructed_data,
                 context_window=self._context_window,
@@ -2529,66 +2727,149 @@ class AutoEncoder:
             reconstructed_df = pd.DataFrame(padded_reconstructed, columns=feature_names)
             reconstructed_df["type"] = "reconstructed"
 
-            plot_actual_and_reconstructed(
+            plots.plot_actual_and_reconstructed(
                 df_actual=actual_df,
                 df_reconstructed=reconstructed_df,
                 save_path=plot_path,
                 feature_labels=feature_names,
             )
 
-            if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
+            if reconstructed_df.isna().sum().sum() != (self._context_window - 1) * len(
                 feature_names
             ):
                 raise ValueError(
-                    f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
+                    f"Expect context_window-1={(self._context_window - 1)} NaN values per feature."
                     f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
                 )
 
             # Remove padding rows
             reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
-            reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
+            reconstructed_df = reconstructed_df.dropna(axis=0, how="any")
             if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
                 raise ValueError(
                     f"Reconstructed data has {len(reconstructed_df)} rows."
                     f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
                 )
 
-            return reconstructed_df
-
         # Case 2: With NaNs - Iterative reconstruction
-        reconstruction_records = []
-        reconstructed_iterations[0] = np.copy(data[:, self._feature_to_check])
+        else:
+            reconstruction_records = []
+            reconstructed_iterations[0] = np.copy(data[:, self._feature_to_check])
 
-        if self._normalization_method:
-            try:
-                data = normalize_data_for_prediction(
-                    normalization_method=self.normalization_method,
-                    data=data,
-                    min_x=self.min_x,
-                    max_x=self.max_x,
-                    mean_=self.mean_,
-                    std_=self.std_,
-                )
-            except Exception as e:
-                raise ValueError(f"Error during normalization for ID {id_iter}: {e}")
+            if self._normalization_method:
+                try:
+                    data = processing.normalize_data_for_prediction(
+                        normalization_method=self._normalization_method,
+                        data=data,
+                        min_x=self.min_x,
+                        max_x=self.max_x,
+                        mean_=self.mean_,
+                        std_=self.std_,
+                    )
+                except Exception as e:
+                    raise ValueError(
+                        f"Error during normalization for ID {id_iter}: {e}"
+                    )
 
-        # Iterative reconstruction loop
-        for iter_num in range(1, iterations):
             # Handle missing values
             if self.imputer is not None:
-                data = self.imputer.apply_imputation(data=pd.DataFrame(data)).to_numpy()
+                data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
             else:
                 data = np.nan_to_num(data, nan=0)
 
-            # Generate sequence and predict
+            # Iterative reconstruction loop
+            for iter_num in range(1, iterations):
+                # Generate sequence and predict
+                data_seq = time_series_to_sequence(
+                    data=data, context_window=self._context_window
+                )
+                reconstructed_data = self.model.predict(data_seq)
+
+                if self._normalization_method:
+                    reconstructed_data = processing.denormalize_data(
+                        data=reconstructed_data,
+                        normalization_method=self._normalization_method,
+                        min_x=(
+                            self.min_x[self._feature_to_check]
+                            if self.min_x is not None
+                            else None
+                        ),
+                        max_x=(
+                            self.max_x[self._feature_to_check]
+                            if self.max_x is not None
+                            else None
+                        ),
+                        mean_=(
+                            self.mean_[self._feature_to_check]
+                            if self.mean_ is not None
+                            else None
+                        ),
+                        std_=(
+                            self.std_[self._feature_to_check]
+                            if self.std_ is not None
+                            else None
+                        ),
+                    )
+
+                # Apply padding and store results
+                padded_reconstructed = processing.apply_padding(
+                    data=data[:, self._feature_to_check],
+                    reconstructed=reconstructed_data,
+                    context_window=self._context_window,
+                    time_step_to_check=self._time_step_to_check,
+                )
+
+                reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
+
+                # Record reconstruction progress
+                normalized_reconstructed = None
+                if self._normalization_method:
+                    normalized_reconstructed = processing.normalize_data_for_prediction(
+                        normalization_method=self._normalization_method,
+                        data=padded_reconstructed,
+                        feature_to_check_filter=True,
+                        feature_to_check=self._feature_to_check,
+                        min_x=self.min_x,
+                        max_x=self.max_x,
+                        mean_=self.mean_,
+                        std_=self.std_,
+                    )
+
+                for i, j in zip(*np.where(nan_positions)):
+                    # Don't update values outside context window
+                    if i < self._time_step_to_check[0] or i >= len(data) - (
+                        self._context_window - 1 - self._time_step_to_check[0]
+                    ):
+                        continue
+
+                    col_idx = self._feature_to_check[j]
+                    recon_value = padded_reconstructed[i, j]
+
+                    reconstruction_records.append(
+                        {
+                            "ID": id_iter if id_iter else "global",
+                            "Column": j + 1,
+                            "Timestep": i,
+                            "Iteration": iter_num,
+                            "Reconstructed value": recon_value,
+                        }
+                    )
+
+                    data[i, col_idx] = (
+                        normalized_reconstructed[i, j]
+                        if self._normalization_method
+                        else recon_value
+                    )
+
+            # Final reconstruction step
             data_seq = time_series_to_sequence(
                 data=data, context_window=self._context_window
             )
-            reconstructed_data = self.model.predict(data_seq)
+            reconstructed_data_final = self.model.predict(data_seq)
 
             if self._normalization_method:
-                reconstructed_data = denormalize_data(
-                    data=reconstructed_data,
+                reconstructed_data_final = processing.denormalize_data(
+                    reconstructed_data_final,
                     normalization_method=self._normalization_method,
                     min_x=(
                         self.min_x[self._feature_to_check]
@@ -2612,149 +2893,86 @@ class AutoEncoder:
                     ),
                 )
 
-            # Apply padding and store results
-            padded_reconstructed = apply_padding(
+            padded_reconstructed_final = processing.apply_padding(
                 data=data[:, self._feature_to_check],
-                reconstructed=reconstructed_data,
+                reconstructed=reconstructed_data_final,
                 context_window=self._context_window,
                 time_step_to_check=self._time_step_to_check,
             )
+            reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
 
-            reconstructed_iterations[iter_num] = np.copy(padded_reconstructed)
-
-            # Record reconstruction progress
-            normalized_reconstructed = None
-            if self._normalization_method:
-                normalized_reconstructed = normalize_data_for_prediction(
-                    normalization_method=self.normalization_method,
-                    data=padded_reconstructed,
-                    feature_to_check_filter=True,
-                    feature_to_check=self._feature_to_check,
-                    min_x=self.min_x,
-                    max_x=self.max_x,
-                    mean_=self.mean_,
-                    std_=self.std_,
-                )
-
+            # Record final reconstruction results
             for i, j in zip(*np.where(nan_positions)):
-                col_idx = self._feature_to_check[j]
-                recon_value = padded_reconstructed[i, j]
+                # Don't update values outside context window
+                if i < self._time_step_to_check[0] or i >= len(data) - (
+                    self._context_window - 1 - self._time_step_to_check[0]
+                ):
+                    continue
+
+                recon_value = padded_reconstructed_final[i, j]
 
                 reconstruction_records.append(
                     {
                         "ID": id_iter if id_iter else "global",
                         "Column": j + 1,
                         "Timestep": i,
-                        "Iteration": iter_num,
+                        "Iteration": iterations,
                         "Reconstructed value": recon_value,
                     }
                 )
 
-                data[i, col_idx] = (
-                    normalized_reconstructed[i, j]
-                    if self._normalization_method
-                    else recon_value
+            # Save reconstruction progress
+            if save_path:
+                progress_df = pd.DataFrame(reconstruction_records)
+                filename = (
+                    f"{id_iter}_reconstruction_progress.csv.zip"
+                    if id_iter
+                    else "global_reconstruction_progress.csv.zip"
+                )
+                processing.save_csv(
+                    data=progress_df,
+                    save_path=save_path,
+                    filename=filename,
+                    compression="zip",
                 )
 
-        # Final reconstruction step
-        if self.imputer is not None:
-            data = self.imputer.apply_imputation(pd.DataFrame(data)).to_numpy()
-        else:
-            data = np.nan_to_num(data, nan=0)
-
-        data_seq = time_series_to_sequence(
-            data=data, context_window=self._context_window
-        )
-        reconstructed_data_final = self.model.predict(data_seq)
-
-        if self._normalization_method:
-            reconstructed_data_final = denormalize_data(
-                reconstructed_data_final,
-                normalization_method=self._normalization_method,
-                min_x=(
-                    self.min_x[self._feature_to_check]
-                    if self.min_x is not None
-                    else None
+            # Plot reconstruction iterations
+            plots.plot_reconstruction_iterations(
+                original_data=data_original[:, self._feature_to_check].T,
+                reconstructed_iterations={
+                    k: v.T for k, v in reconstructed_iterations.items()
+                },
+                save_path=os.path.join(
+                    save_path if save_path else self.root_dir, "plots"
                 ),
-                max_x=(
-                    self.max_x[self._feature_to_check]
-                    if self.max_x is not None
-                    else None
-                ),
-                mean_=(
-                    self.mean_[self._feature_to_check]
-                    if self.mean_ is not None
-                    else None
-                ),
-                std_=(
-                    self.std_[self._feature_to_check] if self.std_ is not None else None
-                ),
+                feature_labels=feature_names,
+                id_iter=id_iter,
             )
 
-        padded_reconstructed_final = apply_padding(
-            data=data[:, self._feature_to_check],
-            reconstructed=reconstructed_data_final,
-            context_window=self._context_window,
-            time_step_to_check=self._time_step_to_check,
-        )
-        reconstructed_iterations[iterations] = np.copy(padded_reconstructed_final)
-
-        # Record final reconstruction results
-        for i, j in zip(*np.where(nan_positions)):
-            reconstruction_records.append(
-                {
-                    "ID": id_iter if id_iter else "global",
-                    "Column": j + 1,
-                    "Timestep": i,
-                    "Iteration": iterations,
-                    "Reconstructed value": padded_reconstructed_final[i, j],
-                }
+            # Remove padding rows
+            reconstructed_df = pd.DataFrame(
+                padded_reconstructed_final, columns=feature_names
+            )
+            actual_df = pd.DataFrame(
+                data_original[:, self._feature_to_check], columns=feature_names
             )
 
-        # Save reconstruction progress
-        progress_df = pd.DataFrame(reconstruction_records)
-        file_path = os.path.join(
-            save_path if save_path else self.root_dir,
-            "reconstruction_progress",
-            f"{id_iter}_progress.xlsx" if id_iter else "global_progress.xlsx",
-        )
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        progress_df.to_excel(file_path, index=False)
+            if reconstructed_df.isna().sum().sum() != (self._context_window - 1) * len(
+                feature_names
+            ):
+                raise ValueError(
+                    f"Expect context_window-1={(self._context_window - 1)} NaN values per feature."
+                    f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
+                )
 
-        # Plot reconstruction iterations
-        plot_reconstruction_iterations(
-            original_data=data_original[:, self._feature_to_check].T,
-            reconstructed_iterations={
-                k: v.T for k, v in reconstructed_iterations.items()
-            },
-            save_path=os.path.join(save_path if save_path else self.root_dir, "plots"),
-            feature_labels=feature_names,
-            id_iter=id_iter,
-        )
-
-        # Remove padding rows
-        reconstructed_df = pd.DataFrame(
-            padded_reconstructed_final, columns=feature_names
-        )
-        actual_df = pd.DataFrame(
-            data_original[:, self._feature_to_check], columns=feature_names
-        )
-
-        if reconstructed_df.isna().sum().sum() != (self.context_window - 1) * len(
-            feature_names
-        ):
-            raise ValueError(
-                f"Expect context_window-1={(self.context_window - 1)} NaN values per feature."
-                f"There are {reconstructed_df.isna().sum().sum()} NaN values across all {len(feature_names)} features"
-            )
-
-        # reconstructed_df = reconstructed_df.drop(columns=["type"], errors="ignore")
-        reconstructed_df = reconstructed_df.dropna(axis=0, how="all")
-        if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
-            raise ValueError(
-                f"Reconstructed data has {len(reconstructed_df)} rows."
-                f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
-            )
+            reconstructed_df = reconstructed_df.dropna(axis=0, how="any")
+            if len(reconstructed_df) != len(actual_df) - (self._context_window - 1):
+                raise ValueError(
+                    f"Reconstructed data has {len(reconstructed_df)} rows."
+                    f"This should be length of actual data ({len(actual_df)}) minus context offset ({self._context_window-1})"
+                )
+            if np.any(np.isnan(reconstructed_df)):
+                raise ValueError("There are NaNs after reconstruction.")
 
         return reconstructed_df
 
@@ -2786,7 +3004,7 @@ class AutoEncoder:
         # we need to set up two functions to prepare the datasets. One when data is a
         # single numpy array and one when data is a tuple with three numpy arrays.
         if isinstance(data, np.ndarray):
-            x_train, x_val, x_test = time_series_split(
+            x_train, x_val, x_test = processing.time_series_split(
                 data=data,
                 train_size=self._train_size,
                 val_size=self._val_size,
@@ -2843,6 +3061,14 @@ class AutoEncoder:
                     f"Length of {split_name} data ({len(split_data)}) must be at least context window ({context_window})."
                 )
 
+        # Save positions where there are NaNs (used in reconstruct())
+        x_data = np.concatenate((x_train, x_val, x_test), axis=0)
+        id_key = id_iter if id_iter is not None else "global"
+        feature_data = x_data[:, self._feature_to_check]
+        nan_coordinates = np.argwhere(np.isnan(feature_data))
+        self._nan_coordinates[id_key] = nan_coordinates
+
+        # Determine mask
         if self._use_mask:
             if getattr(self, "_custom_mask", None) is None:
                 mask_train = np.where(np.isnan(np.copy(x_train)), 0, 1)
@@ -2857,7 +3083,7 @@ class AutoEncoder:
                     else:
                         mask_train, mask_val, mask_test = self._custom_mask
                 else:
-                    mask_train, mask_val, mask_test = time_series_split(
+                    mask_train, mask_val, mask_test = processing.time_series_split(
                         data=(
                             self.id_data_dict_mask[id_iter]
                             if id_iter is not None
@@ -2875,19 +3101,27 @@ class AutoEncoder:
                 context_window=context_window,
             )
 
+        # After determining mask, do normalization
         if normalize:
-            x_train, x_val, x_test, norm_values = normalize_data_for_training(
-                x_train=x_train,
-                x_val=x_val,
-                x_test=x_test,
-                normalization_method=self.normalization_method,
+            x_train, x_val, x_test, norm_values = (
+                processing.normalize_data_for_training(
+                    x_train=x_train,
+                    x_val=x_val,
+                    x_test=x_test,
+                    normalization_method=self._normalization_method,
+                )
             )
-
             if id_iter is not None:
                 self.normalization_values[id_iter] = norm_values
             else:
                 self.normalization_values = {"global": norm_values}
 
+        # Calculate NaNs before imputation
+        train_nan_before = np.isnan(x_train).sum(axis=0)
+        val_nan_before = np.isnan(x_val).sum(axis=0)
+        test_nan_before = np.isnan(x_test).sum(axis=0)
+
+        # Impute data
         if self._use_mask and self.imputer is not None:
             x_train = self.imputer.apply_imputation(
                 data=pd.DataFrame(x_train)
@@ -2898,6 +3132,28 @@ class AutoEncoder:
             x_train = np.nan_to_num(x_train)
             x_val = np.nan_to_num(x_val)
             x_test = np.nan_to_num(x_test)
+
+        # Calculate NaNs after imputation
+        train_nan_after = np.isnan(x_train).sum(axis=0)
+        val_nan_after = np.isnan(x_val).sum(axis=0)
+        test_nan_after = np.isnan(x_test).sum(axis=0)
+
+        nan_summary = pd.DataFrame(
+            {
+                "feature": np.arange(len(train_nan_before)),
+                "train_nan_before": train_nan_before,
+                "train_nan_after": train_nan_after,
+                "val_nan_before": val_nan_before,
+                "val_nan_after": val_nan_after,
+                "test_nan_before": test_nan_before,
+                "test_nan_after": test_nan_after,
+            }
+        )
+
+        logger.info(
+            f"{id_key} number of NaNs before and after imputation:\n"
+            + nan_summary.to_string(index=False)
+        )
 
         seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
             data=x_train,

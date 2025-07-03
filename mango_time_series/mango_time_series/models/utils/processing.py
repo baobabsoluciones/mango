@@ -1,6 +1,146 @@
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+import pandas as pd
+from mango.logging import get_configured_logger
+
+logger = get_configured_logger()
+
+
+def reintroduce_nans(self, df: pd.DataFrame, id: str) -> pd.DataFrame:
+    """
+    When preparing the datasets NaNs are removed. This function adds
+    the NaNs back to the data based on self._nan_coordinates.
+
+    :param df: Data to reintroduce NaNs back into
+    :type df: pd.DataFrame
+    :param id: Identifier of dataset ("global" is only one dataset)
+    :type id: str
+    :return: Data with reintroduced NaNs
+    :rtype: pd.DataFrame
+    :raises ValueError: If "id" not in self._nan_coordinates
+    """
+    if id not in self._nan_coordinates:
+        raise ValueError(f"{id} not found in _nan_coordinates.")
+
+    df_nans = df.copy()
+
+    # Need to shift one column to right if "data_split" in columns
+    col_offset = 1 if df.columns[0] == "data_split" else 0
+
+    for row, col in self._nan_coordinates[id]:
+        adj_row = row - self._time_step_to_check[0]
+        adj_col = col + col_offset
+
+        # Reintroduce NaNs for valid indices in df
+        if 0 <= adj_row < len(df):
+            df_nans.iloc[adj_row, adj_col] = np.nan
+
+    return df_nans
+
+
+def id_pivot(df: pd.DataFrame, id: str) -> pd.DataFrame:
+    """
+    Select subset of data based on id and then pivot on that data
+    in order to produced desired format with time_step as rows
+    and features as columns.
+
+    :param df: Data
+    :type df: pd.DataFrame
+    :param id: Identifier of dataset ("global" is only one dataset)
+    :type id: str
+    :return: Data subset in desired format
+    :rtype: pd.DataFrame
+    :raises ValueError: If df does not have required columns
+    """
+    required_cols = {"id", "feature", "time_step", "value", "data_split"}
+    if not required_cols.issubset(df.columns):
+        raise ValueError(f"DataFrame must contain columns: {required_cols}")
+
+    # Select id
+    df_id = df[df.id == id].copy()
+    if df_id.empty:
+        raise ValueError(f"No data found for id = {id}")
+
+    # Save feature order since pd.pivot sorts columns automatically
+    first_ts = df_id["time_step"].iloc[0]
+    df_id_feat = df_id[df_id.time_step == first_ts]
+    feature_order = df_id_feat["feature"].tolist()
+    feature_column_no_duplicates = df_id["feature"].drop_duplicates().tolist()
+    if feature_order != feature_column_no_duplicates:
+        raise ValueError(
+            f"feature in first time_step ({feature_order}) "
+            f"does not match feature column ({feature_column_no_duplicates})"
+        )
+
+    # Pivot to have time_step as rows, features as columns
+    df_id_pivot = pd.pivot(
+        df_id, columns="feature", index=["time_step", "data_split"], values="value"
+    )
+
+    # Add data_split as a column
+    df_id_pivot = df_id_pivot.reset_index(level=["data_split"])
+
+    # Reorder columns to match original order
+    df_id_pivot = df_id_pivot[["data_split"] + feature_order]
+
+    return df_id_pivot
+
+
+def save_csv(
+    data: pd.DataFrame,
+    save_path: str,
+    filename: str,
+    save_index: bool = False,
+    decimals: int = 4,
+    compression: str = "infer",
+    logger_msg: str = "standard",
+) -> None:
+    """
+    Save a DataFrame as a csv based on parameters provided.
+
+    :param data: Data to save
+    :type data: pd.DataFrame
+    :param save_path: Path to save data
+    :type save_path: str
+    :param filename: Name to use to save file
+    :type filename: str
+    :param save_index: Whether to save the index of the DataFrame
+    :type save_index: bool
+    :param decimals: Number of decimal places for floating point numbers
+    :type decimals: int
+    :param compression: Type of compression used by pandas.DataFrame.to_csv
+    :type compression: str
+    :param logger_msg: Logger message to use
+    :type logger_msg: str
+    :type return: None
+    """
+    if not (filename.endswith(".csv") or filename.endswith(".csv.zip")):
+        raise ValueError(f"Filename ({filename}) ending needs to be .csv or .csv.zip ")
+
+    try:
+        float_format = f"%.{decimals}f"
+        data = data.round(decimals)
+
+        path = Path(save_path)
+        path.mkdir(parents=True, exist_ok=True)
+        file_path = path / filename
+        data.to_csv(
+            file_path,
+            index=save_index,
+            float_format=float_format,
+            compression=compression,
+        )
+
+        if logger_msg == "standard":
+            logger.info(f"{filename} saved to {path}")
+        else:
+            logger.info(logger_msg)
+
+    except Exception as e:
+        logger.error(f"Error saving csv: {str(e)}")
+        raise
 
 
 def time_series_split(
@@ -60,74 +200,67 @@ def convert_data_to_numpy(
     :rtype: Tuple[Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]], List[str]]
     :raises ValueError: If data type is not supported
     """
-    try:
-        import pandas as pd
-
-        has_pandas = True
-    except ImportError:
-        has_pandas = False
-
-    try:
-        import polars as pl
-
-        has_polars = True
-    except ImportError:
-        has_polars = False
-
     if data is None:
         return data, []
 
-    feature_names = []
+    elif isinstance(data, tuple):
+        arrays = []
+        feature_names_list = []
+        for data_i in data:
+            array_i, feature_names_i = convert_data_to_numpy(data=data_i)
+            arrays.append(array_i)
+            feature_names_list.append(feature_names_i)
 
-    if has_pandas and hasattr(data, "columns"):
-        feature_names = data.columns.tolist()
-    elif has_polars and hasattr(data, "columns"):
-        feature_names = data.columns
-    elif isinstance(data, tuple) and len(data) > 0:
-        # For tuple, try to get column names from first element
-        first_item = data[0]
-        if has_pandas and hasattr(first_item, "columns"):
-            feature_names = first_item.columns.tolist()
-        elif has_polars and hasattr(first_item, "columns"):
-            feature_names = first_item.columns
+        if (
+            feature_names_list[0] != feature_names_list[1]
+            or feature_names_list[1] != feature_names_list[2]
+        ):
+            raise ValueError(f"Tuple has different feature names: {feature_names_list}")
 
-    if isinstance(data, tuple):
-        converted_data = tuple(
-            convert_single_data_to_numpy(item, has_pandas, has_polars) for item in data
-        )
-        return converted_data, feature_names
+        feature_names = feature_names_list[0]
+        return tuple(arrays), feature_names
+
     else:
-        converted_data = convert_single_data_to_numpy(data, has_pandas, has_polars)
-        return converted_data, feature_names
+        array = _to_numpy(data=data)
+        feature_names = _extract_feature_names(data=data)
+        return array, feature_names
 
 
-def convert_single_data_to_numpy(
-    data_item: Any, has_pandas: bool, has_polars: bool
-) -> np.ndarray:
+def _to_numpy(data: Any) -> np.ndarray:
     """
     Convert a single data item to numpy array.
 
-    :param data_item: Single data item to convert
-    :type data_item: Any
-    :param has_pandas: Whether pandas is available
-    :type has_pandas: bool
-    :param has_polars: Whether polars is available
-    :type has_polars: bool
+    :param data: Single data item to convert
+    :type data: Any
     :return: Data converted to numpy array
     :rtype: np.ndarray
     :raises ValueError: If data type is not supported
     """
-    if has_pandas and hasattr(data_item, "to_numpy"):
-        return data_item.to_numpy()
-    elif has_polars and hasattr(data_item, "to_numpy"):
-        return data_item.to_numpy()
-    elif isinstance(data_item, np.ndarray):
-        return data_item
+    if isinstance(data, np.ndarray):
+        return data
+    elif hasattr(data, "to_numpy"):
+        return data.to_numpy()
     else:
-        raise ValueError(
-            f"Unsupported data type: {type(data_item)}. "
+        raise TypeError(
+            f"Unsupported data type: {type(data)}. "
             f"Data must be a numpy array, pandas DataFrame, or polars DataFrame."
         )
+
+
+def _extract_feature_names(data: Any) -> List[str]:
+    """
+    Extract feature names from data by looking at columns.
+
+    :param data: Single data item to convert
+    :type data: Any
+    :return: Data columns as a list
+    :rtype: List[str]
+    """
+    columns = getattr(data, "columns", None)
+    if columns is not None:
+        return list(columns)
+    else:
+        return []
 
 
 def denormalize_data(
@@ -196,7 +329,7 @@ def normalize_data_for_training(
     :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]
     :raises ValueError: If normalization method is invalid
     """
-    if normalization_method not in ["minmax", "zscore"]:
+    if normalization_method not in ["minmax", "zscore", None]:
         raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
 
     normalization_values = {}

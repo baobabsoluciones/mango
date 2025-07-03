@@ -1,6 +1,7 @@
-import os
+# isort:skip_file
+import tensorflow as tf
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+import os
 
 import shutil
 import tempfile
@@ -9,7 +10,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from keras.src.layers import Bidirectional
 
 from mango_time_series.models.autoencoder import AutoEncoder
@@ -702,9 +702,9 @@ class TestAutoEncoderCases(unittest.TestCase):
                 reconstruction_result = model.reconstruct()
 
                 # Assertions
-                self.assertTrue(
-                    reconstruction_result,
-                    f"Reconstruction failed for case: {case['desc']}",
+                self.assertFalse(
+                    reconstruction_result.empty,
+                    f"Reconstruction empty for case: {case['desc']}",
                 )
                 self.assertTrue(
                     save_path.exists(),
@@ -787,9 +787,9 @@ class TestAutoEncoderCases(unittest.TestCase):
                 reconstruction_result = model.reconstruct()
 
                 # Assertions
-                self.assertTrue(
-                    reconstruction_result,
-                    f"Reconstruction failed for case: {case['desc']}",
+                self.assertFalse(
+                    reconstruction_result.empty,
+                    f"Reconstruction empty for case: {case['desc']}",
                 )
                 self.assertTrue(
                     save_path.exists(),
@@ -798,158 +798,303 @@ class TestAutoEncoderCases(unittest.TestCase):
 
     def test_reconstructions(self):
         """
-        Test reconstruct() and reconstruct_new_data() functions for different cases
-        of time_step_to_check and data (with and without ids). Ensures that the original
-        data is not altered and reconstruction has same dimensions as expected.
+        Test reconstruct() and reconstruct_new_data() functions for different
+        cases of time_step_to_check, feature_to_check, with_ids, and with_nans.
+        Ensures that the original data is not altered, reconstruction has expected
+        dimensions, and reconstructions from both functions align.
 
         :return: None
         :rtype: None
         """
+        # Set parameters, data cases, and loop through each
+        # Reconstruction should align when reconstruct_new_data iterations is 1
         context_window = 10
+        rec_new_data_iterations = 1
         time_step_to_check_list = [[0], [5], [9]]
-        for time_step_to_check in time_step_to_check_list:
-            # Generate data for a single dataset (with_ids=False) and multiple (with_ids=True)
-            data_cases = [
-                self.generate_synthetic_data_standard(
-                    num_samples=111, num_features=8, with_ids=False, with_nans=False
-                )[0],
-                self.generate_synthetic_data_standard(
-                    num_samples=1111, num_features=8, with_ids=True, with_nans=False
-                )[0],
-            ]
-            for data in data_cases:
-                id_columns = "id" if "id" in data.columns else None
-                model = AutoEncoder()
-                model.build_model(
-                    form="lstm",
-                    data=data,
-                    context_window=context_window,
-                    time_step_to_check=time_step_to_check,
-                    hidden_dim=[8, 4],
-                    feature_to_check=list(range(min(8, len(data.columns)))),
-                    id_columns=id_columns,
-                    bidirectional_encoder=True,
-                    bidirectional_decoder=False,
-                    normalize=True,
-                    normalization_method="minmax",
-                    batch_size=16,
-                    save_path=None,
-                    verbose=False,
-                    use_mask=False,
-                    shuffle=True,
-                )
-
-                # Save _create_data_points_df original function and create a new one
-                # in order to store df_actual
-                original_create_data_points = model._create_data_points_df
-                stored_data = {}
-
-                def edited_create_data_points_df(*args, **kargs):
-                    df_actual, df_reconstructed = original_create_data_points(
-                        *args, **kargs
+        feature_to_check_list = [[0], [1, 5, 7], [0, 1, 2, 3, 4, 5, 6, 7]]
+        for feature_to_check in feature_to_check_list:
+            for time_step_to_check in time_step_to_check_list:
+                data_cases = [
+                    self.generate_synthetic_data_standard(
+                        num_samples=111,
+                        num_features=8,
+                        with_ids=False,
+                        with_nans=False,
+                        mask_type=None,
+                    ),
+                    self.generate_synthetic_data_standard(
+                        num_samples=1111,
+                        num_features=8,
+                        with_ids=True,
+                        with_nans=False,
+                        mask_type=None,
+                    ),
+                    self.generate_synthetic_data_standard(
+                        num_samples=111,
+                        num_features=8,
+                        with_ids=False,
+                        with_nans=True,
+                        mask_type="auto",
+                    ),
+                    self.generate_synthetic_data_standard(
+                        num_samples=1111,
+                        num_features=8,
+                        with_ids=True,
+                        with_nans=True,
+                        mask_type="auto",
+                    ),
+                ]
+                for data, use_mask, mask in data_cases:
+                    print(
+                        "ftc:",
+                        feature_to_check,
+                        "tstc:",
+                        time_step_to_check,
+                        "use_mask:",
+                        use_mask,
                     )
-                    stored_data["df_actual"] = df_actual.copy()
-                    return df_actual, df_reconstructed
+                    id_columns = "id" if "id" in data.columns else None
+                    model = AutoEncoder()
+                    model.build_model(
+                        form="lstm",
+                        data=data,
+                        context_window=context_window,
+                        time_step_to_check=time_step_to_check,
+                        hidden_dim=[8, 4],
+                        feature_to_check=feature_to_check,
+                        id_columns=id_columns,
+                        bidirectional_encoder=True,
+                        bidirectional_decoder=False,
+                        normalize=True,
+                        normalization_method="minmax",
+                        batch_size=16,
+                        save_path=None,
+                        verbose=False,
+                        use_mask=use_mask,
+                        shuffle=True,
+                    )
 
-                model._create_data_points_df = edited_create_data_points_df
-                model.reconstruct()
-                model._create_data_points_df = original_create_data_points
-                df_actual = stored_data["df_actual"]
+                    # Save _create_data_points_df original function and create a new one
+                    # in order to store df_actual
+                    original_create_data_points = model._create_data_points_df
+                    stored_data = {}
 
-                # Define context offset
-                initial_context_offset = time_step_to_check[0]
-                ending_context_offset = context_window - 1 - initial_context_offset
+                    def edited_create_data_points_df(*args, **kargs):
+                        df_actual, df_reconstructed = original_create_data_points(
+                            *args, **kargs
+                        )
+                        stored_data["df_actual"] = df_actual.copy()
+                        stored_data["df_reconstructed"] = df_reconstructed.copy()
+                        return df_actual, df_reconstructed
 
-                # Case with multiple datasets (with_ids=True)
-                if "id" in df_actual.columns:
-                    for id_i in df_actual["id"].unique():
-                        # Check df_actual
-                        df_actual_i = df_actual[df_actual["id"] == id_i]
+                    model._create_data_points_df = edited_create_data_points_df
+                    model.reconstruct()
+                    model._create_data_points_df = original_create_data_points
+                    nan_positions = model._nan_coordinates
+                    df_actual = stored_data["df_actual"]
+                    df_reconstructed = stored_data["df_reconstructed"]
+
+                    # Define context offset
+                    initial_context_offset = time_step_to_check[0]
+                    ending_context_offset = context_window - 1 - initial_context_offset
+
+                    # Case with multiple datasets (with_ids=True)
+                    if "id" in df_actual.columns:
+                        for id_i in df_actual["id"].unique():
+                            # Get df_actual (original data used in reconstruct())
+                            df_actual_i = df_actual[df_actual["id"] == id_i]
+                            df_actual_i = pd.pivot(
+                                df_actual_i,
+                                columns="feature",
+                                index="time_step",
+                                values="value",
+                            )
+
+                            # Get expected_data (original raw data)
+                            data_i = data[data["id"] == id_i]
+                            expected_data = data_i.drop(columns="id")
+                            expected_data = expected_data.iloc[
+                                initial_context_offset : len(expected_data)
+                                - ending_context_offset
+                            ]
+                            expected_data = expected_data.iloc[:, feature_to_check]
+                            expected_data = expected_data.reset_index(drop=True)
+
+                            # Add back NaN positions to df_actual
+                            # since reconstruct pipeline imputes them
+                            for row_idx, col_idx in nan_positions[id_i]:
+                                adjusted_row_idx = row_idx - initial_context_offset
+                                adjusted_col_idx = col_idx
+                                if 0 <= adjusted_row_idx < len(df_actual_i):
+                                    df_actual_i.iloc[
+                                        adjusted_row_idx, adjusted_col_idx
+                                    ] = np.nan
+
+                            # Check df_actual and expected_data match
+                            pd.testing.assert_frame_equal(
+                                df_actual_i.astype(float).round(6),
+                                expected_data.astype(float).round(6),
+                                check_names=False,
+                            )
+
+                            # Check single reconstruction
+                            df_reconstruct_i = df_reconstructed[
+                                df_reconstructed.id == id_i
+                            ]
+                            df_reconstruct_i = pd.pivot(
+                                df_reconstruct_i,
+                                columns="feature",
+                                index=["time_step"],
+                                values="value",
+                            )
+                            reconstruct_new_data = model.reconstruct_new_data(
+                                data=data_i,
+                                iterations=rec_new_data_iterations,
+                                save_path=None,
+                                id_columns=id_columns,
+                            )
+                            df_reconstruct_new_data_i = reconstruct_new_data[id_i]
+                            self.assertEqual(
+                                len(df_reconstruct_new_data_i), len(expected_data)
+                            )
+                            self.assertEqual(
+                                df_reconstruct_new_data_i.index.min(),
+                                initial_context_offset,
+                            )
+
+                            df_reconstruct_new_data_i = (
+                                df_reconstruct_new_data_i.reset_index(drop=True)
+                            )
+
+                            # Check that reconstructions match
+                            pd.testing.assert_frame_equal(
+                                df_reconstruct_i,
+                                df_reconstruct_new_data_i,
+                                check_names=False,
+                                check_exact=False,
+                                atol=0.00001,
+                                rtol=0,
+                            )
+
+                        # Check multiple reconstructions
+                        reconstruct_new_data = model.reconstruct_new_data(
+                            data=data,
+                            iterations=rec_new_data_iterations,
+                            save_path=None,
+                            id_columns=id_columns,
+                        )
+                        for (
+                            id_i,
+                            df_reconstruct_new_data_i,
+                        ) in reconstruct_new_data.items():
+                            data_i = data[data["id"] == id_i]
+                            expected_data = data_i.iloc[
+                                initial_context_offset : len(data_i)
+                                - ending_context_offset
+                            ]
+
+                            self.assertEqual(
+                                len(df_reconstruct_new_data_i), len(expected_data)
+                            )
+                            self.assertEqual(
+                                df_reconstruct_new_data_i.index.min(),
+                                initial_context_offset,
+                            )
+
+                            df_reconstruct_i = df_reconstructed[
+                                df_reconstructed.id == id_i
+                            ]
+                            df_reconstruct_i = pd.pivot(
+                                df_reconstruct_i,
+                                columns="feature",
+                                index=["time_step"],
+                                values="value",
+                            )
+                            df_reconstruct_new_data_i = (
+                                df_reconstruct_new_data_i.reset_index(drop=True)
+                            )
+
+                            # Check that reconstructions match
+                            pd.testing.assert_frame_equal(
+                                df_reconstruct_i,
+                                df_reconstruct_new_data_i,
+                                check_names=False,
+                                check_exact=False,
+                                atol=0.00001,
+                                rtol=0,
+                            )
+
+                    # Case with single dataset (with_ids=False)
+                    else:
+                        # Get df_actual (original data used in reconstruct())
                         df_actual_i = pd.pivot(
-                            df_actual_i,
+                            df_actual,
                             columns="feature",
                             index="time_step",
                             values="value",
                         )
-                        data_i = data[data["id"] == id_i]
 
-                        expected_data = data_i.drop(columns="id")
-                        expected_data = expected_data.iloc[
-                            initial_context_offset : len(expected_data)
-                            - ending_context_offset
+                        # Get expected_data (original raw data)
+                        expected_data = data.iloc[
+                            initial_context_offset : len(data) - ending_context_offset
                         ]
-                        df_actual_i.sort_index(inplace=True)
-                        df_actual_i.reset_index(drop=True, inplace=True)
-                        expected_data.sort_index(inplace=True)
-                        expected_data.reset_index(drop=True, inplace=True)
+                        expected_data = expected_data.iloc[:, feature_to_check]
+
+                        expected_data = expected_data.reset_index(drop=True)
+
+                        # Add back NaN positions to df_actual
+                        # since reconstruct pipeline imputes them
+                        for row_idx, col_idx in nan_positions["global"]:
+                            adjusted_row_idx = row_idx - initial_context_offset
+                            adjusted_col_idx = col_idx
+                            if 0 <= adjusted_row_idx < len(df_actual_i):
+                                df_actual_i.iloc[adjusted_row_idx, adjusted_col_idx] = (
+                                    np.nan
+                                )
+
+                        # Check df_actual and expected_data match
                         pd.testing.assert_frame_equal(
                             df_actual_i.astype(float).round(6),
                             expected_data.astype(float).round(6),
                             check_names=False,
                         )
 
-                        # Check reconstruct_new_data results
-                        reconstructed_results = model.reconstruct_new_data(
-                            data=data_i,
-                            iterations=2,
+                        # Check single reconstruction
+                        df_reconstruct_i = df_reconstructed
+                        df_reconstruct_i = pd.pivot(
+                            df_reconstruct_i,
+                            columns="feature",
+                            index=["time_step"],
+                            values="value",
+                        )
+                        reconstruct_new_data = model.reconstruct_new_data(
+                            data=data,
+                            iterations=rec_new_data_iterations,
                             save_path=None,
                             id_columns=id_columns,
                         )
-                        reconstructed_df = reconstructed_results[id_i]
-                        self.assertEqual(len(reconstructed_df), len(expected_data))
+                        df_reconstruct_new_data_i = reconstruct_new_data["global"]
                         self.assertEqual(
-                            reconstructed_df.index.min(), initial_context_offset
+                            len(df_reconstruct_new_data_i), len(expected_data)
+                        )
+                        self.assertEqual(
+                            df_reconstruct_new_data_i.index.min(),
+                            initial_context_offset,
                         )
 
-                    # Check multiple reconstructions
-                    reconstructed_results = model.reconstruct_new_data(
-                        data=data,
-                        iterations=2,
-                        save_path=None,
-                        id_columns=id_columns,
-                    )
-                    for id_i, reconstructed_df in reconstructed_results.items():
-                        reconstructed_df = reconstructed_results[id_i]
-                        data_i = data[data["id"] == id_i]
-                        expected_data = data_i.iloc[
-                            initial_context_offset : len(data_i) - ending_context_offset
-                        ]
-                        self.assertEqual(len(reconstructed_df), len(expected_data))
-                        self.assertEqual(
-                            reconstructed_df.index.min(), initial_context_offset
+                        df_reconstruct_new_data_i = (
+                            df_reconstruct_new_data_i.reset_index(drop=True)
                         )
 
-                # Case with single dataset (with_ids=False)
-                else:
-                    # Check df_actual
-                    df_actual_i = pd.pivot(
-                        df_actual, columns="feature", index="time_step", values="value"
-                    )
-                    expected_data = data.iloc[
-                        initial_context_offset : len(data) - ending_context_offset
-                    ]
-                    df_actual_i.sort_index(inplace=True)
-                    df_actual_i.reset_index(drop=True, inplace=True)
-                    expected_data.sort_index(inplace=True)
-                    expected_data.reset_index(drop=True, inplace=True)
-                    pd.testing.assert_frame_equal(
-                        df_actual_i.astype(float).round(6),
-                        expected_data.astype(float).round(6),
-                        check_names=False,
-                    )
-
-                    # Check reconstruct_new_data results
-                    reconstructed_results = model.reconstruct_new_data(
-                        data=data,
-                        iterations=2,
-                        save_path=None,
-                        id_columns=id_columns,
-                    )
-                    reconstructed_df = reconstructed_results["global"]
-                    self.assertEqual(len(reconstructed_df), len(expected_data))
-                    self.assertEqual(
-                        reconstructed_df.index.min(), initial_context_offset
-                    )
+                        # Check that reconstructions match
+                        pd.testing.assert_frame_equal(
+                            df_reconstruct_i,
+                            df_reconstruct_new_data_i,
+                            check_names=False,
+                            check_exact=False,
+                            atol=0.00001,
+                            rtol=0,
+                        )
 
 
 if __name__ == "__main__":

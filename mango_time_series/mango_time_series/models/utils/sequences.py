@@ -1,4 +1,4 @@
-from typing import Union, Tuple, Optional
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -82,7 +82,7 @@ def time_series_to_sequence(
         return _create_sequences(data, context_window)
 
     # Handle multiple datasets case
-    if val_data is None or test_data is None:
+    elif val_data is None or test_data is None:
         raise ValueError(
             "For multiple datasets, both val_data and test_data must be provided"
         )
