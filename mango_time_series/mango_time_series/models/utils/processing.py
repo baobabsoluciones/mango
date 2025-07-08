@@ -330,7 +330,9 @@ def normalize_data_for_training(
     :raises ValueError: If normalization method is invalid
     """
     if normalization_method not in ["minmax", "zscore", None]:
-        raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
+        raise ValueError(
+            f"Invalid normalization method: {normalization_method}. Must be 'minmax', 'zscore', or None."
+        )
 
     normalization_values = {}
 

@@ -2638,9 +2638,6 @@ class AutoEncoder:
         ) or {}
 
         if not normalization_values:
-            if self._normalization_method not in ["minmax", "zscore", None]:
-                raise ValueError("Invalid normalization method.")
-
             # Simulate train/val/test split using only current data
             x_train = x_val = x_test = data
 
