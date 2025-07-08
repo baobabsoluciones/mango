@@ -1,0 +1,53 @@
+[project]
+name = "mango-calendar"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "holidays>=0.76",
+    "numpy>=2.3.1",
+    "pandas>=2.3.1",
+    "polars>=1.31.0",
+    "pycountry>=24.6.1",
+    "unidecode>=1.4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [".venv", "__pycache__"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # Errores de estilo (PEP 8)
+    "F",   # Variables sin definir
+    "UP",  # Sintaxis moderna (auto-upgrade)
+    "I",   # Orden de imports (isort)
+    "D",   # Docstrings (PEP 257)
+    "N",   # Nombres correctos
+    "B",   # Posibles bugs
+    "C90", # Complejidad del código
+    "A",   # Uso de nombres reservados
+    "T20", # Print y debugger en producción
+    "ANN", # Forzar typehints
+    "D"    # Forzar Docstrings
+]
+ignore = [
+    "D203",  # Línea en blanco antes del docstring de clase
+    "D213",  # El resumen del docstring multilínea debe comenzar en la segunda línea
+    "D400",  # La primera línea debe terminar con punto, interrogación o exclamación
+    "B028",  # No se encontró el argumento explícito 'stacklevel'
+    "ANN401" # No se permiten expresiones con tipos dinámicos (typing.Any)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257" 
+
