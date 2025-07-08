@@ -262,6 +262,7 @@ def reconstruction_error_summary(
         )
 
     try:
+        stat_list = ["mean", "std"]
         if split_column in reconstruction_error_df.columns:
             unique_splits = reconstruction_error_df[split_column].unique()
             if set(split_order) != set(unique_splits):
@@ -269,25 +270,26 @@ def reconstruction_error_summary(
                     f"split_order set ({split_order}) must be equal to "
                     f"reconstruction_error_df[{split_column}] set ({unique_splits})"
                 )
-            summary_stats = reconstruction_error_df.groupby(split_column).agg(
-                ["mean", "std"]
-            )
+            summary_stats = reconstruction_error_df.groupby(split_column).agg(stat_list)
             summary_stats = summary_stats.T.unstack(level=1)
             summary_stats.index.name = "feature"
             summary_stats.columns = [
-                f"{split}_{stat}" for split, stat in summary_stats.columns
+                f"{split}_{stat}_error" for split, stat in summary_stats.columns
             ]
 
             # Reorder columns: mean then std, across train, val, test
             column_order = [
-                f"{split}_{stat}" for stat in ["mean", "std"] for split in split_order
+                f"{split}_{stat}_error" for stat in stat_list for split in split_order
             ]
             summary_stats = summary_stats[column_order]
 
         else:
-            summary_stats = reconstruction_error_df.agg(["mean", "std"])
+            summary_stats = reconstruction_error_df.agg(stat_list)
             summary_stats = summary_stats.T
             summary_stats.index.name = "feature"
+            summary_stats.columns = [
+                f"{split_stat}_error" for split_stat in summary_stats.columns
+            ]
 
         # Save if a path is provided
         if save_path:
