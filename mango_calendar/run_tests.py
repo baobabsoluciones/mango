@@ -5,24 +5,23 @@ import sys
 import unittest
 
 
-def run_tests():
+def run_tests() -> int:
     """Run all unit tests in the tests directory."""
     # Discover and run all tests
     loader = unittest.TestLoader()
     start_dir = "tests"
     suite = loader.discover(start_dir, pattern="test_*.py")
 
-    # Run the tests
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
 
-    # Return exit code based on results
     if result.wasSuccessful():
         print("\nAll tests passed!")
         return 0
     else:
         print(
-            f"\nTests failed: {len(result.failures)} failures, {len(result.errors)} errors"
+            f"\nTests failed: {len(result.failures)} failures, "
+            f"{len(result.errors)} errors"
         )
         return 1
 
