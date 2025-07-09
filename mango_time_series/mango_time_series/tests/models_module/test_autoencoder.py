@@ -1095,6 +1095,14 @@ class TestAutoEncoderCases(unittest.TestCase):
                             atol=0.00001,
                             rtol=0,
                         )
+                        print(
+                            "Reconstruction test passed for feature_to_check:",
+                            feature_to_check,
+                            "time_step_to_check:",
+                            time_step_to_check,
+                            "use_mask:",
+                            use_mask,
+                        )
 
 
 if __name__ == "__main__":
