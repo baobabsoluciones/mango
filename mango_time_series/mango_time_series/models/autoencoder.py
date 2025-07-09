@@ -3113,11 +3113,6 @@ class AutoEncoder:
             else:
                 self.normalization_values = {"global": norm_values}
 
-        # Calculate NaNs before imputation
-        train_nan_before = np.isnan(x_train).sum(axis=0)
-        val_nan_before = np.isnan(x_val).sum(axis=0)
-        test_nan_before = np.isnan(x_test).sum(axis=0)
-
         # Impute data
         if self._use_mask and self.imputer is not None:
             x_train = self.imputer.apply_imputation(
@@ -3131,26 +3126,15 @@ class AutoEncoder:
             x_test = np.nan_to_num(x_test)
 
         # Calculate NaNs after imputation
-        train_nan_after = np.isnan(x_train).sum(axis=0)
-        val_nan_after = np.isnan(x_val).sum(axis=0)
-        test_nan_after = np.isnan(x_test).sum(axis=0)
-
-        nan_summary = pd.DataFrame(
-            {
-                "feature": np.arange(len(train_nan_before)),
-                "train_nan_before": train_nan_before,
-                "train_nan_after": train_nan_after,
-                "val_nan_before": val_nan_before,
-                "val_nan_after": val_nan_after,
-                "test_nan_before": test_nan_before,
-                "test_nan_after": test_nan_after,
-            }
-        )
-
-        logger.info(
-            f"{id_key} number of NaNs before and after imputation:\n"
-            + nan_summary.to_string(index=False)
-        )
+        train_nan_after = np.isnan(x_train).sum()
+        val_nan_after = np.isnan(x_val).sum()
+        test_nan_after = np.isnan(x_test).sum()
+        nans_after_imputation = train_nan_after + val_nan_after + test_nan_after
+        if nans_after_imputation != 0:
+            raise ValueError(
+                "No NaNs are expected after imputation, yet there "
+                f"are {nans_after_imputation} NaNs present."
+            )
 
         seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
             data=x_train,
