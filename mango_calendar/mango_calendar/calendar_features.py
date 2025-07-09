@@ -33,8 +33,8 @@ _WEIGHT_DICT = {
 }
 
 
-def _calculate_distances(df, distances_config):
-    """Calculate the distance of each date to the next holiday.
+def _calculate_distances(df: pd.DataFrame, distances_config: dict) -> pd.DataFrame:
+    """Calculate the distance of each date to the next holiday
 
     It takes a dataframe and a dictionary with the configuration for the distance
     calculation as arguments.
@@ -58,15 +58,15 @@ def get_calendar(
     start_year: int = 2010,
     end_year: int = datetime.now().year + 2,
     communities: bool = False,
-    weight_communities: dict = None,
+    weight_communities: dict | None = None,
     calendar_events: bool = False,
-    return_weights: bool = None,
+    return_weights: bool | None = None,
     return_distances: bool = False,
-    distances_config: dict = None,
+    distances_config: dict | None = None,
     name_transformations: bool = True,
     pivot: bool = False,
     pivot_keep_communities: bool = False,
-):
+) -> pd.DataFrame:
     """Get a pandas DataFrame with the calendar information
 
     The DataFrame has the following columns:
@@ -74,7 +74,7 @@ def get_calendar(
         - name: Name of the holiday.
         - country_code: Country code (ISO 3166-2). Only if communities=True
         - community_code (optional): Autonomous Community code (ISO 3166-2) name.
-                                     Only if communities=True.
+        Only if communities=True.
 
     :param str country: Specify the country code
     :param int start_year: Set the first year of the calendar
@@ -86,7 +86,7 @@ def get_calendar(
     :param bool return_weights: Return the weight of each date
     :param bool return_distances: Return the distance of each date to the next holiday
     :param dict distances_config: Configuration for the distance calculation. Dictionary
-                                  with the following keys:
+    with the following keys:
         - steps_back: Number of steps back to calculate the distance
         - steps_forward: Number of steps forward to calculate the distance
     :param bool pivot: Pivot the calendar to get a column for each date
@@ -96,7 +96,7 @@ def get_calendar(
     """
     if weight_communities is None:
         weight_communities = _WEIGHT_DICT
-    # Checks
+
     if start_year > end_year:
         raise ValueError("start_year must be lower than end_year")
 
@@ -106,104 +106,35 @@ def get_calendar(
     if return_weights and not communities:
         return_weights = False
         warnings.warn(
-            "return_weights is True but communities is False. Setting return_weights to False"
+            "return_weights requires communities=True. Setting return_weights to False"
         )
 
     if (return_weights + return_distances == 0) and communities:
         raise ValueError(
-            "At least one of return_weights or return_distances must be True when communities is True"
+            "return_weights or return_distances required when communities=True"
         )
 
-    # List of years
     years = list(range(start_year, end_year))
 
-    # Get national holidays
     country_holidays_dict = country_holidays(
         country=country,
         years=years,
         language="es",
     )
 
-    # Dict to DataFrame
     df = pd.DataFrame.from_dict(country_holidays_dict, orient="index").reset_index()
     df["country_code"] = country
-    # Rename columns
     df.columns = ["date", "name", "country_code"]
 
     if calendar_events:
-        # Add Black Friday
-        usa_holidays_dict = country_holidays(
-            country="US",
-            years=years,
-            language="es",
-        )
-        df_usa = pd.DataFrame.from_dict(usa_holidays_dict, orient="index").reset_index()
-        df_usa["country_code"] = country
-        # Rename columns
-        df_usa.columns = ["date", "name", "country_code"]
+        df = _add_black_friday(country, years, df)
 
-        # Filter by "Thanksgiving"
-        df_usa = df_usa[df_usa["name"].str.contains("Thanksgiving")]
-        # Rename to Black Friday
-        df_usa["name"] = "Black Friday"
-
-        # Add to df
-        df = pd.concat([df, df_usa])
-
-    # Add communities holidays
     if communities:
-        code_name_dict = _get_code_name_dict(country=country)
-        list_com = []
-        for community in holidays.ES.subdivisions:
-            # Autonomous Community holidays
-            com_holidays = country_holidays(
-                "ES", years=years, subdiv=community, language="es", observed=False
-            )
-            # Dict to DataFrame
-            df_com = pd.DataFrame.from_dict(com_holidays, orient="index").reset_index()
-            df_com["country_code"] = country
-            df_com["community_code"] = community
-            df_com["community_name"] = code_name_dict[f"{country}-{community}"]
-            list_com.append(df_com)
-        df_com = pd.concat(list_com)
+        df = _add_communities_holidays(country, weight_communities, years, df)
 
-        # Rename columns
-        df_com.columns = [
-            "date",
-            "name",
-            "country_code",
-            "community_code",
-            "community_name",
-        ]
-
-        # Add weight column
-        df_com["weight"] = df_com["community_code"].map(weight_communities)
-        total_sum = sum(weight_communities.values())
-        # Add new column with the sum of weights grouping by date and name
-        df_com["weight"] = (
-            df_com.groupby(["date", "name"])["weight"].transform("sum") / total_sum
-        )
-
-        # Drop from df_com the holidays that are in df
-        df_com = (
-            df_com.merge(
-                df, on=["date", "name", "country_code"], how="left", indicator=True
-            )
-            .query('_merge == "left_only"')
-            .drop("_merge", axis=1)
-        )
-
-        # Concatenate dataframes
-        df = pd.concat([df, df_com])
-
-        # Fill na
-        df["weight"] = df["weight"].fillna(1)
-
-    # Sort by date
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values(by="date").reset_index(drop=True)
 
-    # Apply name transformations
     if name_transformations:
         df = _name_transformations(df)
 
@@ -218,19 +149,104 @@ def get_calendar(
     if not return_weights and "weight" in df.columns:
         df = df.drop(columns=["weight"])
 
-    # Pivot
     if pivot:
         df = _pivot_calendar(
             df_calendar=df,
             pivot_keep_communities=pivot_keep_communities,
         )
 
-    # Return dataframe
+    return df
+
+
+def _add_communities_holidays(
+    country: str, weight_communities: dict, years: list[int], df: pd.DataFrame
+) -> pd.DataFrame:
+    """Add the holidays of each autonomous community to the calendar
+
+    :param str country: Specify the country to add the communities holidays for
+    :param dict weight_communities: Specify the weight of each community
+    :param list[int] years: Specify the years to add the communities holidays for
+    :param pd.DataFrame df: Specify the dataframe that will be used in the function
+    :return: A dataframe with the communities holidays added
+    :doc-author: baobab soluciones
+    """
+    code_name_dict = _get_code_name_dict(country=country)
+    list_com = []
+    for community in holidays.ES.subdivisions:  # type: ignore
+        # Autonomous Community holidays
+        com_holidays = country_holidays(
+            "ES", years=years, subdiv=community, language="es", observed=False
+        )
+        # Dict to DataFrame
+        df_com = pd.DataFrame.from_dict(com_holidays, orient="index").reset_index()
+        df_com["country_code"] = country
+        df_com["community_code"] = community
+        df_com["community_name"] = code_name_dict[f"{country}-{community}"]
+        list_com.append(df_com)
+    df_com = pd.concat(list_com)
+
+    df_com.columns = [
+        "date",
+        "name",
+        "country_code",
+        "community_code",
+        "community_name",
+    ]
+
+    # Add weight column
+    df_com["weight"] = df_com["community_code"].map(weight_communities)
+    total_sum = sum(weight_communities.values())
+    # Add new column with the sum of weights grouping by date and name
+    df_com["weight"] = (
+        df_com.groupby(["date", "name"])["weight"].transform("sum") / total_sum
+    )
+
+    # Drop from df_com the holidays that are in df
+    df_com = (
+        df_com.merge(
+            df, on=["date", "name", "country_code"], how="left", indicator=True
+        )
+        .query('_merge == "left_only"')
+        .drop("_merge", axis=1)
+    )
+
+    df = pd.concat([df, df_com])
+
+    df["weight"] = df["weight"].fillna(1)
+
+    return df
+
+
+def _add_black_friday(country: str, years: list[int], df: pd.DataFrame) -> pd.DataFrame:
+    """Add Black Friday to the calendar
+
+    :param str country: Specify the country that we want to add the black friday for
+    :param list[int] years: Specify the years that we want to add the black friday for
+    :param pd.DataFrame df: Specify the dataframe that will be used in the function
+    :return: A dataframe with the black friday added
+    :doc-author: baobab soluciones
+    """
+    usa_holidays_dict = country_holidays(
+        country="US",
+        years=years,
+        language="es",
+    )
+    df_usa = pd.DataFrame.from_dict(usa_holidays_dict, orient="index").reset_index()
+    df_usa["country_code"] = country
+    df_usa.columns = ["date", "name", "country_code"]
+
+    # Filter by "Thanksgiving", add on day to all the dates
+    # (black friday is the day after thanksgiving)
+    df_usa = df_usa[df_usa["name"].str.contains("Thanksgiving")]
+    df_usa["date"] = df_usa["date"] + pd.to_timedelta(1, unit="D")
+    df_usa["name"] = "Black Friday"
+
+    df = pd.concat([df, df_usa])
     return df
 
 
 def _get_code_name_dict(country: str) -> dict:
-    """Get a dictionary of the state/province codes and names for that country.
+    """Get a dictionary of the state/province codes and names for that country
 
     :param country: str: Specify the country that we want to get the subdivisions for
     :return: A dictionary that maps a subdivision code to its name
@@ -238,7 +254,7 @@ def _get_code_name_dict(country: str) -> dict:
     """
     return {
         subdivision.code: subdivision.name
-        for subdivision in pycountry.subdivisions.get(country_code=country)
+        for subdivision in pycountry.subdivisions.get(country_code=country)  # type: ignore
     }
 
 

@@ -1,7 +1,6 @@
 """Utility functions for working with dates and calendars."""
 
 from datetime import datetime, timedelta
-from typing import Union
 
 import pandas as pd
 import polars as pl
@@ -15,22 +14,21 @@ def get_holidays_df(
     start_year: int = 2014,
     country: str = "ES",
     output_format: str = "polars",
-) -> Union[pl.DataFrame, pd.DataFrame]:
-    """
-    Get national holidays dataframe with window bounds.
+) -> pl.DataFrame | pd.DataFrame:
+    """Get national holidays dataframe with window bounds
 
     :param steps_back: int, number of days to go back from the holiday.
     :param steps_forward: int, number of days to go forward from the holiday.
     :param start_year: int, start year for the holiday calendar.
     :param country: str, country code for holiday calendar.
     :param output_format: str, 'polars' or 'pandas' to specify the output format.
-    :return: polars.DataFrame or pandas.DataFrame, holidays dataframe with window bounds.
+    :return: polars.DataFrame or pandas.DataFrame, holiday dataframe with window bounds.
     """
-    # Handle error if output_format is not 'polars' or 'pandas'
     if output_format not in ["polars", "pandas"]:
         raise ValueError(
             f"output_format should be either 'polars' or 'pandas', got {output_format}"
         )
+
     # Fetch the holidays data with specified parameters
     all_holidays = get_calendar(
         country,
@@ -53,12 +51,12 @@ def get_holidays_df(
         pl.col("datetime").dt.date()
     )
 
-    # Pivot the DataFrame
     all_holidays = all_holidays.pivot(
-        index="datetime", columns="name", values="distance"
+        index="datetime",
+        columns="name",
+        values="distance",
     )
 
-    # Return in specified format
     if output_format == "pandas":
         return all_holidays.to_pandas()
 
@@ -66,8 +64,8 @@ def get_holidays_df(
 
 
 def get_covid_lockdowns() -> pl.DataFrame:
-    """
-    Get COVID lockdown period as a dataframe.
+    """Get COVID lockdown period as a dataframe
+
     :return: pd.DataFrame, COVID lockdown period dataframe
     """
     covid_start = datetime(2020, 3, 1)
@@ -89,8 +87,8 @@ def get_covid_lockdowns() -> pl.DataFrame:
 
 
 def get_mwc() -> pl.DataFrame:
-    """
-    Get Mobile World Congress dates as a dataframe.
+    """Get Mobile World Congress dates as a dataframe
+
     :return: pd.DataFrame, Mobile World Congress dates dataframe
     """
     data = {
@@ -141,4 +139,6 @@ def get_mwc() -> pl.DataFrame:
         "name": ["MWC"] * 42,
         "distance": [0] * 42,
     }
-    return pl.DataFrame(data).with_columns(pl.col("datetime").dt.date())
+    return pl.DataFrame(data).with_columns(
+        pl.col("datetime").str.to_datetime().dt.date()
+    )

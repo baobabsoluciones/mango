@@ -1,7 +1,0 @@
-- [ ] Package configuration (pyproject.toml)
-- [ ] Requirements
-- [ ] README
-- [ ] Package initalization
-- [ ] Testing setup
-- [ ] Documentation integration (docs/)
-- [ ] Version management
