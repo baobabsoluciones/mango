@@ -3,9 +3,32 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+import polars as pl
 from mango.logging import get_configured_logger
 
 logger = get_configured_logger()
+
+
+def abs_mean(
+    data: Union[np.ndarray, pd.Series, pl.Series],
+) -> Union[np.floating, float]:
+    """
+    Compute absolute mean of data.
+
+    :param data: data item to convert
+    :type data: Union[np.ndarray, pd.Series, pl.Series]
+    :rtype: Union[np.floating, float]
+    :raises ValueError: If data type is not supported
+    """
+    if isinstance(data, (pd.Series, pl.Series)):
+        return data.abs().mean()
+    elif isinstance(data, np.ndarray):
+        return np.abs(data).mean()
+    else:
+        raise TypeError(
+            f"data type is {type(data)} but it "
+            "must be a np.ndarray, pd.Series, or pl.Series."
+        )
 
 
 def reintroduce_nans(self, df: pd.DataFrame, id: str) -> pd.DataFrame:
@@ -231,7 +254,7 @@ def _to_numpy(data: Any) -> np.ndarray:
     Convert a single data item to numpy array.
 
     :param data: Single data item to convert
-    :type data: Any
+    :type data: np.ndarray or has attribute .to_numpy()
     :return: Data converted to numpy array
     :rtype: np.ndarray
     :raises ValueError: If data type is not supported
