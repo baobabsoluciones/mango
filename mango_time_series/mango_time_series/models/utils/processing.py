@@ -288,20 +288,19 @@ def _extract_feature_names(data: Any) -> List[str]:
 
 def denormalize_data(
     data: np.ndarray,
-    normalization_method: str,
+    normalization_method: Optional[str],
     min_x: Optional[np.ndarray] = None,
     max_x: Optional[np.ndarray] = None,
     mean_: Optional[np.ndarray] = None,
     std_: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
-    Denormalize data using stored normalization parameters.
-    Assumes `normalize_data` was used during training to store min_x/max_x or mean_/std_.
+    Denormalize data.
 
     :param data: Normalized data to denormalize
     :type data: np.ndarray
-    :param normalization_method: Method used for normalization ('minmax' or 'zscore')
-    :type normalization_method: str
+    :param normalization_method: Method used for normalization
+    :type normalization_method: Optional[str]
     :param min_x: Minimum values for minmax normalization
     :type min_x: Optional[np.ndarray]
     :param max_x: Maximum values for minmax normalization
@@ -314,29 +313,35 @@ def denormalize_data(
     :rtype: np.ndarray
     :raises ValueError: If normalization method is invalid or parameters are missing
     """
-    if normalization_method not in ["minmax", "zscore"]:
-        raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
-
-    if min_x is None and mean_ is None:
+    if normalization_method not in ["minmax", "zscore", None]:
         raise ValueError(
-            "No normalization parameters found. Ensure the model was trained with normalization."
+            f"Invalid normalization method: {normalization_method}. Must be 'minmax', 'zscore', or None."
         )
 
     if normalization_method == "minmax":
-        return data * (max_x - min_x) + min_x
+        if isinstance(min_x, np.ndarray) and isinstance(max_x, np.ndarray):
+            return data * (max_x - min_x) + min_x
+        else:
+            raise TypeError("min_x and max_x need to be np.ndarrays.")
+
     elif normalization_method == "zscore":
-        return data * std_ + mean_
+        if isinstance(std_, np.ndarray) and isinstance(mean_, np.ndarray):
+            return data * std_ + mean_
+        else:
+            raise TypeError("std_ and mean_ need to be np.ndarrays.")
+
+    elif normalization_method is None:
+        return data
 
 
 def normalize_data_for_training(
     x_train: np.ndarray,
     x_val: np.ndarray,
     x_test: np.ndarray,
-    normalization_method: str,
+    normalization_method: Optional[str],
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]:
     """
     Normalize training, validation and test data using the specified method.
-    Computes and stores normalization parameters during training.
 
     :param x_train: Training data to normalize
     :type x_train: np.ndarray
@@ -344,11 +349,9 @@ def normalize_data_for_training(
     :type x_val: np.ndarray
     :param x_test: Test data to normalize
     :type x_test: np.ndarray
-    :param normalization_method: Method to use for normalization ('minmax' or 'zscore')
-    :type normalization_method: str
-    :param id_iter: ID of the iteration for group-specific normalization
-    :type id_iter: Optional[Union[str, int]]
-    :return: Tuple containing normalized training, validation and test data, and normalization values
+    :param normalization_method: Method to use for normalization
+    :type normalization_method: Optional[str]
+    :return: Normalized training, validation and test data, and normalization values
     :rtype: Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]
     :raises ValueError: If normalization method is invalid
     """
@@ -357,30 +360,88 @@ def normalize_data_for_training(
             f"Invalid normalization method: {normalization_method}. Must be 'minmax', 'zscore', or None."
         )
 
-    normalization_values = {}
-
     if normalization_method == "minmax":
         min_x = np.nanmin(x_train, axis=0)
         max_x = np.nanmax(x_train, axis=0)
         range_x = max_x - min_x
-        x_train = (x_train - min_x) / range_x
-        x_val = (x_val - min_x) / range_x
-        x_test = (x_test - min_x) / range_x
+
+        # Safe divisor for constant columns
+        safe_range_x = np.where(range_x == 0, 1.0, range_x)
+
+        x_train = (x_train - min_x) / safe_range_x
+        x_val = (x_val - min_x) / safe_range_x
+        x_test = (x_test - min_x) / safe_range_x
         normalization_values = {"min_x": min_x, "max_x": max_x}
+
     elif normalization_method == "zscore":
         mean_ = np.nanmean(x_train, axis=0)
         std_ = np.nanstd(x_train, axis=0)
-        x_train = (x_train - mean_) / std_
-        x_val = (x_val - mean_) / std_
-        x_test = (x_test - mean_) / std_
+
+        # Safe divisor for constant columns
+        safe_std = np.where(std_ == 0, 1.0, std_)
+
+        x_train = (x_train - mean_) / safe_std
+        x_val = (x_val - mean_) / safe_std
+        x_test = (x_test - mean_) / safe_std
         normalization_values = {"mean_": mean_, "std_": std_}
+
+    elif normalization_method is None:
+        normalization_values = {}
 
     return x_train, x_val, x_test, normalization_values
 
 
+def normalize_data(
+    data: np.ndarray,
+    normalization_method: Optional[str],
+    normalization_values: Dict[str, Any],
+) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
+    if normalization_method not in ["minmax", "zscore", None]:
+        raise ValueError(
+            f"Invalid normalization method: {normalization_method}. Must be 'minmax', 'zscore', or None."
+        )
+
+    if normalization_method == "minmax":
+        if normalization_values == {}:
+            x_min = np.nanmin(data, axis=0)
+            x_max = np.nanmax(data, axis=0)
+        else:
+            x_min = normalization_values.get("x_min", None)
+            x_max = normalization_values.get("x_max", None)
+            if x_min is None or x_max is None:
+                raise ValueError("normalization_values missing x_min and x_max.")
+
+        x_range = x_max - x_min
+        # Safe divisor for constant columns
+        safe_x_range = np.where(x_range == 0, 1.0, x_range)
+        data_normalized = (data - x_min) / safe_x_range
+        new_normalization_values = {"x_min": x_min, "x_max": x_max}
+
+    elif normalization_method == "zscore":
+        if normalization_values == {}:
+            x_mean = np.nanmean(data, axis=0)
+            x_std = np.nanstd(data, axis=0)
+        else:
+            x_mean = normalization_values.get("x_mean", None)
+            x_std = normalization_values.get("x_std", None)
+            if x_mean is None or x_std is None:
+                raise ValueError("normalization_values missing x_mean and x_std.")
+
+        # Safe divisor for constant columns
+        safe_x_std = np.where(x_std == 0, 1.0, x_std)
+        data_normalized = (data - x_mean) / safe_x_std
+        new_normalization_values = {"x_mean": x_mean, "x_std": x_std}
+
+    elif normalization_method is None:
+        data_normalized = data
+        new_normalization_values = {}
+
+    return data_normalized, new_normalization_values
+
+
 def normalize_data_for_prediction(
     data: np.ndarray,
-    normalization_method: str,
+    normalization_method: Optional[str],
     min_x: Optional[np.ndarray] = None,
     max_x: Optional[np.ndarray] = None,
     mean_: Optional[np.ndarray] = None,
@@ -394,7 +455,7 @@ def normalize_data_for_prediction(
 
     :param data: New data to normalize
     :type data: np.ndarray
-    :param normalization_method: Method to use for normalization ('minmax' or 'zscore')
+    :param normalization_method: Method to use for normalization
     :type normalization_method: str
     :param min_x: Minimum values for minmax normalization
     :type min_x: Optional[np.ndarray]
@@ -412,15 +473,21 @@ def normalize_data_for_prediction(
     :rtype: np.ndarray
     :raises ValueError: If normalization method is invalid
     """
-    if normalization_method not in ["minmax", "zscore"]:
-        raise ValueError("Invalid normalization method. Choose 'minmax' or 'zscore'.")
+    if normalization_method not in ["minmax", "zscore", None]:
+        raise ValueError(
+            f"Invalid normalization method: {normalization_method}. Must be 'minmax', 'zscore', or None."
+        )
 
     if normalization_method == "minmax":
         if min_x is None or max_x is None:
             min_x = np.nanmin(data, axis=0)
             max_x = np.nanmax(data, axis=0)
             range_x = max_x - min_x
-            return (data - min_x) / range_x
+
+            # Safe divisor for constant columns
+            safe_range_x = np.where(range_x == 0, 1.0, range_x)
+
+            return (data - min_x) / safe_range_x
         else:
             if feature_to_check_filter and feature_to_check is not None:
                 range_x = max_x[feature_to_check] - min_x[feature_to_check]

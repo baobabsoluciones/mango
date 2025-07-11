@@ -457,7 +457,7 @@ class AutoEncoder:
 
         if value not in ["minmax", "zscore", None]:
             raise ValueError(
-                "Invalid normalization method. Choose 'minmax', 'zscore', or None."
+                f"Invalid normalization method: {value}. Choose 'minmax', 'zscore', or None."
             )
 
         self._normalization_method = value
