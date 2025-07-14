@@ -63,29 +63,6 @@ def get_holidays_df(
     return all_holidays
 
 
-def get_covid_lockdowns() -> pl.DataFrame:
-    """Get COVID lockdown period as a dataframe
-
-    :return: pd.DataFrame, COVID lockdown period dataframe
-    """
-    covid_start = datetime(2020, 3, 1)
-    covid_end = datetime(2022, 3, 1)
-
-    date_range = [
-        covid_start + timedelta(i) for i in range(0, (covid_end - covid_start).days)
-    ]
-
-    covid_df = pl.DataFrame(
-        {"ds": date_range, "name": "COVID", "lower_bound": 0, "upper_bound": 0}
-    )
-
-    return covid_df.with_columns(
-        pl.col("ds").dt.cast_time_unit("ns"),
-        pl.col("lower_bound").cast(pl.Int64),
-        pl.col("upper_bound").cast(pl.Int64),
-    )
-
-
 def get_mwc() -> pl.DataFrame:
     """Get Mobile World Congress dates as a dataframe
 

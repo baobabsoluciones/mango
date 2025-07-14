@@ -7,7 +7,6 @@ import pandas as pd
 import polars as pl
 
 from mango_calendar.date_utils import (
-    get_covid_lockdowns,
     get_holidays_df,
     get_mwc,
 )
@@ -79,50 +78,6 @@ class TestDateUtils(unittest.TestCase):
 
         # Check that result is not empty
         self.assertGreater(len(result), 0)
-
-    def test_get_covid_lockdowns(self) -> None:
-        """Test get_covid_lockdowns function."""
-        result = get_covid_lockdowns()
-
-        # Check if result is a Polars DataFrame
-        self.assertIsInstance(result, pl.DataFrame)
-
-        # Check required columns
-        expected_columns = {"ds", "name", "lower_bound", "upper_bound"}
-        self.assertTrue(expected_columns.issubset(set(result.columns)))
-
-        # Check that all name values are "COVID"
-        self.assertTrue(all(result["name"] == "COVID"))
-
-        # Check that bounds are integers
-        self.assertEqual(result["lower_bound"].dtype, pl.Int64)
-        self.assertEqual(result["upper_bound"].dtype, pl.Int64)
-
-        # Check that all bounds are 0
-        self.assertTrue(all(result["lower_bound"] == 0))
-        self.assertTrue(all(result["upper_bound"] == 0))
-
-        # Check date range (should be about 2 years)
-        self.assertGreater(len(result), 700)  # Approximately 2 years worth of days
-        self.assertLess(len(result), 800)
-
-    def test_get_covid_lockdowns_date_range(self) -> None:
-        """Test that COVID lockdowns cover the expected date range."""
-        result = get_covid_lockdowns()
-
-        # Sort by date and get first and last rows to check date range
-        sorted_result = result.sort("ds")
-        first_date = sorted_result.select("ds").item(0, 0)
-        last_date = sorted_result.select("ds").item(-1, 0)
-
-        # Should start around March 1, 2020
-        self.assertEqual(first_date.year, 2020)
-        self.assertEqual(first_date.month, 3)
-        self.assertEqual(first_date.day, 1)
-
-        # Should end before March 1, 2022
-        self.assertEqual(last_date.year, 2022)
-        self.assertEqual(last_date.month, 2)
 
     def test_get_mwc(self) -> None:
         """Test get_mwc function."""
