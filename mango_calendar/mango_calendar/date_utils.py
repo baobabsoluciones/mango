@@ -1,7 +1,5 @@
 """Utility functions for working with dates and calendars."""
 
-from datetime import datetime, timedelta
-
 import pandas as pd
 import polars as pl
 
