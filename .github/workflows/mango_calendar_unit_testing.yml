@@ -8,10 +8,16 @@ on:
       - 'mango_calendar/mango_calendar/**'
       - 'mango_calendar/tests/**'
       - '.github/workflows/**calendar**'
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.rst'
   push:
     branches:
       - master
       - develop
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.rst'
 
 jobs:
   unit-testing:
