@@ -219,7 +219,7 @@ This project uses:
 - Add type hints to all functions
 - Write comprehensive docstrings
 - Include tests for new features
-- Run `python run_tests.py` before submitting
+- Run `uv run coverage run -m unittest discover -s tests -p "test_*.py" -v` before submitting 
 
 ## License 📄
 

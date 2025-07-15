@@ -47,7 +47,6 @@ include = [
 ]
 exclude = [
     "tests/",
-    "run_tests.py",
 ]
 
 
@@ -58,25 +57,25 @@ exclude = [".venv", "__pycache__"]
 
 [tool.ruff.lint]
 select = [
-    "E",   # Errores de estilo (PEP 8)
-    "F",   # Variables sin definir
-    "UP",  # Sintaxis moderna (auto-upgrade)
-    "I",   # Orden de imports (isort)
+    "E",   # Style errors (PEP 8)
+    "F",   # Undefined variables
+    "UP",  # Modern syntax (auto-upgrade)
+    "I",   # Import order (isort)
     "D",   # Docstrings (PEP 257)
-    "N",   # Nombres correctos
-    "B",   # Posibles bugs
-    "C90", # Complejidad del código
-    "A",   # Uso de nombres reservados
-    "T20", # Print y debugger en producción
-    "ANN", # Forzar typehints
-    "D"    # Forzar Docstrings
+    "N",   # Correct naming
+    "B",   # Possible bugs
+    "C90", # Code complexity
+    "A",   # Use of reserved names
+    "T20", # Print and debugger in production
+    "ANN", # Force typehints
+    "D"    # Force Docstrings
 ]
 ignore = [
-    "D203",  # Línea en blanco antes del docstring de clase
-    "D213",  # El resumen del docstring multilínea debe comenzar en la segunda línea
-    "D400",  # La primera línea debe terminar con punto, interrogación o exclamación
-    "B028",  # No se encontró el argumento explícito 'stacklevel'
-    "ANN401" # No se permiten expresiones con tipos dinámicos (typing.Any)
+    "D203",  # Blank line before class docstring
+    "D213",  # Multi-line docstring summary should start on the second line
+    "D400",  # First line should end with period, question mark or exclamation
+    "B028",  # No explicit 'stacklevel' argument found
+    "ANN401" # Dynamic type expressions (typing.Any) not allowed
 ]
 
 [tool.ruff.lint.pydocstyle]

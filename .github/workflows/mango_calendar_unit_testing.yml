@@ -41,7 +41,7 @@ jobs:
           uv sync --extra dev
       - name: Run unit testing
         run: |
-          uv run coverage run run_tests.py
+          uv run coverage run -m unittest discover -s tests -p "test_*.py" -v
           uv run coverage report -m
           uv run coverage xml
       - name: Upload coverage to artifact
