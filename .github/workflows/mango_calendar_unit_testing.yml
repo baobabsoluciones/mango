@@ -21,9 +21,9 @@ jobs:
       run:
         working-directory: ./mango_calendar
     strategy:
-      max-parallel: 9
+      max-parallel: 21
       matrix:
-        python-version: ['3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
