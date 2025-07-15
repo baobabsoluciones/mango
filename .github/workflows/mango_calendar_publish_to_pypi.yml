@@ -24,7 +24,7 @@ jobs:
           version: latest
 
       - name: Build package
-        run: uv build --sdist --wheel
+        run: uv build --sdist --wheel mango_calendar
 
       - name: Publish to PyPI
-        run: uv publish --token ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish --token ${{ secrets.PYPI_API_TOKEN }} mango_calendar/dist/*
