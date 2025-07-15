@@ -11,7 +11,6 @@ A Python library for working with calendar data, holidays, and date-related feat
 - 📏 **Distance Calculations**: Calculate distances to holidays for time-series analysis
 - 🛍️ **Calendar Events**: Support for commercial events like Black Friday
 - 🦠 **COVID Lockdown Data**: Built-in COVID-19 lockdown period data
-- 📱 **MWC Support**: Mobile World Congress dates integration
 - 🔄 **Pivot Functionality**: Transform calendar data into pivot tables
 - 🏗️ **Type Hints**: Full type annotation support for better IDE integration
 
@@ -81,7 +80,7 @@ holidays_with_distances = get_calendar(
 ### Date Utilities
 
 ```python
-from mango_calendar.date_utils import get_holidays_df, get_covid_lockdowns, get_mwc
+from mango_calendar.date_utils import get_holidays_df, get_covid_lockdowns
 
 # Get holidays in a specific format with window bounds
 holidays_polars = get_holidays_df(
@@ -94,9 +93,6 @@ holidays_polars = get_holidays_df(
 
 # Get COVID lockdown periods
 covid_data = get_covid_lockdowns()
-
-# Get Mobile World Congress dates
-mwc_dates = get_mwc()
 ```
 
 ### Pivot Calendar Data
