@@ -7,8 +7,8 @@ import pandas as pd
 import polars as pl
 
 from mango_calendar.date_utils import (
+    get_covid_lockdowns,
     get_holidays_df,
-    get_mwc,
 )
 
 
@@ -79,63 +79,49 @@ class TestDateUtils(unittest.TestCase):
         # Check that result is not empty
         self.assertGreater(len(result), 0)
 
-    def test_get_mwc(self) -> None:
-        """Test get_mwc function."""
-        result = get_mwc()
+    def test_get_covid_lockdowns(self) -> None:
+        """Test get_covid_lockdowns function."""
+        result = get_covid_lockdowns()
 
         # Check if result is a Polars DataFrame
         self.assertIsInstance(result, pl.DataFrame)
 
         # Check required columns
-        expected_columns = {"datetime", "name", "distance"}
+        expected_columns = {"ds", "name", "lower_bound", "upper_bound"}
         self.assertTrue(expected_columns.issubset(set(result.columns)))
 
-        # Check that all name values are "MWC"
-        self.assertTrue(all(result["name"] == "MWC"))
+        # Check that all name values are "COVID"
+        self.assertTrue(all(result["name"] == "COVID"))
 
-        # Check that all distance values are 0
-        self.assertTrue(all(result["distance"] == 0))
+        # Check that bounds are integers
+        self.assertEqual(result["lower_bound"].dtype, pl.Int64)
+        self.assertEqual(result["upper_bound"].dtype, pl.Int64)
 
-        # Check expected number of entries (should be 42 as per the data)
-        self.assertEqual(len(result), 42)
+        # Check that all bounds are 0
+        self.assertTrue(all(result["lower_bound"] == 0))
+        self.assertTrue(all(result["upper_bound"] == 0))
 
-        # Check datetime column type
-        self.assertEqual(result["datetime"].dtype, pl.Date)
+        # Check date range (should be about 2 years)
+        self.assertGreater(len(result), 700)  # Approximately 2 years worth of days
+        self.assertLess(len(result), 800)
 
-    def test_get_mwc_date_range(self) -> None:
-        """Test that MWC dates cover the expected years."""
-        result = get_mwc()
+    def test_get_covid_lockdowns_date_range(self) -> None:
+        """Test that COVID lockdowns cover the expected date range."""
+        result = get_covid_lockdowns()
 
-        # Extract years directly from Polars DataFrame
-        years = (
-            result.select(pl.col("datetime").dt.year().alias("year"))
-            .unique()
-            .get_column("year")
-            .to_list()
-        )
+        # Sort by date and get first and last rows to check date range
+        sorted_result = result.sort("ds")
+        first_date = sorted_result.select("ds").item(0, 0)
+        last_date = sorted_result.select("ds").item(-1, 0)
 
-        # Should cover years from 2014 to 2024
-        self.assertIn(2014, years)
-        self.assertIn(2024, years)
+        # Should start around March 1, 2020
+        self.assertEqual(first_date.year, 2020)
+        self.assertEqual(first_date.month, 3)
+        self.assertEqual(first_date.day, 1)
 
-        # Should be reasonable number of years
-        self.assertGreaterEqual(len(years), 10)
-
-    def test_get_mwc_month_range(self) -> None:
-        """Test that MWC dates are in the expected months."""
-        result = get_mwc()
-
-        # Extract months directly from Polars DataFrame
-        months = (
-            result.select(pl.col("datetime").dt.month().alias("month"))
-            .unique()
-            .get_column("month")
-            .to_list()
-        )
-
-        # MWC should be in February, March, June, or July
-        expected_months = {2, 3, 6, 7}
-        self.assertTrue(set(months).issubset(expected_months))
+        # Should end before March 1, 2022
+        self.assertEqual(last_date.year, 2022)
+        self.assertEqual(last_date.month, 2)
 
     @patch("mango_calendar.date_utils.get_calendar")
     def test_get_holidays_df_integration(self, mock_get_calendar: MagicMock) -> None:

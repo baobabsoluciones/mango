@@ -27,6 +27,11 @@ dependencies = [
     "unidecode>=1.4.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "coverage>=7.0",
+]
+
 
 [build-system]
 requires = ["hatchling"]
@@ -76,4 +81,16 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
+
+[tool.coverage.run]
+source = ["mango_calendar"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
 
