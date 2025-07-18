@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mango-calendar"
-dynamic=["version"]
-description = "Library with a collection of usefull classes and methods to DRY"
+dynamic = ["version"]
+description = "Library with a collection of useful classes and methods to DRY"
 authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
 ]
@@ -42,16 +42,13 @@ version_scheme = "post-release"
 local_scheme = "node-and-date"
 tag_regex = "^calendar(?P<version>\\d+\\.\\d+\\.\\d+(?:[abc]\\d+|rc\\d+)?)$"
 
-[tool.hatchling.build.targets.wheel]
-packages = ["mango_calendar"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mango_calendar*"]
+exclude = ["tests*"]
 
-[tool.hatchling.build.targets.sdist]
-include = [
-    "LICENSE",
-]
-exclude = [
-    "tests/",
-]
+[tool.setuptools]
+include-package-data = true
 
 
 [tool.ruff]
