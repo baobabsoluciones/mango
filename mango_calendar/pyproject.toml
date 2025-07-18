@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=69", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mango-calendar"
-version = "0.1.0"
+dynamic=["version"]
 description = "Library with a collection of usefull classes and methods to DRY"
 authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
@@ -32,11 +36,11 @@ dev = [
     "coverage[toml]>=7.0",
 ]
 
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
+[tool.setuptools_scm]
+root = ".."
+version_scheme = "post-release"
+local_scheme = "node-and-date"
+tag_regex = "^calendar(?P<version>\\d+\\.\\d+\\.\\d+(?:[abc]\\d+|rc\\d+)?)$"
 
 [tool.hatchling.build.targets.wheel]
 packages = ["mango_calendar"]
