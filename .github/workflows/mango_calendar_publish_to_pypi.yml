@@ -1,8 +1,9 @@
 name: Publish mango calendar to Pypi
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'calendar*'
 
 jobs:
   deploy:
