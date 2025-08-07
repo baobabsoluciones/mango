@@ -1,6 +1,6 @@
 import os
 import pickle
-from pathlib import Path
+import random
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -101,6 +101,7 @@ class AutoEncoder:
         self._custom_mask = None
         self._shuffle = False
         self._nan_coordinates = {}
+        self._seed = None
 
     @property
     def nan_coordinates(self) -> Dict:
@@ -115,6 +116,45 @@ class AutoEncoder:
         :rtype: Dict
         """
         return self._nan_coordinates
+
+    @property
+    def seed(self) -> Optional[int]:
+        """
+        Get the seed for reproducibility (all random generators).
+
+        :return: Seed for reproducibility
+        :rtype: Optional[str]
+        """
+        return self._seed
+
+    @seed.setter
+    def seed(self, value: Optional[int]) -> None:
+        """
+        Set the seed for reproducibility (all random generators).
+
+        :return: None
+        :rtype: None
+        """
+        if value is None:
+            self._seed = None
+        elif type(value) is not int:
+            raise ValueError("value must be type int.")
+        elif value < 0 or value > 2**32 - 1:
+            raise ValueError("value must be between 0 and 2**32 - 1.")
+        else:
+            self._set_all_seeds(value)
+
+    def _set_all_seeds(self, value: int) -> None:
+        """
+        Helper to set seed for all random generators.
+
+        :return: None
+        :rtype: None
+        """
+        self._seed = value
+        np.random.seed(value)
+        tf.random.set_seed(value)
+        random.seed(value)
 
     @property
     def save_path(self) -> Optional[str]:
@@ -417,7 +457,7 @@ class AutoEncoder:
 
         if value not in ["minmax", "zscore", None]:
             raise ValueError(
-                "Invalid normalization method. Choose 'minmax', 'zscore', or None."
+                f"Invalid normalization method: {value}. Choose 'minmax', 'zscore', or None."
             )
 
         self._normalization_method = value
@@ -1076,6 +1116,8 @@ class AutoEncoder:
             instance.features_name = params.get("features_name", None)
             instance.feature_to_check = params.get("feature_to_check", None)
             instance.normalization_values = params.get("normalization_values", {})
+            instance.seed = params.get("seed", None)
+
             # Model must be the last element in the saved data
             instance.model = model
 
@@ -1165,6 +1207,7 @@ class AutoEncoder:
         test_size: float = TEST_SIZE,
         id_columns: Union[str, int, List[str], List[int], None] = None,
         use_post_decoder_dense: bool = False,
+        seed: Optional[int] = 42,
     ) -> None:
         """
         Build the Autoencoder model with specified configuration.
@@ -1227,12 +1270,14 @@ class AutoEncoder:
         :type id_columns: Union[str, int, List[str], List[int], None]
         :param use_post_decoder_dense: Whether to add dense layer after decoder
         :type use_post_decoder_dense: bool
-
+        :param seed: Seed for reproducibility (sets all random generators)
+        :type seed: Optional[int]
         :raises NotImplementedError: If form='dense' is specified
         :raises ValueError: If invalid parameters are provided
         :return: None
         :rtype: None
         """
+        self.seed = seed
         self.form = form
         self.save_path = save_path
         self.context_window = context_window
@@ -2215,6 +2260,7 @@ class AutoEncoder:
                 "normalization_values": {},
                 "features_name": self._features_name,
                 "feature_to_check": self._feature_to_check,
+                "seed": self._seed,
             }
 
             if self._normalize:
@@ -2284,11 +2330,12 @@ class AutoEncoder:
         use_early_stopping: bool = True,
         patience: int = 10,
         use_post_decoder_dense: bool = False,
+        seed: Optional[int] = 42,
     ) -> "AutoEncoder":
         """
         Build and train the Autoencoder model in a single step.
 
-        This method combines the functionality of `build_model` and `train` methods,
+        This method combines the functionality of build_model() and train() methods,
         allowing for a more streamlined workflow.
 
         :param context_window: Context window for the model used to transform
@@ -2358,6 +2405,8 @@ class AutoEncoder:
         :type patience: int
         :param use_post_decoder_dense: Whether to use a dense layer after the decoder
         :type use_post_decoder_dense: bool
+        :param seed: Seed for reproducibility (sets all random generators)
+        :type seed: Optional[int]
         :return: Self for method chaining
         :rtype: AutoEncoder
         """
@@ -2390,6 +2439,7 @@ class AutoEncoder:
             test_size=test_size,
             id_columns=id_columns,
             use_post_decoder_dense=use_post_decoder_dense,
+            seed=seed,
         )
 
         self.train(
@@ -2429,7 +2479,7 @@ class AutoEncoder:
         """
         if self.model is None:
             raise ValueError(
-                "No model loaded. Use `load_from_pickle()` before calling `reconstruct_new_data()`."
+                "No model loaded. Use load_from_pickle() before calling reconstruct_new_data()."
             )
         if iterations < 1:
             raise ValueError("iterations must be at least 1")
@@ -2638,9 +2688,6 @@ class AutoEncoder:
         ) or {}
 
         if not normalization_values:
-            if self._normalization_method not in ["minmax", "zscore", None]:
-                raise ValueError("Invalid normalization method.")
-
             # Simulate train/val/test split using only current data
             x_train = x_val = x_test = data
 
@@ -3116,11 +3163,6 @@ class AutoEncoder:
             else:
                 self.normalization_values = {"global": norm_values}
 
-        # Calculate NaNs before imputation
-        train_nan_before = np.isnan(x_train).sum(axis=0)
-        val_nan_before = np.isnan(x_val).sum(axis=0)
-        test_nan_before = np.isnan(x_test).sum(axis=0)
-
         # Impute data
         if self._use_mask and self.imputer is not None:
             x_train = self.imputer.apply_imputation(
@@ -3134,26 +3176,15 @@ class AutoEncoder:
             x_test = np.nan_to_num(x_test)
 
         # Calculate NaNs after imputation
-        train_nan_after = np.isnan(x_train).sum(axis=0)
-        val_nan_after = np.isnan(x_val).sum(axis=0)
-        test_nan_after = np.isnan(x_test).sum(axis=0)
-
-        nan_summary = pd.DataFrame(
-            {
-                "feature": np.arange(len(train_nan_before)),
-                "train_nan_before": train_nan_before,
-                "train_nan_after": train_nan_after,
-                "val_nan_before": val_nan_before,
-                "val_nan_after": val_nan_after,
-                "test_nan_before": test_nan_before,
-                "test_nan_after": test_nan_after,
-            }
-        )
-
-        logger.info(
-            f"{id_key} number of NaNs before and after imputation:\n"
-            + nan_summary.to_string(index=False)
-        )
+        train_nan_after = np.isnan(x_train).sum()
+        val_nan_after = np.isnan(x_val).sum()
+        test_nan_after = np.isnan(x_test).sum()
+        nans_after_imputation = train_nan_after + val_nan_after + test_nan_after
+        if nans_after_imputation != 0:
+            raise ValueError(
+                "No NaNs are expected after imputation, yet there "
+                f"are {nans_after_imputation} NaNs present."
+            )
 
         seq_x_train, seq_x_val, seq_x_test = time_series_to_sequence(
             data=x_train,

@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 from scipy.stats import f_oneway
 
+import mango_time_series.models.utils.processing as processing
 from mango.logging import get_configured_logger
 from mango_time_series.models.utils.plots import create_error_analysis_dashboard
-from mango_time_series.models.utils.processing import save_csv
 
 logger = get_configured_logger()
 
@@ -148,7 +148,7 @@ def reconstruction_error(
 
         # Save if a path is provided
         if save_path:
-            save_csv(
+            processing.save_csv(
                 data=reconstruction_error_df,
                 save_path=save_path,
                 filename=filename,
@@ -236,7 +236,7 @@ def reconstruction_error_summary(
     filename: str = "reconstruction_error_summary.csv",
 ) -> pd.DataFrame:
     """
-    Generate and optionally save summary statistics (mean and std) for reconstruction error
+    Generate and optionally save summary statistics for reconstruction error
     grouped by split_column (if provided and present in the DataFrame).
 
     :param reconstruction_error_df: DataFrame with reconstruction error
@@ -262,6 +262,11 @@ def reconstruction_error_summary(
         )
 
     try:
+        # Define list of statistics and their corresponding names
+        stat_list = [processing.abs_mean, "std"]
+        stat_list_names = [s if isinstance(s, str) else s.__name__ for s in stat_list]
+
+        # Calculate summary statistics for split column if present
         if split_column in reconstruction_error_df.columns:
             unique_splits = reconstruction_error_df[split_column].unique()
             if set(split_order) != set(unique_splits):
@@ -269,29 +274,33 @@ def reconstruction_error_summary(
                     f"split_order set ({split_order}) must be equal to "
                     f"reconstruction_error_df[{split_column}] set ({unique_splits})"
                 )
-            summary_stats = reconstruction_error_df.groupby(split_column).agg(
-                ["mean", "std"]
-            )
+            summary_stats = reconstruction_error_df.groupby(split_column).agg(stat_list)
             summary_stats = summary_stats.T.unstack(level=1)
             summary_stats.index.name = "feature"
             summary_stats.columns = [
-                f"{split}_{stat}" for split, stat in summary_stats.columns
+                f"{split}_{stat}_error" for split, stat in summary_stats.columns
             ]
 
-            # Reorder columns: mean then std, across train, val, test
+            # Reorder columns: per split column show statistics
             column_order = [
-                f"{split}_{stat}" for stat in ["mean", "std"] for split in split_order
+                f"{split}_{stat}_error"
+                for stat in stat_list_names
+                for split in split_order
             ]
             summary_stats = summary_stats[column_order]
 
+        # Calculate cumulative summary statistics if split column is not present
         else:
-            summary_stats = reconstruction_error_df.agg(["mean", "std"])
+            summary_stats = reconstruction_error_df.agg(stat_list)
             summary_stats = summary_stats.T
             summary_stats.index.name = "feature"
+            summary_stats.columns = [
+                f"{split_stat}_error" for split_stat in summary_stats.columns
+            ]
 
         # Save if a path is provided
         if save_path:
-            save_csv(
+            processing.save_csv(
                 data=summary_stats,
                 save_path=save_path,
                 filename=filename,
@@ -373,12 +382,12 @@ def std_error_threshold(
 
         # Save if a path is provided
         if save_path:
-            save_csv(
+            processing.save_csv(
                 data=anomaly_mask,
                 save_path=save_path,
                 filename=anomaly_mask_filename,
             )
-            save_csv(
+            processing.save_csv(
                 data=anomaly_proportions,
                 save_path=save_path,
                 filename=anomaly_proportions_filename,
@@ -451,7 +460,7 @@ def corrected_data(
 
         # Save if a path is provided
         if save_path:
-            save_csv(
+            processing.save_csv(
                 data=corrected_data_df,
                 save_path=save_path,
                 filename=filename,
