@@ -11,9 +11,9 @@ import pandas as pd
 import polars as pl
 from keras.src.layers import Bidirectional
 
-from mango_time_series.models.utils import processing
-from mango_time_series.models.autoencoder import AutoEncoder
-from mango_time_series.models.modules import decoder, encoder
+from mango_autoencoder.utils import processing
+from mango_autoencoder.autoencoder import AutoEncoder
+from mango_autoencoder.modules import decoder, encoder
 
 
 class TestEncoder(unittest.TestCase):
@@ -464,6 +464,7 @@ class TestAutoEncoderCases(unittest.TestCase):
         :rtype: None
         """
         self.base_dir = Path(tempfile.mkdtemp())
+        print(self.base_dir)
         self.test_cases = [
             {
                 "with_ids": False,
@@ -513,7 +514,10 @@ class TestAutoEncoderCases(unittest.TestCase):
         :return: None
         :rtype: None
         """
-        shutil.rmtree(self.base_dir)
+        try:
+            shutil.rmtree(self.base_dir)
+        except Exception as e:
+            print(f"Error removing directory: {self.base_dir}. Error: {e}")
 
     @staticmethod
     def generate_synthetic_data_standard(num_samples=500, num_features=3, **kwargs):
