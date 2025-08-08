@@ -9,13 +9,12 @@ import polars as pl
 import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import SGD, Adadelta, Adagrad, Adam, Adamax, Nadam, RMSprop
-from tensorflow.keras.layers import Dense
-
-from mango.logging import get_configured_logger
 from mango.processing.data_imputer import DataImputer
-from mango_time_series.models.modules import anomaly_detector, decoder, encoder
-from mango_time_series.models.utils import plots, processing
-from mango_time_series.models.utils.sequences import time_series_to_sequence
+from mango_autoencoder.logging import get_configured_logger
+from mango_autoencoder.modules import anomaly_detector, decoder, encoder
+from mango_autoencoder.utils import plots, processing
+from mango_autoencoder.utils.sequences import time_series_to_sequence
+from tensorflow.keras.layers import Dense
 
 logger = get_configured_logger()
 

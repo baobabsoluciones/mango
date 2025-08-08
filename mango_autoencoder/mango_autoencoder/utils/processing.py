@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 import polars as pl
-from mango.logging import get_configured_logger
+from mango_autoencoder.logging import get_configured_logger
 
 logger = get_configured_logger()
 

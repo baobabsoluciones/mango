@@ -1,10 +1,10 @@
-import logging as log
 from typing import Union, List
 
 from keras import Input, Model
 from keras.src.layers import LSTM, Dense, SimpleRNN, GRU, Bidirectional
+from mango_autoencoder.logging import get_configured_logger
 
-logger = log.getLogger(__name__)
+logger = get_configured_logger()
 
 
 def encoder(form: str, **kwargs):
