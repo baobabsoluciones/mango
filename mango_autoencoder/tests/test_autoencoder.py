@@ -463,8 +463,8 @@ class TestAutoEncoderCases(unittest.TestCase):
         :return: None
         :rtype: None
         """
-        self.base_dir = Path(tempfile.mkdtemp())
-        print(self.base_dir)
+        self.root_dir = Path.cwd()
+        self.base_dir = self.root_dir / "test_autoencoder_cases"
         self.test_cases = [
             {
                 "with_ids": False,
@@ -510,14 +510,17 @@ class TestAutoEncoderCases(unittest.TestCase):
 
         Removes the temporary directory and all its contents to ensure
         a clean state for the next test.
-
-        :return: None
-        :rtype: None
         """
-        try:
+
+        autoencoder_dir = self.root_dir / "autoencoder"
+        plots_dir = self.root_dir / "plots"
+        if autoencoder_dir.exists() and autoencoder_dir.is_dir():
+            shutil.rmtree(autoencoder_dir)
+
+        if plots_dir.exists() and plots_dir.is_dir():
+            shutil.rmtree(plots_dir)
+        if self.base_dir.exists() and self.base_dir.is_dir():
             shutil.rmtree(self.base_dir)
-        except Exception as e:
-            print(f"Error removing directory: {self.base_dir}. Error: {e}")
 
     @staticmethod
     def generate_synthetic_data_standard(num_samples=500, num_features=3, **kwargs):
