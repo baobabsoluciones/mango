@@ -1,19 +1,17 @@
 # isort:skip_file
-import tensorflow as tf
-
 import shutil
-import tempfile
 import unittest
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import polars as pl
+import tensorflow as tf
 from keras.src.layers import Bidirectional
 
-from mango_autoencoder.utils import processing
 from mango_autoencoder.autoencoder import AutoEncoder
 from mango_autoencoder.modules import decoder, encoder
+from mango_autoencoder.utils import processing
 
 
 class TestEncoder(unittest.TestCase):
