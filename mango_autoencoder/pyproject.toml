@@ -19,15 +19,15 @@ classifiers = [
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
 ]
-requires-python = ">=3.10"
+requires-python = "==3.11"
 dependencies = [
     "mango[data]==0.3.0a8",
     "pandas>=2.0.3,<3.0.0",
     "plotly>=6.2.0",
     "polars>=1.31.0",
     "scikit-learn>=1.6.1",
-    "tensorflow-io-gcs-filesystem>=0.37,<0.38",
-    "tensorflow>=2.18,<2.20",
+    "tensorflow-io-gcs-filesystem==0.31.0",
+    "tensorflow==2.18.0",
 ]
 
 [project.optional-dependencies]
@@ -52,7 +52,7 @@ include-package-data = true
 
 [tool.ruff]
 line-length = 88
-target-version = "py312"
+target-version = "py311"
 exclude = [".venv", "__pycache__"]
 
 [tool.ruff.lint]
