@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 sys.path.insert(0, os.path.abspath("../../mango/"))
 sys.path.insert(0, os.path.abspath("../../mango_time_series/"))
 sys.path.insert(0, os.path.abspath("../../mango_autoencoder/"))
+sys.path.insert(0, os.path.abspath("../../mango_calendar/"))
 
 
 project = "mango"
