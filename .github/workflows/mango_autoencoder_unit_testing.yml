@@ -37,9 +37,14 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-      - name: Install dependencies
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
         run: |
           uv sync --extra dev
+      - name: Install dependencies (Linux/Windows)
+        if: runner.os != 'macOS'
+        run: |
+          uv sync --extra dev --extra io-gcs
       - name: Run unit testing
         run: |
           uv run coverage run -m unittest discover -s tests -p "test_*.py" -v

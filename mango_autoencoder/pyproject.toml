@@ -26,13 +26,15 @@ dependencies = [
     "plotly>=6.2.0",
     "polars>=1.31.0",
     "scikit-learn>=1.6.1",
-    "tensorflow==2.18.0",
-    "tensorflow-io-gcs-filesystem",
+    "tensorflow==2.18.0"
 ]
 
 [project.optional-dependencies]
 dev = [
     "coverage[toml]>=7.0",
+]
+io-gcs = [
+    "tensorflow-io-gcs-filesystem==0.31.0",
 ]
 
 [tool.setuptools_scm]
