@@ -3,8 +3,7 @@ from unittest import TestCase
 from unittest import mock
 
 from click.testing import CliRunner
-
-from mango_time_series.cli import cli
+from mango_dashboard.cli import cli
 
 
 class TestCli(TestCase):
