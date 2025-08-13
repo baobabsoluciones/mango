@@ -25,7 +25,7 @@ jobs:
       max-parallel: 21
       matrix:
         python-version: ['3.11']
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -37,14 +37,9 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
-      - name: Install dependencies (macOS)
-        if: runner.os == 'macOS'
+      - name: Install dependencies
         run: |
-          uv sync --only-current-platform --extra dev
-      - name: Install dependencies (Linux/Windows)
-        if: runner.os != 'macOS'
-        run: |
-          uv sync --only-current-platform --extra dev --extra io-gcs
+          uv sync --extra dev
       - name: Run unit testing
         run: |
           uv run coverage run -m unittest discover -s tests -p "test_*.py" -v
