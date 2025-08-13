@@ -2,11 +2,12 @@ from typing import Tuple
 
 import numpy as np
 import statsmodels.api as sm
-from mango.logging.logger import get_basic_logger
 from scipy.stats import boxcox, boxcox_normmax
 from statsmodels.stats.diagnostic import het_breuschpagan
 
-logger = get_basic_logger()
+from mango_time_series.logging import get_configured_logger
+
+logger = get_configured_logger()
 
 try:
     import pandas as pd

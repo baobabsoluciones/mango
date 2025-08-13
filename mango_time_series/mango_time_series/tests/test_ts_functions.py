@@ -1,7 +1,7 @@
 import unittest
+
 import pandas as pd
 from pandas.testing import assert_frame_equal
-import logging
 
 from mango_time_series.utils.processing_time_series import aggregate_to_input_pl
 

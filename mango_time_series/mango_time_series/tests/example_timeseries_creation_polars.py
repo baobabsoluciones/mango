@@ -2,7 +2,8 @@ from datetime import date
 
 import numpy as np
 import polars as pl
-from mango.logging import log_time
+
+from mango_time_series.logging import log_time
 
 np.random.seed(42)
 

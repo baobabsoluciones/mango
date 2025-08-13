@@ -1,4 +1,4 @@
-from mango_time_series.utils.processing import process_time_series
+from mango_time_series.utils.processing_time_series import process_time_series
 
 
 class TimeSeriesProcessor:
