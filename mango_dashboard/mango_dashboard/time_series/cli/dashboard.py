@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from mango_time_series.cli import cli
+from mango_dashboard.time_series.cli import cli
 
 
 @cli.group(name="dashboard", help="Commands in the dashboard")

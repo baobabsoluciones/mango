@@ -7,34 +7,34 @@ import requests
 import streamlit as st
 from statsforecast import StatsForecast
 
-from mango_time_series.dashboards.time_series_utils.constants import (
+from mango_dashboard.time_series.dashboards.time_series_utils.constants import (
     SELECT_AGR_TMP_DICT,
     model_context,
     default_models,
 )
-from mango_time_series.dashboards.time_series_utils.data_loader import (
+from mango_dashboard.time_series.dashboards.time_series_utils.data_loader import (
     load_data,
 )
-from mango_time_series.dashboards.time_series_utils.data_processing import (
+from mango_dashboard.time_series.dashboards.time_series_utils.data_processing import (
     process_data,
     convert_df,
     aggregate_to_input_cache,
     render_script,
 )
-from mango_time_series.dashboards.time_series_utils.file_uploader import (
+from mango_dashboard.time_series.dashboards.time_series_utils.file_uploader import (
     upload_files,
     manage_files,
 )
-from mango_time_series.dashboards.time_series_utils.ui_components import (
+from mango_dashboard.time_series.dashboards.time_series_utils.ui_components import (
     plot_time_series,
     setup_sidebar,
     plot_forecast,
     plot_error_visualization,
 )
-from mango_time_series.dashboards.time_series_utils.ui_text_en import (
+from mango_dashboard.time_series.dashboards.time_series_utils.ui_text_en import (
     UI_TEXT as UI_TEXT_EN,
 )
-from mango_time_series.dashboards.time_series_utils.ui_text_es import (
+from mango_dashboard.time_series.dashboards.time_series_utils.ui_text_es import (
     UI_TEXT as UI_TEXT_ES,
 )
 

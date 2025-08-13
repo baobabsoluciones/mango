@@ -11,6 +11,6 @@ def cli():
 
 
 # Import subcommands to register them (needs to be after cli to avoid circular imports)
-from mango_time_series.cli.dashboard import dashboard
+from mango_dashboard.time_series.cli.dashboard import dashboard
 
 cli.add_command(dashboard)
