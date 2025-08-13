@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=69", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mango-dashboard"
+dynamic = ["version"]
+description = "Library with a collection of useful classes and methods to DRY"
+authors = [
+    {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
+]
+
+readme = "README.md"
+urls = {repository = "https://github.com/baobabsoluciones/mango"}
+license = {text = "Apache Software License"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+]
+
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0.3, <3.0.0",
+    "streamlit_date_picker>=0.0.5, <0.1.0",
+    "Jinja2>=3.1.4, <4.0.0",
+    "statsforecast>=2.0.1, <3.0.0",
+    "scikit-learn>=1.6.1, <2.0.0",
+    "click>8.1.7, <8.2.0",
+    "plotly>=6.2.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "coverage[toml]>=7.0",
+]
+
+[tool.setuptools_scm]
+root = ".."
+version_scheme = "post-release"
+local_scheme = "node-and-date"
+tag_regex = "^dashboard(?P<version>\\d+\\.\\d+\\.\\d+(?:[abc]\\d+|rc\\d+)?)$"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mango_dashboard*"]
+exclude = ["tests*"]
+
+[tool.setuptools]
+include-package-data = true
+
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [".venv", "__pycache__"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # Style errors (PEP 8)
+    "F",   # Undefined variables
+    "UP",  # Modern syntax (auto-upgrade)
+    "I",   # Import order (isort)
+    "D",   # Docstrings (PEP 257)
+    "N",   # Correct naming
+    "B",   # Possible bugs
+    "C90", # Code complexity
+    "A",   # Use of reserved names
+    "T20", # Print and debugger in production
+    "ANN", # Force typehints
+    "D"    # Force Docstrings
+]
+ignore = [
+    "D203",  # Blank line before class docstring
+    "D213",  # Multi-line docstring summary should start on the second line
+    "D400",  # First line should end with period, question mark or exclamation
+    "B028",  # No explicit 'stacklevel' argument found
+    "ANN401" # Dynamic type expressions (typing.Any) not allowed
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.coverage.run]
+source = ["mango_dashboard"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
+
