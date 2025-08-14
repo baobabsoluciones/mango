@@ -52,8 +52,8 @@ def interface_visualization(
             return None
 
         # Handle file:/// protocol and normalize path
-        if logo_path.startswith("file:///"):
-            logo_path = logo_path.replace("file:///", "")
+        if logo_path.startswith("file://"):
+            logo_path = logo_path.replace("file://", "")
             logo_path = os.path.normpath(logo_path)
 
         # Check if it's a local file
@@ -79,14 +79,14 @@ def interface_visualization(
 
     st.set_page_config(
         page_title=project_name,
-        page_icon=validate_logo(logo_url),
+        # page_icon=validate_logo(logo_url),
         layout="wide",
         initial_sidebar_state="auto",
         menu_items=None,
     )
 
-    # Set up theme
-
+    # Set up logo
+    # st.sidebar.image(validate_logo(logo_url), use_container_width=True)
     # Language selector
     language = st.sidebar.selectbox(
         "Language / Idioma / Llengua", ["English", "Español"]
@@ -529,9 +529,7 @@ def interface_visualization(
                                                         time_series_filtered[
                                                             columns_id_name
                                                         ]
-                                                        == series_id.get(
-                                                            columns_id_name
-                                                        )
+                                                        == uid
                                                     ]
                                                 )
 
@@ -658,21 +656,25 @@ def interface_visualization(
                                         columns_id_multiple = selected_uid[0].get(
                                             columns_id_name
                                         )
-                                        if isinstance(columns_id_name, str):
-                                            filtered_forecast_st = [
-                                                df
-                                                for df in forecast_st
-                                                if columns_id_name in df.columns
-                                                and (
-                                                    df[columns_id_name]
-                                                    == columns_id_multiple
-                                                ).any()
-                                            ]
-                                            forecast_st = filtered_forecast_st[0]
-                                        else:
+                                        if columns_id_name not in forecast_st.columns:
                                             forecast_st[columns_id_name] = (
                                                 columns_id_multiple
                                             )
+                                        # if isinstance(columns_id_multiple, str):
+                                        #     filtered_forecast_st = [
+                                        #         df
+                                        #         for df in forecast_st
+                                        #         if columns_id_name in df.columns
+                                        #         and (
+                                        #             df[columns_id_name]
+                                        #             == columns_id_multiple
+                                        #         ).any()
+                                        #     ]
+                                        #     forecast_st = filtered_forecast_st[0]
+                                        # else:
+                                        #     forecast_st[columns_id_name] = (
+                                        #         columns_id_multiple
+                                        #     )
                                     forecast = aggregate_to_input_cache(
                                         forecast_st,
                                         freq=final_select_agr_tmp_dict[select_agr_tmp],
@@ -798,7 +800,7 @@ def interface_visualization(
 
 if __name__ == "__main__":
     project_name = os.environ.get("TS_DASHBOARD_PROJECT_NAME", "Project")
-    logo_url = os.environ.get("TS_DASHBOARD_LOGO_URL", None)
+    # logo_url = os.environ.get("TS_DASHBOARD_LOGO_URL", None)
     experimental_features = os.environ.get("TS_DASHBOARD_EXPERIMENTAL_FEATURES", False)
     if experimental_features.lower() in ["true", "t", "1"]:
         experimental_features = True
@@ -806,6 +808,6 @@ if __name__ == "__main__":
         experimental_features = False
     interface_visualization(
         project_name=project_name,
-        logo_url=logo_url,
+        # logo_url=logo_url,
         experimental_features=experimental_features,
     )

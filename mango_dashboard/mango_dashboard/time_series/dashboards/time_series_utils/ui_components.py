@@ -1144,17 +1144,18 @@ def plot_error_visualization(
     if select_model:
         for idx, serie in data_dict.items():
             if columns_id_name in serie.columns:
-                title = (
-                    f"Serie: {' - '.join(serie[[columns_id_name, 'model']].values[0])}"
-                )
-                st.write(f"##### {title}")
+                filtered_serie = serie[serie["model"] == select_model]
+                if not filtered_serie.empty:  # Si hay datos que coincidan
+                    title = f"Serie: {' - '.join(filtered_serie[[columns_id_name, 'model']].iloc[0])}"
+                    st.write(f"##### {title}")
 
             filter = serie[serie["model"] == select_model]
             st.write(ui_text["top_10_errors"] + f": **{select_model}**")
-            st.write(
+            st.dataframe(
                 filter.nlargest(10, "perc_abs_err")[
                     ["datetime", "forecast_origin", "model", "perc_abs_err"]
-                ]
+                ],
+                hide_index=True,
             )
 
     mean_or_median_error = st.radio(
@@ -1228,7 +1229,7 @@ def plot_error_visualization(
             df_agg_ordered = df_agg_filtered.sort_values(
                 by="perc_abs_err_median"
             ).reset_index(drop=True)
-            st.dataframe(df_agg_ordered)
+            st.dataframe(df_agg_ordered, hide_index=True)
 
             if len(models) > 1:
                 st.write(
