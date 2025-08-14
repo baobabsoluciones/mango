@@ -10,9 +10,9 @@ import pandas as pd
 import plotly
 import streamlit as st
 from PIL import Image
-
 from mango.table import Table
-from mango_dashboard.dashboards.file_explorer_handlers import (
+
+from mango_dashboard.file_explorer.dashboards.file_explorer_handlers import (
     FileExplorerHandler,
     GCPFileExplorerHandler,
     LocalFileExplorerHandler,
@@ -480,9 +480,9 @@ class FileExplorerApp:
                 html = self.file_handler.read_html(path_selected, encoding=encoding)
 
                 # Read
-                call_arg_str = re.findall(r"Plotly\.newPlot\((.*)\)", html[-(2**16) :])[
-                    0
-                ]
+                call_arg_str = re.findall(
+                    r"Plotly\.newPlot\((.*)\)", html[-(2**16) :]
+                )[0]
                 call_args = json.loads(f"[{call_arg_str}]")
                 plotly_json = {"data": call_args[1], "layout": call_args[2]}
                 return plotly.io.from_json(json.dumps(plotly_json))
@@ -765,10 +765,11 @@ if __name__ == "__main__":
     config_path = args.config_path
     editable = None if args.editable == -1 else args.editable
     gcp_path = args.gcp_credentials_path
-    if not os.path.exists(gcp_path):
-        raise ValueError("The GCP credentials path does not exist")
-    else:
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_path
+    if gcp_path is not None:
+        if not os.path.exists(gcp_path):
+            raise ValueError("The GCP credentials path does not exist")
+        else:
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_path
 
     # Select the file handler
     if os.path.exists(path):
