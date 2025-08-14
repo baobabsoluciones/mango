@@ -1,6 +1,8 @@
-"""
-Main file
-"""
+"""Mango Time Series package."""
 
-__path__ = __import__("pkgutil").extend_path(__path__, __name__)
-__version__ = "0.2.3a1"
+try:
+    from importlib.metadata import PackageNotFoundError, version
+
+    __version__ = version("mango-time-series")
+except PackageNotFoundError:
+    __version__ = "unknown"

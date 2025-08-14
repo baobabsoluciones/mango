@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.release.tag_name, 'ts')
+    if: startsWith(github.ref, 'refs/tags/ts')
 
     steps:
       - name: Check out repository
