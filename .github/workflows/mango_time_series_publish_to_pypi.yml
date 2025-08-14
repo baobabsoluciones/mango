@@ -26,7 +26,7 @@ jobs:
 
       - name: Build package
         run: uv build --sdist --wheel
-        working-directory: mango_calendar
+        working-directory: mango_time_series
 
       - name: Publish to PyPI
         run: uv publish --token ${{ secrets.pypi_mango_time_series_token }} dist/*
