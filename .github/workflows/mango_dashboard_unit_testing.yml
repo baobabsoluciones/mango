@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'dashboard/**'
+      - 'mango_dashboard/**'
       - '.github/workflows/**dashboard**'
   push:
     branches:
@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: ./dashboard/coverage.xml
+          path: ./mango_dashboard/coverage.xml
           if-no-files-found: error
 
 
@@ -56,7 +56,7 @@ jobs:
     needs: unit-testing
     defaults:
       run:
-        working-directory: ./dashboard
+        working-directory: ./mango_dashboard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
     needs: unit-testing
     defaults:
       run:
-        working-directory: ./dashboard
+        working-directory: ./mango_dashboard
     runs-on: ubuntu-latest
     steps:
       - name: Get artifact with the coverage
