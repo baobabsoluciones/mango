@@ -1,9 +1,10 @@
 import numpy as np
-from mango.logging.logger import get_basic_logger
 from scipy.signal import periodogram
 from statsmodels.tsa.stattools import acf
 
-logger = get_basic_logger()
+from mango_time_series.logging import get_configured_logger
+
+logger = get_configured_logger()
 
 
 class SeasonalityDetector:

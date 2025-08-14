@@ -1,6 +1,7 @@
 """Utility functions for working with dates and calendars."""
 
 from datetime import datetime, timedelta
+from typing import Union
 
 import pandas as pd
 import polars as pl
@@ -14,7 +15,7 @@ def get_holidays_df(
     start_year: int = 2014,
     country: str = "ES",
     output_format: str = "polars",
-) -> pl.DataFrame | pd.DataFrame:
+) -> Union[pl.DataFrame, pd.DataFrame]:
     """Get national holidays dataframe with window bounds
 
     :param steps_back: int, number of days to go back from the holiday.

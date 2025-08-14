@@ -3,14 +3,14 @@ from typing import Tuple
 
 import pandas as pd
 import polars as pl
-from mango.logging.logger import get_basic_logger
 from statsmodels.tools.sm_exceptions import InterpolationWarning
 from statsmodels.tsa.stattools import adfuller, kpss
 
-from mango_time_series.time_series.decomposition import SeasonalityDecompose
-from mango_time_series.time_series.seasonal import SeasonalityDetector
+from mango_time_series.logging import get_configured_logger
+from mango_time_series.exploratory_analysis.decomposition import SeasonalityDecompose
+from mango_time_series.exploratory_analysis.seasonal import SeasonalityDetector
 
-logger = get_basic_logger()
+logger = get_configured_logger()
 
 
 class StationaryTester:

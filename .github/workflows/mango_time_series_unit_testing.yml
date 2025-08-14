@@ -4,8 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'mango_time_series/pyproject.toml'
-      - 'mango_time_series/mango_time_series/**'
+      - 'mango_time_series/**'
       - '.github/workflows/**time_series**'
   push:
     branches:
@@ -22,7 +21,7 @@ jobs:
     strategy:
       max-parallel: 21
       matrix:
-        python-version: [3.9, '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12']
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
@@ -31,20 +30,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r ./requirements-dev.txt
-          pip uninstall mango -y
-          pip install -U "git+https://github.com/baobabsoluciones/mango@${BRANCH}#subdirectory=mango"
-        shell: bash
-        env:
-          BRANCH: "${{ github.head_ref || github.ref_name }}"
+          uv sync --extra dev
       - name: Run unit testing
         run: |
-          coverage run --source=. --rcfile=./.coveragerc -m unittest discover -s mango_time_series/tests
-          coverage report -m
-          coverage xml
+          uv run coverage run -m unittest discover -s mango_time_series/tests -p "test_*.py" -v
+          uv run coverage report -m
+          uv run coverage xml
       - name: Upload coverage to artifact
         if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
@@ -81,14 +78,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.9
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
-      - name: Install wheel
-        run: |
-          python -m pip install --upgrade pip
-          pip install build
+          python-version: '3.12'
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
       - name: Build binary wheel and source tarball
         run: |
-          python -m build
+          uv build
