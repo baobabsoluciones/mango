@@ -14,6 +14,8 @@ Welcome to mango's documentation!
    changelog/index
    code_mango/index
    code_mango_time_series/index
+   code_autoencoder/index
+   code_mango_calendar/index
    bib
 
 .. toctree::

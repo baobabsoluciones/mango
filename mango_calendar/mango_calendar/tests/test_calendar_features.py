@@ -5,7 +5,7 @@ import warnings
 
 import pandas as pd
 
-from mango_calendar.calendar_features import get_calendar
+from mango_calendar import get_calendar
 
 
 class TestCalendarFeatures(unittest.TestCase):

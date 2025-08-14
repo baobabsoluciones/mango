@@ -12,4 +12,3 @@ Mango time series code
     time_series_class
     utils
     validation
-    autoencoder

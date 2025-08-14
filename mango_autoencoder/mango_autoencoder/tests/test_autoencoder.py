@@ -1,19 +1,17 @@
 # isort:skip_file
-import tensorflow as tf
-
 import shutil
-import tempfile
 import unittest
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import polars as pl
+import tensorflow as tf
 from keras.src.layers import Bidirectional
 
-from mango_time_series.models.utils import processing
-from mango_time_series.models.autoencoder import AutoEncoder
-from mango_time_series.models.modules import decoder, encoder
+from mango_autoencoder.autoencoder import AutoEncoder
+from mango_autoencoder.modules import decoder, encoder
+from mango_autoencoder.utils import processing
 
 
 class TestEncoder(unittest.TestCase):
@@ -463,7 +461,8 @@ class TestAutoEncoderCases(unittest.TestCase):
         :return: None
         :rtype: None
         """
-        self.base_dir = Path(tempfile.mkdtemp())
+        self.root_dir = Path.cwd()
+        self.base_dir = self.root_dir / "test_autoencoder_cases"
         self.test_cases = [
             {
                 "with_ids": False,
@@ -509,11 +508,17 @@ class TestAutoEncoderCases(unittest.TestCase):
 
         Removes the temporary directory and all its contents to ensure
         a clean state for the next test.
-
-        :return: None
-        :rtype: None
         """
-        shutil.rmtree(self.base_dir)
+
+        autoencoder_dir = self.root_dir / "autoencoder"
+        plots_dir = self.root_dir / "plots"
+        if autoencoder_dir.exists() and autoencoder_dir.is_dir():
+            shutil.rmtree(autoencoder_dir)
+
+        if plots_dir.exists() and plots_dir.is_dir():
+            shutil.rmtree(plots_dir)
+        if self.base_dir.exists() and self.base_dir.is_dir():
+            shutil.rmtree(self.base_dir)
 
     @staticmethod
     def generate_synthetic_data_standard(num_samples=500, num_features=3, **kwargs):

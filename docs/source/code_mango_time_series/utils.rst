@@ -7,7 +7,3 @@ Utils
 Processing time series
 ~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: mango_time_series.utils.processing_time_series
-
-Utils
-~~~~~
-.. automodule:: mango_time_series.utils.utils

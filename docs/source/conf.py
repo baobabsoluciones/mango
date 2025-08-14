@@ -11,6 +11,8 @@ import sys
 sys.path.insert(0, os.path.abspath("../../"))
 sys.path.insert(0, os.path.abspath("../../mango/"))
 sys.path.insert(0, os.path.abspath("../../mango_time_series/"))
+sys.path.insert(0, os.path.abspath("../../mango_autoencoder/"))
+sys.path.insert(0, os.path.abspath("../../mango_calendar/"))
 
 
 project = "mango"
@@ -46,3 +48,47 @@ release = mango.__version__
 # Options for bibtex
 bibtex_bibfiles = ["./refs.bib"]
 bibtex_default_style = "plain"
+
+autodoc_mock_imports = [
+    "beautifulsoup4",
+    "certifi",
+    "charset_normalizer",
+    "click",
+    "et_xmlfile",
+    "fastjsonschema",
+    "google_cloud_storage",
+    "holidays",
+    "idna",
+    "Jinja2",
+    "lightgbm",
+    "mango",
+    "numpy",
+    "openpyxl",
+    "pandas",
+    "Pillow",
+    "plotly",
+    "polars",
+    "pyarrow",
+    "pycountry",
+    "pydantic",
+    "Pyomo",
+    "python_dateutil",
+    "pytups",
+    "pytz",
+    "requests",
+    "scikit_learn",
+    "scipy",
+    "shap",
+    "six",
+    "statsforecast",
+    "statsmodels",
+    "streamlit",
+    "streamlit_date_picker",
+    "tensorflow",
+    "tensorflow_io_gcs_filesystem",
+    "tqdm",
+    "unidecode",
+    "urllib3",
+    "xgboost",
+    "XlsxWriter"
+]

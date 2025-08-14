@@ -1,12 +1,11 @@
 from typing import List, Optional
 
+import mango_autoencoder.utils.processing as processing
 import numpy as np
 import pandas as pd
+from mango_autoencoder.logging import get_configured_logger
+from mango_autoencoder.utils.plots import create_error_analysis_dashboard
 from scipy.stats import f_oneway
-
-import mango_time_series.models.utils.processing as processing
-from mango.logging import get_configured_logger
-from mango_time_series.models.utils.plots import create_error_analysis_dashboard
 
 logger = get_configured_logger()
 

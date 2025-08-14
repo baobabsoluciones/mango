@@ -8,7 +8,7 @@ import plotly.colors as pc
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
-from mango.logging import get_configured_logger
+from mango_autoencoder.logging import get_configured_logger
 from plotly.subplots import make_subplots
 
 pio.renderers.default = "browser"
