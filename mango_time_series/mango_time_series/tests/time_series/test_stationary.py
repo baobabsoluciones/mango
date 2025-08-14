@@ -4,7 +4,7 @@ from unittest import TestCase
 import numpy as np
 import polars as pl
 
-from mango_time_series.time_series.stationary import StationaryTester
+from mango_time_series.exploratory_analysis.stationary import StationaryTester
 
 
 class TestStationaryTester(TestCase):

@@ -5,7 +5,7 @@ import pandas as pd
 from statsmodels.tsa.seasonal import STL, MSTL
 
 from mango_time_series.logging import get_configured_logger
-from mango_time_series.time_series.heteroscedasticity import (
+from mango_time_series.exploratory_analysis.heteroscedasticity import (
     detect_and_transform_heteroscedasticity,
 )
 
