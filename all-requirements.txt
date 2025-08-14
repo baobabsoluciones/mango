@@ -1,2 +1,0 @@
--r mango/requirements-dev.txt
--r mango_time_series/requirements-dev.txt
