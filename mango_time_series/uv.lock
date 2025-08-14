@@ -238,7 +238,7 @@ wheels = [
 
 [[package]]
 name = "mango"
-version = "0.2.3"
+version = "0.3.0a8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -258,16 +258,18 @@ dependencies = [
     { name = "urllib3" },
     { name = "xlsxwriter" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/91/15/aaeb329ea2713ee289338583a9cb0a91c5d90d9da75a786b41b19726cb06/mango-0.2.3.tar.gz", hash = "sha256:9ce155fba47293b6131a64fcb04d5316356b84a9f10b04fac5ef0723d9073fd8", size = 283096, upload-time = "2024-07-23T09:33:52.393Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/73/c3e4a5ff8fb5175acef727621b94b3f28c7f6a03ba4d22c02ca740622a90/mango-0.3.0a8.tar.gz", hash = "sha256:691c98b183afca24c002dd79efd777987834a98c6c74be66b6694ed51e426c01", size = 538925, upload-time = "2025-04-16T07:18:35.209Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/72/cc/8f579bbb1bcffe3117f41a6b08d2541a3b8e99b2bbd5dd807fd3afb9b5ce/mango-0.2.3-py3-none-any.whl", hash = "sha256:4b67c10692c466b1caaf88e607871351ec0663e66a2bb05c74ebae07eb7190d5", size = 311821, upload-time = "2024-07-23T09:33:50.482Z" },
+    { url = "https://files.pythonhosted.org/packages/e9/29/dbc56bc2861589c3154921dd396f94f38b3a0cd5cffc6bd1efd04d1fb47c/mango-0.3.0a8-py3-none-any.whl", hash = "sha256:b6633b7c4e9edd02285e4ca5d198d5c9c3ff8b358efe4d5c9ea9c57221e94beb", size = 569137, upload-time = "2025-04-16T07:18:33.656Z" },
 ]
 
 [package.optional-dependencies]
 data = [
     { name = "holidays" },
     { name = "pandas" },
+    { name = "polars" },
     { name = "pycountry" },
+    { name = "scikit-learn" },
     { name = "tabulate" },
     { name = "unidecode" },
 ]
@@ -295,11 +297,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.0" },
-    { name = "mango", extras = ["data"], specifier = ">=0.2.0,<0.3.0" },
+    { name = "mango", extras = ["data"], specifier = "==0.3.0a8" },
     { name = "numpy", specifier = ">=1.24.4,<2.0.0" },
     { name = "pandas", specifier = ">=2.0.3,<3.0.0" },
     { name = "polars", specifier = ">=1.8.2,<2.0.0" },
-    { name = "pyarrow", specifier = ">=21.0.0" },
+    { name = "pyarrow", specifier = ">=21.0.0,<22.0.0" },
     { name = "scikit-learn", specifier = ">=1.6.1,<2.0.0" },
     { name = "scipy", specifier = ">=1.10.1,<2.0.0" },
     { name = "statsmodels", specifier = ">=0.14.1,<1.0.0" },
