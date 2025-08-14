@@ -20,7 +20,7 @@ Mango Autoencoder is a specialized tool for time series analysis that uses neura
 ## Installation
 
 ```bash
-pip install mango-autoencoder
+uv add mango-autoencoder
 ```
 
 ## Dependencies
@@ -171,11 +171,14 @@ mango_autoencoder/
 │   │   ├── encoder.py          # Encoding module
 │   │   ├── decoder.py          # Decoding module
 │   │   └── anomaly_detector.py # Anomaly detector
-│   └── utils/
-│       ├── processing.py       # Processing utilities
-│       ├── plots.py           # Visualization tools
-│       └── sequences.py       # Sequence processing
-├── tests/                     # Unit tests
-└── pyproject.toml            # Project configuration
+│   ├── utils/
+│   │   ├── processing.py       # Processing utilities
+│   │   ├── plots.py           # Visualization tools
+│   │   └── sequences.py       # Sequence processing
+│   ├── tests/                  # Unit tests
+│   │   └── test_autoencoder.py # Autoencoder tests
+│   └── logging/                # Logging utilities
+├── pyproject.toml             # Project configuration
+└── uv.lock                    # Dependency lock file
 ```
 
