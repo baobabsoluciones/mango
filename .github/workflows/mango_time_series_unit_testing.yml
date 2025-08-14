@@ -4,9 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'mango_time_series/pyproject.toml'
-      - 'mango_time_series/mango_time_series/**'
-      - 'mango_time_series/tests/**'
+      - 'mango_time_series/**'
       - '.github/workflows/**time_series**'
   push:
     branches:
