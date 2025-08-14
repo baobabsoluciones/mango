@@ -7,12 +7,12 @@ import plotly.express as px
 import plotly.graph_objs as go
 import plotly.subplots as sp
 import streamlit as st
+from mango_time_series.exploratory_analysis.decomposition import SeasonalityDecompose
+from mango_time_series.exploratory_analysis.seasonal import SeasonalityDetector
 from plotly.subplots import make_subplots
 from statsmodels.tsa.stattools import acf, pacf
 from streamlit_date_picker import date_range_picker, PickerType
 
-from mango_time_series.time_series.decomposition import SeasonalityDecompose
-from mango_time_series.time_series.seasonal import SeasonalityDetector
 from .data_processing import (
     calculate_min_diff_per_window,
     calculate_horizon,
