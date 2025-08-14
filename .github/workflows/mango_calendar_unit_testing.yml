@@ -4,9 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'mango_calendar/pyproject.toml'
-      - 'mango_calendar/mango_calendar/**'
-      - 'mango_calendar/tests/**'
+      - 'mango_calendar/**'
       - '.github/workflows/**calendar**'
   push:
     branches:

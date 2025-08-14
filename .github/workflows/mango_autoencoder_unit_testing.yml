@@ -4,10 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'mango_autoencoder/pyproject.toml'
-      - 'mango_autoencoder/mango_autoencoder/modules**'
-      - 'mango_autoencoder/mango_autoencoder/utils**'
-      - 'mango_autoencoder/tests/**'
+      - 'mango_autoencoder/**'
       - '.github/workflows/**autoencoder**'
   push:
     branches:
