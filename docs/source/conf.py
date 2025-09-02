@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath("../../mango/"))
 sys.path.insert(0, os.path.abspath("../../mango_time_series/"))
 sys.path.insert(0, os.path.abspath("../../mango_autoencoder/"))
 sys.path.insert(0, os.path.abspath("../../mango_calendar/"))
+sys.path.insert(0, os.path.abspath("../../mango_dashboard/"))
 
 
 project = "mango"
@@ -50,16 +51,16 @@ bibtex_bibfiles = ["./refs.bib"]
 bibtex_default_style = "plain"
 
 autodoc_mock_imports = [
-    "beautifulsoup4",
+    "bs4",
     "certifi",
     "charset_normalizer",
     "click",
     "et_xmlfile",
     "fastjsonschema",
-    "google_cloud_storage",
+    "google.cloud.storage",
     "holidays",
     "idna",
-    "Jinja2",
+    "jinja2",
     "lightgbm",
     "mango",
     "numpy",
@@ -76,7 +77,7 @@ autodoc_mock_imports = [
     "pytups",
     "pytz",
     "requests",
-    "scikit_learn",
+    "sklearn",
     "scipy",
     "shap",
     "six",

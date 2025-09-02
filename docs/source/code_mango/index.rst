@@ -9,8 +9,6 @@ Mango code
     benchmark
     clients
     config
-    dashboards
-    data
     decodoc
     logging
     models

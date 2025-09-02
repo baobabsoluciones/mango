@@ -10,8 +10,13 @@ import pandas as pd
 import plotly
 import streamlit as st
 from PIL import Image
-from mango.processing import write_json, load_json
 from mango.table import Table
+
+from mango_dashboard.file_explorer.dashboards.file_explorer_handlers import (
+    FileExplorerHandler,
+    GCPFileExplorerHandler,
+    LocalFileExplorerHandler,
+)
 
 
 class DisplayablePath(object):
@@ -105,7 +110,11 @@ class FileExplorerApp:
     }
 
     def __init__(
-        self, path: str = None, editable: bool = True, config_path: str = None
+        self,
+        path: str = None,
+        editable: bool = True,
+        config_path: str = None,
+        file_handler: FileExplorerHandler = None,
     ):
         """
         The __init__ function is called when the class is instantiated.
@@ -141,8 +150,11 @@ class FileExplorerApp:
                 with open(config_path, "r") as f:
                     config_dict = json.load(f)
 
+        # Set file handler
+        self.file_handler = file_handler
+
         if path:
-            if os.path.exists(path):
+            if self.file_handler.path_exists(path):
                 config_dict["dir_path"] = path
 
         # Set config
@@ -166,6 +178,7 @@ class FileExplorerApp:
         )
 
     def _render_header(self):
+        # TODO: DONE
         """
         The _render_header function is a helper function that renders the header of the app.
         It takes in no arguments and returns nothing. It uses Streamlit's st module to render
@@ -205,6 +218,7 @@ class FileExplorerApp:
             st.header(self.config.get("header", self._APP_CONFIG["header"]))
 
     def _render_configuration(self):
+        # TODO: DONE
         """
         The _render_configuration function is used to render the configuration sidebar.
         It allows the user to select a folder, a config path, and set title and number of columns/rows.
@@ -414,23 +428,9 @@ class FileExplorerApp:
         :return: None
         :doc-author: baobab soluciones
         """
-        paths = []
-        for root, dirs, files in os.walk(folder_path):
-            if element_type == "file":
-                for element in files:
-                    path = os.path.join(root, element)
-                    paths.append(path)
-            elif element_type == "folder":
-                for element in dirs:
-                    path = os.path.join(root, element)
-                    paths.append(path)
-            else:
-                raise ValueError(
-                    "element_type must be 'file' or 'folder', but got {}".format(
-                        element_type
-                    )
-                )
-
+        paths = self.file_handler.get_file_or_folder_paths(
+            path=folder_path, element_type=element_type
+        )
         # Selectbox
         if element_type == "folder":
             paths = [folder_path] + paths
@@ -460,8 +460,7 @@ class FileExplorerApp:
             key=key,
         )
 
-    @classmethod
-    def _save_dataframe(cls, edited_df, path_selected, dict_of_tabs: dict = None):
+    def _save_dataframe(self, edited_df, path_selected, dict_of_tabs: dict = None):
         if path_selected.endswith(".csv"):
             edited_df.to_csv(path_selected, index=False)
         elif path_selected.endswith(".xlsx"):
@@ -471,16 +470,14 @@ class FileExplorerApp:
                         writer, sheet_name=sheet, index=False
                     )
         elif path_selected.endswith(".json"):
-            write_json(edited_df, path_selected)
+            self.file_handler.write_json_fe(path_selected, edited_df)
 
-    @classmethod
-    def _read_plot_from_html(cls, path_selected):
+    def _read_plot_from_html(self, path_selected):
         encodings_to_try = ["utf-8", "latin-1", "cp1252"]
 
         for encoding in encodings_to_try:
             try:
-                with open(path_selected, encoding=encoding) as f:
-                    html = f.read()
+                html = self.file_handler.read_html(path_selected, encoding=encoding)
 
                 # Read
                 call_arg_str = re.findall(
@@ -535,7 +532,7 @@ class FileExplorerApp:
             or path_selected.endswith(".jpg")
             or path_selected.endswith(".jpeg")
         ):
-            image = Image.open(path_selected)
+            image = self.file_handler.read_img(path=path_selected)
             with st.spinner("Wait for it..."):
                 st.image(image, width=self.config.get(f"width_{key}", None))
 
@@ -606,49 +603,46 @@ class FileExplorerApp:
 
         elif path_selected.endswith(".json"):
             with st.spinner("Wait for it..."):
-                with open(path_selected, "r") as f:
-                    data = json.load(f)
-                    st.checkbox("As table", value=False, key=f"json_df_{key}")
-                    if st.session_state[f"json_df_{key}"]:
-                        sheets = list(data.keys())
-                        list_of_tabs = st.tabs(sheets)
-                        try:
-                            dict_of_tabs = {
-                                sheets[i]: {
-                                    "tab": tab,
-                                    "df": pd.DataFrame.from_dict(data[sheets[i]]),
-                                }
-                                for i, tab in enumerate(list_of_tabs)
+                data = self.file_handler.read_json(path_selected)
+                st.checkbox("As table", value=False, key=f"json_df_{key}")
+                if st.session_state[f"json_df_{key}"]:
+                    sheets = list(data.keys())
+                    list_of_tabs = st.tabs(sheets)
+                    try:
+                        dict_of_tabs = {
+                            sheets[i]: {
+                                "tab": tab,
+                                "df": pd.DataFrame.from_dict(data[sheets[i]]),
                             }
-                            for key_tab, tab in dict_of_tabs.items():
-                                with tab["tab"]:
-                                    edited_df = st.data_editor(
-                                        tab["df"],
-                                        use_container_width=True,
-                                        key=f"{key_tab}_{path_selected}_{key}",
-                                        num_rows="dynamic",
+                            for i, tab in enumerate(list_of_tabs)
+                        }
+                        for key_tab, tab in dict_of_tabs.items():
+                            with tab["tab"]:
+                                edited_df = st.data_editor(
+                                    tab["df"],
+                                    use_container_width=True,
+                                    key=f"{key_tab}_{path_selected}_{key}",
+                                    num_rows="dynamic",
+                                )
+                                dict_edited = Table.from_pandas(edited_df).replace_nan()
+                                data[key_tab] = dict_edited
+                                if self.editable:
+                                    st.button(
+                                        "Save",
+                                        on_click=self._save_dataframe,
+                                        args=(data, path_selected),
+                                        key=f"{tab['tab']}_json_{path_selected}_{key}",
                                     )
-                                    dict_edited = Table.from_pandas(
-                                        edited_df
-                                    ).replace_nan()
-                                    data[key_tab] = dict_edited
-                                    if self.editable:
-                                        st.button(
-                                            "Save",
-                                            on_click=self._save_dataframe,
-                                            args=(data, path_selected),
-                                            key=f"{tab['tab']}_json_{path_selected}_{key}",
-                                        )
-                        except Exception as e:
-                            st.warning(
-                                f"The rendering of the JSON as file failed. Error: {e}"
-                            )
-                    else:
-                        st.json(data)
+                    except Exception as e:
+                        st.warning(
+                            f"The rendering of the JSON as file failed. Error: {e}"
+                        )
+                else:
+                    st.json(data)
 
         elif path_selected.endswith(".md"):
             with st.spinner("Wait for it..."):
-                text_md = Path(path_selected).read_text()
+                text_md = self.file_handler.read_markdown(path_selected)
                 st.markdown(text_md, unsafe_allow_html=True)
 
         else:
@@ -739,8 +733,16 @@ class FileExplorerApp:
 
         if self.editable:
             with st.spinner("Wait for it..."):
-                # Render folder tree
-                self._render_tree_folder()
+                try:
+                    # Render folder tree
+                    self._render_tree_folder()
+                except:
+                    if "GCPFileExplorerHandler" in self.file_handler.__class__.__name__:
+                        st.warning(
+                            "GCPFileExplorerHandler does not support folder tree."
+                        )
+                    else:
+                        st.warning("The rendering of the folder tree failed.")
 
         # Render body content
         self._render_body_content()
@@ -757,11 +759,31 @@ if __name__ == "__main__":
     parser.add_argument("--path", type=str)
     parser.add_argument("--config_path", type=str)
     parser.add_argument("--editable", type=int, default=None, choices=[0, 1, -1])
+    parser.add_argument("--gcp_credentials_path", type=str, default=None)
     args = parser.parse_args()
     path = args.path
     config_path = args.config_path
     editable = None if args.editable == -1 else args.editable
+    gcp_path = args.gcp_credentials_path
+    if gcp_path is not None:
+        if not os.path.exists(gcp_path):
+            raise ValueError("The GCP credentials path does not exist")
+        else:
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_path
+
+    # Select the file handler
+    if os.path.exists(path):
+        file_handler = LocalFileExplorerHandler(path=path)
+    else:
+        if path.startswith("gs://"):
+            file_handler = GCPFileExplorerHandler(
+                path=path, gcp_credentials_path=gcp_path
+            )
+        else:
+            raise ValueError("The path must be a valid local path or a GCP path")
 
     # Run app
-    app = FileExplorerApp(path=path, editable=editable, config_path=config_path)
+    app = FileExplorerApp(
+        path=path, editable=editable, config_path=config_path, file_handler=file_handler
+    )
     app.run()

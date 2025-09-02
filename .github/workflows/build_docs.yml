@@ -11,6 +11,7 @@ on:
       - 'mango_time_series/**'
       - 'mango_calendar/**'
       - 'mango_autoencoder/**'
+      - 'mango_dashboard/**'
 
 jobs:
   build:

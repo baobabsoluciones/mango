@@ -2,15 +2,17 @@ import os
 
 import click
 
-cli_path = os.path.dirname(os.path.abspath(__file__))
+from mango_dashboard.file_explorer.cli import cli
 
 
-@click.group(name="mango", help="Commands in the mango cli")
-def cli():
+@cli.group(name="dashboard", help="Commands in the dashboard")
+def dashboard():
     pass
 
 
-@cli.command(name="dashboard", help="Creates the data folder explorer dashboard")
+@dashboard.command(
+    name="file_explorer", help="Creates the data folder explorer dashboard"
+)
 @click.option("--path", "-p", default=os.getcwd(), help="Path to the folder to explore")
 @click.option(
     "--editable",
@@ -25,11 +27,11 @@ def cli():
     default=os.path.join(os.getcwd(), "config.json"),
     help="Path to the folder to explore",
 )
-def dashboard(path, editable, config_path):
+def file_explorer(path, editable, config_path):
     # Python Run os command
     relative_path = "../dashboards/file_explorer_app.py"
 
-    absolute_path = os.path.join(cli_path, relative_path)
+    absolute_path = os.path.join(os.path.dirname(__file__), relative_path)
 
     os.system(
         rf'streamlit run {absolute_path} -- --path "{path}" --editable {editable} --config_path "{config_path}"'

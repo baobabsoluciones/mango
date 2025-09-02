@@ -1,0 +1,100 @@
+from typing import Dict, Union
+
+from statsforecast import StatsForecast
+from statsforecast.models import (
+{%- for model_class in all_imports -%}
+    {{ model_class }}{% if not loop.last %}, {% endif %}
+{%- endfor -%}
+)
+
+# Crear el diccionario `default_models` con instancias de modelos
+default_models: Dict[str, Union[
+    {%- for model in models -%}
+    {{ model.class_name }}{% if not loop.last %}, {% endif %}
+    {%- endfor -%}
+]] = {
+    {%- for model in models -%}
+    "{{ model.name }}": {{ model.class_name }}(
+        {%- for param_name, param_value in model.parameters.items() -%}
+        {%- if param_name != 'alias' -%}
+        {{ param_name }}=
+        {%- if param_value.__class__.__module__ == "statsforecast.models" -%}
+            {{ param_value.__class__.__name__ }}()  {# Agrega `()` para instanciar la clase #}
+        {%- else -%}
+            {{ param_value }} {# No es una clase de modelo, solo usa el valor tal cual #}
+        {%- endif %}
+        {% if not loop.last %}, {% endif %}
+        {%- endif -%}
+        {%- endfor -%}
+    ){% if not loop.last %}, {% endif %}
+    {%- endfor -%}
+}
+
+class ForecastModel:
+    def __init__(self, models=default_models, horizon={{ horizon }}, step_size={{ step_size }}, n_windows={{ n_windows }}, freq="{{ freq_code }}"):
+        """
+        ForecastModel class to run forecast with multiple models.
+        :param models: dictionary with the models to use.
+        :param horizon: int with the forecast horizon.
+        :param step_size: int with the step size.
+        :param n_windows: int with the number of windows.
+        :param freq: str with the frequency code.
+        """
+        self.models = models
+        self.horizon = horizon
+        self.step_size = step_size
+        self.n_windows = n_windows
+        self.freq = freq
+
+    def prepare_data(self, df, columns_id=None):
+        """
+        Prepare the data for the forecast.
+        :param df: DataFrame with the time series data.
+        :param columns_id: str with the id column name.
+        :return: DataFrame with the prepared data and the id column name.
+        """
+        df = df.copy()
+        if not columns_id:
+            df["unique_id"] = "id_1"
+            columns_id = "unique_id"
+        df = df.rename(columns={"datetime": "ds", "y": "y"})
+        return df, columns_id
+
+    def run_forecast(self, df, columns_id=None):
+        """
+        Run the forecast with the models.
+        :param df: DataFrame with the time series data.
+        :param columns_id: str with the id column name.
+        :return: DataFrame with the forecast results.
+        """
+        if "uid" in df.columns and df["uid"].nunique() > 1:
+            # Caso con múltiples series (uid presente y único)
+            forecasts = []
+            for uid, group_df in df.groupby("uid"):
+                time_series, id_col = self.prepare_data(group_df, "uid")
+                fcst = StatsForecast(models=list(self.models.values()), freq=self.freq)
+
+                crossvalidation_df = fcst.cross_validation(
+                    df=time_series,
+                    h=self.horizon,
+                    step_size=self.step_size,
+                    n_windows=self.n_windows,
+                    id_col=id_col,
+                )
+                crossvalidation_df["uid"] = uid
+                forecasts.append(crossvalidation_df)
+
+            return pd.concat(forecasts, ignore_index=True)
+
+        else:
+            time_series, columns_id = self.prepare_data(df, columns_id)
+            fcst = StatsForecast(models=list(self.models.values()), freq=self.freq)
+
+            crossvalidation_df = fcst.cross_validation(
+                df=time_series,
+                h=self.horizon,
+                step_size=self.step_size,
+                n_windows=self.n_windows,
+                id_col=columns_id,
+            )
+            return crossvalidation_df
