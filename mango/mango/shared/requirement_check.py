@@ -1,7 +1,12 @@
 import logging
 import os
 import pathlib
-import tomllib as toml
+
+try:
+    import tomllib as toml
+except ImportError:
+    import toml
+
 from importlib.metadata import version, PackageNotFoundError
 
 
