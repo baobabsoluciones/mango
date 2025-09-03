@@ -229,25 +229,41 @@ Running Tests
 
    .. code-block:: bash
 
+       # Using pytest directly
        pytest
+       
+       # Using uv
+       uv run pytest
 
 2. Run tests with coverage:
 
    .. code-block:: bash
 
+       # Using pytest directly
        pytest --cov=mango
+       
+       # Using uv
+       uv run pytest --cov=mango
 
 3. Run specific test file:
 
    .. code-block:: bash
 
+       # Using pytest directly
        pytest tests/module/test_feature.py
+       
+       # Using uv
+       uv run pytest tests/module/test_feature.py
 
 4. Run tests matching a pattern:
 
    .. code-block:: bash
 
+       # Using pytest directly
        pytest -k "test_calculate"
+       
+       # Using uv
+       uv run pytest -k "test_calculate"
 
 Test Coverage Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -258,7 +274,11 @@ Test Coverage Requirements
 
   .. code-block:: bash
 
+      # Using pytest directly
       pytest --cov=mango --cov-report=html
+      
+      # Using uv
+      uv run pytest --cov=mango --cov-report=html
 
 Mocking and Patching
 ^^^^^^^^^^^^^^^^^
@@ -344,21 +364,83 @@ Development Best Practices
 Project Structure
 ~~~~~~~~~~~~~~~
 
-The repository contains two separate libraries:
+The repository contains multiple separate libraries:
 
 .. code-block:: text
 
     mango/
     ├── mango/                 # Main Mango library
-    │   ├── setup.py
+    │   ├── pyproject.toml
     │   ├── requirements.txt
     │   └── mango/
     │       └── ...
+    ├── mango_autoencoder/    # Autoencoder library
+    │   ├── pyproject.toml
+    │   ├── requirements.txt
+    │   └── mango_autoencoder/
+    │       └── ...
+    ├── mango_calendar/       # Calendar features library
+    │   ├── pyproject.toml
+    │   ├── requirements.txt
+    │   └── mango_calendar/
+    │       └── ...
+    ├── mango_dashboard/      # Dashboard library
+    │   ├── pyproject.toml
+    │   ├── requirements.txt
+    │   └── mango_dashboard/
+    │       └── ...
+    ├── mango_genetic/        # Genetic algorithms library
+    │   ├── pyproject.toml
+    │   ├── requirements.txt
+    │   └── mango_genetic/
+    │       └── ...
     └── mango_time_series/    # Time Series library
-        ├── setup.py
+        ├── pyproject.toml
         ├── requirements.txt
         └── mango_time_series/
             └── ...
+
+Package Management
+~~~~~~~~~~~~~~~~
+
+We support both pip and uv for package management:
+
+**Using uv (Recommended):**
+
+.. code-block:: bash
+
+    # Install uv
+    pip install uv
+    
+    # Create virtual environment and install dependencies
+    uv venv
+    uv sync
+    
+    # Add new dependency
+    uv add package_name
+    
+    # Add development dependency
+    uv add --dev package_name
+    
+    # Run commands
+    uv run python script.py
+    uv run pytest
+    uv run black .
+
+**Using pip (Alternative):**
+
+.. code-block:: bash
+
+    # Create virtual environment
+    python -m venv venv
+    source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+    
+    # Install dependencies
+    pip install -r requirements.txt
+    pip install -r requirements-dev.txt
+    
+    # Install in development mode
+    pip install -e .
 
 IDE Setup
 ~~~~~~~~
@@ -373,18 +455,22 @@ For better development experience, we recommend opening each library separately 
        git clone https://github.com/baobabsoluciones/mango.git
        cd mango
 
-       # Create and activate virtual environment
+       # Using uv (recommended)
+       uv venv
+       uv sync
+       uv run pip install -e .
+       
+       # Using pip (alternative)
        python -m venv venv
        source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+       pip install -r requirements.txt
+       pip install -r requirements-dev.txt
+       pip install -e .
 
        # Open mango directory in your IDE
        code mango/  # For VS Code
        # or
        pycharm mango/  # For PyCharm
-
-       # Install in development mode
-       pip install -e .
-       pip install -r requirements-dev.txt
 
 2. For Mango Time Series development:
 
@@ -393,18 +479,22 @@ For better development experience, we recommend opening each library separately 
        # From repository root
        cd mango_time_series
 
-       # Create and activate virtual environment
+       # Using uv (recommended)
+       uv venv
+       uv sync
+       uv run pip install -e .
+       
+       # Using pip (alternative)
        python -m venv venv
        source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+       pip install -r requirements.txt
+       pip install -r requirements-dev.txt
+       pip install -e .
 
        # Open mango_time_series directory in your IDE
        code .  # For VS Code
        # or
        pycharm .  # For PyCharm
-
-       # Install in development mode
-       pip install -e .
-       pip install -r requirements-dev.txt
 
 Development Environment
 ~~~~~~~~~~~~~~~~~~~~
@@ -435,6 +525,11 @@ Development Environment
 
    .. code-block:: bash
 
+       # Using uv
+       uv add --dev pre-commit
+       uv run pre-commit install
+       
+       # Using pip
        pip install pre-commit
        pre-commit install
 
@@ -478,3 +573,4 @@ References
 - `unittest.mock Documentation <https://docs.python.org/3/library/unittest.mock.html>`_
 - `pytest Documentation <https://docs.pytest.org/>`_
 - `Black Documentation <https://black.readthedocs.io/en/stable/>`_
+- `uv Documentation <https://docs.astral.sh/uv/>`_
