@@ -52,10 +52,9 @@ class FileTests(TestCase):
 
     def test_get_some_files(self):
         some_files = [
-            normalize_path("../../\\requirements-dev.txt"),
-            normalize_path("../../\\requirements.txt"),
+            normalize_path("../../\\uv.lock"),
         ]
-        files = list_files_directory(normalize_path("../../"), ["txt"])
+        files = list_files_directory(normalize_path("../../"), ["lock"])
         for file in files:
             self.assertIn(normalize_path(file), some_files)
 
