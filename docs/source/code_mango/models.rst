@@ -1,19 +1,6 @@
 Models
 ----------
 
-Neural Networks components
-===========================
-
-Activations
-~~~~~~~~~~~~
-
-.. automodule:: mango.models.activations
-
-Neural networks
-~~~~~~~~~~~~~~~~
-
-.. automodule:: mango.models.neural_networks
-
 Optimization
 =============
 
