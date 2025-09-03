@@ -2,12 +2,21 @@ import logging
 import os
 import pathlib
 
-try:
-    import tomllib as toml
-except ImportError:
-    import toml
-
 from importlib.metadata import version, PackageNotFoundError
+
+try:
+    import tomllib as _toml
+    _read = pathlib.Path.read_bytes
+    _loads = _toml.loads
+except ModuleNotFoundError:
+    try:
+        import tomli as _toml
+        _read = pathlib.Path.read_bytes
+        _loads = _toml.loads
+    except ModuleNotFoundError:
+        import toml as _toml
+        _read = pathlib.Path.read_text
+        _loads = _toml.loads
 
 
 def check_dependencies(dependencies_name: str, pyproject_path: str = None):
