@@ -4,10 +4,11 @@ from random import randint
 from typing import Union
 
 import numpy as np
-from mango.models.genetic.config import GeneticBaseConfig
-from mango.models.genetic.individual import Individual
-from mango.models.genetic.problem import Problem
-from mango.models.genetic.shared.exceptions import GeneticDiversity, ConfigurationError
+
+from mango_genetic.config import GeneticBaseConfig
+from mango_genetic.individual import Individual
+from mango_genetic.problem import Problem
+from mango_genetic.shared.exceptions import GeneticDiversity, ConfigurationError
 
 
 class Population:
@@ -78,12 +79,12 @@ class Population:
     @property
     def config(self):
         """
-        Property to store the configuration that the genetic algorithm has to use.
+        Property to store the configuration that the mango_genetic algorithm has to use.
 
         :getter: Returns the configuration object.
         :setter: Sets the configuration object.
         :param value: The configuration object.
-        :type value: :class:`GeneticBaseConfig<mango.models.genetic.config.GeneticBaseConfig>`
+        :type value: :class:`GeneticBaseConfig<mango.models.mango_genetic.config.GeneticBaseConfig>`
         """
         return self._config
 
@@ -99,7 +100,7 @@ class Population:
         :getter: Returns the evaluator function.
         :setter: Sets the evaluator function.
         :param value: The evaluator function or class.
-        :type value: Union[callable, :class:`Problem<mango.models.genetic.problem.Problem>`]
+        :type value: Union[callable, :class:`Problem<mango.models.mango_genetic.problem.Problem>`]
         """
         return self._evaluator
 
@@ -115,7 +116,7 @@ class Population:
         This method does not return anything, but it can be stopped due to the exceptions that can be raised on
         other parts of the algorithm.
 
-        :raise GeneticDiversity: When the genetic diversity is too low this exception gets raised. it can be raised
+        :raise GeneticDiversity: When the mango_genetic diversity is too low this exception gets raised. it can be raised
             during the parent selection process or during the stop phase of the algorithm.
         """
 
@@ -139,11 +140,11 @@ class Population:
         Method to rerun the Genetic Algorithm from the point it stopped for more generations.
 
         This method only works if the algorithm has previously stopped due to reaching the initial generation limit,
-        if it is due to a :class:`GeneticDiversity<mango.models.genetic.shared.exceptions.GeneticDiversity>` exception,
+        if it is due to a :class:`GeneticDiversity<mango.models.mango_genetic.shared.exceptions.GeneticDiversity>` exception,
         it will probably raise said exception again.
 
         :param generations: Number of generations to run the Genetic Algorithm.
-        :raises GeneticDiversity: When the genetic diversity is too low this exception gets raised. it can be raised
+        :raises GeneticDiversity: When the mango_genetic diversity is too low this exception gets raised. it can be raised
             during the parent selection process or during the stop phase of the algorithm.
         """
         self.max_generations += generations
@@ -156,7 +157,7 @@ class Population:
         The initialization of the population is done by creating a list of random individuals with size
         equal to the population_size parameter.
         The creation of the individuals is controlled by the create_random_individual class method of the
-        :class:`Individual<mango.models.genetic.individual.Individual>` class.
+        :class:`Individual<mango.models.mango_genetic.individual.Individual>` class.
         """
         self.population = np.array(
             [
@@ -302,9 +303,9 @@ class Population:
 
     def stop(self):
         """
-        Method to implement stop conditions based on information about the population or the genetic diversity.
+        Method to implement stop conditions based on information about the population or the mango_genetic diversity.
 
-        Currently, the only check done is that the genetic diversity is not too low.
+        Currently, the only check done is that the mango_genetic diversity is not too low.
         """
         # TODO: add more stop conditions
         # Some based on CV

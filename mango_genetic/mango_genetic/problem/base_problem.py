@@ -5,9 +5,9 @@ import numpy as np
 
 class Problem(ABC):
     """
-    Metaclass to implement an abstract problem class for genetic algorithms.
+    Metaclass to implement an abstract problem class for mango_genetic algorithms.
 
-    The problem class is used to define the fitness function for the genetic algorithm.
+    The problem class is used to define the fitness function for the mango_genetic algorithm.
     """
 
     def __init__(self):
