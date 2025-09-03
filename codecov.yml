@@ -19,6 +19,18 @@ flag_management:
     - name: base-tests
       paths:
         - mango/
+    - name: autoencoder-tests
+      paths:
+        - mango_autoencoder/
+    - name: calendar-tests
+      paths:
+        - mango_calendar/
+    - name: dashboard-tests
+      paths:
+        - mango_dashboard/
+    - name: genetic-tests
+      paths:
+        - mango_genetic/
     - name: time-series-tests
       paths:
         - mango_time_series/
