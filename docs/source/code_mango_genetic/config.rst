@@ -3,7 +3,7 @@ Configuration
 
 The genetic algorithm (GA) has a helper class that is used to parse `.yml` files to read the configuration that has to be used.
 
-This configuration :class:`GeneticBaseConfig<mango.models.genetic.config.GeneticBaseConfig>` class can be extended and modified at will.
+This configuration :class:`GeneticBaseConfig<mango_genetic.config.GeneticBaseConfig>` class can be extended and modified at will.
 
 The parameters that can be modified are divided by sections.
 

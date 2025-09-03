@@ -34,7 +34,7 @@ In this crossover a split point is randomly selected and two children are create
 .. tip::
     This crossover can be used for all types of encodings.
 
-This crossover process is implemented in the method: :meth:`one_split_crossover<mango.models.genetic.population.Population._one_split_crossover>`
+This crossover process is implemented in the method: :meth:`one_split_crossover<mango_genetic.population.Population._one_split_crossover>`
 
 .. _two-split-label:
 
@@ -52,7 +52,7 @@ In this crossover two split points are randomly selected and two children are cr
 .. tip::
     This crossover can be used for all types of encodings.
 
-This crossover process is implemented in the method: :meth:`two_split_crossover<mango.models.genetic.population.Population._two_split_crossover>`
+This crossover process is implemented in the method: :meth:`two_split_crossover<mango_genetic.population.Population._two_split_crossover>`
 
 .. _mask-label:
 
@@ -70,7 +70,7 @@ In this crossover a mask is randomly generated and two children are created from
 .. tip::
     This crossover can be used for all types of encodings.
 
-This crossover process is implemented in the method: :meth:`mask_crossover<mango.models.genetic.population.Population._mask_crossover>`
+This crossover process is implemented in the method: :meth:`mask_crossover<mango_genetic.population.Population._mask_crossover>`
 
 .. _linear-label:
 
@@ -99,7 +99,7 @@ As it can be seen in the example the first child lies between both original pare
 .. warning::
     This crossover can only be used for real encodings as it will not work with binary or integer encodings where the linear combination is not possible
 
-This crossover process is implemented in the method: :meth:`linear_crossover<mango.models.genetic.population.Population._linear_crossover>`
+This crossover process is implemented in the method: :meth:`linear_crossover<mango_genetic.population.Population._linear_crossover>`
 
 .. _flat-label:
 
@@ -117,7 +117,7 @@ This method is an implementation of Radcliffe's flat crossover :cite:p:`radcliff
 .. warning::
     This crossover can only be used with real encoding. In the future there will be an implementation for integer encoding as well.
 
-This crossover process is implemented in the method: :meth:`flat_crossover<mango.models.genetic.population.Population._flat_crossover>`
+This crossover process is implemented in the method: :meth:`flat_crossover<mango_genetic.population.Population._flat_crossover>`
 
 .. _blend-label:
 
@@ -159,7 +159,7 @@ An example can be seen in the following figure:
 .. warning::
     This crossover can only be used with real encoding.
 
-This crossover process is implemented in the method: :meth:`blend_crossover<mango.models.genetic.population.Population._blend_crossover>`
+This crossover process is implemented in the method: :meth:`blend_crossover<mango_genetic.population.Population._blend_crossover>`
 
 .. _gaussian-label:
 
@@ -188,7 +188,7 @@ The current implementation follows these steps:
 .. warning::
     This crossover can only be used with real encoding.
 
-This crossover process is implemented in the method: :meth:`gaussian_crossover<mango.models.genetic.population.Population._gaussian_crossover>`.
+This crossover process is implemented in the method: :meth:`gaussian_crossover<mango_genetic.population.Population._gaussian_crossover>`.
 
 Morphology crossover
 ~~~~~~~~~~~~~~~~~~~~
