@@ -1,14 +1,14 @@
-name: Publish mango genetic to Pypi
+name: Publish mango code_mango_genetic to Pypi
 
 on:
   push:
     tags:
-      - 'genetic*'
+      - 'code_mango_genetic*'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/genetic')
+    if: startsWith(github.ref, 'refs/tags/code_mango_genetic')
 
     steps:
       - name: Check out repository

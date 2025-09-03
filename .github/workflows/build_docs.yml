@@ -12,6 +12,7 @@ on:
       - 'mango_calendar/**'
       - 'mango_autoencoder/**'
       - 'mango_dashboard/**'
+      - 'mango_genetic/**'
 
 jobs:
   build:
