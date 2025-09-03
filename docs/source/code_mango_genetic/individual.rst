@@ -56,7 +56,7 @@ The mutation processes depends heavily on the encoding used by the individual. T
 
 This mutation process is called bit-flip. A random gene is selected and its value is flipped.
 
-It is implemented on :meth:`mutate_binary<mango.models.genetic.individual.Individual._mutate_binary>`.
+It is implemented on :meth:`mutate_binary<mango_genetic.individual.Individual._mutate_binary>`.
 
 
 **Integer**:
@@ -68,7 +68,7 @@ It is implemented on :meth:`mutate_binary<mango.models.genetic.individual.Indivi
 
 This mutation process is called random-resetting. A random gene is selected and its value is changed to a random value between the minimum and maximum values allowed.
 
-It is implemented on :meth:`mutate_integer<mango.models.genetic.individual.Individual._mutate_integer>`.
+It is implemented on :meth:`mutate_integer<mango_genetic.individual.Individual._mutate_integer>`.
 
 **Real**:
 
@@ -79,23 +79,23 @@ It is implemented on :meth:`mutate_integer<mango.models.genetic.individual.Indiv
 
 This mutation process is called random-resetting. A random gene is selected and its value is changed to a random value between the minimum and maximum values allowed.
 
-It is implemented on :meth:`mutate_real<mango.models.genetic.individual.Individual._mutate_real>`.
+It is implemented on :meth:`mutate_real<mango_genetic.individual.Individual._mutate_real>`.
 
 Implementation
 ===============
 
-In mango's implementation of an individual we provide a base class (:class:`Individual<mango.models.genetic.individual.Individual>`) that can be used as is or extended to create a custom individual that either implements more functionalities or overrides the existing ones.
+In mango's implementation of an individual we provide a base class (:class:`Individual<mango_genetic.individual.Individual>`) that can be used as is or extended to create a custom individual that either implements more functionalities or overrides the existing ones.
 
 The base class has the following attributes:
 
-- :attr:`config<mango.models.genetic.individual.Individual.config>`: The configuration of the genetic algorithm passed to the individual.
-- :attr:`encoding<mango.models.genetic.individual.Individual.encoding>`: The encoding used by the individual.
-- :attr:`fitness<mango.models.genetic.individual.Individual.fitness>`: The fitness value of the individual.
-- :attr:`genes<mango.models.genetic.individual.Individual.genes>`: The genes of the individual.
-- :attr:`idx<mango.models.genetic.individual.Individual.idx>`: The internal index of the individual in the population.
-- :attr:`parents<mango.models.genetic.individual.Individual.parents>`: The parents of the individual.
+- :attr:`config<mango_genetic.individual.Individual.config>`: The configuration of the genetic algorithm passed to the individual.
+- :attr:`encoding<mango_genetic.individual.Individual.encoding>`: The encoding used by the individual.
+- :attr:`fitness<mango_genetic.individual.Individual.fitness>`: The fitness value of the individual.
+- :attr:`genes<mango_genetic.individual.Individual.genes>`: The genes of the individual.
+- :attr:`idx<mango_genetic.individual.Individual.idx>`: The internal index of the individual in the population.
+- :attr:`parents<mango_genetic.individual.Individual.parents>`: The parents of the individual.
 
 The base class has also some methods that can be overriden in case further customization is needed:
 
-- :meth:`create_random_individual<mango.models.genetic.individual.Individual.create_random_individual>`: The process which controls the random generation of individuals. If we want to change the way the genes are generated then we can also override the method :meth:`create_random_genes<mango.models.genetic.individual.Individual.create_random_genes>`.
-- :meth:`mutate<mango.models.genetic.individual.Individual.mutate>`: The process which controls the mutation of the individuals. If we want to change just the mutation based on the encoding we can override the methods :meth:`_mutate_binary<mango.models.genetic.individual.Individual._mutate_binary>`, :meth:`_mutate_integer<mango.models.genetic.individual.Individual._mutate_integer>` or :meth:`_mutate_real<mango.models.genetic.individual.Individual._mutate_real>`.
+- :meth:`create_random_individual<mango_genetic.individual.Individual.create_random_individual>`: The process which controls the random generation of individuals. If we want to change the way the genes are generated then we can also override the method :meth:`create_random_genes<mango.models.genetic.individual.Individual.create_random_genes>`.
+- :meth:`mutate<mango_genetic.individual.Individual.mutate>`: The process which controls the mutation of the individuals. If we want to change just the mutation based on the encoding we can override the methods :meth:`_mutate_binary<mango.models.genetic.individual.Individual._mutate_binary>`, :meth:`_mutate_integer<mango.models.genetic.individual.Individual._mutate_integer>` or :meth:`_mutate_real<mango.models.genetic.individual.Individual._mutate_real>`.

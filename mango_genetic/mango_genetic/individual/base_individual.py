@@ -1,7 +1,8 @@
 from random import uniform, randint
 
 import numpy as np
-from mango.models.genetic.config import GeneticBaseConfig
+
+from mango_genetic.config import GeneticBaseConfig
 
 
 class Individual:
@@ -69,7 +70,7 @@ class Individual:
         Property that stores the config object for the individual
 
         :param value: the new value for the config (used on setting up the property)
-        :type value: :class:`mango.models.genetic.config.GeneticBaseConfig`
+        :type value: :class:`mango.models.mango_genetic.config.GeneticBaseConfig`
         :return: the config value
         """
         return self._config
@@ -139,7 +140,7 @@ class Individual:
         :param idx: the idx of the new individual
         :type idx: int
         :param config: the config object for the individual
-        :type config: :class:`mango.models.genetic.config.GeneticBaseConfig`
+        :type config: :class:`mango.models.mango_genetic.config.GeneticBaseConfig`
         :return: the new individual
         """
         ind = cls(idx=idx, config=config)
@@ -256,7 +257,7 @@ class Individual:
         In order to make this comparison as fast as possible it used the pre-generated hash to compare the individuals.
         So the comparison is made on the genotype instead of the phenotype, as two individuals with different
         genotypes can have the same phenotype, so they should be considered as not equal
-        for crossover and genetic diversity purposes.
+        for crossover and mango_genetic diversity purposes.
 
         :param other: the other individual to compare
         :return: True if the individuals are equal, False otherwise

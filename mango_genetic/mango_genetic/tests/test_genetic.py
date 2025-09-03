@@ -12,12 +12,13 @@ from mango.benchmark.optimization import (
 )
 from mango.benchmark.optimization import bukin_function_6
 from mango.benchmark.optimization import dolan_function_no2
-from mango.models.genetic.config.config import GeneticBaseConfig
-from mango.models.genetic.individual import Individual
-from mango.models.genetic.population.base_population import Population
-from mango.models.genetic.problem.base_problem import Problem
-from mango.models.genetic.shared.exceptions import GeneticDiversity
-from mango.tests.const import normalize_path
+
+from mango_genetic.config import GeneticBaseConfig
+from mango_genetic.individual import Individual
+from mango_genetic.population import Population
+from mango_genetic.problem import Problem
+from mango_genetic.shared.exceptions import GeneticDiversity
+from mango_genetic.tests.const import normalize_path
 
 
 class TestIndividual(TestCase):

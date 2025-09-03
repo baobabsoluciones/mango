@@ -1,7 +1,7 @@
 Mutation
 ----------
 
-Although most of the mutation is controlled from the :class:`Individual<mango.models.genetic.individual.Individual` class, there is some control that can also be done from the :class:`Population<mango.models.genetic.population.Population`> class.
+Although most of the mutation is controlled from the :class:`Individual<mango_genetic.individual.Individual` class, there is some control that can also be done from the :class:`Population<mango_genetic.population.Population`> class.
 
 If set in the configuration the attribute :attr:`mutation_control` to a value of `gene_based`, `population_based` or `adaptative` we can control how the mutation rate evolves through the generations.
 

@@ -1,5 +1,6 @@
 from mango.config import BaseConfig, ConfigParameter
-from mango.models.genetic.const import (
+
+from mango_genetic.const import (
     INDIVIDUAL_ENCODINGS,
     SELECTION_METHODS,
     CROSSOVER_METHODS,

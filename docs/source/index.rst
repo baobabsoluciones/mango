@@ -7,7 +7,7 @@ Welcome to mango's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    readme
@@ -17,10 +17,5 @@ Welcome to mango's documentation!
    code_autoencoder/index
    code_mango_calendar/index
    code_mango_dashboard/index
+   code_mango_genetic/index
    bib
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Theory and Algorithms:
-
-   genetic/index
