@@ -4,13 +4,6 @@ Genetic Algorithms (GA)
 This section of the documentation covers the module dedicated to genetic algorithms. The main objective is to give an overview of how this algorithms work, the current genetic operators implemented and how to use this module to solve problems or quickly prototype solutions.
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Contents:
-
-    Theory and Algorithms <theory_and_algorithms>
-    Code and Functions <code>
-
-.. toctree::
     :maxdepth: 1
     :caption: Theory and Algorithms:
 
@@ -27,7 +20,7 @@ This section of the documentation covers the module dedicated to genetic algorit
 
 .. toctree::
     :maxdepth: 1
-    :caption: Code and Functions:
+    :caption: Code:
 
     code
 

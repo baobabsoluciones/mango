@@ -10,8 +10,8 @@ First we need to import the GA module and the Ackley function:
 .. code-block:: python
 
     from mango.benchmark.optimization.ackley import ackley
-    from mango.models.genetic.population import Population
-    from mango.models.genetic.config import GeneticBaseConfig
+    from mango_genetic.population import Population
+    from mango_genetic.config import GeneticBaseConfig
 
 Then we have to define the configuration that we are going to use on a `.yml` file. We can write the following configuration to a file called `ackley.cfg`:
 
