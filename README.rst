@@ -15,7 +15,7 @@ Mango repository
     :target: https://app.codecov.io/gh/baobabsoluciones/mango
 
 
-This repository contains two libraries developed by the team at Baobab Soluciones: **mango** and **mango_time_series**. These libraries are the result of the team's experience, understanding, and knowledge of the Python language and its ecosystem.
+This repository contains multiple libraries developed by the team at Baobab Soluciones: **mango**, **mango_autoencoder**, **mango_calendar**, **mango_dashboard**, **mango_genetic**, and **mango_time_series**. These libraries are the result of the team's experience, understanding, and knowledge of the Python language and its ecosystem.
 
 Libraries Overview
 ==================
@@ -102,6 +102,113 @@ Main Modules
 6. **Analysis**
    - ``mango.shap``: SHAP value analysis and visualization
 
+Mango Autoencoder Library
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Main Features
+^^^^^^^^^^
+
+1. **Neural Network Architecture**
+   - Encoder-decoder architecture for dimensionality reduction
+   - Configurable network layers and activation functions
+   - Support for various input data types
+
+2. **Anomaly Detection**
+   - Built-in anomaly detection capabilities
+   - Threshold-based detection methods
+   - Performance metrics and evaluation
+
+3. **Data Processing**
+   - Sequence handling and preprocessing
+   - Data normalization and scaling
+   - Batch processing support
+
+Installation
+^^^^^^^^^^
+
+.. code-block:: bash
+
+    pip install mango-autoencoder
+
+Mango Calendar Library
+~~~~~~~~~~~~~~~~~~~~
+
+Main Features
+^^^^^^^^^^
+
+1. **Calendar Operations**
+   - Date manipulation and calculations
+   - Holiday detection and business day logic
+   - Calendar feature extraction
+
+2. **Time Utilities**
+   - Date range operations
+   - Working day calculations
+   - Time zone handling
+
+Installation
+^^^^^^^^^^
+
+.. code-block:: bash
+
+    pip install mango-calendar
+
+Mango Dashboard Library
+~~~~~~~~~~~~~~~~~~~~~
+
+Main Features
+^^^^^^^^^^
+
+1. **Interactive Dashboards**
+   - Streamlit-based dashboard creation
+   - File explorer and visualization tools
+   - Time series analysis dashboards
+
+2. **Data Visualization**
+   - Interactive charts and plots
+   - Real-time data updates
+   - Customizable dashboard layouts
+
+3. **File Management**
+   - File browser and explorer
+   - Data upload and processing
+   - Export capabilities
+
+Installation
+^^^^^^^^^^
+
+.. code-block:: bash
+
+    pip install mango-dashboard
+
+Mango Genetic Library
+~~~~~~~~~~~~~~~~~~~
+
+Main Features
+^^^^^^^^^^
+
+1. **Genetic Algorithms**
+   - Individual and population management
+   - Selection, crossover, and mutation operators
+   - Configurable genetic parameters
+
+2. **Optimization Framework**
+   - Abstract problem interface
+   - Multiple encoding types (real, binary, integer, categorical)
+   - Fitness evaluation and optimization
+
+3. **Advanced Operators**
+   - Tournament and rank-based selection
+   - Blend, split, and gaussian crossover
+   - Adaptive mutation control
+
+Installation
+^^^^^^^^^^
+
+.. code-block:: bash
+
+    pip install mango-genetic
+
 Mango Time Series Library
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -140,13 +247,40 @@ Basic installation with all core dependencies:
 
     pip install mango-time-series
 
-For development installation:
+For development installation of any library:
 
 .. code-block:: bash
 
+    # Clone the repository
     git clone https://github.com/baobabsoluciones/mango.git
-    cd mango/mango_time_series
+    
+    # Navigate to specific library
+    cd mango/mango_time_series  # or mango_autoencoder, mango_calendar, etc.
+    
+    # Install in development mode
     pip install -e .
+    
+    # Or using uv (recommended)
+    uv venv
+    uv sync
+    uv run pip install -e .
+
+Complete Installation
+^^^^^^^^^^^^^^^^^^
+
+To install all mango libraries:
+
+.. code-block:: bash
+
+    # Core mango library with all optional dependencies
+    pip install mango[data,plot,dashboard,models,shap]
+    
+    # Individual libraries
+    pip install mango-autoencoder
+    pip install mango-calendar
+    pip install mango-dashboard
+    pip install mango-genetic
+    pip install mango-time-series
 
 Contributing
 ============
