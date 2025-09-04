@@ -12,7 +12,6 @@ Mango code
     decodoc
     logging
     models
-    plots
     processing
     shap_analysis
     table

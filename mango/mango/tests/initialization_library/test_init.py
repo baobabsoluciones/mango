@@ -8,7 +8,20 @@ import mango
 
 class InitializeTest(TestCase):
     def test_version_matches(self):
-        with open(normalize_path(os.path.join("..", "..", "pyproject.toml")), "r") as f:
-            pyproject = f.read()
-        version = pyproject.split("version = ")[1].split("\n")[0].replace('"', "")
-        self.assertEqual(mango.__version__, version)
+        """
+        Test that the version is properly set (dynamic version from setuptools_scm)
+        """
+        self.assertIsNotNone(mango.__version__)
+        self.assertIsInstance(mango.__version__, str)
+        self.assertGreater(len(mango.__version__), 0)
+
+        version_parts = mango.__version__.split(".")
+        self.assertGreaterEqual(len(version_parts), 2)
+
+        for part in version_parts[:2]:
+            self.assertTrue(
+                part.isdigit()
+                or part.endswith("a")
+                or part.endswith("b")
+                or part.endswith("rc")
+            )

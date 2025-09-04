@@ -1,23 +1,23 @@
+import logging
 import os
 import pathlib
 
-# Compatibility with Python < 3.11
+from importlib.metadata import version, PackageNotFoundError
+
 try:
     import tomllib as toml
-except ImportError:
-    from pip._vendor import tomli as toml
-
-# Trick for testing suite mockup
-import pkg_resources
-from pkg_resources import DistributionNotFound
-
-import logging
+except ModuleNotFoundError:
+    try:
+        import tomli as toml
+    except ModuleNotFoundError:
+        import toml
 
 
 def check_dependencies(dependencies_name: str, pyproject_path: str = None):
     """
     Verify if optional dependencies have been installed for better ImportError handling.
     :param dependencies_name: optional dependencies name as defined in pyproject.toml
+    :param pyproject_path: path to pyproject.toml file. If None, will look for it in the parent directory of this file.
     :return: returns True if all dependencies are satisfied, False if not
     """
 
@@ -32,7 +32,7 @@ def check_dependencies(dependencies_name: str, pyproject_path: str = None):
             f"{pyproject} does not exist. You may pass the path to the function as an argument"
         )
 
-    # Extact data
+    # Extract data
     pyproject_text = pyproject.read_text()
     pyproject_data = toml.loads(pyproject_text)
 
@@ -46,11 +46,20 @@ def check_dependencies(dependencies_name: str, pyproject_path: str = None):
             f"Could not find {dependencies_name} as an optional dependency in pyproject.toml"
         )
 
-    # Check requirements with pkg_resources
+    # Check requirements with importlib.metadata
     try:
-        pkg_resources.require(optional_dependencies)
+        for dependency in optional_dependencies:
+            # Extract package name (remove version constraints)
+            package_name = (
+                dependency.split(">")[0]
+                .split("<")[0]
+                .split("=")[0]
+                .split("[")[0]
+                .strip()
+            )
+            version(package_name)
         return True
-    except DistributionNotFound:
+    except PackageNotFoundError:
         logging.warning(
             f"{dependencies_name} dependencies not installed. Please install as follows:\n"
             f"pip install mango[{dependencies_name}]"
