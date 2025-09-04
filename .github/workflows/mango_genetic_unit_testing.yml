@@ -1,4 +1,4 @@
-name: mango code_mango_genetic full unit testing
+name: mango genetic full unit testing
 
 on:
   pull_request:
