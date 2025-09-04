@@ -46,6 +46,8 @@ Installation
 
 **Using uv (recommended):**
 
+.. code-block:: bash
+
    git clone https://github.com/baobabsoluciones/mango.git
    cd mango
    uv venv
@@ -54,11 +56,9 @@ Installation
 
 **Using pip:**
 
+.. code-block:: bash
+
    pip install mango
-
-**Optional dependencies:**
-
-   pip install mango[models,shap,dev]
 
 Dependencies
 ------------
