@@ -26,7 +26,7 @@ jobs:
 
       - name: Build package
         run: uv build --sdist --wheel
-        working-directory: autoencoder
+        working-directory: mango_autoencoder
 
       - name: Publish to PyPI
         run: uv publish --token ${{ secrets.PYPI_TOKEN }} dist/*
