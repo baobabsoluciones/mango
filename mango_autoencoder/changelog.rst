@@ -20,9 +20,6 @@ Changed
 - Updated dependencies and package configuration
 - Enhanced test coverage and documentation
 
-[0.1.0] - 2024-12-XX
----------------------
-
 Added
 ~~~~~
 - Neural network autoencoder implementation

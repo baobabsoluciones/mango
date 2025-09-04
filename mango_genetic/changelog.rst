@@ -22,9 +22,6 @@ Changed
 - Updated project configuration and dependencies
 - Enhanced documentation structure with theory and code separation
 
-[0.1.0] - 2024-12-XX
----------------------
-
 Added
 ~~~~~
 - Core genetic algorithm framework
