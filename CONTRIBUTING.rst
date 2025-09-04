@@ -413,7 +413,7 @@ We support both pip and uv for package management:
     pip install uv
     
     # Create virtual environment and install dependencies
-    uv venv
+    uv venv --python python3.11 # or your preferred Python version
     uv sync
     
     # Add new dependency
@@ -427,20 +427,6 @@ We support both pip and uv for package management:
     uv run pytest
     uv run black .
 
-**Using pip (Alternative):**
-
-.. code-block:: bash
-
-    # Create virtual environment
-    python -m venv venv
-    source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-    
-    # Install dependencies
-    pip install -r requirements.txt
-    pip install -r requirements-dev.txt
-    
-    # Install in development mode
-    pip install -e .
 
 IDE Setup
 ~~~~~~~~
@@ -455,17 +441,10 @@ For better development experience, we recommend opening each library separately 
        git clone https://github.com/baobabsoluciones/mango.git
        cd mango
 
-       # Using uv (recommended)
+       # Using uv
        uv venv
        uv sync
        uv run pip install -e .
-       
-       # Using pip (alternative)
-       python -m venv venv
-       source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-       pip install -r requirements.txt
-       pip install -r requirements-dev.txt
-       pip install -e .
 
        # Open mango directory in your IDE
        code mango/  # For VS Code
@@ -479,17 +458,9 @@ For better development experience, we recommend opening each library separately 
        # From repository root
        cd mango_time_series
 
-       # Using uv (recommended)
+       # Using uv
        uv venv
        uv sync
-       uv run pip install -e .
-       
-       # Using pip (alternative)
-       python -m venv venv
-       source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-       pip install -r requirements.txt
-       pip install -r requirements-dev.txt
-       pip install -e .
 
        # Open mango_time_series directory in your IDE
        code .  # For VS Code
@@ -528,10 +499,6 @@ Development Environment
        # Using uv
        uv add --dev pre-commit
        uv run pre-commit install
-       
-       # Using pip
-       pip install pre-commit
-       pre-commit install
 
 Development Workflow
 ~~~~~~~~~~~~~~~~~
