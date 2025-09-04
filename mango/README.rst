@@ -11,36 +11,31 @@ Mango is the core library that provides fundamental functionality for data manip
 Main Features
 ------------
 
-Data Processing
-~~~~~~~~~~~~~~
+**Data Processing**
 - File handling for multiple formats (CSV, Excel, JSON)
 - Data imputation and cleaning utilities
 - Date and time manipulation functions
 - Object processing and validation tools
 
-Data Management
-~~~~~~~~~~~~~~~
+**Data Management**
 - Table operations with pytups integration
 - Efficient data structures and tools
 - Data validation and quality checks
 - Flexible data transformation capabilities
 
-External Integrations
-~~~~~~~~~~~~~~~~~~~~
+**External Integrations**
 - AEMET weather data client
 - ArcGIS geospatial services
 - REST API client utilities
 - Cloud storage integration (Google Cloud)
 
-Machine Learning
-~~~~~~~~~~~~~~~~
+**Machine Learning**
 - Neural network implementations
 - SHAP analysis tools
 - Model evaluation and benchmarking
 - Optimization algorithms and benchmarks
 
-Utilities
-~~~~~~~~~
+**Utilities**
 - Comprehensive logging system
 - Configuration management
 - Exception handling and validation
@@ -49,14 +44,21 @@ Utilities
 Installation
 ------------
 
-For development installation:
+**Using uv (recommended):**
 
-.. code-block:: bash
+   git clone https://github.com/baobabsoluciones/mango.git
+   cd mango
+   uv venv
+   uv sync
+   uv run pip install -e .
 
-    git clone <repository-url>
-    cd mango
-    uv sync
-    uv run pip install -e .
+**Using pip:**
+
+   pip install mango
+
+**Optional dependencies:**
+
+   pip install mango[models,shap,dev]
 
 Dependencies
 ------------
