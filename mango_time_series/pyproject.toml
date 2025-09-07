@@ -10,7 +10,7 @@ authors = [
     {name = "baobab soluciones", email = "mango@baobabsoluciones.es"}
 ]
 
-readme = "README.md"
+readme = "README.rst"
 urls = {repository = "https://github.com/baobabsoluciones/mango"}
 license = {text = "Apache Software License"}
 classifiers = [
