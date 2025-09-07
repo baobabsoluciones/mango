@@ -69,11 +69,6 @@ Installation
 
 .. code-block:: bash
 
-   # Create virtual environment with Python 3.11
-   uv venv --python 3.11
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   
-   # Install mango
    uv add mango
 
 **Using pip:**
