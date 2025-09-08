@@ -7,3 +7,6 @@ Mango autoencoder code
     :caption: Contents:
 
     autoencoder
+    autoencoder_api
+    modules
+    utils

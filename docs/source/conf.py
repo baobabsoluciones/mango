@@ -89,6 +89,8 @@ autodoc_mock_imports = [
     "streamlit",
     "streamlit_date_picker",
     "tensorflow",
+    "tensorflow.keras",
+    "keras",
     "tensorflow_io_gcs_filesystem",
     "tqdm",
     "unidecode",

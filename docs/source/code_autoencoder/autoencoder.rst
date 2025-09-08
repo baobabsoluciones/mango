@@ -6,6 +6,9 @@ Autoencoder
 
 The autoencoder module provides a powerful implementation of autoencoder neural networks specifically designed for time series data. This implementation supports various architectures and configurations for encoding and decoding time series data, making it suitable for tasks like anomaly detection, data reconstruction, and feature learning.
 
+.. note::
+    For complete API reference and method documentation, see :doc:`autoencoder_api`.
+
 Overview
 ~~~~~~~~
 
