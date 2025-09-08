@@ -16,13 +16,26 @@ def calculate_reconstruction_error(
     """
     Calculate the reconstruction error matrix between original and reconstructed data.
 
-    :param x_converted: Original data array
+    Computes the absolute difference between original data and autoencoder
+    reconstructed data. This is a fundamental metric for evaluating
+    autoencoder performance and identifying reconstruction quality.
+
+    :param x_converted: Original input data array
     :type x_converted: np.ndarray
-    :param x_hat: Reconstructed data array
+    :param x_hat: Reconstructed data array from autoencoder
     :type x_hat: np.ndarray
     :return: Matrix of absolute differences between original and reconstructed data
     :rtype: np.ndarray
     :raises ValueError: If input arrays have different shapes
+
+    Example:
+        >>> original = np.array([[1.0, 2.0], [3.0, 4.0]])
+        >>> reconstructed = np.array([[1.1, 1.9], [2.8, 4.2]])
+        >>> error = calculate_reconstruction_error(original, reconstructed)
+        >>> print(error)
+        [[0.1 0.1]
+         [0.2 0.2]]
+
     """
     if x_converted.shape != x_hat.shape:
         raise ValueError(
@@ -40,17 +53,31 @@ def analyze_error_by_columns(
     """
     Analyze reconstruction error distribution by columns with interactive Plotly visualizations.
 
-    :param error_matrix: Matrix of reconstruction errors
+    Creates comprehensive error analysis dashboards showing error distributions,
+    statistics, and visualizations for each feature column. Generates interactive
+    Plotly charts for detailed error analysis.
+
+    :param error_matrix: Matrix of reconstruction errors (samples x features)
     :type error_matrix: np.ndarray
-    :param column_names: List of column names for the features
+    :param column_names: List of feature names for columns
     :type column_names: Optional[List[str]]
-    :param save_path: Path to save the generated plots
+    :param save_path: Directory path to save generated plots
     :type save_path: Optional[str]
-    :param show: Whether to display the plots
+    :param show: Whether to display plots in browser
     :type show: bool
-    :return: DataFrame with error data
+    :return: DataFrame with error data and column names
     :rtype: pd.DataFrame
     :raises ValueError: If error_matrix is empty or if column_names length doesn't match error_matrix columns
+
+    Example:
+        >>> error_matrix = np.array([[0.1, 0.2], [0.3, 0.1], [0.2, 0.4]])
+        >>> column_names = ["feature_1", "feature_2"]
+        >>> error_df = analyze_error_by_columns(
+        ...     error_matrix,
+        ...     column_names,
+        ...     save_path="./plots"
+        ... )
+
     """
     if error_matrix.size == 0:
         raise ValueError("Error matrix cannot be empty")
@@ -86,21 +113,32 @@ def reconstruction_error(
     """
     Calculate and optionally save reconstruction error between actual data and autoencoder output.
 
-    :param actual_data_df: Original data
+    Computes the difference between original data and autoencoder reconstructed data,
+    with optional data split handling and high-error feature detection. Provides
+    warnings for features with unusually high reconstruction errors.
+
+    :param actual_data_df: Original input data DataFrame
     :type actual_data_df: pd.DataFrame
-    :param autoencoder_output_df: Autoencoder output
+    :param autoencoder_output_df: Reconstructed data DataFrame from autoencoder
     :type autoencoder_output_df: pd.DataFrame
     :param threshold_factor: Multiplier for median reconstruction error to flag high-error features
     :type threshold_factor: int
-    :param split_column: Optional name of column that defines split
+    :param split_column: Optional name of column that defines data split (train/val/test)
     :type split_column: Optional[str]
-    :param save_path: Optional directory to save the output CSV
+    :param save_path: Optional directory path to save the output CSV file
     :type save_path: Optional[str]
-    :param filename: Filename for saved CSV
+    :param filename: Filename for the saved CSV file
     :type filename: str
-    :return: DataFrame with reconstruction error
+    :return: DataFrame with reconstruction error values
     :rtype: pd.DataFrame
     :raises ValueError: If input DataFrames have different index or columns
+
+    Example:
+        >>> import pandas as pd
+        >>> actual = pd.DataFrame({"feature1": [1, 2, 3], "feature2": [4, 5, 6]})
+        >>> reconstructed = pd.DataFrame({"feature1": [1.1, 1.9, 3.1], "feature2": [3.9, 5.2, 5.8]})
+        >>> error_df = reconstruction_error(actual, reconstructed, save_path="./results")
+
     """
     # Validate input parameters
     if not actual_data_df.index.equals(autoencoder_output_df.index):
@@ -169,16 +207,31 @@ def anova_reconstruction_error(
     """
     Perform one-way ANOVA to test if reconstruction errors vary across split_column for each feature.
 
+    Conducts statistical analysis to determine if reconstruction errors differ
+    significantly between data splits (train/validation/test) for each feature.
+    Uses F-test to assess variance differences and provides warnings for
+    significant differences.
+
     :param reconstruction_error_df: DataFrame with reconstruction error and split_column
     :type reconstruction_error_df: pd.DataFrame
-    :param p_value_threshold: Maximum p-value to output logger warning
+    :param p_value_threshold: Maximum p-value to trigger logger warning (significance level)
     :type p_value_threshold: float
-    :param F_stat_threshold: Minimum F-statistic to output logger warning
+    :param F_stat_threshold: Minimum F-statistic to trigger logger warning
     :type F_stat_threshold: float
-    :param split_column: Name of column that defines split
+    :param split_column: Name of column that defines data split categories
     :type split_column: str
     :return: DataFrame with F-statistics and p-values per feature
     :rtype: pd.DataFrame
+    :raises ValueError: If split_column not found or has insufficient categories
+
+    Example:
+        >>> error_df = pd.DataFrame({
+        ...     "feature1": [0.1, 0.2, 0.3, 0.4, 0.5],
+        ...     "feature2": [0.2, 0.3, 0.4, 0.5, 0.6],
+        ...     "data_split": ["train", "train", "val", "val", "test"]
+        ... })
+        >>> anova_results = anova_reconstruction_error(error_df, p_value_threshold=0.01)
+
     """
     if split_column not in reconstruction_error_df.columns:
         raise ValueError(
@@ -238,19 +291,32 @@ def reconstruction_error_summary(
     Generate and optionally save summary statistics for reconstruction error
     grouped by split_column (if provided and present in the DataFrame).
 
-    :param reconstruction_error_df: DataFrame with reconstruction error
+    Creates comprehensive summary statistics including absolute mean and standard
+    deviation for reconstruction errors, optionally grouped by data splits.
+    Provides organized output with consistent column ordering.
+
+    :param reconstruction_error_df: DataFrame with reconstruction error data
     :type reconstruction_error_df: pd.DataFrame
-    :param split_column: Optional name of column that defines split
+    :param split_column: Optional name of column that defines data split categories
     :type split_column: Optional[str]
-    :param split_order: Optional order of items in split_column
+    :param split_order: Optional order of split categories for consistent output
     :type split_order: Optional[List[str]]
-    :param save_path: Optional path to save the summary CSV
+    :param save_path: Optional directory path to save the summary CSV file
     :type save_path: Optional[str]
-    :param filename: Filename to use for the saved CSV
+    :param filename: Filename to use for the saved CSV file
     :type filename: str
-    :return: Summary statistics (mean and std based on split_column)
+    :return: Summary statistics DataFrame with mean and std error metrics
     :rtype: pd.DataFrame
-    :raises ValueError: If data is empty
+    :raises ValueError: If data is empty or split_order doesn't match actual splits
+
+    Example:
+        >>> error_df = pd.DataFrame({
+        ...     "feature1": [0.1, 0.2, 0.3, 0.4],
+        ...     "feature2": [0.2, 0.3, 0.4, 0.5],
+        ...     "data_split": ["train", "train", "val", "val"]
+        ... })
+        >>> summary = reconstruction_error_summary(error_df, save_path="./results")
+
     """
     if reconstruction_error_df.empty:
         raise ValueError("Input DataFrame cannot be empty.")
@@ -324,11 +390,15 @@ def std_error_threshold(
     Identify anomalies using a standard deviation threshold over reconstruction error.
     Considers all time series data for a given feature.
 
-    :param reconstruction_error_df: DataFrame with AE reconstruction errors and 'data_split'
+    Detects anomalous data points by comparing reconstruction errors to statistical
+    thresholds based on standard deviations from the mean. Creates boolean masks
+    indicating anomaly locations and provides summary statistics of anomaly rates.
+
+    :param reconstruction_error_df: DataFrame with autoencoder reconstruction errors and 'data_split' column
     :type reconstruction_error_df: pd.DataFrame
     :param std_threshold: Threshold in terms of standard deviations from the mean error
     :type std_threshold: float
-    :param save_path: Optional path to save outputs
+    :param save_path: Optional directory path to save output files
     :type save_path: Optional[str]
     :param anomaly_mask_filename: CSV filename for the boolean anomaly mask
     :type anomaly_mask_filename: str
@@ -337,6 +407,15 @@ def std_error_threshold(
     :return: Boolean DataFrame mask (True = anomaly, False = normal)
     :rtype: pd.DataFrame
     :raises ValueError: If required columns are missing, if data is empty, or if std_threshold is negative
+
+    Example:
+        >>> error_df = pd.DataFrame({
+        ...     "feature1": [0.1, 0.2, 0.3, 0.4, 0.5],
+        ...     "feature2": [0.2, 0.3, 0.4, 0.5, 0.6],
+        ...     "data_split": ["train", "train", "val", "val", "test"]
+        ... })
+        >>> anomaly_mask = std_error_threshold(error_df, std_threshold=2.0, save_path="./results")
+
     """
     if reconstruction_error_df.empty:
         raise ValueError("Input DataFrame cannot be empty")
@@ -409,19 +488,31 @@ def corrected_data(
     """
     Replace anomalous values in the original data with autoencoder reconstructed values.
 
-    :param actual_data_df: Original data
+    Creates a corrected dataset by replacing identified anomalous values with
+    their autoencoder reconstructions. Uses a boolean mask to determine which
+    values should be replaced and provides logging of correction counts.
+
+    :param actual_data_df: Original input data DataFrame
     :type actual_data_df: pd.DataFrame
-    :param autoencoder_output_df: Autoencoder output
+    :param autoencoder_output_df: Reconstructed data DataFrame from autoencoder
     :type autoencoder_output_df: pd.DataFrame
-    :param anomaly_mask: DataFrame of boolean values indicating where to apply corrections
+    :param anomaly_mask: Boolean DataFrame indicating where to apply corrections (True = replace)
     :type anomaly_mask: pd.DataFrame
-    :param save_path: Optional path to save the corrected data as CSV
+    :param save_path: Optional directory path to save the corrected data as CSV
     :type save_path: Optional[str]
     :param filename: Filename to use if saving the corrected data
     :type filename: str
-    :return: DataFrame with corrected data
+    :return: DataFrame with corrected data (anomalies replaced with reconstructions)
     :rtype: pd.DataFrame
     :raises ValueError: If input DataFrames have different lengths or columns
+
+    Example:
+        >>> import pandas as pd
+        >>> actual = pd.DataFrame({"feature1": [1, 2, 3], "feature2": [4, 5, 6]})
+        >>> reconstructed = pd.DataFrame({"feature1": [1.1, 1.9, 3.1], "feature2": [3.9, 5.2, 5.8]})
+        >>> mask = pd.DataFrame({"feature1": [False, True, False], "feature2": [True, False, False]})
+        >>> corrected = corrected_data(actual, reconstructed, mask, save_path="./results")
+
     """
     # Validate input parameters
     if len(autoencoder_output_df) != len(actual_data_df):

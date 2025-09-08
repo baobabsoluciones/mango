@@ -7,13 +7,26 @@ import polars as pl
 
 def _to_numpy(data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]) -> np.ndarray:
     """
-    Convert input data to numpy array.
+    Convert input data to numpy array format.
 
-    :param data: Input data
+    Internal helper function that converts various data formats (numpy arrays,
+    pandas DataFrames, or polars DataFrames) to numpy arrays for consistent
+    processing in sequence generation functions.
+
+    :param data: Input data to convert to numpy array
     :type data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]
-    :return: Numpy array
+    :return: Data converted to numpy array
     :rtype: np.ndarray
-    :raises ValueError: If input is not a valid type
+    :raises ValueError: If input is not a valid supported type
+
+    Example:
+        >>> import pandas as pd
+        >>> import numpy as np
+        >>> df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+        >>> array = _to_numpy(df)
+        >>> print(f"Array shape: {array.shape}")
+        Array shape: (3, 2)
+
     """
     if isinstance(data, pd.DataFrame):
         return data.values
@@ -28,14 +41,26 @@ def _to_numpy(data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]) -> np.ndarray
 
 def _create_sequences(data: np.ndarray, context_window: int) -> np.ndarray:
     """
-    Create sequences from data using sliding window.
+    Create sequences from data using sliding window approach.
 
-    :param data: Input data
+    Internal helper function that generates overlapping sequences from time series
+    data using a sliding window of specified length. Each sequence contains
+    consecutive time steps for RNN-based model training.
+
+    :param data: Input time series data (samples x features)
     :type data: np.ndarray
-    :param context_window: Length of each time window
+    :param context_window: Length of each time window/sequence
     :type context_window: int
-    :return: Array of sequences
+    :return: Array of sequences with shape (n_sequences, context_window, n_features)
     :rtype: np.ndarray
+
+    Example:
+        >>> import numpy as np
+        >>> data = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
+        >>> sequences = _create_sequences(data, 3)
+        >>> print(f"Sequences shape: {sequences.shape}")
+        Sequences shape: (3, 3, 2)
+
     """
     return np.array(
         [data[t - context_window : t] for t in range(context_window, len(data) + 1, 1)]
@@ -49,9 +74,13 @@ def time_series_to_sequence(
     test_data: Optional[Union[np.ndarray, pd.DataFrame, pl.DataFrame]] = None,
 ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """
-    Convert time series data into sequences of fixed length for use with RNN-based models.
+    Convert time series data into sequences of fixed length for RNN-based models.
 
-    This function can handle both single dataset and multiple dataset cases:
+    Transforms time series data into overlapping sequences suitable for training
+    recurrent neural networks. Handles both single dataset and multiple dataset
+    scenarios with proper temporal continuity between train/validation/test splits.
+
+    This function can handle two main cases:
     1. Single dataset: Converts a single time series into sequences
     2. Multiple datasets: Converts train, validation, and test datasets into sequences,
        ensuring continuity between splits by prepending the last context_window - 1 rows
@@ -59,17 +88,34 @@ def time_series_to_sequence(
 
     :param data: Time series data (training data in case of multiple datasets)
     :type data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]
-    :param context_window: Length of each time window (sequence)
+    :param context_window: Length of each time window/sequence
     :type context_window: int
-    :param val_data: Validation dataset (optional)
+    :param val_data: Validation dataset (optional, required for multiple datasets)
     :type val_data: Optional[Union[np.ndarray, pd.DataFrame, pl.DataFrame]]
-    :param test_data: Test dataset (optional)
+    :param test_data: Test dataset (optional, required for multiple datasets)
     :type test_data: Optional[Union[np.ndarray, pd.DataFrame, pl.DataFrame]]
     :return: Either:
         - Single array of shape (n_sequences, context_window, n_features) for single dataset
-        - Tuple of three arrays for train, validation, and test datasets
+        - Tuple of three arrays (train_sequences, val_sequences, test_sequences) for multiple datasets
     :rtype: Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]
-    :raises ValueError: If inputs are not of valid types, or if context_window exceeds dataset length
+    :raises ValueError: If inputs are not of valid types, context_window is invalid, or dataset lengths are insufficient
+
+    Example:
+        >>> import numpy as np
+        >>> # Single dataset case
+        >>> data = np.random.randn(100, 5)  # 100 time steps, 5 features
+        >>> sequences = time_series_to_sequence(data, 10)
+        >>> print(f"Single dataset sequences shape: {sequences.shape}")
+        Single dataset sequences shape: (91, 10, 5)
+
+        >>> # Multiple datasets case
+        >>> train = np.random.randn(70, 5)
+        >>> val = np.random.randn(20, 5)
+        >>> test = np.random.randn(10, 5)
+        >>> train_seq, val_seq, test_seq = time_series_to_sequence(train, 10, val, test)
+        >>> print(f"Train: {train_seq.shape}, Val: {val_seq.shape}, Test: {test_seq.shape}")
+        Train: (61, 10, 5), Val: (20, 10, 5), Test: (10, 10, 5)
+
     """
     if context_window <= 0:
         raise ValueError("context_window must be greater than 0")
