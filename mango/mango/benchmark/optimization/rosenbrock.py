@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def rosenbrock(x: np.array) -> float:
+def rosenbrock(x: np.ndarray) -> float:
     """
-    Rosenbrock function.
+    Compute the Rosenbrock function value for optimization benchmarking.
 
     The Rosenbrock function, also referred to as the Valley or Banana function,
     is a popular test problem for gradient-based optimization algorithms.
@@ -11,30 +11,47 @@ def rosenbrock(x: np.array) -> float:
     The function is unimodal, and the global minimum lies in a narrow, parabolic valley.
     However, even though this valley is easy to find, convergence to the minimum is difficult (Picheny et al., 2012).
 
-    The global minima is at [1, 1, ..., 1] with a value of 0
+    The global minimum is at [1, 1, ..., 1] with a value of 0.
 
-    :param x: array of floats. Values usually are between -5 and 10
-    :type x: :class:`numpy.array`
-    :return: the value of the function
+    :param x: Input vector with n elements. Values usually in range [-5, 10]
+    :type x: numpy.ndarray
+    :return: Function value at the given point
     :rtype: float
+    :raises ValueError: If input array is empty
+    :raises IndexError: If input array is empty
+
+    Example:
+        >>> import numpy as np
+        >>> x = np.array([1.0, 1.0, 1.0])
+        >>> result = rosenbrock(x)
+        >>> print(f"{result:.6f}")
+        0.000000
     """
 
     return np.sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0, axis=0)
 
 
-def inverted_rosenbrock(x: np.array) -> float:
+def inverted_rosenbrock(x: np.ndarray) -> float:
     """
-    Inverted Rosenbrock function.
+    Compute the inverted Rosenbrock function value for maximization problems.
 
-    The Rosenbrock function, also referred to as the Valley or Banana function,
-    is a popular test problem for gradient-based optimization algorithms.
+    This function returns the negative of the standard Rosenbrock function,
+    effectively converting the minimization problem into a maximization problem.
+    The global maximum is at the same point as the original function's minimum,
+    but with a positive value.
 
-    The function is unimodal, and the global minimum lies in a narrow, parabolic valley.
-    However, even though this valley is easy to find, convergence to the minimum is difficult (Picheny et al., 2012).
-
-    :param x: array of floats. Values ussually are between -5 and 10
-    :type x: :class:`numpy.array`
-    :return: the value of the function
+    :param x: Input vector with n elements. Values usually in range [-5, 10]
+    :type x: numpy.ndarray
+    :return: Negative function value at the given point
     :rtype: float
+    :raises ValueError: If input array is empty
+    :raises IndexError: If input array is empty
+
+    Example:
+        >>> import numpy as np
+        >>> x = np.array([1.0, 1.0, 1.0])
+        >>> result = inverted_rosenbrock(x)
+        >>> print(f"{result:.6f}")
+        0.000000
     """
     return -rosenbrock(x)
