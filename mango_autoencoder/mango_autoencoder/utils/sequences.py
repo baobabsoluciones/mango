@@ -83,8 +83,8 @@ def time_series_to_sequence(
     This function can handle two main cases:
     1. Single dataset: Converts a single time series into sequences
     2. Multiple datasets: Converts train, validation, and test datasets into sequences,
-       ensuring continuity between splits by prepending the last context_window - 1 rows
-       of the previous split to the next one.
+    ensuring continuity between splits by prepending the last context_window - 1 rows
+    of the previous split to the next one.
 
     :param data: Time series data (training data in case of multiple datasets)
     :type data: Union[np.ndarray, pd.DataFrame, pl.DataFrame]
