@@ -19,10 +19,21 @@ from pytups import SuperDict
 
 def is_feasible(status):
     """
-    Return True if the status is optimal or maxTimeLimit
+    Check if a solver status indicates a feasible solution.
 
-    :param status: a status (string or pyomo object)
-    :return: True if the status is optimal or maxTimeLimit
+    Determines whether the given status represents a feasible solution
+    by checking if it corresponds to optimal or maximum time limit
+    termination conditions.
+
+    :param status: Solver status (string or pyomo object)
+    :type status: Union[str, TerminationCondition]
+    :return: True if the status indicates a feasible solution
+    :rtype: bool
+
+    Example:
+        >>> result = solver.solve(model)
+        >>> if is_feasible(result.solver.termination_condition):
+        ...     print("Solution is feasible")
     """
     return str(status) == str(TerminationCondition.optimal) or str(status) == str(
         TerminationCondition.maxTimeLimit
@@ -31,13 +42,21 @@ def is_feasible(status):
 
 def safe_value(x):
     """
-    Safely apply pyomo value to a variable.
+    Safely extract the value from a Pyomo variable.
 
-    pyomo value generate an error if the variable has not been used.
-    This function will return 0 instead.
+    Pyomo's value() function generates an error if the variable has not
+    been used in the model. This function provides a safe alternative
+    that returns 0 for unused or None variables.
 
-    :param x: a pyomo variable
-    :return: value of the variable
+    :param x: Pyomo variable to extract value from
+    :type x: Union[Var, None]
+    :return: Value of the variable, or 0 if variable is None or unused
+    :rtype: float
+    :raises Exception: Handles any Pyomo value extraction errors gracefully
+
+    Example:
+        >>> var = model.x[1, 2]
+        >>> val = safe_value(var)  # Returns 0 if var was not used
     """
     try:
         if x is not None:
@@ -50,12 +69,25 @@ def safe_value(x):
 
 def var_to_sdict(variable, clean=False, rounding=2):
     """
-    Transform a pyomo variable into a python dict
+    Transform a Pyomo variable into a SuperDict with indices and values.
 
-    :param variable: a pyomo variable.
-    :param clean: if true, only return non-zero values.
-    :param rounding: number of decimal to round.
-    :return: a SuperDict containing the indices and values of the variable.
+    Converts a Pyomo variable into a dictionary-like structure containing
+    all variable indices and their corresponding values. Optionally filters
+    out zero values and rounds the results.
+
+    :param variable: Pyomo variable to convert
+    :type variable: Var
+    :param clean: If True, only return non-zero values
+    :type clean: bool
+    :param rounding: Number of decimal places to round values
+    :type rounding: int
+    :return: SuperDict containing variable indices and values
+    :rtype: SuperDict
+
+    Example:
+        >>> var = model.x  # Pyomo variable with indices (1,2), (2,3)
+        >>> result = var_to_sdict(var, clean=True, rounding=3)
+        >>> print(result)  # {(1,2): 1.234, (2,3): 5.678}
     """
     new_dict = SuperDict(
         {key: round(safe_value(variable[key]), rounding) for key in variable.keys()}
@@ -68,13 +100,27 @@ def var_to_sdict(variable, clean=False, rounding=2):
 
 def var_to_table(variable, keys, clean=False, rounding=2):
     """
-    Generate a table from a pyomo variable.
+    Generate a Table object from a Pyomo variable.
 
-    :param variable: a pyomo variable.
-    :param keys: the names of the keys of the variable.
-    :param clean: if true, only return non-zero values.
-    :param rounding: number of decimal to round.
-    :return: a table [{Index_1:i1, Index_2:i2, Value:v}...]
+    Converts a Pyomo variable into a Table structure with named columns
+    for indices and values. Automatically generates column names if not
+    provided.
+
+    :param variable: Pyomo variable to convert
+    :type variable: Var
+    :param keys: Names for the index columns (None for auto-generation)
+    :type keys: Optional[List[str]]
+    :param clean: If True, only return non-zero values
+    :type clean: bool
+    :param rounding: Number of decimal places to round values
+    :type rounding: int
+    :return: Table object with variable data
+    :rtype: Table
+
+    Example:
+        >>> var = model.x  # Pyomo variable with indices (i, j)
+        >>> table = var_to_table(var, keys=['i', 'j'], clean=True)
+        >>> print(table)  # [{'i': 1, 'j': 2, 'Value': 1.23}, ...]
     """
     var_tup = var_to_sdict(variable, clean=clean, rounding=rounding).to_tuplist()
     if keys is None:
@@ -88,20 +134,41 @@ def var_to_table(variable, keys, clean=False, rounding=2):
 
 def get_status(result):
     """
-    Return the status of the solution from the result object
+    Extract the termination condition status from a Pyomo solver result.
 
-    :param result: a pyomo result object
-    :return: the status
+    Retrieves the termination condition from the solver result object
+    and returns it as a string representation.
+
+    :param result: Pyomo solver result object
+    :type result: SolverResults
+    :return: String representation of the termination condition
+    :rtype: str
+
+    Example:
+        >>> result = solver.solve(model)
+        >>> status = get_status(result)
+        >>> print(f"Solver status: {status}")
     """
     return str(result.solver.termination_condition)
 
 
 def get_gap(result):
     """
-    Return the relative gap of the solution.
+    Calculate the relative optimality gap from a Pyomo solver result.
 
-    :param result: a pyomo result object
-    :return: the gap
+    Computes the relative gap between the upper and lower bounds of the
+    solution, handling both minimization and maximization problems.
+    Returns the absolute value of the gap as a percentage.
+
+    :param result: Pyomo solver result object
+    :type result: SolverResults
+    :return: Relative optimality gap as a percentage
+    :rtype: float
+
+    Example:
+        >>> result = solver.solve(model)
+        >>> gap = get_gap(result)
+        >>> print(f"Optimality gap: {gap}%")
     """
     sense = result.Problem.sense
     lb = result.Problem.lower_bound
@@ -122,13 +189,24 @@ def get_gap(result):
 
 def write_cbc_warmstart_file(filename, instance, opt):
     """
-    This function write a file to be passed to cbc solver as a warmstart file.
-    This function is necessary because of a bug of cbc that does not allow reading warmstart files on windows
-    with absolute path.
-    :param filename: path to the file
-    :param instance: model instance (created with create_instance)
-    :param opt: solver instance (created with solver factory)
-    :return:
+    Write a warmstart file for the CBC solver.
+
+    Creates a warmstart file that can be used by the CBC solver to
+    initialize the solution process. This function is necessary due to
+    a bug in CBC that prevents reading warmstart files with absolute
+    paths on Windows systems.
+
+    :param filename: Path where the warmstart file should be written
+    :type filename: str
+    :param instance: Pyomo model instance (created with create_instance)
+    :type instance: ConcreteModel
+    :param opt: Solver instance (created with solver factory)
+    :type opt: SolverFactory
+    :return: None
+
+    Example:
+        >>> opt = SolverFactory('cbc')
+        >>> write_cbc_warmstart_file('warmstart.sol', model, opt)
     """
     opt._presolve(instance)
     opt._write_soln_file(instance, filename)
@@ -138,13 +216,29 @@ def variables_to_excel(
     model_solution, path, file_name="variables.xlsx", clean=True, rounding=6
 ):
     """
-    Save all the values of the variables in an Excel file.
+    Export all Pyomo variable values to an Excel file.
 
-    :param model_solution: the pyomo solution.
-    :param path: path of the directory where to save the file
-    :param clean: discard variables with values of 0.
+    Saves all variables from a Pyomo model solution to an Excel file
+    with each variable as a separate worksheet. Optionally filters out
+    zero values and rounds the results.
 
-    :return: nothing
+    :param model_solution: Pyomo model solution object
+    :type model_solution: ConcreteModel
+    :param path: Directory path where the file should be saved
+    :type path: str
+    :param file_name: Name of the Excel file to create
+    :type file_name: str
+    :param clean: If True, discard variables with zero values
+    :type clean: bool
+    :param rounding: Number of decimal places to round values
+    :type rounding: int
+    :return: None
+    :raises IOError: If file cannot be written
+
+    Example:
+        >>> variables_to_excel(
+        ...     model, 'output/', 'solution.xlsx', clean=True, rounding=4
+        ... )
     """
     variables = {
         k: var_to_table(v, keys=None, clean=clean, rounding=rounding)
@@ -155,13 +249,24 @@ def variables_to_excel(
 
 def variables_to_json(model_solution, path, file_name="variables.json", clean=True):
     """
-    Save all the values of the variables in an json file.
+    Export all Pyomo variable values to a JSON file.
 
-    :param model_solution: the pyomo solution.
-    :param path: path of the directory where to save the file
-    :param clean: discard variables with values of 0.
+    Saves all variables from a Pyomo model solution to a JSON file
+    with structured data. Optionally filters out zero values.
 
-    :return: nothing
+    :param model_solution: Pyomo model solution object
+    :type model_solution: ConcreteModel
+    :param path: Directory path where the file should be saved
+    :type path: str
+    :param file_name: Name of the JSON file to create
+    :type file_name: str
+    :param clean: If True, discard variables with zero values
+    :type clean: bool
+    :return: None
+    :raises IOError: If file cannot be written
+
+    Example:
+        >>> variables_to_json(model, 'output/', 'solution.json', clean=True)
     """
     variables = {
         k: var_to_table(v, keys=None, clean=clean)
@@ -172,11 +277,24 @@ def variables_to_json(model_solution, path, file_name="variables.json", clean=Tr
 
 def instance_from_excel(instance, path, file_name="variables.xlsx"):
     """
-    The function reads instance from excel.
+    Load Pyomo model instance data from an Excel file.
 
-    :param instance: model instance
-    :param path: the path of the file to be loaded
-    :return: model instance
+    Reads variable values from an Excel file and loads them into a
+    Pyomo model instance. The Excel file should contain worksheets
+    with variable data in the format created by variables_to_excel.
+
+    :param instance: Pyomo model instance to load data into
+    :type instance: ConcreteModel
+    :param path: Directory path containing the Excel file
+    :type path: str
+    :param file_name: Name of the Excel file to load
+    :type file_name: str
+    :return: Model instance with loaded variable values
+    :rtype: ConcreteModel
+    :raises IOError: If file cannot be read
+
+    Example:
+        >>> model = instance_from_excel(model, 'data/', 'initial_values.xlsx')
     """
     data = load_excel_light(path + file_name)
     return instance_from_dict(instance, data)
@@ -184,11 +302,25 @@ def instance_from_excel(instance, path, file_name="variables.xlsx"):
 
 def instance_from_json(instance, path, file_name="variables.json", **kwargs):
     """
-    The function reads instance from json.
+    Load Pyomo model instance data from a JSON file.
 
-    :param instance: model instance
-    :param path: the path of the file to be loaded
-    :return: model instance
+    Reads variable values from a JSON file and loads them into a
+    Pyomo model instance. The JSON file should contain structured
+    data in the format created by variables_to_json.
+
+    :param instance: Pyomo model instance to load data into
+    :type instance: ConcreteModel
+    :param path: Directory path containing the JSON file
+    :type path: str
+    :param file_name: Name of the JSON file to load
+    :type file_name: str
+    :param kwargs: Additional keyword arguments for load_json
+    :return: Model instance with loaded variable values
+    :rtype: ConcreteModel
+    :raises IOError: If file cannot be read
+
+    Example:
+        >>> model = instance_from_json(model, 'data/', 'initial_values.json')
     """
     data = load_json(path + file_name, **kwargs)
     return instance_from_dict(instance, data)
@@ -196,11 +328,22 @@ def instance_from_json(instance, path, file_name="variables.json", **kwargs):
 
 def instance_from_dict(instance, data):
     """
-    The function loads the instance based on data from dict with tables.
+    Load Pyomo model instance data from a dictionary containing tables.
 
-    :param instance: model instance
-    :param data: data for instance
-    :return: model instance
+    Processes a dictionary containing table data and loads the values
+    into the corresponding variables in a Pyomo model instance.
+    Each table should have index columns and a 'Value' column.
+
+    :param instance: Pyomo model instance to load data into
+    :type instance: ConcreteModel
+    :param data: Dictionary containing table data for variables
+    :type data: Dict[str, List[Dict]]
+    :return: Model instance with loaded variable values
+    :rtype: ConcreteModel
+
+    Example:
+        >>> data = {'x': [{'i': 1, 'j': 2, 'Value': 1.5}]}
+        >>> model = instance_from_dict(model, data)
     """
     model_data = {}
     for k, v in data.items():
@@ -214,11 +357,23 @@ def instance_from_dict(instance, data):
 
 def load_variable(instance, var_name, value):
     """
-    The function loads the values to indicated variable.
+    Load values into a specific variable in a Pyomo model instance.
 
-    :param instance: model instance
-    :param var_name: name of the variable to which values will be assign
-    :param value: values to be assigned to variable
+    Assigns values to a named variable in the model instance using
+    the provided value dictionary with index-value pairs.
+
+    :param instance: Pyomo model instance containing the variable
+    :type instance: ConcreteModel
+    :param var_name: Name of the variable to load values into
+    :type var_name: str
+    :param value: Dictionary mapping variable indices to values
+    :type value: Dict[tuple, float]
+    :return: None
+    :raises KeyError: If variable name is not found in the instance
+
+    Example:
+        >>> values = {(1, 2): 1.5, (2, 3): 2.0}
+        >>> load_variable(model, 'x', values)
     """
     var = instance.__dict__[var_name]
     for k, v in value.items():
@@ -227,13 +382,24 @@ def load_variable(instance, var_name, value):
 
 def model_data_to_excel(model_data, path, file_name="model_data.xlsx"):
     """
-    Save a pyomo instance to excel.
+    Export Pyomo model data to an Excel file.
 
-    :param model_data: dict with model data for pyomo model.
-    :param path: path of the directory where to save the file
-    :param clean: discard variables with values of 0.
+    Saves model data (parameters, sets, etc.) to an Excel file with
+    each data component as a separate worksheet. Handles both indexed
+    and scalar data appropriately.
 
-    :return: nothing
+    :param model_data: Dictionary containing model data for Pyomo model
+    :type model_data: Dict[str, Any]
+    :param path: Directory path where the file should be saved
+    :type path: str
+    :param file_name: Name of the Excel file to create
+    :type file_name: str
+    :return: None
+    :raises IOError: If file cannot be written
+
+    Example:
+        >>> data = {'demand': {(1,): 100, (2,): 200}, 'capacity': 1000}
+        >>> model_data_to_excel(data, 'output/', 'model_data.xlsx')
     """
 
     def prepare_data(v):
@@ -261,11 +427,22 @@ def model_data_to_excel(model_data, path, file_name="model_data.xlsx"):
 
 def solver_result_to_json(result, path):
     """
-    Save the result object in a json file.
+    Export Pyomo solver result to a JSON file.
 
-    :param result: result object from pyomo
-    :param path: path of the file
-    :return: nothing
+    Saves a Pyomo solver result object to a JSON file, converting
+    Pyomo-specific objects to JSON-serializable formats. Handles
+    special Pyomo data types and status objects.
+
+    :param result: Pyomo solver result object
+    :type result: SolverResults
+    :param path: File path where the JSON should be saved
+    :type path: str
+    :return: None
+    :raises IOError: If file cannot be written
+
+    Example:
+        >>> result = solver.solve(model)
+        >>> solver_result_to_json(result, 'output/solution_result.json')
     """
 
     def get_val(v):
@@ -288,11 +465,22 @@ def solver_result_to_json(result, path):
 
 def solver_result_from_json(path, **kwargs):
     """
-    Load a result object from pyomo
+    Load a Pyomo solver result object from a JSON file.
 
-    :param path: path of the file
-    :param kwargs: kwargs for load_json
-    :return: the result object
+    Reconstructs a Pyomo SolverResults object from data previously
+    saved using solver_result_to_json. Restores the original structure
+    and data types where possible.
+
+    :param path: File path to the JSON file containing result data
+    :type path: str
+    :param kwargs: Additional keyword arguments for load_json
+    :return: Reconstructed Pyomo solver result object
+    :rtype: SolverResults
+    :raises IOError: If file cannot be read
+
+    Example:
+        >>> result = solver_result_from_json('output/solution_result.json')
+        >>> print(f"Solver status: {result.solver.termination_condition}")
     """
     data = load_json(path, **kwargs)
     result = SolverResults()

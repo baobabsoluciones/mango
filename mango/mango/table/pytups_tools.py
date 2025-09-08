@@ -8,24 +8,28 @@ from pytups import TupList
 
 def mutate(table, **kwargs):
     """
-    Add or modify a column in a table.
+    Add or modify columns in a table.
+
+    Creates new columns or modifies existing ones using various methods:
+    - Single values applied to all rows
+    - Lists of values for each row
+    - Functions that operate on row data
+
+    Note: All changes are applied in the order of the arguments.
+
+    :param table: Table to modify
+    :type table: TupList
+    :param kwargs: Named arguments with column names and their values
+    :type kwargs: dict
+    :return: New table with modified columns
+    :rtype: TupList
+    :raises TypeError: If argument format is unexpected
 
     Example:
-    table = TupList([{'a':2, 'b':3}, {'a':2, 'b':6}, {'a':2, 'b':8}])
-    result = mutate(table, a=3, b=[4,5,6], c=lambda v: v["a"]+v["b"], d = lambda v: sum(v.values()))
-    result: [{'a': 3, 'b': 4, 'c': 7, 'd': 14},
-            {'a': 3, 'b': 5, 'c': 8, 'd': 16},
-            {'a': 3, 'b': 6, 'c': 9, 'd': 18}]
-
-    Note: all changes are applied in the order of the arguments.
-
-    :param table: TupList
-    :param kwargs: named arguments with the changes to apply.
-    The values can be:
-     - a single value which will be applied to each row. ex: a=3
-     - a list with all the values of the column. ex: b=[4,5,6]
-     - a function to apply to the row. ex: c=lambda v: v["a"]+v["b"]
-    :return: a TupList
+        >>> table = TupList([{'a':2, 'b':3}, {'a':2, 'b':6}, {'a':2, 'b':8}])
+        >>> result = mutate(table, a=3, b=[4,5,6], c=lambda v: v["a"]+v["b"])
+        >>> print(result)
+        [{'a': 3, 'b': 4, 'c': 7}, {'a': 3, 'b': 5, 'c': 8}, {'a': 3, 'b': 6, 'c': 9}]
     """
     assert isinstance(table, TupList)
 
@@ -56,16 +60,27 @@ def mutate(table, **kwargs):
 
 def sum_all(table, group_by=None):
     """
-    Group by the given columns and sum the others.
+    Group by specified columns and sum all numeric columns.
+
+    Groups the table by the specified columns and sums all numeric
+    columns in each group. Non-numeric columns are ignored.
+
+    :param table: Table to process
+    :type table: TupList
+    :param group_by: Column name(s) to group by
+    :type group_by: str or list[str], optional
+    :return: New table with grouped and summed data
+    :rtype: TupList
 
     Example:
-    table = TupList([{'a':2, 'b':3, "val":3}, {'a':3, 'b':6, "val":6}, {'a':3, 'b':6, "val":5}])
-    result=sum_all(table, group_by=["a", "b"])
-    result: [{'a': 2, 'b': 3, 'val': 3}, {'a': 3, 'b': 6, 'val': 11}]
-
-    :param table: a table (TupList of dict).
-    :param group_by: name of the columns to group.
-    :return: a table (TupList of dict)
+        >>> table = TupList([
+        ...     {'a':2, 'b':3, "val":3},
+        ...     {'a':3, 'b':6, "val":6},
+        ...     {'a':3, 'b':6, "val":5}
+        ... ])
+        >>> result = sum_all(table, group_by=["a", "b"])
+        >>> print(result)
+        [{'a': 2, 'b': 3, 'val': 3}, {'a': 3, 'b': 6, 'val': 11}]
     """
     assert isinstance(table, TupList)
     if len(table) == 0:
@@ -83,11 +98,29 @@ def sum_all(table, group_by=None):
 
 def group_by(table, col):
     """
-    Group the rows of a table by the value of some columns
+    Group rows of the table by specified column values.
 
-    :param table: a table (TupList of dict).
-    :param col: single name of list of columns to use to group the rows
-    :return a SuperDict
+    Groups the table rows based on the values in the specified column(s).
+    Returns a SuperDict where keys are the unique values and values are
+    lists of rows that have that value.
+
+    :param table: Table to group
+    :type table: TupList
+    :param col: Column name or list of column names to group by
+    :type col: str or list[str]
+    :return: SuperDict with grouped data
+    :rtype: SuperDict
+
+    Example:
+        >>> table = TupList([
+        ...     {"name": "Alice", "city": "Madrid"},
+        ...     {"name": "Bob", "city": "Barcelona"},
+        ...     {"name": "Charlie", "city": "Madrid"}
+        ... ])
+        >>> result = group_by(table, "city")
+        >>> print(result)
+        {'Madrid': [{'name': 'Alice', 'city': 'Madrid'}, {'name': 'Charlie', 'city': 'Madrid'}],
+         'Barcelona': [{'name': 'Bob', 'city': 'Barcelona'}]}
     """
     assert isinstance(table, TupList)
     return table.to_dict(indices=col, result_col=None, is_list=True)
@@ -95,18 +128,32 @@ def group_by(table, col):
 
 def summarise(table, group_by, default: [None, Callable] = None, **func):
     """
-    Group by the given columns and apply the given functions to the others.
+    Group by specified columns and apply aggregation functions.
+
+    Groups the table by specified columns and applies custom aggregation
+    functions to other columns. More flexible than group_mutate as it
+    allows specifying a default function for non-explicitly handled columns.
+
+    :param table: Table to process
+    :type table: TupList
+    :param group_by: Column name(s) to group by
+    :type group_by: str or list[str]
+    :param default: Default function to apply to columns not explicitly specified
+    :type default: Callable, optional
+    :param func: Functions to apply to specific columns
+    :type func: dict[str, Callable]
+    :return: New table with grouped and summarized data
+    :rtype: TupList
 
     Example:
-    table = TupList([{'a':2, 'b':3, "c":3}, {'a':3, 'b':6, "c":6}, {'a':3, 'b':6, "c":5}])
-    result = summarise(table, "a", b=sum, c=len)
-    result: [{'a': 2, 'b': 3, 'c': 1}, {'a': 3, 'b': 12, 'c': 2}]
-
-    :param table: a table (TupList of dict).
-    :param group_by: name of the columns to group.
-    :param default: default function to apply to non-grouped columns.
-    :param func: function to apply to the named column. ex: a = first, b = mean
-    :return: a table (TupList of dict).
+        >>> table = TupList([
+        ...     {'a':2, 'b':3, "c":3},
+        ...     {'a':3, 'b':6, "c":6},
+        ...     {'a':3, 'b':6, "c":5}
+        ... ])
+        >>> result = summarise(table, "a", b=sum, c=len)
+        >>> print(result)
+        [{'a': 2, 'b': 3, 'c': 1}, {'a': 3, 'b': 12, 'c': 2}]
     """
     assert isinstance(table, TupList)
 
@@ -134,31 +181,32 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
 
 def group_mutate(table, group_by, **func):
     """
-    Group by the given columns and apply the given functions to the others.
-    Equivalent to group_by %>% mutate %>% ungroup in R dplyr.
-    Can be useful to get a total or a count in a column while keeping all the rows.
+    Group by specified columns and apply functions to other columns.
+
+    Groups the table by the specified columns and applies aggregation
+    functions to the remaining columns. Similar to SQL GROUP BY with
+    aggregate functions. Equivalent to group_by %>% mutate %>% ungroup in R dplyr.
+
+    :param table: Table to process
+    :type table: TupList
+    :param group_by: Column name(s) to group by
+    :type group_by: str or list[str]
+    :param func: Functions to apply to columns (e.g., a=sum, b=mean)
+    :type func: dict[str, Callable]
+    :return: New table with grouped and aggregated data
+    :rtype: TupList
 
     Example:
-    table = TupList([{'a': 2, 'b': 3, "c": 3}, {'a': 3, 'b': 6, "c": 6}, {'a': 3, 'b': 6, "c": 5}])
-    # For every value of a get the sum of b and count the number of rows.
-    result = group_mutate(table, "a", sum_b=lambda v: sum(v["b"]),
-     count=lambda v: [1+i for i in range(len(v["a"]))])
-    result:
-    [{'a': 2, 'b': 3, 'c': 3, 'sum_b': 3, 'count': 1},
-     {'a': 3, 'b': 6, 'c': 6, 'sum_b': 12, 'count': 1},
-     {'a': 3, 'b': 6, 'c': 5, 'sum_b': 12, 'count': 2}]
-
-    In this example the function are applied to this grouped object:
-    grouped: [{'a': [2], 'b': [3], 'c': [3]}, {'a': [3, 3], 'b': [6, 6], 'c': [6, 5]}]
-
-    :param table: a table (TupList of dict).
-    :param group_by: name of the columns to group.
-    :param func: named arguments with the changes to apply.
-    The values can be:
-     - a single value which will be applied to each row
-     - a list with all the values of the column
-     - a function to apply to the row.
-    :return: a TupList
+        >>> table = TupList([
+        ...     {'a': 2, 'b': 3, "c": 3},
+        ...     {'a': 3, 'b': 6, "c": 6},
+        ...     {'a': 3, 'b': 6, "c": 5}
+        ... ])
+        >>> result = group_mutate(table, "a", sum_b=lambda v: sum(v["b"]))
+        >>> print(result)
+        [{'a': 2, 'b': 3, 'c': 3, 'sum_b': 3},
+         {'a': 3, 'b': 6, 'c': 6, 'sum_b': 12},
+         {'a': 3, 'b': 6, 'c': 5, 'sum_b': 12}]
     """
     assert isinstance(table, TupList)
     grouped = (
@@ -172,11 +220,27 @@ def group_mutate(table, group_by, **func):
 
 def select(table, *args):
     """
-    Select columns from a table
+    Select specific columns from a table.
 
-    :param table: a table
-    :param args: names of the columns to select
-    :return: a table (TupList) with the selected columns.
+    Creates a new table containing only the specified columns.
+    Maintains the original row order.
+
+    :param table: Table to select columns from
+    :type table: TupList
+    :param args: Names of columns to select
+    :type args: str
+    :return: New table with only the selected columns
+    :rtype: TupList
+    :raises ValueError: If any specified column doesn't exist
+
+    Example:
+        >>> table = TupList([
+        ...     {"id": 1, "name": "Alice", "age": 30, "city": "Madrid"},
+        ...     {"id": 2, "name": "Bob", "age": 25, "city": "Barcelona"}
+        ... ])
+        >>> result = select(table, "name", "age")
+        >>> print(result)
+        [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
     """
     assert isinstance(table, TupList)
 
@@ -192,11 +256,26 @@ def select(table, *args):
 
 def drop(table, *args):
     """
-    Drop columns from a table
+    Remove specific columns from a table.
 
-    :param table: a table
-    :param args: names of the columns to drop
-    :return: a table (TupList) without the selected columns.
+    Creates a new table with the specified columns removed.
+    Maintains the original row order.
+
+    :param table: Table to remove columns from
+    :type table: TupList
+    :param args: Names of columns to remove
+    :type args: str
+    :return: New table without the specified columns
+    :rtype: TupList
+
+    Example:
+        >>> table = TupList([
+        ...     {"id": 1, "name": "Alice", "age": 30, "city": "Madrid"},
+        ...     {"id": 2, "name": "Bob", "age": 25, "city": "Barcelona"}
+        ... ])
+        >>> result = drop(table, "id", "city")
+        >>> print(result)
+        [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
     """
     assert isinstance(table, TupList)
 
@@ -207,11 +286,23 @@ def drop(table, *args):
 
 def rename(table, **kwargs):
     """
-    Rename columns from a table
+    Rename columns in a table.
 
-    :param table: a table
-    :param kwargs: names of the columns to rename and new names old_name=new_name
-    :return: a table (TupList) without the selected columns.
+    Changes column names using a mapping of old names to new names.
+    Maintains the original row order and data.
+
+    :param table: Table to rename columns in
+    :type table: TupList
+    :param kwargs: Mapping of old column names to new names
+    :type kwargs: dict[str, str]
+    :return: New table with renamed columns
+    :rtype: TupList
+
+    Example:
+        >>> table = TupList([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+        >>> result = rename(table, id="user_id", name="full_name")
+        >>> print(result)
+        [{'user_id': 1, 'full_name': 'Alice'}, {'user_id': 2, 'full_name': 'Bob'}]
     """
     assert isinstance(table, TupList)
 
@@ -223,11 +314,25 @@ def rename(table, **kwargs):
 
 def get_col_names(table, fast=False):
     """
-    Get the names of the column of a tuplist
+    Get the names of all columns in a table.
 
-    :param table: a table (TupList of dict)
-    :param fast: assume that the first row has all the columns.
-    :return: a list of keys
+    Returns a list of column names. By default, scans all rows to ensure
+    all possible columns are included. Use fast=True for better performance
+    if you're certain the first row contains all columns.
+
+    :param table: Table to get column names from
+    :type table: TupList
+    :param fast: If True, only check the first row for column names
+    :type fast: bool
+    :return: List of column names
+    :rtype: list[str]
+    :raises IndexError: If table is empty
+
+    Example:
+        >>> table = TupList([{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}])
+        >>> columns = get_col_names(table)
+        >>> print(columns)
+        ['name', 'age']
     """
     assert isinstance(table, TupList)
 
@@ -252,23 +357,33 @@ def left_join(
     if_empty_table_2=None,
 ):
     """
-    Join two tables with a left join.
-    Shortcut to join(type="left")
-    Inspired by R dplyr join functions.
+    Perform a left join with another table.
 
-    :param table1: 1st table (TupList with dict)
-    :param table2: 2nd table (TupList with dict)
-    :param by: list, dict or None.
-        If the columns have the same name in both tables, a list of keys/column to use for the join.
-        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
-        If by is None, use all the shared keys.
-    :param suffix: if some columns have the same name in both tables but are not
-     in "by", a suffix will be added to their names.
-     With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
-    :param empty: values to give to empty cells created by the join.
-    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
-    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-    :return: a TupList
+    Returns all rows from the left table (table1) and matching rows from
+    the right table (table2). Rows from the left table without matches
+    will have None values for columns from the right table.
+    Shortcut to join(type="left"). Inspired by R dplyr join functions.
+
+    :param table1: First table to join
+    :type table1: TupList
+    :param table2: Second table to join with
+    :type table2: TupList or list[dict]
+    :param by: Column specification for joining
+    :type by: list, dict, or None
+    :param suffix: Suffixes for disambiguating column names
+    :type suffix: list[str], optional
+    :param empty: Value to use for empty cells created by the join
+    :param if_empty_table_1: Replacement if table 1 is empty
+    :param if_empty_table_2: Replacement if table 2 is empty
+    :return: New table containing the left join result
+    :rtype: TupList
+
+    Example:
+        >>> table1 = TupList([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+        >>> table2 = TupList([{"id": 1, "age": 30}, {"id": 3, "age": 25}])
+        >>> result = left_join(table1, table2, by="id")
+        >>> print(result)
+        [{'id': 1, 'name': 'Alice', 'age': 30}, {'id': 2, 'name': 'Bob', 'age': None}]
     """
     return join(
         table1,
@@ -292,23 +407,33 @@ def right_join(
     if_empty_table_2=None,
 ):
     """
-    Join two tables with a right join.
-    Shortcut to join(type="right")
-    Inspired by R dplyr join functions.
+    Perform a right join with another table.
 
-    :param table1: 1st table (TupList with dict)
-    :param table2: 2nd table (TupList with dict)
-    :param by: list, dict or None.
-        If the columns have the same name in both tables, a list of keys/column to use for the join.
-        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
-        If by is None, use all the shared keys.
-    :param suffix: if some columns have the same name in both tables but are not
-     in "by", a suffix will be added to their names.
-     With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
-    :param empty: values to give to empty cells created by the join.
-    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
-    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-    :return: a TupList
+    Returns all rows from the right table (table2) and matching rows from
+    the left table (table1). Rows from the right table without matches
+    will have None values for columns from the left table.
+    Shortcut to join(type="right"). Inspired by R dplyr join functions.
+
+    :param table1: First table to join
+    :type table1: TupList
+    :param table2: Second table to join with
+    :type table2: TupList or list[dict]
+    :param by: Column specification for joining
+    :type by: list, dict, or None
+    :param suffix: Suffixes for disambiguating column names
+    :type suffix: list[str], optional
+    :param empty: Value to use for empty cells created by the join
+    :param if_empty_table_1: Replacement if table 1 is empty
+    :param if_empty_table_2: Replacement if table 2 is empty
+    :return: New table containing the right join result
+    :rtype: TupList
+
+    Example:
+        >>> table1 = TupList([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+        >>> table2 = TupList([{"id": 1, "age": 30}, {"id": 3, "age": 25}])
+        >>> result = right_join(table1, table2, by="id")
+        >>> print(result)
+        [{'id': 1, 'name': 'Alice', 'age': 30}, {'id': 3, 'name': None, 'age': 25}]
     """
     return join(
         table1,
@@ -332,23 +457,34 @@ def full_join(
     if_empty_table_2=None,
 ):
     """
-    Join two tables with a full join.
-    Shortcut to join(type="full")
-    Inspired by R dplyr join functions.
+    Perform a full outer join with another table.
 
-    :param table1: 1st table (TupList with dict)
-    :param table2: 2nd table (TupList with dict)
-    :param by: list, dict or None.
-        If the columns have the same name in both tables, a list of keys/column to use for the join.
-        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
-        If by is None, use all the shared keys.
-    :param suffix: if some columns have the same name in both tables but are not
-     in "by", a suffix will be added to their names.
-     With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
-    :param empty: values to give to empty cells created by the join.
-    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
-    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-    :return: a TupList
+    Returns all rows from both tables, with None values where there are
+    no matches. This is the default join type and combines left and right joins.
+    Shortcut to join(type="full"). Inspired by R dplyr join functions.
+
+    :param table1: First table to join
+    :type table1: TupList
+    :param table2: Second table to join with
+    :type table2: TupList or list[dict]
+    :param by: Column specification for joining
+    :type by: list, dict, or None
+    :param suffix: Suffixes for disambiguating column names
+    :type suffix: list[str], optional
+    :param empty: Value to use for empty cells created by the join
+    :param if_empty_table_1: Replacement if table 1 is empty
+    :param if_empty_table_2: Replacement if table 2 is empty
+    :return: New table containing the full join result
+    :rtype: TupList
+
+    Example:
+        >>> table1 = TupList([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+        >>> table2 = TupList([{"id": 1, "age": 30}, {"id": 3, "age": 25}])
+        >>> result = full_join(table1, table2, by="id")
+        >>> print(result)
+        [{'id': 1, 'name': 'Alice', 'age': 30},
+         {'id': 2, 'name': 'Bob', 'age': None},
+         {'id': 3, 'name': None, 'age': 25}]
     """
     return join(
         table1,
@@ -372,23 +508,32 @@ def inner_join(
     if_empty_table_2=None,
 ):
     """
-    Join two tables with a left join.
-    Shortcut to join(type="inner")
-    Inspired by R dplyr join functions.
+    Perform an inner join with another table.
 
-    :param table1: 1st table (TupList with dict)
-    :param table2: 2nd table (TupList with dict)
-    :param by: list, dict or None.
-        If the columns have the same name in both tables, a list of keys/column to use for the join.
-        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
-        If by is None, use all the shared keys.
-    :param suffix: if some columns have the same name in both tables but are not
-     in "by", a suffix will be added to their names.
-     With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
-    :param empty: values to give to empty cells created by the join.
-    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
-    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-    :return: a TupList
+    Returns only rows that have matching values in both tables.
+    Rows without matches in either table are excluded from the result.
+    Shortcut to join(type="inner"). Inspired by R dplyr join functions.
+
+    :param table1: First table to join
+    :type table1: TupList
+    :param table2: Second table to join with
+    :type table2: TupList or list[dict]
+    :param by: Column specification for joining
+    :type by: list, dict, or None
+    :param suffix: Suffixes for disambiguating column names
+    :type suffix: list[str], optional
+    :param empty: Value to use for empty cells created by the join
+    :param if_empty_table_1: Replacement if table 1 is empty
+    :param if_empty_table_2: Replacement if table 2 is empty
+    :return: New table containing only matching rows
+    :rtype: TupList
+
+    Example:
+        >>> table1 = TupList([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+        >>> table2 = TupList([{"id": 1, "age": 30}, {"id": 3, "age": 25}])
+        >>> result = inner_join(table1, table2, by="id")
+        >>> print(result)
+        [{'id': 1, 'name': 'Alice', 'age': 30}]
     """
     return join(
         table1,
@@ -406,11 +551,25 @@ def get_join_keys(tab1, tab2, jtype):
     """
     Get the keys to use for the join depending on the join type.
 
-    :param tab1: (dict) table 1 grouped by join keys.
-    :param tab2: (dict) table 2 grouped by join keys.
-    :param jtype: (str) join type. Must be full, inner, right or left
+    Determines which join keys to use based on the join type and the
+    available keys in both tables.
 
-    :return: Tuplist of unique join keys combinations.
+    :param tab1: Table 1 grouped by join keys
+    :type tab1: dict
+    :param tab2: Table 2 grouped by join keys
+    :type tab2: dict
+    :param jtype: Join type
+    :type jtype: str
+    :return: TupList of unique join key combinations
+    :rtype: TupList
+    :raises ValueError: If jtype is not one of the supported types
+
+    Example:
+        >>> tab1 = {(1, 2): [{"a": 1, "b": 2}], (3, 4): [{"a": 3, "b": 4}]}
+        >>> tab2 = {(1, 2): [{"c": 1}], (5, 6): [{"c": 2}]}
+        >>> keys = get_join_keys(tab1, tab2, "inner")
+        >>> print(keys)
+        [(1, 2)]
     """
     if jtype == "full":
         join_keys = [k for k in tab1.keys()] + [k for k in tab2.keys()]
@@ -434,22 +593,34 @@ def get_join_keys(tab1, tab2, jtype):
 
 def manage_join_none(tab1, tab2, empty, t1_keys, t2_keys, by, jtype):
     """
-    None values should never join with other None.
-    Depending on the type of join, return the relevant rows with None values in keys.
+    Handle None values in join operations.
+
+    None values should never join with other None values.
+    Depending on the join type, returns the relevant rows with None values in keys.
+
+    :param tab1: Table 1 grouped by join keys
+    :type tab1: SuperDict
+    :param tab2: Table 2 grouped by join keys
+    :type tab2: SuperDict
+    :param empty: Value to use for missing values
+    :param t1_keys: Column names of table 1
+    :type t1_keys: list[str]
+    :param t2_keys: Column names of table 2
+    :type t2_keys: list[str]
+    :param by: Keys to join by
+    :type by: list[str]
+    :param jtype: Join type (left, right, full, inner)
+    :type jtype: str
+    :return: TupList of rows joined on None values
+    :rtype: TupList
+    :raises ValueError: If jtype is not supported
+
     Example:
-    result = left_join([{"a":1, "b":2}, {"a":None, "b":1}], [{"a":1, "c":1}, {"a":None, "c":1}])
-    result should be [{"a":1, "b":2, "c":1}, {"a":None, "b":1, "c":None}]
-
-    manage_join_none returns the part of the table where the join key is None: {"a":None, "b":1, "c":None}
-
-    :param tab1: SuperDict table 1 grouped by join keys {(1,2): [{...}, {...}], (1,3):[{...}, {...}]}
-    :param tab2: SuperDict table 2 grouped by join keys {(1,2): [{...}, {...}], (1,3):[{...}, {...}]}
-    :param empty: value to use for missing values.
-    :param t1_keys: columns of table 1
-    :param t2_keys: columns of table 2
-    :param by: keys to join by
-    :param jtype: join type (left, right, full, inner)
-    :return: Tuplist of rows joined on None values
+        >>> tab1 = {None: [{"a": None, "b": 1}]}
+        >>> tab2 = {None: [{"a": None, "c": 1}]}
+        >>> result = manage_join_none(tab1, tab2, None, ["a", "b"], ["a", "c"], ["a"], "left")
+        >>> print(result)
+        [{'a': None, 'b': 1, 'c': None}]
     """
     result = []
     if jtype == "left":
@@ -487,25 +658,36 @@ def join(
     if_empty_table_2=None,
 ) -> TupList:
     """
-    Join to tables.
-    Inspired by R dplyr join functions.
+    Join two tables using various join types.
 
-    :param table1: 1st table (TupList with dict)
-    :param table2: 2nd table (TupList with dict)
-    :param by: list, dict or None.
-        If the columns have the same name in both tables, a list of keys/column to use for the join.
-        If the columns have the different names in both tables, a dict in the format {name_table1: name_table2}
-        If by is None, use all the shared keys.
-    :param suffix: if some columns have the same name in both tables but are not
-     in "by", a suffix will be added to their names.
-     With suffix=["_1","_2"], shared column "x" will become "x_1", "x_2"
-    :param jtype: type of join: "full"
-    :param empty: values to give to empty cells created by the join.
-    :param drop_if_nested: drop any nested dict from the table (columns containing list or dicts instead of scalars)
-    drop_if_nested=False may generate and error o unexpected result.
-    :param if_empty_table_1: (dict or list) if table 1 is empty, it will be replaced by this dict in the join.
-    :param if_empty_table_2: (dict or list) if table 2 is empty, it will be replaced by this dict in the join.
-    :return: a TupList
+    Performs table joins inspired by R's dplyr join functions. Supports
+    different join types and flexible column matching strategies.
+
+    :param table1: First table to join
+    :type table1: TupList
+    :param table2: Second table to join with
+    :type table2: TupList or list[dict]
+    :param by: Column specification for joining
+    :type by: list, dict, or None
+    :param suffix: Suffixes for disambiguating column names
+    :type suffix: list[str], optional
+    :param jtype: Type of join ("full", "left", "right", "inner")
+    :type jtype: str
+    :param empty: Value to use for empty cells created by the join
+    :param drop_if_nested: Drop nested columns (may cause errors if False)
+    :type drop_if_nested: bool
+    :param if_empty_table_1: Replacement if table 1 is empty
+    :param if_empty_table_2: Replacement if table 2 is empty
+    :return: New table containing the joined data
+    :rtype: TupList
+    :raises ValueError: If jtype is not supported or keys don't exist
+
+    Example:
+        >>> table1 = TupList([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+        >>> table2 = TupList([{"id": 1, "age": 30}, {"id": 3, "age": 25}])
+        >>> result = join(table1, table2, by="id", jtype="left")
+        >>> print(result)
+        [{'id': 1, 'name': 'Alice', 'age': 30}, {'id': 2, 'name': 'Bob', 'age': None}]
     """
     assert isinstance(table1, TupList)
     assert isinstance(table2, list)
@@ -599,18 +781,30 @@ def join(
 
 def auto_join(table, by=None, suffix=None, empty=None):
     """
-    Join a table with itself.
-    Useful to create combinations of values from columns of a table.
+    Join a table with itself to create combinations.
 
-    :param table: the table
-    :param by: list, dict or None.
-        If by is a list of keys/column, those columns will be used for the join.
-        If by is a dict in the format {name_table1: name_table2}, those columns will be used for the join.
-        If by is None, all combinations of rows will be created (join by dummy).
-    :param suffix: suffix to add to column to create different names.
-        Default is ("", "_2"). With default suffix, column id will appear as id and id_2.
-    :param empty: values to give to empty cells created by the join.
-    :return: a tuplist
+    Performs a self-join to create all possible combinations of rows.
+    Useful for creating Cartesian products or finding relationships
+    within the same table.
+
+    :param table: Table to perform self-join on
+    :type table: TupList
+    :param by: Column specification for the self-join
+    :type by: list, dict, or None
+    :param suffix: Suffixes to add to column names to distinguish them
+    :type suffix: list[str], optional
+    :param empty: Value to use for empty cells created by the join
+    :return: New table with all combinations
+    :rtype: TupList
+
+    Example:
+        >>> table = TupList([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+        >>> result = auto_join(table)
+        >>> print(result)
+        [{'id': 1, 'name': 'Alice', 'id_2': 1, 'name_2': 'Alice'},
+         {'id': 1, 'name': 'Alice', 'id_2': 2, 'name_2': 'Bob'},
+         {'id': 2, 'name': 'Bob', 'id_2': 1, 'name_2': 'Alice'},
+         {'id': 2, 'name': 'Bob', 'id_2': 2, 'name_2': 'Bob'}]
     """
     drop_d = False
     if by is None:
@@ -626,24 +820,55 @@ def auto_join(table, by=None, suffix=None, empty=None):
 
 def str_key_tl(tl):
     """
-    Transform all the keys of the dict of a tuplist into strings.
+    Transform all dictionary keys in a TupList to strings.
 
-    :param tl: a tuplist of dict
-    :return: The same tuplist with all keys as strings
+    Converts all dictionary keys in the TupList to string format.
+    Useful for JSON serialization or when working with mixed key types.
+
+    :param tl: TupList containing dictionaries
+    :type tl: TupList
+    :return: Same TupList with all keys converted to strings
+    :rtype: TupList
+
+    Example:
+        >>> tl = TupList([{1: "one", 2: "two"}, {3: "three"}])
+        >>> result = str_key_tl(tl)
+        >>> print(result)
+        [{'1': 'one', '2': 'two'}, {'3': 'three'}]
     """
     return TupList([str_key(dic) for dic in tl])
 
 
 def replace(tl, replacement=None, to_replace=None, fast=False):
     """
-    Fill missing values of a TupList.
+    Replace specific values in a TupList.
 
-    :param tl: a TupList
-    :param replacement: a single value or a dict of columns and values to use as replacement.
-    :param to_replace: a single value or a dict of columns and values to replace.
-    :param fast: assume that the first row has all the columns.
+    Replaces specified values with new values in the TupList. Can replace
+    values across all columns or target specific columns.
 
-    :return: a TupList with missing values filled.
+    :param tl: TupList to process
+    :type tl: TupList
+    :param replacement: New values to use as replacements
+    :type replacement: any or dict[str, any]
+    :param to_replace: Values to be replaced
+    :type to_replace: any or dict[str, any]
+    :param fast: If True, assume first row contains all columns
+    :type fast: bool
+    :return: New TupList with replaced values
+    :rtype: TupList
+
+    Example:
+        >>> tl = TupList([
+        ...     {"age": 25, "city": "Madrid"},
+        ...     {"age": 30, "city": "Barcelona"}
+        ... ])
+        >>> result = replace(
+        ...     tl,
+        ...     replacement={"age": 35, "city": "Paris"},
+        ...     to_replace={"age": 25, "city": "Madrid"}
+        ... )
+        >>> print(result)
+        [{'age': 35, 'city': 'Paris'}, {'age': 30, 'city': 'Barcelona'}]
     """
     apply_to_col = []
     if isinstance(replacement, dict):
@@ -675,23 +900,55 @@ def replace(tl, replacement=None, to_replace=None, fast=False):
 
 def replace_empty(tl, replacement=0, fast=False):
     """
-    Fill empty values of a tuplist.
+    Replace empty values in a TupList.
 
-    :param tl: a tuplist
-    :param replacement: a single value or a dict of columns and values to use as replacement.
-    :param fast: assume that the first row has all the columns.
-    :return: a tuplist with empty values filled.
+    Replaces empty values (None, empty strings, etc.) with specified
+    replacement values. Can use different replacements for different columns.
+
+    :param tl: TupList to process
+    :type tl: TupList
+    :param replacement: Values to use for replacing empty values
+    :type replacement: any or dict[str, any]
+    :param fast: If True, assume first row contains all columns
+    :type fast: bool
+    :return: New TupList with empty values replaced
+    :rtype: TupList
+
+    Example:
+        >>> tl = TupList([
+        ...     {"name": "Alice", "age": None},
+        ...     {"name": "", "age": 25}
+        ... ])
+        >>> result = replace_empty(tl, replacement={"name": "Unknown", "age": 0})
+        >>> print(result)
+        [{'name': 'Alice', 'age': 0}, {'name': 'Unknown', 'age': 25}]
     """
     return replace(tl, replacement=replacement, to_replace=None, fast=fast)
 
 
 def replace_nan(tl, replacement=None):
     """
-    Fill nan values of a tuplist.
+    Replace NaN values in a TupList.
 
-    :param tl: a tuplist
-    :param replacement: the value to replace nan.
-    :return: a tuplist with nan values filled.
+    Replaces NaN (Not a Number) values with specified replacement values.
+    Useful for cleaning numeric data with missing values.
+
+    :param tl: TupList to process
+    :type tl: TupList
+    :param replacement: Value to use for replacing NaN values
+    :type replacement: any
+    :return: New TupList with NaN values replaced
+    :rtype: TupList
+
+    Example:
+        >>> import math
+        >>> tl = TupList([
+        ...     {"value": 10.5, "score": math.nan},
+        ...     {"value": math.nan, "score": 85.0}
+        ... ])
+        >>> result = replace_nan(tl, replacement=0)
+        >>> print(result)
+        [{'value': 10.5, 'score': 0}, {'value': 0, 'score': 85.0}]
     """
     return TupList(
         [{k: replacement if is_null(v) else v for k, v in dic.items()} for dic in tl]
@@ -700,12 +957,29 @@ def replace_nan(tl, replacement=None):
 
 def drop_empty(tl, cols=None, fast=False):
     """
-    Drop rows of a tuplist with empty values.
+    Remove rows with empty values in specified columns.
 
-    :param tl: a tuplist
-    :param cols: list of column names or single name.
-    :param fast: assume that the first row has all the columns.
-    :return: a tuplist with empty values dropped.
+    Drops rows where the specified columns contain empty values
+    (None, empty strings, etc.).
+
+    :param tl: TupList to process
+    :type tl: TupList
+    :param cols: Column name(s) to check for empty values
+    :type cols: str or list[str], optional
+    :param fast: If True, assume first row contains all columns
+    :type fast: bool
+    :return: New TupList with empty rows removed
+    :rtype: TupList
+
+    Example:
+        >>> tl = TupList([
+        ...     {"name": "Alice", "age": 30},
+        ...     {"name": "", "age": 25},
+        ...     {"name": "Bob", "age": None}
+        ... ])
+        >>> result = drop_empty(tl, "name")
+        >>> print(result)
+        [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': None}]
     """
     if cols is None:
         cols = get_col_names(tl, fast)
@@ -718,10 +992,26 @@ def drop_empty(tl, cols=None, fast=False):
 
 def is_null(v):
     """
-    Return True if the value is None, NaN or NaT
+    Check if a value is null (None, NaN, or NaT).
 
-    :param v: a scalar value
-    :return: boolean
+    Determines whether a value represents a null/missing value.
+    Handles both scalar values and lists recursively.
+
+    :param v: Value to check
+    :type v: any
+    :return: True if the value is null
+    :rtype: bool or list[bool]
+
+    Example:
+        >>> import math
+        >>> print(is_null(None))
+        True
+        >>> print(is_null(math.nan))
+        True
+        >>> print(is_null(42))
+        False
+        >>> print(is_null([None, 1, math.nan]))
+        [True, False, True]
     """
     if isinstance(v, list):
         return [is_null(i) for i in v]
@@ -730,11 +1020,26 @@ def is_null(v):
 
 def is_nan(v):
     """
-    Return True if the value is nan.
-    Similar to np.isnan but return False instead of error if value is not a number.
+    Check if a value is NaN (Not a Number).
 
-    :param v: a value
-    :return: bool
+    Similar to np.isnan but returns False instead of raising an error
+    if the value is not a number. Handles both scalar values and lists recursively.
+
+    :param v: Value to check
+    :type v: any
+    :return: True if the value is NaN
+    :rtype: bool or list[bool]
+
+    Example:
+        >>> import math
+        >>> print(is_nan(math.nan))
+        True
+        >>> print(is_nan(42))
+        False
+        >>> print(is_nan("text"))
+        False
+        >>> print(is_nan([1, math.nan, "text"]))
+        [False, True, False]
     """
     from numbers import Number
 
@@ -748,11 +1053,25 @@ def is_nan(v):
 
 def is_nat(v):
     """
-    Return True if the value is nat.
-    Similar to np.isnat but return False instead of error if value is not a date.
+    Check if a value is NaT (Not a Time).
 
-    :param v: a value
-    :return: bool
+    Similar to np.isnat but returns False instead of raising an error
+    if the value is not a datetime. Handles both scalar values and lists recursively.
+
+    :param v: Value to check
+    :type v: any
+    :return: True if the value is NaT
+    :rtype: bool or list[bool]
+
+    Example:
+        >>> import numpy as np
+        >>> nat_value = np.datetime64('NaT')
+        >>> print(is_nat(nat_value))
+        True
+        >>> print(is_nat(np.datetime64('2023-01-01')))
+        False
+        >>> print(is_nat("2023-01-01"))
+        False
     """
     if isinstance(v, list):
         return [is_nat(i) for i in v]
@@ -764,25 +1083,36 @@ def is_nat(v):
 
 def pivot_longer(tl, cols, names_to="variable", value_to="value"):
     """
-    pivot_longer() "lengthens" data, increasing the number of rows and decreasing the number of columns.
-    The inverse transformation is pivot_wider()
+    Transform table from wide to long format.
 
-    :param tl: a tuplist
-    :param cols a list of columns to pivot
-    :param names_to: the name of the new names column
-    :param value_to: the name of the new value column
+    "Lengthens" data by increasing the number of rows and decreasing
+    the number of columns. The inverse transformation of pivot_wider().
 
-    :return: a tuplist
-    example:
-    table = TupList([{"a":1, "b":2, "c":3}, {"a":2, "b":3, "c":3}, {"a":5, "b":4, "c":3}])
-    result = pivot_longer(table, ["b", "c"])
-    result:
-    [{'a': 1, 'variable': 'b', 'value': 2},
-     {'a': 2, 'variable': 'b', 'value': 3},
-     {'a': 5, 'variable': 'b', 'value': 4},
-     {'a': 1, 'variable': 'c', 'value': 3},
-     {'a': 2, 'variable': 'c', 'value': 3},
-     {'a': 5, 'variable': 'c', 'value': 3}]
+    :param tl: TupList to transform
+    :type tl: TupList
+    :param cols: List of column names to pivot
+    :type cols: list[str]
+    :param names_to: Name for the new column containing variable names
+    :type names_to: str
+    :param value_to: Name for the new column containing values
+    :type value_to: str
+    :return: New TupList in long format
+    :rtype: TupList
+    :raises AssertionError: If inputs are not of expected types
+
+    Example:
+        >>> table = TupList([
+        ...     {"id": 1, "Q1": 100, "Q2": 150, "Q3": 200},
+        ...     {"id": 2, "Q1": 120, "Q2": 180, "Q3": 220}
+        ... ])
+        >>> result = pivot_longer(table, ["Q1", "Q2", "Q3"], "quarter", "sales")
+        >>> print(result)
+        [{'id': 1, 'quarter': 'Q1', 'sales': 100},
+         {'id': 1, 'quarter': 'Q2', 'sales': 150},
+         {'id': 1, 'quarter': 'Q3', 'sales': 200},
+         {'id': 2, 'quarter': 'Q1', 'sales': 120},
+         {'id': 2, 'quarter': 'Q2', 'sales': 180},
+         {'id': 2, 'quarter': 'Q3', 'sales': 220}]
     """
     assert isinstance(tl, TupList)
     assert isinstance(cols, list)
@@ -806,25 +1136,34 @@ def pivot_wider(
     tl, names_from="variable", value_from="value", id_cols=None, values_fill=None
 ):
     """
-    pivot_wider() "widens" data, increasing the number of columns and decreasing the number of rows.
-    The inverse transformation is pivot_longer()
+    Transform table from long to wide format.
 
-    :param tl: a tuplist
-    :param names_from: the name of the new names column
-    :param value_from: the name of the new value column
-    :param id_cols: set_a set of columns that uniquely identifies each observation.
-     If None, use all columns except names_from and value_from.
-    :param values_fill: set_a value or dict of values to fill in the missing values.
-    :return: a tuplist
-    example:
-    tl = TupList([{'a': 1, 'variable': 'b', 'value': 2},
-     {'a': 2, 'variable': 'b', 'value': 3},
-     {'a': 5, 'variable': 'b', 'value': 4},
-     {'a': 1, 'variable': 'c', 'value': 3},
-     {'a': 2, 'variable': 'c', 'value': 3},
-     {'a': 5, 'variable': 'c', 'value': 3}])
-    result = pivot_wider(tl)
-    result: [{'a': 1, 'b': 2, 'c': 3}, {'a': 2, 'b': 3, 'c': 3}, {'a': 5, 'b': 4, 'c': 3}]
+    "Widens" data by increasing the number of columns and decreasing
+    the number of rows. The inverse transformation of pivot_longer().
+
+    :param tl: TupList to transform
+    :type tl: TupList
+    :param names_from: Name of the column containing variable names
+    :type names_from: str
+    :param value_from: Name of the column containing values
+    :type value_from: str
+    :param id_cols: Columns that uniquely identify each observation
+    :type id_cols: list[str], optional
+    :param values_fill: Value or dict to fill missing values
+    :type values_fill: any or dict, optional
+    :return: New TupList in wide format
+    :rtype: TupList
+    :raises AssertionError: If inputs are not of expected types
+
+    Example:
+        >>> tl = TupList([
+        ...     {"id": 1, "quarter": "Q1", "sales": 100},
+        ...     {"id": 1, "quarter": "Q2", "sales": 150},
+        ...     {"id": 2, "quarter": "Q1", "sales": 120}
+        ... ])
+        >>> result = pivot_wider(tl, "quarter", "sales", "id")
+        >>> print(result)
+        [{'id': 1, 'Q1': 100, 'Q2': 150}, {'id': 2, 'Q1': 120, 'Q2': None}]
     """
     assert isinstance(tl, TupList)
     assert isinstance(names_from, str)
@@ -847,14 +1186,21 @@ def pivot_wider(
 
 def to_dictlist(dic):
     """
-    Transform a dict of lists into a list of dict. (see example)
+    Transform a dictionary of lists into a list of dictionaries.
 
-    :param dic: a dict
-    :return: a tuplist
-    example:
-    dic = dict(a=[1,2,3], b=[4,5,6])
-    result= to_dictlist(dic)
-    result: [{'a': 1, 'b': 4}, {'a': 2, 'b': 5}, {'a': 3, 'b': 6}]
+    Converts a column-oriented dictionary (dict of lists) into a
+    row-oriented list of dictionaries.
+
+    :param dic: Dictionary with column names as keys and lists of values
+    :type dic: dict[str, list]
+    :return: TupList with row-oriented data
+    :rtype: TupList
+
+    Example:
+        >>> data = {"name": ["Alice", "Bob"], "age": [30, 25]}
+        >>> result = to_dictlist(data)
+        >>> print(result)
+        [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
     """
     n_rows = max(len(as_list(dic[k])) for k in dic)
     dic2 = {k: to_len(dic[k], n_rows) for k in dic}
@@ -863,16 +1209,29 @@ def to_dictlist(dic):
 
 def lag(table, col, i=1):
     """
-    Return column col from the table with lag i.
+    Create a lagged version of a column.
 
-    :param table: a tuplist
-    :param col: a key of the tuplist
-    :param i: number of lags
-    :return: a list
-    example:
-    table = TupList([{"a":1, "b":2}, {"a":2, "b":3}, {"a":5, "b":4}])
-    result = lag(table, "a", 1)
-    result: [None, 1, 2]
+    Returns a list with values from the specified column shifted by
+    the specified number of steps. Earlier values are filled with None.
+
+    :param table: TupList to process
+    :type table: TupList
+    :param col: Name of the column to lag
+    :type col: str
+    :param i: Number of steps to lag (default: 1)
+    :type i: int
+    :return: List with lagged values
+    :rtype: list
+
+    Example:
+        >>> table = TupList([
+        ...     {"date": "2023-01", "sales": 100},
+        ...     {"date": "2023-02", "sales": 150},
+        ...     {"date": "2023-03", "sales": 200}
+        ... ])
+        >>> result = lag(table, "sales", 1)
+        >>> print(result)
+        [None, 100, 150]
     """
     return table.kvapply(
         lambda k, v: table[k - i][col] if i <= k < len(table) + i else None
@@ -881,17 +1240,33 @@ def lag(table, col, i=1):
 
 def lag_col(table, col, i=1, replace=False):
     """
-    Add a column to a tuplist which column col with lag i.
+    Add a lagged column to a TupList.
 
-    :param table: a tuplist
-    :param col: column name
-    :param i: number of lags
-    :param replace: replace the former value of the column. If not, create a new column lag_{col}_i
-    :return: a tuplist
-    example:
-    table = TupList([{"a":1, "b":2}, {"a":2, "b":3}, {"a":5, "b":4}])
-    result = lag_col(table, "a", 1)
-    [{'a': 1, 'b': 2, 'lag_a_1': None}, {'a': 2, 'b': 3, 'lag_a_1': 1}, {'a': 5, 'b': 4, 'lag_a_1': 2}]
+    Creates a new column with values from the specified column shifted by
+    the specified number of steps. Useful for time series analysis.
+
+    :param table: TupList to process
+    :type table: TupList
+    :param col: Name of the column to lag
+    :type col: str
+    :param i: Number of steps to lag (default: 1)
+    :type i: int
+    :param replace: If True, replace original column; if False, create new column
+    :type replace: bool
+    :return: New TupList with lagged column
+    :rtype: TupList
+
+    Example:
+        >>> table = TupList([
+        ...     {"date": "2023-01", "sales": 100},
+        ...     {"date": "2023-02", "sales": 150},
+        ...     {"date": "2023-03", "sales": 200}
+        ... ])
+        >>> result = lag_col(table, "sales", 1)
+        >>> print(result)
+        [{'date': '2023-01', 'sales': 100, 'lag_sales_1': None},
+         {'date': '2023-02', 'sales': 150, 'lag_sales_1': 100},
+         {'date': '2023-03', 'sales': 200, 'lag_sales_1': 150}]
     """
     pre = "lag" if i > 0 else "lead"
     index = str(i) if i > 0 else str(-i)
@@ -901,15 +1276,24 @@ def lag_col(table, col, i=1, replace=False):
 
 def drop_nested(df):
     """
-    Drop any nested value from a tuplist.
-    Nested value are dict or lists nested as dict values in the tuplist.
-    This function assume df structure is homogenous and only look at the first row to find nested values.
+    Remove columns containing nested data structures.
 
-    :param df: a tuplist
-    :return: the tuplist without nested values.
-    example:
-    df = TupList([{"a":1, "b":2, "c": {"d":3}}, {"a":2, "b":2, "c":{"d":4}}])
-    result = drop_nested(df)
+    Drops columns that contain nested values (dictionaries, lists, or tuples).
+    Assumes homogeneous table structure and checks only the first row.
+
+    :param df: TupList to process
+    :type df: TupList
+    :return: New TupList with nested columns removed
+    :rtype: TupList
+
+    Example:
+        >>> df = TupList([
+        ...     {"name": "Alice", "age": 30, "hobbies": ["reading", "swimming"]},
+        ...     {"name": "Bob", "age": 25, "hobbies": ["gaming"]}
+        ... ])
+        >>> result = drop_nested(df)
+        >>> print(result)
+        [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
     """
     for col in df[0]:
         if isinstance(df[0][col], list) or isinstance(df[0][col], dict):
@@ -919,12 +1303,27 @@ def drop_nested(df):
 
 def distinct(table, columns):
     """
-    Only keeps unique combinations values of the selected columns.
-    When there are rows with duplicated values, the first one is kept.
+    Keep only unique combinations of values in specified columns.
 
-    :param table: a tuplist (list of dict)
-    :param columns: names of the columns
-    :return: a tuplist (list of dict) with unique data.
+    Removes duplicate rows based on the values in the specified columns.
+    When duplicates are found, the first occurrence is kept.
+
+    :param table: TupList to process
+    :type table: TupList
+    :param columns: Column name(s) to check for uniqueness
+    :type columns: str or list[str]
+    :return: New TupList with duplicate rows removed
+    :rtype: TupList
+
+    Example:
+        >>> table = TupList([
+        ...     {"name": "Alice", "city": "Madrid"},
+        ...     {"name": "Bob", "city": "Barcelona"},
+        ...     {"name": "Alice", "city": "Madrid"}  # Duplicate
+        ... ])
+        >>> result = distinct(table, "name")
+        >>> print(result)
+        [{'name': 'Alice', 'city': 'Madrid'}, {'name': 'Bob', 'city': 'Barcelona'}]
     """
     return (
         TupList(table)
@@ -936,12 +1335,31 @@ def distinct(table, columns):
 
 def order_by(table, columns, reverse=False):
     """
-    Reorder the table according to the given columns.
+    Sort the table by specified columns.
 
-    :param table: a tuplist (list of dict).
-    :param columns: names of the columns to use to sort the table.
-    :param reverse:  if True, the sorted list is sorted in descending order.
-    :return: the sorted tuplist
+    Reorders the table rows based on the values in the specified columns.
+    Supports both ascending and descending order.
+
+    :param table: TupList to sort
+    :type table: TupList
+    :param columns: Column name(s) to sort by
+    :type columns: str or list[str]
+    :param reverse: If True, sort in descending order
+    :type reverse: bool
+    :return: New TupList with sorted rows
+    :rtype: TupList
+
+    Example:
+        >>> table = TupList([
+        ...     {"name": "Charlie", "age": 35},
+        ...     {"name": "Alice", "age": 30},
+        ...     {"name": "Bob", "age": 25}
+        ... ])
+        >>> result = order_by(table, "age")
+        >>> print(result)
+        [{'name': 'Bob', 'age': 25},
+         {'name': 'Alice', 'age': 30},
+         {'name': 'Charlie', 'age': 35}]
     """
     return TupList(table).sorted(
         key=lambda v: [v[c] for c in as_list(columns)], reverse=reverse

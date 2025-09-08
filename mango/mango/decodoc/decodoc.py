@@ -4,8 +4,11 @@ import inspect
 import json
 import os
 import traceback
-import warnings
 from itertools import zip_longest
+
+from mango.logging import get_configured_logger
+
+log = get_configured_logger(__name__)
 
 INFO_DICT = {}
 SETUP_DICT = {
@@ -17,57 +20,42 @@ SETUP_DICT = {
     "mermaid": True,
     "prompts": True,
     "confidential": False,
-    "autowrite": True, 
+    "autowrite": True,
 }
+
 
 def decodoc(inputs, outputs):
     """
-    Decorator to log information about the function
+    Decorator to automatically log function execution metadata.
 
-    A decorator that automatically generates and stores metadata about a function's execution, including the function's
-    inputs and outputs. This information is stored in a global dictionary `INFO_DICT`, which can later be used for
-    debugging, documentation generation, and tracking the state of function calls.
+    A decorator that captures and stores comprehensive metadata about function
+    execution, including inputs, outputs, caller information, docstrings, and
+    source code. This metadata is stored in a global dictionary for later use
+    in debugging, documentation generation, and creating visual representations
+    of function call relationships.
 
-    The decorator not only logs the arguments and return values of a function but also includes valuable metadata, such
-    as the function's name, caller, docstring, and the source code. It supports both single and multiple return values
-    and handles cases where inputs or outputs are missing or undefined.
+    The decorator supports both single and multiple return values and handles
+    cases where inputs or outputs are missing or undefined. It's particularly
+    useful for creating detailed logs in complex applications and generating
+    Mermaid diagrams showing function call relationships.
 
-    This decorator is particularly useful for creating detailed logs of function calls in complex applications,
-    generating documentation, and creating visual representations of function call relationships using Mermaid diagrams.
+    :param inputs: List of parameter names corresponding to function arguments
+    :type inputs: List[str]
+    :param outputs: List of return value names corresponding to function outputs
+    :type outputs: List[str]
+    :return: Decorated function that stores execution metadata
+    :rtype: callable
+    :raises UserWarning: If function lacks docstring or has missing parameter names
 
-    :param inputs: A list of names representing the function's input parameters. These should correspond to the actual
-                   arguments passed to the function when it is called, and the order is important.
-    :param outputs: A list of names representing the function's return values. These should match the names of the
-                    variables assigned to the function's return values, and the order is important.
-
-    :return: The decorated function that will store its execution metadata in the global `INFO_DICT`.
-
-    Example Usage
-    -------------
-    Here's an example that demonstrates how the `decodoc` decorator works:
-
-    >>> from mango.decodoc import decodoc
-    >>>
-    >>> @decodoc(inputs=['a', 'b'], outputs=['result'])
-    >>> def add(a: int, b: int) -> int:
-    >>>     return a + b
-    >>>
-    >>> result = add(5, 3)
-
-    This example will store the following metadata in `INFO_DICT`:
-
-    - Function name: 'add'
-
-    - Caller function: The function that called 'add'
-
-    - Input values: The values and memory addresses of 'a' and 'b'
-
-    - Output values: The value and memory address of 'result'
-
-    Warnings
-    --------
-    - If a function does not have a docstring, a warning will be issued.
-    - If any input or output variable names are missing or invalid, a warning will be generated.
+    Example:
+        >>> from mango.decodoc import decodoc
+        >>>
+        >>> @decodoc(inputs=['a', 'b'], outputs=['result'])
+        >>> def add(a: int, b: int) -> int:
+        >>>     return a + b
+        >>>
+        >>> result = add(5, 3)
+        >>> # Metadata stored in INFO_DICT with function name, caller, inputs, outputs
     """
     # Create a closure to maintain state
     at_exit_registered = False
@@ -78,7 +66,7 @@ def decodoc(inputs, outputs):
             nonlocal at_exit_registered
             if not at_exit_registered:
                 atexit.register(_write)
-                print("Registered at exit")
+                log.info("Registered at exit")
                 at_exit_registered = True
 
             # Get the function ID and the arguments ID to obtain an unique ID
@@ -94,9 +82,7 @@ def decodoc(inputs, outputs):
 
             if docstring is None:
                 docstring = ""
-                warnings.warn(
-                    f"Function {func.__name__} does not have a docstring", UserWarning
-                )
+                log.warning(f"Function {func.__name__} does not have a docstring")
 
             INFO_DICT[function_id]["docstring"] = docstring.replace("\n", " ")
             INFO_DICT[function_id]["code"] = inspect.getsource(func).strip()
@@ -109,10 +95,7 @@ def decodoc(inputs, outputs):
                 args_list = list(args)
             for input_name, input_var in zip_longest(inputs, args_list):
                 if input_name is None:
-                    warnings.warn(
-                        f"Missing variable argument name for {func.__name__}",
-                        UserWarning,
-                    )
+                    log.warning(f"Missing variable argument name for {func.__name__}")
                 if input_name == 0:
                     continue
                 if input_var is None:
@@ -135,9 +118,7 @@ def decodoc(inputs, outputs):
                 result_list = list(result)
             for output_name, output_var in zip_longest(outputs, result_list):
                 if output_name is None:
-                    warnings.warn(
-                        f"Missing return variable name for {func.__name__}", UserWarning
-                    )
+                    log.warning(f"Missing return variable name for {func.__name__}")
                 if output_name == 0:
                     continue
                 if output_var is None:
@@ -158,96 +139,91 @@ def decodoc(inputs, outputs):
 
 def decodoc_setup(setup_dict_arg):
     """
-    Update the default setting for decodoc.
+    Update the default configuration settings for decodoc.
 
-    The default settings for decodoc are define in a global dictionary at the beginning of the module. This function
-    allows to pass a new dictionary with the settings to update the default settings. This dictionary does not need to
-    have all the settings, only the ones that need to be updated.
+    Modifies the global configuration dictionary with new settings. Only the
+    provided settings will be updated; existing settings not specified will
+    remain unchanged.
 
-    :param setup_dict_arg: A dictionary with the parameters to update
-
+    :param setup_dict_arg: Dictionary containing configuration parameters to update
+    :type setup_dict_arg: dict
     :return: None
 
-    Default Settings
-    ----------------
+    Configuration Parameters:
+        - base_directory: Base directory for output files (default: "decodoc")
+        - json_directory: Subdirectory for JSON files (default: "json")
+        - mermaid_directory: Subdirectory for Mermaid files (default: "mermaid")
+        - prompts_directory: Subdirectory for prompt files (default: "prompts")
+        - json: Enable/disable JSON file generation (default: True)
+        - mermaid: Enable/disable Mermaid file generation (default: True)
+        - prompts: Enable/disable prompt file generation (default: True)
+        - confidential: Hide variable values in prompts (default: False)
+        - autowrite: Automatically write files on exit (default: True)
 
-    >>> default_setting = {
-            "base_directory": "decodoc",
-            "json_directory": "json",
-            "mermaid_directory": "mermaid",
-            "prompts_directory": "prompts",
-            "json": True,
-            "mermaid": True,
-            "prompts": True,
-            "confidential": False,
-            "autowrite": True
-        }
-
-    Example Usage
-    -------------
-
-    >>> decodoc_setup({
-            "json": False,
-            "confidential": True
-        })
-
-    Settings:
-    ----------------------------
-
-    - base_directory: The base directory where the files will be saved
-
-    - json_directory: The subdirectory inside the base directory where the JSON files will be saved
-
-    - mermaid_directory: The subdirectory inside the base directory where the Mermaid files will be saved
-
-    - prompts_directory: The subdirectory inside the base directory where the prompts files will be saved
-
-    - json: A boolean to enable or disable the JSON file generation
-
-    - mermaid: A boolean to enable or disable the Mermaid file generation
-
-    - prompts: A boolean to enable or disable the prompts file generation
-
-    - confidential: A boolean to enable or disable the inclusion of the variable values in the generated prompts
+    Example:
+        >>> decodoc_setup({
+        ...     "json": False,
+        ...     "confidential": True,
+        ...     "base_directory": "my_output"
+        ... })
     """
     SETUP_DICT.update(setup_dict_arg)
 
 
 def get_dict():
     """
-    Return the dictionary with the information used by decodoc
+    Retrieve the global information dictionary used by decodoc.
 
-    :return: A dictionary
+    Returns the global dictionary containing all function execution metadata
+    collected by the decodoc decorator. This includes function names, callers,
+    inputs, outputs, docstrings, and source code.
 
-    Example Usage
-    -------------
-    >>> from mango.decodoc import get_dict
-    >>>
-    >>> info_dict = get_dict()
+    :return: Dictionary containing function execution metadata
+    :rtype: dict
+
+    Example:
+        >>> from mango.decodoc import get_dict
+        >>>
+        >>> info_dict = get_dict()
+        >>> print(f"Captured {len(info_dict)} function executions")
     """
     return INFO_DICT
 
 
 def _generate_id(string):
     """
-    Generate a unique ID from a string
+    Generate a unique identifier from a string using hash function.
 
-    :param string: The string to hash
+    Creates a unique identifier by computing the absolute hash value of the
+    input string. This is used for creating unique node identifiers in
+    Mermaid diagrams.
 
-    :return: A string with the ID
+    :param string: Input string to generate ID from
+    :type string: str
+    :return: Unique identifier as string
+    :rtype: str
+
+    Example:
+        >>> _generate_id("my_function")
+        '1234567890'
     """
     return str(abs(hash(string)))
 
 
 def _write_json(info_dict, path):
     """
-    Write the dictionary to a JSON file
+    Write function execution metadata to a JSON file.
 
-    :param info_dict: A dictionary with the information
+    Serializes the information dictionary to JSON format and writes it to
+    the specified file path. Only executes if JSON output is enabled in
+    the configuration.
 
-    :param path: A string with the path to save the file
-
+    :param info_dict: Dictionary containing function execution metadata
+    :type info_dict: dict
+    :param path: File path where JSON data should be written
+    :type path: str
     :return: None
+    :raises IOError: If file cannot be written
     """
     if not SETUP_DICT["json"]:
         return None
@@ -258,13 +234,18 @@ def _write_json(info_dict, path):
 
 def _write_mermaid(info_dict, path):
     """
-    Write the dictionary to a Mermaid diagram
+    Generate and write a Mermaid diagram from function execution metadata.
 
-    :param info_dict: A dictionary with the information
+    Creates a Mermaid graph diagram showing function call relationships,
+    input/output connections, and data flow. The diagram is written to
+    the specified file path in Markdown format.
 
-    :param path: A string with the path to save the file
-
+    :param info_dict: Dictionary containing function execution metadata
+    :type info_dict: dict
+    :param path: File path where Mermaid diagram should be written
+    :type path: str
     :return: None
+    :raises IOError: If file cannot be written
     """
     if not SETUP_DICT["mermaid"]:
         return None
@@ -310,18 +291,24 @@ graph TD
 
 def _write_caller_prompt(raw_info_dict, path, caller):
     """
-    Write the prompt for the caller function
+    Generate and write a documentation prompt for a caller function.
 
-    :param raw_info_dict: A dictionary with the information
+    Creates a structured prompt for documenting a specific caller function
+    and all functions it calls. The prompt includes function metadata,
+    docstrings, inputs, outputs, and source code to facilitate automated
+    documentation generation.
 
-    :param path: A string with the path to save the file
-
-    :param caller: A string with the name of the caller function
-
+    :param raw_info_dict: Dictionary containing all function execution metadata
+    :type raw_info_dict: dict
+    :param path: File path where the prompt should be written
+    :type path: str
+    :param caller: Name of the caller function to document
+    :type caller: str
     :return: None
+    :raises IOError: If file cannot be written
     """
     if not SETUP_DICT["prompts"]:
-        print("Prompts are disabled")
+        log.info("Prompts are disabled")
         return None
 
     prompt = f"""# Function Documentation for {caller}
@@ -391,15 +378,27 @@ appears more than once it means it has been used more than one time during run t
 
 def _write():
     """
-    Write the files with the information
+    Write all decodoc output files based on current configuration.
+
+    Generates and writes all configured output files including JSON metadata,
+    Mermaid diagrams, and documentation prompts. Creates the necessary
+    directory structure and processes the global information dictionary
+    to produce various output formats.
 
     :return: None
+    :raises IOError: If any output file cannot be written
     """
 
     def create_folder_structure(folder_structure):
         """
-        Create a folder structure if it does not exist
-        :param List folder_structure: List of folders to create
+        Create directory structure if it does not exist.
+
+        Creates all directories in the provided list, including any
+        necessary parent directories. Uses exist_ok=True to avoid
+        errors if directories already exist.
+
+        :param folder_structure: List of directory paths to create
+        :type folder_structure: List[str]
         :return: None
         """
         _ = [os.makedirs(path, exist_ok=True) for path in folder_structure]
@@ -452,4 +451,4 @@ def _write():
             INFO_DICT, f"{base_dir}/{prompts_dir}/{caller_path}.md", caller
         )
 
-    print(f"decodoc process completed. Check './{base_dir}' for details.")
+    log.info(f"decodoc process completed. Check './{base_dir}' for details.")

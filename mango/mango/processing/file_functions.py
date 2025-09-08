@@ -6,21 +6,34 @@ from os import listdir
 from typing import Union, Literal, Iterable
 
 import openpyxl as xl
+from mango.logging import get_configured_logger
 from openpyxl.utils import get_column_letter
 from pytups import TupList
+
+log = get_configured_logger(__name__)
 
 
 def list_files_directory(directory: str, extensions: list = None):
     """
-    The list_files_directory function returns a list of files in the directory specified by the user.
-    The function takes two arguments:
-        1) The directory to search for files in (str).
-        2) A list of file extensions to filter by (list). If no extensions are provided, all files will be returned.
+    List files in a directory with optional extension filtering.
 
-    :param str directory: Specify the directory that you want to list files from
-    :param list extensions: Specify the file extensions that should be included
-    :return: A list of all filtered files in a directory
-    :raises WindowsError: if the directory doesn't exist
+    Returns a list of file paths from the specified directory, optionally
+    filtered by file extensions. If no extensions are provided, all files
+    in the directory are returned.
+
+    :param directory: Directory path to search for files
+    :type directory: str
+    :param extensions: List of file extensions to filter by (e.g., ['.txt', '.csv'])
+    :type extensions: list, optional
+    :return: List of file paths matching the criteria
+    :rtype: list[str]
+    :raises OSError: If the directory doesn't exist or cannot be accessed
+
+    Example:
+        >>> list_files_directory('/path/to/files', ['.txt', '.csv'])
+        ['/path/to/files/file1.txt', '/path/to/files/data.csv']
+        >>> list_files_directory('/path/to/files')
+        ['/path/to/files/file1.txt', '/path/to/files/data.csv', '/path/to/files/image.png']
     """
     if extensions is None:
         extensions = ["."]
@@ -33,23 +46,44 @@ def list_files_directory(directory: str, extensions: list = None):
 
 def check_extension(path: str, extension: str):
     """
-    The check_extension function checks if a file has the specified extension.
+    Check if a file path has the specified extension.
 
-    :param path: Specify the path of the file to be checked
-    :param extension: Specify the extension to check against
-    :return: A boolean
-    :doc-author: baobab soluciones
+    Performs a simple string check to determine if the file path
+    ends with the specified extension.
+
+    :param path: File path to check
+    :type path: str
+    :param extension: Extension to check for (e.g., '.txt', '.csv')
+    :type extension: str
+    :return: True if the file has the specified extension, False otherwise
+    :rtype: bool
+
+    Example:
+        >>> check_extension('/path/to/file.txt', '.txt')
+        True
+        >>> check_extension('/path/to/file.csv', '.txt')
+        False
     """
     return path.endswith(extension)
 
 
 def is_excel_file(path: str):
     """
-    The is_excel_file function checks if a file is an Excel file.
+    Check if a file is an Excel file based on its extension.
 
-    :param path: Specify the path of the file to be checked
-    :return: A boolean
-    :doc-author: baobab soluciones
+    Determines if the file is an Excel file by checking if it has
+    one of the common Excel file extensions (.xlsx, .xls, .xlsm).
+
+    :param path: File path to check
+    :type path: str
+    :return: True if the file is an Excel file, False otherwise
+    :rtype: bool
+
+    Example:
+        >>> is_excel_file('/path/to/data.xlsx')
+        True
+        >>> is_excel_file('/path/to/data.csv')
+        False
     """
     return (
         check_extension(path, ".xlsx")
@@ -60,22 +94,44 @@ def is_excel_file(path: str):
 
 def is_json_file(path: str):
     """
-    The is_json_file function checks if a file is a JSON file.
+    Check if a file is a JSON file based on its extension.
 
-    :param path: Specify the path of the file to be checked
-    :return: A boolean
-    :doc-author: baobab soluciones
+    Determines if the file is a JSON file by checking if it has
+    the .json extension.
+
+    :param path: File path to check
+    :type path: str
+    :return: True if the file is a JSON file, False otherwise
+    :rtype: bool
+
+    Example:
+        >>> is_json_file('/path/to/config.json')
+        True
+        >>> is_json_file('/path/to/data.csv')
+        False
     """
     return check_extension(path, ".json")
 
 
 def load_json(path: str, **kwargs):
     """
-    The load_json function loads a json file from the specified path and returns it as a dictionary.
+    Load a JSON file and return its contents as a Python object.
 
-    :param path: Specify the path of the file to be loaded
-    :return: A dictionary
-    :doc-author: baobab soluciones
+    Reads a JSON file from the specified path and parses it into
+    a Python dictionary, list, or other JSON-compatible object.
+
+    :param path: Path to the JSON file to load
+    :type path: str
+    :param kwargs: Additional keyword arguments passed to json.load()
+    :return: Parsed JSON content (dict, list, etc.)
+    :rtype: Union[dict, list, str, int, float, bool]
+    :raises FileNotFoundError: If the file doesn't exist
+    :raises json.JSONDecodeError: If the file contains invalid JSON
+
+    Example:
+        >>> data = load_json('/path/to/config.json')
+        >>> print(data['setting'])
+        'value'
     """
     with open(path, "r", **kwargs) as f:
         return json.load(f)
@@ -83,12 +139,22 @@ def load_json(path: str, **kwargs):
 
 def write_json(data: Union[dict, list], path):
     """
-    The write_json function writes a dictionary or list to a JSON file.
+    Write data to a JSON file with pretty formatting.
 
-    :param data: allow the function to accept both a dictionary and list object
-    :param path: Specify the path of the file that you want to write to
+    Serializes a Python object (dict, list, etc.) to JSON format and
+    writes it to the specified file with indentation for readability.
+
+    :param data: Python object to serialize (dict, list, etc.)
+    :type data: Union[dict, list]
+    :param path: Path where the JSON file should be written
+    :type path: str
     :return: None
-    :doc-author: baobab soluciones
+    :raises TypeError: If the data cannot be serialized to JSON
+    :raises OSError: If the file cannot be written
+
+    Example:
+        >>> data = {'name': 'John', 'age': 30}
+        >>> write_json(data, '/path/to/output.json')
     """
 
     with open(path, "w") as f:
@@ -97,12 +163,25 @@ def write_json(data: Union[dict, list], path):
 
 def load_excel_sheet(path: str, sheet: str, **kwargs):
     """
-    The load_excel_sheet function loads a sheet from an Excel file and returns it as a DataFrame.
+    Load a specific sheet from an Excel file as a pandas DataFrame.
 
-    :param path: Specify the path of the file to be loaded
-    :param sheet: Specify the name of the sheet to be loaded
-    :return: A DataFrame
-    :doc-author: baobab soluciones
+    Reads a single sheet from an Excel file and returns it as a pandas
+    DataFrame. Requires pandas to be installed.
+
+    :param path: Path to the Excel file
+    :type path: str
+    :param sheet: Name of the sheet to load
+    :type sheet: str
+    :param kwargs: Additional keyword arguments passed to pandas.read_excel()
+    :return: DataFrame containing the sheet data
+    :rtype: pandas.DataFrame
+    :raises FileNotFoundError: If the file is not an Excel file
+    :raises NotImplementedError: If pandas is not installed
+    :raises ValueError: If the specified sheet doesn't exist
+
+    Example:
+        >>> df = load_excel_sheet('/path/to/data.xlsx', 'Sheet1')
+        >>> print(df.head())
     """
     # TODO implement open version
     try:
@@ -128,23 +207,38 @@ def load_excel(
     **kwargs,
 ):
     """
-    The load_excel function loads an Excel file and returns it as a dictionary of DataFrames.
+    Load an Excel file with flexible output format options.
 
-    :param path: Specify the path of the file to be loaded.
-    :param dtype: pandas parameter dtype. Data type for data or columns. E.g. {‘a’: np.float64, ‘b’: np.int32}.
-     Use object to preserve data as stored in Excel and not interpret dtype.
-    :param output: data output type. Default is "df" for a dict of pandas dataframes.
-    Other options are the orient argument for transforming the dataframe with to_dict. (list of dict is "records").
-    :param sheet_name: sheet name to read, if None, read all sheets.
-    :param kwargs: other parameters to pass pandas read_excel.
-    :return: A dictionary of DataFrames
-    :doc-author: baobab soluciones
+    Reads an Excel file and returns the data in various formats. Can load
+    all sheets or a specific sheet, and convert the output to different
+    formats (DataFrame, dictionary, list of records, etc.).
+
+    :param path: Path to the Excel file
+    :type path: str
+    :param dtype: Data type for columns (default: "object" to preserve original data)
+    :type dtype: str or dict
+    :param output: Output format ("df", "dict", "list", "records", etc.)
+    :type output: Literal["df", "dict", "list", "series", "split", "tight", "records", "index"]
+    :param sheet_name: Name of sheet to read (None for all sheets)
+    :type sheet_name: str, optional
+    :param kwargs: Additional arguments passed to pandas.read_excel()
+    :return: Data in the specified output format
+    :rtype: Union[pandas.DataFrame, dict, list]
+    :raises FileNotFoundError: If the file is not an Excel file
+    :raises ImportError: If pandas is not installed
+
+    Example:
+        >>> # Load all sheets as DataFrames
+        >>> data = load_excel('/path/to/data.xlsx')
+        >>>
+        >>> # Load specific sheet as list of records
+        >>> data = load_excel('/path/to/data.xlsx', sheet_name='Sheet1', output='records')
     """
     try:
         import pandas as pd
     except ImportError:
         warnings.warn(
-            "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts."
+            "pandas is not installed so load_excel_light will be used. Data can only be returned as list of dicts."
         )
         return load_excel_light(path, sheets=sheet_name)
 
@@ -162,17 +256,31 @@ def load_excel(
 
 def write_excel(path, data):
     """
-    The write_excel function writes a dictionary of DataFrames to an Excel file.
+    Write data to an Excel file with multiple sheets.
 
-    :param path: Specify the path of the file that you want to write to
-    :param data: Specify the dictionary to be written
+    Writes a dictionary of data (DataFrames, lists, or dicts) to an Excel file
+    with each key becoming a separate sheet. Automatically adjusts column widths.
+
+    :param path: Path where the Excel file should be written
+    :type path: str
+    :param data: Dictionary where keys are sheet names and values are data to write
+    :type data: dict
     :return: None
-    :doc-author: baobab soluciones
+    :raises FileNotFoundError: If the file path is not an Excel file
+    :raises ImportError: If pandas is not installed
+    :raises ValueError: If data format is not supported
+
+    Example:
+        >>> data = {
+        ...     'Sheet1': pd.DataFrame({'A': [1, 2], 'B': [3, 4]}),
+        ...     'Sheet2': [{'x': 1, 'y': 2}, {'x': 3, 'y': 4}]
+        ... }
+        >>> write_excel('/path/to/output.xlsx', data)
     """
     try:
         import pandas as pd
     except ImportError:
-        warnings.warn("pandas is not installed so write_excel_open will be used.")
+        warnings.warn("pandas is not installed so write_excel_light will be used.")
         return write_excel_light(path, data)
 
     if not is_excel_file(path):
@@ -183,7 +291,8 @@ def write_excel(path, data):
     with pd.ExcelWriter(path) as writer:
         for sheet_name, content in data.items():
             if isinstance(content, pd.DataFrame):
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
+                content.to_excel(writer, sheet_name=sheet_name, index=False)
+                df = content
             elif isinstance(content, list):
                 df = pd.DataFrame.from_records(content)
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
@@ -195,11 +304,22 @@ def write_excel(path, data):
 
 def load_csv(path, **kwargs):
     """
-    The load_csv function loads a CSV file and returns it as a DataFrame.
+    Load a CSV file as a pandas DataFrame.
 
-    :param path: Specify the path of the file to be loaded
-    :return: A DataFrame
-    :doc-author: baobab soluciones
+    Reads a CSV file and returns it as a pandas DataFrame. Falls back to
+    the lightweight CSV loader if pandas is not available.
+
+    :param path: Path to the CSV file
+    :type path: str
+    :param kwargs: Additional keyword arguments passed to pandas.read_csv()
+    :return: DataFrame containing the CSV data
+    :rtype: pandas.DataFrame
+    :raises FileNotFoundError: If the file is not a CSV file
+    :raises ImportError: If pandas is not installed
+
+    Example:
+        >>> df = load_csv('/path/to/data.csv')
+        >>> print(df.head())
     """
     try:
         import pandas as pd
@@ -215,12 +335,27 @@ def load_csv(path, **kwargs):
 
 def load_csv_light(path, sep=None, encoding=None):
     """
-    Read csv data from path using csv library.
+    Load CSV data using the standard csv library (pandas-free).
 
-    :param path: path of the csv file.
-    :param sep: column separator in the csv file. (detected automatically if None).
-    :param encoding: encoding.
-    :return: data as a list of dict.
+    Reads a CSV file using Python's built-in csv module and returns
+    the data as a list of dictionaries. Automatically detects the
+    delimiter if not specified.
+
+    :param path: Path to the CSV file
+    :type path: str
+    :param sep: Column separator (auto-detected if None)
+    :type sep: str, optional
+    :param encoding: File encoding (default: system default)
+    :type encoding: str, optional
+    :return: List of dictionaries representing CSV rows
+    :rtype: list[dict]
+    :raises ValueError: If the CSV format cannot be determined
+    :raises OSError: If the file cannot be read
+
+    Example:
+        >>> data = load_csv_light('/path/to/data.csv')
+        >>> print(data[0])  # First row as dict
+        {'column1': 'value1', 'column2': 'value2'}
     """
     # if not check_extension(path, ".csv"):
     #     raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
@@ -254,10 +389,21 @@ def load_csv_light(path, sep=None, encoding=None):
 
 def get_default_dialect(sep, quoting):
     """
-    Get a default dialect for csv reading and writing.
+    Create a default CSV dialect with specified separator and quoting.
 
-    :param sep: separator
-    :return: dialect
+    Creates a custom CSV dialect with the specified separator and quoting
+    style for reading and writing CSV files.
+
+    :param sep: Column separator character
+    :type sep: str
+    :param quoting: Quoting style (csv.QUOTE_NONNUMERIC, csv.QUOTE_MINIMAL, etc.)
+    :type quoting: int
+    :return: Configured CSV dialect
+    :rtype: csv.Dialect
+
+    Example:
+        >>> dialect = get_default_dialect(',', csv.QUOTE_NONNUMERIC)
+        >>> reader = csv.DictReader(file, dialect=dialect)
     """
 
     class dialect(csv.Dialect):
@@ -274,12 +420,23 @@ def get_default_dialect(sep, quoting):
 
 def write_csv(path, data, **kwargs):
     """
-    The write_csv function writes a DataFrame to a CSV file.
+    Write data to a CSV file.
 
-    :param path: Specify the path of the file that you want to write to
-    :param data: Specify the DataFrame to be written
+    Writes data (DataFrame, list of dicts, or dict) to a CSV file.
+    Falls back to the lightweight CSV writer if pandas is not available.
+
+    :param path: Path where the CSV file should be written
+    :type path: str
+    :param data: Data to write (DataFrame, list of dicts, or dict)
+    :type data: Union[pandas.DataFrame, list, dict]
+    :param kwargs: Additional keyword arguments passed to pandas.to_csv()
     :return: None
-    :doc-author: baobab soluciones
+    :raises FileNotFoundError: If the file path is not a CSV file
+    :raises ImportError: If pandas is not installed
+
+    Example:
+        >>> data = [{'name': 'John', 'age': 30}, {'name': 'Jane', 'age': 25}]
+        >>> write_csv('/path/to/output.csv', data)
     """
     try:
         import pandas as pd
@@ -296,17 +453,33 @@ def write_csv(path, data, **kwargs):
     elif isinstance(data, dict):
         df = pd.DataFrame.from_dict(data)
         df.to_csv(path, **kwargs, index=False)
+    else:
+        # Assume it's already a DataFrame
+        data.to_csv(path, **kwargs, index=False)
 
 
 def write_csv_light(path, data, sep=None, encoding=None):
     """
-    Write data to csv using csv library.
+    Write data to CSV using the standard csv library (pandas-free).
 
-    :param path: path of the csv file
-    :param data: data as list of dict
-    :param sep: separator of the csv file
-    :param encoding: encoding
+    Writes a list of dictionaries to a CSV file using Python's built-in
+    csv module. The first dictionary's keys become the column headers.
+
+    :param path: Path where the CSV file should be written
+    :type path: str
+    :param data: List of dictionaries to write
+    :type data: list[dict]
+    :param sep: Column separator (default: ',')
+    :type sep: str, optional
+    :param encoding: File encoding (default: system default)
+    :type encoding: str, optional
     :return: None
+    :raises FileNotFoundError: If the file path is not a CSV file
+    :raises ValueError: If data is empty or invalid
+
+    Example:
+        >>> data = [{'name': 'John', 'age': 30}, {'name': 'Jane', 'age': 25}]
+        >>> write_csv_light('/path/to/output.csv', data)
     """
     if not check_extension(path, ".csv"):
         raise FileNotFoundError(f"File {path} is not a CSV file (.csv).")
@@ -324,12 +497,25 @@ def write_csv_light(path, data, sep=None, encoding=None):
 
 def adjust_excel_col_width(writer, df, table_name: str, min_len: int = 7):
     """
-    Adjusts the width of the column on the Excel file
+    Adjust column widths in an Excel file for better readability.
 
-    :param writer:
-    :param :class:`pandas.DataFrame` df:
-    :param str table_name:
-    :param int min_len:
+    Automatically adjusts the width of columns in an Excel worksheet
+    based on the content length, with a minimum width constraint.
+
+    :param writer: Excel writer object (pandas ExcelWriter)
+    :type writer: pandas.ExcelWriter
+    :param df: DataFrame containing the data
+    :type df: pandas.DataFrame
+    :param table_name: Name of the worksheet/sheet
+    :type table_name: str
+    :param min_len: Minimum column width (default: 7)
+    :type min_len: int
+    :return: None
+
+    Example:
+        >>> with pd.ExcelWriter('output.xlsx') as writer:
+        ...     df.to_excel(writer, sheet_name='Sheet1')
+        ...     adjust_excel_col_width(writer, df, 'Sheet1')
     """
     for column in df:
         content_len = df[column].astype(str).map(len).max()
@@ -340,13 +526,25 @@ def adjust_excel_col_width(writer, df, table_name: str, min_len: int = 7):
 
 def load_excel_light(path, sheets=None):
     """
-    The load_excel function loads an Excel file and returns it as a dictionary of DataFrames.
-    It doesn't use pandas.
+    Load an Excel file without pandas dependency.
 
-    :param path: Specify the path of the file to be loaded.
-    :param sheets: list of sheets to read. If None, all sheets will be read.
-    :return: A dictionary of TupLists
-    :doc-author: baobab soluciones
+    Reads an Excel file using openpyxl and returns the data as a dictionary
+    of TupLists (list of dictionaries). This is a lightweight alternative
+    to the pandas-based Excel loader.
+
+    :param path: Path to the Excel file
+    :type path: str
+    :param sheets: List of sheet names to read (None for all sheets)
+    :type sheets: list, optional
+    :return: Dictionary where keys are sheet names and values are TupLists
+    :rtype: dict[str, TupList]
+    :raises FileNotFoundError: If the file is not an Excel file
+    :raises OSError: If the file cannot be read
+
+    Example:
+        >>> data = load_excel_light('/path/to/data.xlsx')
+        >>> print(data['Sheet1'][0])  # First row of Sheet1
+        {'column1': 'value1', 'column2': 'value2'}
     """
     if not is_excel_file(path):
         raise FileNotFoundError(
@@ -377,16 +575,30 @@ def load_excel_light(path, sheets=None):
 
 def load_str_iterable(v):
     """
-    Evaluate the value of an Excel cell and return strings representing python iterables as such.
-    Return other strings and other types unchanged.
+    Parse Excel cell values that represent Python iterables.
 
-    :param v: content of an Excel cell
-    :return: value of the cell
+    Attempts to evaluate string representations of Python iterables
+    (lists, tuples, dicts) in Excel cells and returns them as actual
+    Python objects. Other values are returned unchanged.
+
+    :param v: Cell content from Excel
+    :type v: Any
+    :return: Parsed value (iterable if possible, original value otherwise)
+    :rtype: Any
+
+    Example:
+        >>> load_str_iterable('[1, 2, 3]')
+        [1, 2, 3]
+        >>> load_str_iterable('{"key": "value"}')
+        {'key': 'value'}
+        >>> load_str_iterable('simple string')
+        'simple string'
     """
     if isinstance(v, str):
         try:
             return ast.literal_eval(v)
         except (SyntaxError, ValueError):
+            # Not a valid Python literal, return as string
             return v
     else:
         return v
@@ -394,17 +606,32 @@ def load_str_iterable(v):
 
 def write_excel_light(path, data):
     """
-    The write_excel function writes a dictionary of DataFrames to an Excel file.
+    Write data to an Excel file without pandas dependency.
 
-    :param path: Specify the path of the file that you want to write to
-    :param data: Specify the dictionary to be written
+    Writes a dictionary of data to an Excel file using openpyxl.
+    Each key becomes a separate sheet, and the data is formatted
+    as tables with automatic column width adjustment.
+
+    :param path: Path where the Excel file should be written
+    :type path: str
+    :param data: Dictionary where keys are sheet names and values are data
+    :type data: dict
     :return: None
-    :doc-author: baobab soluciones
+    :raises FileNotFoundError: If the file path is not an Excel file
+    :raises ValueError: If data format is not supported
+
+    Example:
+        >>> data = {
+        ...     'Sheet1': [{'A': 1, 'B': 2}, {'A': 3, 'B': 4}],
+        ...     'Sheet2': [{'X': 'a', 'Y': 'b'}]
+        ... }
+        >>> write_excel_light('/path/to/output.xlsx', data)
     """
     if not is_excel_file(path):
         raise FileNotFoundError(
             f"File {path} is not an Excel file (.xlsx, .xls, .xlsm)."
         )
+
     wb = xl.Workbook()
     if len(data):
         wb.remove(wb.active)
@@ -419,7 +646,6 @@ def write_excel_light(path, data):
                     ws.append([write_iterables_as_str(v) for v in row.values()])
 
                 tab = get_default_table_style(sheet_name, content)
-
                 ws.add_table(tab)
                 adjust_excel_col_width_2(ws)
 
@@ -430,10 +656,22 @@ def write_excel_light(path, data):
 
 def write_iterables_as_str(v):
     """
-    An iterable in an Excel cell should be written as a string.
+    Convert iterables to string representation for Excel cells.
 
-    :param v: cell content
-    :return: cell value
+    Converts Python iterables (lists, tuples, dicts) to string
+    representation for storage in Excel cells. Non-iterable values
+    are returned unchanged.
+
+    :param v: Cell content to convert
+    :type v: Any
+    :return: String representation if iterable, original value otherwise
+    :rtype: Union[str, Any]
+
+    Example:
+        >>> write_iterables_as_str([1, 2, 3])
+        '[1, 2, 3]'
+        >>> write_iterables_as_str('simple string')
+        'simple string'
     """
     if isinstance(v, Iterable):
         return str(v)
@@ -443,11 +681,21 @@ def write_iterables_as_str(v):
 
 def get_default_table_style(sheet_name, content):
     """
-    Get a default style for the table
+    Create a default table style for Excel worksheets.
 
-    :param sheet_name: name of the sheet
-    :param content: content of the sheet.
-    :return: table object
+    Generates a default table style configuration for Excel worksheets
+    with basic formatting options.
+
+    :param sheet_name: Name of the worksheet
+    :type sheet_name: str
+    :param content: List of dictionaries representing the table data
+    :type content: list[dict]
+    :return: Configured table object
+    :rtype: openpyxl.worksheet.table.Table
+
+    Example:
+        >>> content = [{'A': 1, 'B': 2}, {'A': 3, 'B': 4}]
+        >>> table = get_default_table_style('Sheet1', content)
     """
     from openpyxl.worksheet.table import Table, TableStyleInfo
 
@@ -469,12 +717,22 @@ def get_default_table_style(sheet_name, content):
 
 def adjust_excel_col_width_2(ws, min_width=10, max_width=30):
     """
-    Adjust the column width of a worksheet.
+    Adjust column widths in an Excel worksheet with constraints.
 
-    :param ws: worksheet object
-    :param min_width: minimum width to use.
-    :param max_width: maximum width to use
+    Automatically adjusts column widths based on content length with
+    minimum and maximum width constraints for better readability.
+
+    :param ws: Excel worksheet object
+    :type ws: openpyxl.worksheet.worksheet.Worksheet
+    :param min_width: Minimum column width (default: 10)
+    :type min_width: int
+    :param max_width: Maximum column width (default: 30)
+    :type max_width: int
     :return: None
+
+    Example:
+        >>> ws = wb['Sheet1']
+        >>> adjust_excel_col_width_2(ws, min_width=8, max_width=25)
     """
     for k, v in get_column_widths(ws).items():
         ws.column_dimensions[k].width = min(max(v, min_width), max_width)
@@ -483,10 +741,21 @@ def adjust_excel_col_width_2(ws, min_width=10, max_width=30):
 
 def get_column_widths(ws):
     """
-    Get the maximum width of the columns of a worksheet.
+    Calculate optimal column widths for an Excel worksheet.
 
-    :param ws: worksheet object
-    :return: a dict with the letter of the columns and their maximum width (ex: {"A":15, "B":12})
+    Analyzes the content of each column in a worksheet and returns
+    the optimal width for each column based on the longest content.
+
+    :param ws: Excel worksheet object
+    :type ws: openpyxl.worksheet.worksheet.Worksheet
+    :return: Dictionary mapping column letters to their optimal widths
+    :rtype: dict[str, float]
+
+    Example:
+        >>> ws = wb['Sheet1']
+        >>> widths = get_column_widths(ws)
+        >>> print(widths)
+        {'A': 15.0, 'B': 12.0, 'C': 20.0}
     """
     result = {}
     for column_cells in ws.columns:

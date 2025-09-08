@@ -58,6 +58,7 @@ autodoc_mock_imports = [
     "click",
     "et_xmlfile",
     "fastjsonschema",
+    "google",
     "google.cloud",
     "google.cloud.storage",
     "holidays",
@@ -74,7 +75,7 @@ autodoc_mock_imports = [
     "pycountry",
     "pydantic",
     "pydantic_core",
-    "Pyomo",
+    "pyomo",
     "python_dateutil",
     "pytups",
     "pytz",
@@ -94,4 +95,5 @@ autodoc_mock_imports = [
     "urllib3",
     "xgboost",
     "XlsxWriter",
+    "matplotlib",
 ]

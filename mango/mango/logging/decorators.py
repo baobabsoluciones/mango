@@ -1,41 +1,68 @@
-import logging
 import time
 from functools import wraps
 from typing import Union
 
+from .logger import get_configured_logger
 
-def log_time(logger: str = "root", level: Union[int, str] = logging.INFO):
+
+def log_time(logger: str = "root", level: Union[int, str] = "INFO"):
     """
-    The log_time function is a decorator that can receive a logger name and log level as parameters.
+    Decorator to automatically log function execution time.
 
-    :param str logger: the name of the logger to use (default: "root")
-    :param level: logging level to use (default: logging.INFO)
-                  Can be an integer (logging.INFO) or a string ("INFO", "DEBUG", etc.)
-    :return: the log_decorator function
+    Creates a decorator that measures and logs the execution time of the
+    decorated function. The timing information is logged using the specified
+    logger and log level.
+
+    :param logger: Name of the logger to use for timing messages
+    :type logger: str
+    :param level: Logging level for timing messages (default: "INFO")
+    :type level: Union[int, str]
+    :return: Decorator function that logs execution time
+    :rtype: callable
+
+    Example:
+        >>> from mango.logging.decorators import log_time
+        >>>
+        >>> @log_time("my_logger", "DEBUG")
+        >>> def slow_function():
+        ...     time.sleep(1)
+        ...     return "done"
+        >>>
+        >>> result = slow_function()  # Logs: "slow_function took 1.00 seconds"
     """
     # Convert string level to integer if needed
     if isinstance(level, str):
+        import logging
+
         level = getattr(logging, level.upper(), logging.INFO)
 
-    logger_obj = logging.getLogger(logger)
+    logger_obj = get_configured_logger(logger)
 
     def log_decorator(func):
         """
-        The log_decorator function is a decorator that wraps the function func.
-        It logs the function execution time with the specified log level.
+        Create a decorator that logs function execution time.
 
-        :param func: pass the function to be decorated
-        :return: the result of the call to func
+        Wraps the provided function to measure and log its execution time
+        using the configured logger and log level.
+
+        :param func: Function to be decorated with timing logging
+        :type func: callable
+        :return: Wrapped function with timing logging
+        :rtype: callable
         """
 
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
-            The wrapper function executes the function and logs its execution time.
+            Execute the wrapped function and log its execution time.
 
-            :param *args: pass a non-keyworded, variable-length argument list
-            :param **kwargs: catch all keyword arguments that are passed to the function
-            :return: The result of the function it wraps
+            Measures the execution time of the wrapped function and logs
+            the duration using the configured logger and log level.
+
+            :param args: Positional arguments passed to the wrapped function
+            :param kwargs: Keyword arguments passed to the wrapped function
+            :return: Result returned by the wrapped function
+            :rtype: Any
             """
             start = time.time()
             result = func(*args, **kwargs)

@@ -156,6 +156,7 @@ JSONFileHandler
     :members:
     :undoc-members:
     :no-inherited-members:
+
 Deprecated Functions
 ~~~~~~~~~~~~~~~~~~
 
@@ -168,8 +169,8 @@ get_basic_logger
 
 Chrono
 ~~~~~~
-.. autoclass:: mango.logging.Chrono
+.. autoclass:: mango.logging.chrono.Chrono
 
 Time decorator
-~~~~~~~~~~~~~
-.. autofunction:: mango.logging.log_time
+~~~~~~~~~~~~~~
+.. autofunction:: mango.logging.decorators.log_time
