@@ -10,7 +10,35 @@ from os.path import basename
 
 class EmailSender:
     """
-    This class can be used to send emails to a given destination address from a given address.
+    Client for sending emails with attachments via SMTP.
+
+    This class provides functionality to send emails through SMTP servers
+    with support for attachments, HTML/text content, and SSL encryption.
+    Configuration can be provided directly or through environment variables.
+
+    :param host: SMTP server hostname (default: from EMAIL_HOST environment variable)
+    :type host: str, optional
+    :param port: SMTP server port (default: from EMAIL_PORT environment variable)
+    :type port: int, optional
+    :param user: Email username (default: from EMAIL_USER environment variable)
+    :type user: str, optional
+    :param password: Email password (default: from EMAIL_PASSWORD environment variable)
+    :type password: str, optional
+    :raises ValueError: If any required configuration is missing
+
+    Example:
+        >>> sender = EmailSender(
+        ...     host="smtp.gmail.com",
+        ...     port=465,
+        ...     user="sender@gmail.com",
+        ...     password="password"
+        ... )
+        >>> sender.send_email_with_attachments(
+        ...     destination="recipient@example.com",
+        ...     subject="Test Email",
+        ...     body="Hello World",
+        ...     attachments=["file1.pdf", "file2.txt"]
+        ... )
     """
 
     def __init__(
@@ -37,12 +65,30 @@ class EmailSender:
         self, destination: str, subject: str, body: str = None, attachments: list = None
     ):
         """
-        Method to email a destination address with a subject, a body and attachments
+        Send an email with optional attachments via SMTP.
 
-        :param str destination: the email address that receives the email
-        :param str subject: the subject of the email
-        :param str body: the body of the email
-        :param list attachments: the list with the paths of the attachments for the email
+        Creates and sends an email message with the specified content and attachments.
+        Uses SSL encryption for secure transmission. Attachments are read from
+        local file paths and attached to the email.
+
+        :param destination: Email address of the recipient
+        :type destination: str
+        :param subject: Subject line of the email
+        :type subject: str
+        :param body: Email body content (plain text)
+        :type body: str, optional
+        :param attachments: List of file paths to attach to the email
+        :type attachments: list, optional
+        :raises FileNotFoundError: If any attachment file is not found
+        :raises Exception: If SMTP connection or sending fails
+
+        Example:
+            >>> sender.send_email_with_attachments(
+            ...     destination="user@example.com",
+            ...     subject="Report",
+            ...     body="Please find the report attached.",
+            ...     attachments=["report.pdf", "data.xlsx"]
+            ... )
         """
 
         msg = MIMEMultipart()
