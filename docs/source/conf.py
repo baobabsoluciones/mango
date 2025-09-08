@@ -63,7 +63,6 @@ autodoc_mock_imports = [
     "idna",
     "jinja2",
     "lightgbm",
-    "mango",
     "numpy",
     "openpyxl",
     "pandas",
@@ -92,5 +91,5 @@ autodoc_mock_imports = [
     "unidecode",
     "urllib3",
     "xgboost",
-    "XlsxWriter"
+    "XlsxWriter",
 ]
