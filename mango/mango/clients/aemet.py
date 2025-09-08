@@ -1,12 +1,14 @@
-import logging
 import os
 from datetime import datetime
 from typing import Union, Any, Tuple, Literal, List
 
 from mango.clients.rest_client import RESTClient
+from mango.logging import get_configured_logger
 from mango.shared import ApiKeyError, haversine
 from mango.validators.aemet import *
 from tqdm import tqdm
+
+log = get_configured_logger(__name__)
 
 
 class AEMETClient(RESTClient):
@@ -59,14 +61,13 @@ class AEMETClient(RESTClient):
         )
         self._api_key = api_key
         self._wait_time = wait_time or self._DEFAULT_WAIT_TIME
-        logging.getLogger("root")
         if self._wait_time < self._DEFAULT_WAIT_TIME:
-            logging.warning(
+            log.warning(
                 "Wait time is too low. API limits may be exceeded. Minimum wait time is {} seconds.".format(
                     self._DEFAULT_WAIT_TIME
                 )
             )
-        logging.info(
+        log.info(
             "Aemet API has a limit of 50 requests per minute. Please be patient. Wait time is set to {} seconds.".format(
                 self._wait_time
             )
@@ -232,7 +233,7 @@ class AEMETClient(RESTClient):
         :raises ValueError: If station_code is not found in available stations
         """
         if station_code:
-            logging.info(
+            log.info(
                 "Selecting only station: " + station_code + " ignoring other parameters"
             )
             if station_code not in [s["indicativo"] for s in self.all_stations]:
@@ -243,7 +244,7 @@ class AEMETClient(RESTClient):
             station_codes = [station_code]
         elif lat and long:
             # Search for closest station
-            logging.info(
+            log.info(
                 "Searching for closest station to lat: "
                 + str(lat)
                 + " long: "
@@ -252,15 +253,15 @@ class AEMETClient(RESTClient):
             station_codes = self._search_closest_station(lat, long, province)
         elif province:
             # Search for all stations in province
-            logging.info("Searching for all stations in province: " + province)
+            log.info("Searching for all stations in province: " + province)
             possible_provinces = list(
                 set([stat.get("provincia").lower() for stat in self._all_stations])
             )
             if province.lower() not in possible_provinces:
-                logging.warning(
+                log.warning(
                     f"Province not found in Spain. Possible values: {possible_provinces}"
                 )
-                logging.warning("Searching in all Spain")
+                log.warning("Searching in all Spain")
                 station_codes = [est["indicativo"] for est in self._all_stations]
             else:
                 station_codes = [
@@ -269,7 +270,7 @@ class AEMETClient(RESTClient):
                 ]
         else:
             # Search for all stations in Spain
-            logging.info("Searching for all stations in Spain")
+            log.info("Searching for all stations in Spain")
             station_codes = [est["indicativo"] for est in self.all_stations]
         return station_codes
 
@@ -299,10 +300,10 @@ class AEMETClient(RESTClient):
                 set([stat.get("provincia").lower() for stat in self._all_stations])
             )
             if province.lower() not in possible_provinces:
-                logging.warning(
+                log.warning(
                     f"Province not found in Spain. Possible values: {possible_provinces}"
                 )
-                logging.warning("Searching in all Spain")
+                log.warning("Searching in all Spain")
             else:
                 stations_to_search = self._search_stations_province(province)
         lat_long_list = [
@@ -408,7 +409,7 @@ class AEMETClient(RESTClient):
             )
             hist_data_url = hist_data_url_call.get("datos")
             if not hist_data_url:
-                logging.warning(
+                log.warning(
                     f"No data found for station: {station} between {start_date} and {end_date}"
                 )
                 continue
@@ -449,7 +450,7 @@ class AEMETClient(RESTClient):
             )
             live_data_url = live_data_url_call.get("datos")
             if not live_data_url:
-                logging.warning(f"No data found for station: {station}")
+                log.warning(f"No data found for station: {station}")
                 continue
             live_data = self.request_handler(
                 live_data_url,
@@ -565,7 +566,7 @@ class AEMETClient(RESTClient):
             raise ValueError("station_code or lat and long must be provided")
         if start_date and not end_date:
             end_date = datetime.now()
-            logging.warning("end_date not provided. Using current date as end_date")
+            log.warning("end_date not provided. Using current date as end_date")
         if end_date and not start_date:
             raise ValueError("end_date provided but not start_date")
         if start_date and end_date and start_date > end_date:
@@ -588,9 +589,7 @@ class AEMETClient(RESTClient):
                 station_codes_filtered, start_date, end_date
             )
         else:
-            logging.info(
-                "As start_date is not provided, last hours data will be returned"
-            )
+            log.info("As start_date is not provided, last hours data will be returned")
             data = self._get_live_data(station_codes_filtered)
 
         # Return data
@@ -638,7 +637,7 @@ class AEMETClient(RESTClient):
             )
             forecast_url = forecast_url_call.get("datos", None)
             if not forecast_url:
-                logging.warning(f"No data found for postal_code: {postal_code}")
+                log.warning(f"No data found for postal_code: {postal_code}")
                 continue
             forecast_data = self.request_handler(
                 forecast_url, params={}, wait_time=self._wait_time, if_error="warn"
@@ -687,7 +686,7 @@ class AEMETClient(RESTClient):
         )
         custom_enpoint_url = custom_endpoint_url_call.get("datos")
         if not custom_enpoint_url:
-            logging.info(f"No data found for endpoint: {endpoint}")
+            log.info(f"No data found for endpoint: {endpoint}")
             raise ValueError(f"No data found for endpoint: {endpoint}")
         custom_enpoint_data = self.request_handler(
             custom_enpoint_url, params={}, wait_time=self._wait_time, if_error="warn"

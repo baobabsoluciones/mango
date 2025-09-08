@@ -8,14 +8,14 @@ import requests
 from mango.logging import get_configured_logger
 from mango.processing import load_json
 from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
-
-log = get_configured_logger(__name__)
 from mango.shared.const import (
     ARCGIS_GEOCODE_URL,
     ARCIS_ODMATRIX_JOB_URL,
     ARCGIS_CAR_TRAVEL_MODE,
     ARCGIS_ODMATRIX_DIRECT_URL,
 )
+
+log = get_configured_logger(__name__)
 
 this_dir, file = os.path.split(__file__)
 schema = load_json(f"{this_dir}/../schemas/location.json")
@@ -44,7 +44,6 @@ class ArcGisClient:
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = None
-        logging.getLogger("root")
 
     def connect(self):
         """
@@ -112,7 +111,7 @@ class ArcGisClient:
                 f"There was an error on login into ArcGis: {response.json()}. Exception: {e}"
             )
         except IndexError as e:
-            logging.warning(f"There was no candidates for address {address}")
+            log.warning(f"There was no candidates for address {address}")
             return None, None
         return location["x"], location["y"]
 
