@@ -98,4 +98,5 @@ autodoc_mock_imports = [
     "xgboost",
     "XlsxWriter",
     "matplotlib",
+    "PIL"
 ]

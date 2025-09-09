@@ -6,10 +6,36 @@ import streamlit as st
 
 @st.cache_data
 def load_data(files_loaded: Dict, ui_text: Dict):
-    """
-    Load data from the files loaded in the app.
-    :param files_loaded: Dictionary with the files loaded in the app.
-    :param ui_text: Dictionary with the text to display in the app.
+    """Load and process data from uploaded files for time series visualization.
+
+    This function processes multiple data files and determines the appropriate
+    visualization type based on the data structure. It handles both forecast
+    data (with 'forecast_origin' and 'f' columns) and exploration data.
+    For forecast data, it calculates error metrics including absolute error,
+    percentage error, and their absolute values.
+
+    The function concatenates all dataframes and ensures consistency in
+    visualization types across all loaded files.
+
+    :param files_loaded: Dictionary mapping file names to their loaded data
+    :type files_loaded: Dict
+    :param ui_text: Dictionary containing UI text and visualization options
+    :type ui_text: Dict
+    :return: Tuple containing the concatenated dataframe and visualization type
+    :rtype: tuple[pd.DataFrame, str]
+    :raises ValueError: If files have inconsistent visualization types
+
+    Example:
+        >>> files = {
+        ...     'data1.csv': {'data': df1},
+        ...     'data2.csv': {'data': df2}
+        ... }
+        >>> ui_text = {
+        ...     'visualization_options': ['Exploration', 'Forecast']
+        ... }
+        >>> df, viz_type = load_data(files, ui_text)
+        >>> print(f"Visualization type: {viz_type}")
+        Visualization type: Exploration
     """
     # Assuming the first file is the main data file
     list_df = []

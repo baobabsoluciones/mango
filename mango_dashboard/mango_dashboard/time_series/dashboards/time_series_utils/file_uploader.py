@@ -7,15 +7,35 @@ import streamlit as st
 def preview_data(
     uploaded_file, separator, decimal, thousands, encoding, date_format, ui_text
 ):
-    """
-    Preview the data from the uploaded file.
-    :param uploaded_file: The uploaded file.
-    :param separator: The separator used in the file.
-    :param decimal: The decimal separator used in the file.
-    :param thousands: The thousands separator used in the file.
-    :param encoding: The encoding used in the file.
-    :param date_format: The date format used in the file.
-    :param ui_text: The dictionary containing the UI text.
+    """Preview data from an uploaded file with specified parsing parameters.
+
+    This function displays a preview of the uploaded file data using the
+    specified parsing parameters. It handles CSV files with custom separators,
+    decimal/thousands separators, encoding, and date formats. Automatically
+    converts datetime columns if they exist in the data.
+
+    :param uploaded_file: The uploaded file object from Streamlit
+    :type uploaded_file: UploadedFile
+    :param separator: Field separator used in the CSV file
+    :type separator: str
+    :param decimal: Decimal separator for numeric values
+    :type decimal: str
+    :param thousands: Thousands separator for numeric values
+    :type thousands: str
+    :param encoding: Text encoding of the file
+    :type encoding: str
+    :param date_format: Date format for datetime parsing
+    :type date_format: str
+    :param ui_text: Dictionary containing UI text labels
+    :type ui_text: Dict
+    :return: None
+    :rtype: None
+
+    Example:
+        >>> preview_data(
+        ...     uploaded_file, ',', '.', ',', 'utf-8', '%Y-%m-%d', ui_text
+        ... )
+        # Displays preview of the uploaded data
     """
     st.write(ui_text["preview_title"])
     st.write(separator, decimal, thousands, encoding, date_format)
@@ -41,10 +61,29 @@ def preview_data(
 
 
 def upload_files(ui_text: Dict):
-    """
-    Upload files to the application.
-    :param ui_text: The dictionary containing the UI text.
-    :return: The uploaded files and no_model_column flag.
+    """Upload and configure multiple files for time series analysis.
+
+    This function provides a file upload interface that allows users to upload
+    CSV and Excel files with custom parsing parameters. It creates a form-based
+    interface for configuring file-specific settings like separators, encoding,
+    and date formats. Automatically handles model column detection and creation.
+
+    Features:
+        - Support for CSV and Excel files
+        - Custom parsing parameters per file
+        - Automatic datetime column detection and conversion
+        - Model column auto-creation if missing
+        - Form-based configuration interface
+
+    :param ui_text: Dictionary containing UI text labels and messages
+    :type ui_text: Dict
+    :return: Tuple containing (files_loaded_dict, no_model_column_flag)
+    :rtype: tuple[Dict, bool]
+
+    Example:
+        >>> files_loaded, no_model = upload_files(ui_text)
+        >>> print(f"Loaded {len(files_loaded)} files")
+        Loaded 3 files
     """
     files = st.file_uploader(
         ui_text["upload_file"],
@@ -148,11 +187,30 @@ def upload_files(ui_text: Dict):
 
 
 def manage_files(files_loaded, ui_text):
-    """
-    Manage the files that have been uploaded.
-    :param files_loaded: The files that have been uploaded.
-    :param ui_text: The dictionary containing the UI text.
-    :return: The updated files.
+    """Manage and update previously uploaded files.
+
+    This function provides a management interface in the sidebar for updating
+    or removing previously uploaded files. Users can modify file names, parsing
+    parameters, and remove files from the analysis. Changes are applied
+    immediately and trigger a Streamlit rerun.
+
+    Features:
+        - File name editing
+        - Parsing parameter updates (for CSV files)
+        - File removal functionality
+        - Automatic session state updates
+        - Model column synchronization
+
+    :param files_loaded: Dictionary of currently loaded files with their configurations
+    :type files_loaded: Dict
+    :param ui_text: Dictionary containing UI text labels and messages
+    :type ui_text: Dict
+    :return: None (updates session state directly)
+    :rtype: None
+
+    Example:
+        >>> manage_files(files_loaded, ui_text)
+        # Updates files in sidebar with management options
     """
     st.sidebar.write(ui_text["manage_files"])
     remaining_files = files_loaded.copy()

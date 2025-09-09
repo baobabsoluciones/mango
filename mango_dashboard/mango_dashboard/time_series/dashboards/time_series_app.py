@@ -42,12 +42,58 @@ from mango_dashboard.time_series.dashboards.time_series_utils.ui_text_es import 
 def interface_visualization(
     project_name: str = None, logo_url: str = None, experimental_features: bool = False
 ):
-    """
-    Main interface for the time series visualization dashboard.
-    :param project_name: str with the name of the project
+    """Main interface for the comprehensive time series visualization and forecasting dashboard.
+
+    This function creates a complete Streamlit-based dashboard for time series analysis,
+    including data upload, visualization, and forecasting capabilities. It provides
+    a multilingual interface (English/Spanish) with advanced features for time series
+    exploration and model training.
+
+    Features:
+        - Multi-language support (English/Spanish)
+        - File upload and management (CSV/Excel)
+        - Interactive time series visualization
+        - Multiple plot types (original, STL, lag analysis, seasonality, periodogram)
+        - Automated forecasting with StatsForecast
+        - Cross-validation and error analysis
+        - Model comparison and performance metrics
+        - Data export capabilities
+        - Experimental features toggle
+
+    :param project_name: Name of the project to display in the dashboard title
+    :type project_name: str, optional
+    :param logo_url: URL or file path to the project logo (currently disabled)
+    :type logo_url: str, optional
+    :param experimental_features: Flag to enable experimental visualization features
+    :type experimental_features: bool, optional
+    :return: None (creates Streamlit dashboard interface)
+    :rtype: None
+
+    Example:
+        >>> interface_visualization(
+        ...     project_name="Sales Analysis",
+        ...     experimental_features=True
+        ... )
+        # Creates interactive time series dashboard
     """
 
     def validate_logo(logo_path):
+        """Validate and process logo path for dashboard display.
+
+        This helper function validates logo paths by checking if they point to
+        valid image files. It handles both local file paths and URLs, normalizing
+        file:// protocols and verifying image accessibility.
+
+        :param logo_path: Path or URL to the logo image file
+        :type logo_path: str
+        :return: Validated logo path if valid, None otherwise
+        :rtype: str or None
+
+        Example:
+            >>> logo = validate_logo("file:///path/to/logo.png")
+            >>> print(logo)
+            /path/to/logo.png
+        """
         if not logo_path:
             return None
 
