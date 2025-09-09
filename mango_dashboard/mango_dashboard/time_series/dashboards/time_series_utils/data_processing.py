@@ -4,8 +4,8 @@ from typing import List, Dict
 import jinja2
 import pandas as pd
 import streamlit as st
-
 from mango_time_series.utils.processing_time_series import aggregate_to_input
+
 from .constants import all_imports
 
 

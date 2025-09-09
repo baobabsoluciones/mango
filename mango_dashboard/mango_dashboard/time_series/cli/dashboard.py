@@ -2,7 +2,6 @@ import os
 import sys
 
 import click
-
 from mango_dashboard.time_series.cli import cli
 
 

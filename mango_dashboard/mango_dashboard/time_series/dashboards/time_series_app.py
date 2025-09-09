@@ -5,8 +5,6 @@ import PIL.Image
 import pandas as pd
 import requests
 import streamlit as st
-from statsforecast import StatsForecast
-
 from mango_dashboard.time_series.dashboards.time_series_utils.constants import (
     SELECT_AGR_TMP_DICT,
     model_context,
@@ -37,6 +35,7 @@ from mango_dashboard.time_series.dashboards.time_series_utils.ui_text_en import 
 from mango_dashboard.time_series.dashboards.time_series_utils.ui_text_es import (
     UI_TEXT as UI_TEXT_ES,
 )
+from statsforecast import StatsForecast
 
 
 def interface_visualization(
