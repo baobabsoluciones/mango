@@ -6,6 +6,23 @@ from mango_genetic.config import GeneticBaseConfig
 
 
 class Individual:
+    """
+    Base class representing an individual in a genetic algorithm.
+
+    An individual contains genes (genetic information), fitness value, and metadata
+    about its parents and configuration. The class supports different encoding types
+    (real, binary, integer) and provides methods for mutation and genetic operations.
+
+    :param genes: Initial genetic information as numpy array
+    :type genes: numpy.ndarray, optional
+    :param idx: Unique identifier for the individual
+    :type idx: int
+    :param parents: Tuple of parent individuals
+    :type parents: tuple, optional
+    :param config: Configuration object containing genetic algorithm parameters
+    :type config: GeneticBaseConfig, optional
+    """
+
     def __init__(self, genes=None, idx: int = 0, parents: tuple = None, config=None):
         self.fitness = None
         self.idx = idx
@@ -24,19 +41,27 @@ class Individual:
     @property
     def genes(self) -> np.ndarray:
         """
-        Property that stores the :class:`numpy.ndarray` of genes in the individual
+        Get the genetic information of the individual.
 
-        If max_bound or min_bound are set, the genes values are clipped to the bounds.
-        After setting the value for the genes the hash is updated.
+        Returns the numpy array containing the individual's genes. If bounds are set,
+        gene values are automatically clipped to stay within the specified range.
 
-        :param value: the new value for the genes (used on setting up the property)
-        :type value: :class:`numpy.ndarray`
-        :return: the genes value
+        :return: Array containing the individual's genetic information
+        :rtype: numpy.ndarray
         """
         return self._genes
 
     @genes.setter
     def genes(self, value: np.ndarray = None):
+        """
+        Set the genetic information of the individual.
+
+        Sets the genes array and automatically clips values to bounds if they are defined.
+        Updates the individual's hash after setting new genes.
+
+        :param value: New genetic information as numpy array
+        :type value: numpy.ndarray, optional
+        """
         if (
             value is not None
             and self.max_bound is not None
@@ -51,50 +76,73 @@ class Individual:
     @property
     def idx(self) -> int:
         """
-        Property that stores the internal idx of the Individual. This value is just to help
-        distinguish between individuals.
+        Get the unique identifier of the individual.
 
-        :param value: the new value for the idx (used on setting up the property)
-        :type value: int
-        :return: the idx value
+        Returns the internal index used to distinguish between different individuals
+        in the population.
+
+        :return: Unique identifier for the individual
+        :rtype: int
         """
         return self._idx
 
     @idx.setter
     def idx(self, value: int):
+        """
+        Set the unique identifier of the individual.
+
+        :param value: New unique identifier
+        :type value: int
+        """
         self._idx = value
 
     @property
     def config(self) -> GeneticBaseConfig:
         """
-        Property that stores the config object for the individual
+        Get the configuration object for the individual.
 
-        :param value: the new value for the config (used on setting up the property)
-        :type value: :class:`mango.models.mango_genetic.config.GeneticBaseConfig`
-        :return: the config value
+        Returns the configuration object containing genetic algorithm parameters
+        such as encoding type, bounds, and gene length.
+
+        :return: Configuration object with genetic algorithm parameters
+        :rtype: GeneticBaseConfig
         """
         return self._config
 
     @config.setter
     def config(self, value: GeneticBaseConfig):
+        """
+        Set the configuration object for the individual.
+
+        :param value: New configuration object
+        :type value: GeneticBaseConfig
+        """
         self._config = value
 
     @property
     def parents(self) -> tuple:
         """
-        Property that stores the parents of the individual and their idx.
+        Get the parent individuals of this individual.
 
-        During the setter the value for attribute parents_idx
-        is updated as well as a tuple of the idx of all the parents
+        Returns a tuple containing the parent individuals. When parents are set,
+        the parents_idx attribute is automatically updated with their indices.
 
-        :param value: the new value for the parents (used on setting up the property)
-        :type value: tuple
-        :return: the parents value
+        :return: Tuple of parent individuals
+        :rtype: tuple
         """
         return self._parents
 
     @parents.setter
     def parents(self, value: tuple):
+        """
+        Set the parent individuals of this individual.
+
+        Sets the parent individuals and automatically updates the parents_idx
+        attribute with their indices.
+
+        :param value: Tuple of parent individuals
+        :type value: tuple
+        """
         self._parents = value
         if self._parents is not None:
             self.parents_idx = tuple([p.idx for p in self.parents])
@@ -102,32 +150,47 @@ class Individual:
     @property
     def encoding(self) -> str:
         """
-        Property that stores the encoding type for the individual
+        Get the encoding type for the individual's genes.
 
-        :param value: the new value for the encoding (used on setting up the property)
-        :type value: str
-        :return: the encoding value
+        Returns the encoding type used for the genetic representation.
+        Supported types include 'real', 'binary', and 'integer'.
+
+        :return: Encoding type string
         :rtype: str
         """
         return self._encoding
 
     @encoding.setter
     def encoding(self, value):
+        """
+        Set the encoding type for the individual's genes.
+
+        :param value: Encoding type ('real', 'binary', or 'integer')
+        :type value: str
+        """
         self._encoding = value
 
     @property
     def fitness(self) -> float:
         """
-        Property that stores the fitness value for the individual
+        Get the fitness value of the individual.
 
-        :param value: the new value for the fitness (used on setting up the property)
-        :type value: float
-        :return: the fitness value
+        Returns the fitness value representing how well this individual
+        performs according to the optimization objective.
+
+        :return: Fitness value of the individual
+        :rtype: float
         """
         return self._fitness
 
     @fitness.setter
     def fitness(self, value):
+        """
+        Set the fitness value of the individual.
+
+        :param value: New fitness value
+        :type value: float
+        """
         self._fitness = value
 
     @classmethod
@@ -135,13 +198,21 @@ class Individual:
         cls, idx: int, config: GeneticBaseConfig
     ) -> "Individual":
         """
-        Class method that creates a new individual with random genes.
+        Create a new individual with randomly generated genes.
 
-        :param idx: the idx of the new individual
+        Factory method that creates a new individual with the specified index
+        and configuration, then generates random genes based on the encoding type.
+
+        :param idx: Unique identifier for the new individual
         :type idx: int
-        :param config: the config object for the individual
-        :type config: :class:`mango.models.mango_genetic.config.GeneticBaseConfig`
-        :return: the new individual
+        :param config: Configuration object containing genetic algorithm parameters
+        :type config: GeneticBaseConfig
+        :return: New individual with random genes
+        :rtype: Individual
+
+        Example:
+            >>> config = GeneticBaseConfig()
+            >>> individual = Individual.create_random_individual(idx=0, config=config)
         """
         ind = cls(idx=idx, config=config)
 
@@ -150,9 +221,16 @@ class Individual:
 
     def create_random_genes(self):
         """
-        Method to create random genes for an individual based on the encoding type.
+        Generate random genes for the individual based on the encoding type.
 
-        The genes are stored in the :attr:`genes` attribute
+        Creates random genetic information according to the individual's encoding
+        type and configuration bounds. The generated genes are stored in the
+        genes attribute.
+
+        Supported encoding types:
+        - 'real': Continuous values between min_bound and max_bound
+        - 'binary': Binary values (0 or 1)
+        - 'integer': Integer values between min_bound and max_bound (inclusive)
         """
         if self.encoding == "real":
             self.genes = np.random.uniform(
@@ -169,13 +247,20 @@ class Individual:
 
     def mutate(self, mutation_prob: float = None):
         """
-        Method to mutate the individual based on the encoding type.
+        Mutate the individual's genes based on the encoding type.
 
-        The mutation probability is used to determine if the individual will be mutated or not.
-        An individual can have more than one gene that gets mutated. The
+        Applies mutation to the individual's genes with the specified probability.
+        The mutation process continues until the probability check fails, meaning
+        an individual can have multiple genes mutated in a single call.
 
-        :param mutation_prob: the probability of mutation
+        :param mutation_prob: Probability of mutation (0.0 to 1.0)
         :type mutation_prob: float
+
+        Raises:
+            NotImplementedError: If encoding type is not supported
+
+        Example:
+            >>> individual.mutate(mutation_prob=0.1)  # 10% chance of mutation
         """
         keep = True
         while keep:
@@ -195,44 +280,70 @@ class Individual:
 
     def _mutate_binary(self):
         """
-        Mutation method for the binary values encoding.
+        Mutate a binary-encoded gene by flipping its value.
 
-        This mutation is a simple bit flip on the calculated gene position
+        Performs a simple bit flip mutation on a randomly selected gene position.
+        Changes 0 to 1 or 1 to 0.
         """
         gene_position = randint(0, self.gene_length - 1)
         self.genes[gene_position] = 1 - self.genes[gene_position]
 
     def _mutate_integer(self):
         """
-        Mutation method for the integer values encoding.
+        Mutate an integer-encoded gene with a random value.
 
-        This mutation is a simple random value between the min and max bounds (randint)
+        Replaces a randomly selected gene with a new random integer value
+        between the minimum and maximum bounds (inclusive).
         """
         gene_position = randint(0, self.gene_length - 1)
         self.genes[gene_position] = randint(self.min_bound, self.max_bound)
 
     def _mutate_real(self):
         """
-        Mutation method for the real values encoding
+        Mutate a real-encoded gene with a random value.
 
-        This mutation is a simple random value between the min and max bounds
+        Replaces a randomly selected gene with a new random real value
+        between the minimum and maximum bounds.
         """
         gene_position = randint(0, self.gene_length - 1)
         self.genes[gene_position] = uniform(self.min_bound, self.max_bound)
 
     def dominates(self, other):
         """
-        This method should implement the logic to check if one individual dominates another one
+        Check if this individual dominates another individual.
 
-        The domination concept is mainly used in multiobjective optimization problems.
-        A solution dominates another when the first one is equal or better in all objectives and one objective
-        is at least better than the other solution
+        This method should implement the logic to determine if one individual
+        dominates another in multi-objective optimization problems.
+
+        A solution dominates another when:
+        - It is equal or better in all objectives
+        - It is strictly better in at least one objective
+
+        :param other: The other individual to compare against
+        :type other: Individual
+        :return: True if this individual dominates the other, False otherwise
+        :rtype: bool
+
+        Raises:
+            NotImplementedError: This method must be implemented by subclasses
         """
         raise NotImplemented
 
     def copy(self) -> "Individual":
         """
-        Method to create a copy of the individual
+        Create a deep copy of the individual.
+
+        Creates a new individual with the same genetic information, index,
+        configuration, and parent information as this individual.
+
+        :return: A new individual that is a copy of this one
+        :rtype: Individual
+
+        Example:
+            >>> original = Individual(genes=np.array([1, 2, 3]), idx=0)
+            >>> copy = original.copy()
+            >>> copy.genes[0] = 5
+            >>> print(original.genes[0])  # Still 1
         """
         return Individual(
             genes=self.genes.copy(),
@@ -243,24 +354,29 @@ class Individual:
 
     def __hash__(self):
         """
-        Method to calculate the hash of the individual and store it in the :attr:`_hash` attribute
+        Calculate the hash of the individual based on its genetic information.
 
-        The hash is calculated based on the byte representation of the genes of the individual so that only individuals
-        with the same genome have the hash
+        The hash is calculated from the byte representation of the individual's genes,
+        ensuring that only individuals with identical genetic information have the same hash.
+        This enables efficient comparison and storage in hash-based data structures.
+
+        :return: Hash value based on the individual's genes
+        :rtype: int
         """
         return hash(self.genes.tobytes())
 
     def __eq__(self, other) -> bool:
         """
-        Method to compare two individuals
+        Compare two individuals for equality based on their genetic information.
 
-        In order to make this comparison as fast as possible it used the pre-generated hash to compare the individuals.
-        So the comparison is made on the genotype instead of the phenotype, as two individuals with different
-        genotypes can have the same phenotype, so they should be considered as not equal
-        for crossover and mango_genetic diversity purposes.
+        Uses pre-generated hash values for fast comparison. The comparison is based
+        on genotype (genetic information) rather than phenotype (fitness/behavior),
+        as individuals with different genotypes should be considered distinct for
+        genetic diversity and crossover purposes.
 
-        :param other: the other individual to compare
-        :return: True if the individuals are equal, False otherwise
+        :param other: The other individual to compare against
+        :type other: Individual
+        :return: True if individuals have identical genetic information, False otherwise
         :rtype: bool
         """
         if isinstance(other, self.__class__):
@@ -269,4 +385,10 @@ class Individual:
         return False
 
     def __repr__(self):
+        """
+        Return a string representation of the individual.
+
+        :return: String representation showing the individual's index
+        :rtype: str
+        """
         return f"Individual {self.idx}"
