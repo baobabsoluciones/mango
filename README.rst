@@ -52,7 +52,7 @@ Quick Start
    from mango_time_series import TimeSeriesAnalyzer
 
 Installation
-===========
+============
 
 **Using uv:**
 
@@ -91,12 +91,12 @@ Individual library documentation:
 - `Mango Time Series <https://mango.readthedocs.io/en/latest/code_mango_time_series/index.html>`_
 
 Contributing
-===========
+============
 
 We welcome contributions! Please see our `contributing guidelines <https://github.com/baobabsoluciones/mango/blob/master/CONTRIBUTING.rst>`_ for more details.
 
 Discussion and Development
-=========================
+==========================
 
 We encourage open discussion and collaboration on development via GitHub issues. If you have ideas, suggestions, or encounter any issues, please feel free to open an issue on our `GitHub repository <https://github.com/baobabsoluciones/mango/issues>`_.
 

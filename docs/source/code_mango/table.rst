@@ -4,7 +4,7 @@ Table
 The **Table** class is used to represent and work on a table or dataframe as a list of dict. It derives from the pytups.Tuplist class and provides powerful data manipulation capabilities similar to pandas DataFrames but with a more lightweight and flexible approach.
 
 Key Features
-===========
+============
 
 * Lightweight data structure based on Python dictionaries
 * Powerful data manipulation methods inspired by R's dplyr
@@ -14,7 +14,7 @@ Key Features
 * Flexible data reshaping capabilities
 
 Basic Example
-============
+=============
 
 For example the following table:
 
@@ -33,10 +33,10 @@ will be represented as:
     [{"a": 1, "b": False}, {"a": 2, "b": True}, {"a": 3, "b": False}]
 
 Common Operations
-===============
+=================
 
 Data Manipulation
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 The Table class provides various methods for data manipulation:
 
@@ -106,7 +106,7 @@ The Table class supports various formats:
 For more information on the underlying Tuplist class, see the `pytups documentation <https://pchtsp.github.io/pytups/code.html#module-pytups.tuplist/>`_.
 
 Table class API
-=============
+===============
 
 .. autoclass:: mango.table.Table
       :members:

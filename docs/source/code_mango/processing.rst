@@ -17,7 +17,7 @@ File functions
 .. automodule:: mango.processing.file_functions
 
 Object functions
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 .. automodule:: mango.processing.object_functions
 
 Data Imputer

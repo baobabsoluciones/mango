@@ -10,18 +10,18 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 ------------
 
 Added
-~~~~~
+-----
 - Enhanced dashboard functionality and user interface
 - Improved file exploration capabilities
 - Better time series visualization tools
 
 Changed
-~~~~~~~
+-------
 - Updated dependencies and package configuration
 - Enhanced test coverage and documentation
 
 Added
-~~~~~
+-----
 - Interactive web-based dashboards using Streamlit
 - File explorer with hierarchical navigation
 - Time series data visualization and analysis
@@ -32,7 +32,7 @@ Added
 - Responsive design for different screen sizes
 
 Features
-~~~~~~~~
+--------
 - File management and exploration
 - Time series data analysis and plotting
 - Interactive data visualization

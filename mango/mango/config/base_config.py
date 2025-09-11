@@ -47,6 +47,7 @@ class ConfigParameter:
         ...     min_value=1,
         ...     max_value=300
         ... )
+
     """
 
     def __init__(
@@ -103,6 +104,7 @@ class ConfigParameter:
             >>> param = ConfigParameter("port", int, default=3306)
             >>> value = param.parse("database", parser)
             >>> print(value)  # 5432
+
         """
         if int == self.value_type:
             value = config_parser.getint(section, self.name)
