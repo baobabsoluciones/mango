@@ -1,11 +1,28 @@
+import numpy as np
 import pandas as pd
 import polars as pl
 
 
-def create_time_features(df: pl.LazyFrame, SERIES_CONF: dict):
+def create_time_features(df: pl.LazyFrame, SERIES_CONF: dict) -> pl.LazyFrame:
     """
-    Depending on SERIES_CONF['TIME_PERIOD_DESCR'] create time features for the dataframe
+    Create time-based features from datetime column based on time period description.
 
+    Extracts relevant time features from the datetime column depending on the
+    time period description in the series configuration. Creates different
+    sets of features for monthly, daily, and weekly time series.
+
+    :param df: LazyFrame containing time series data with datetime column
+    :type df: polars.LazyFrame
+    :param SERIES_CONF: Configuration dictionary containing TIME_PERIOD_DESCR
+    :type SERIES_CONF: dict
+    :return: LazyFrame with additional time feature columns
+    :rtype: polars.LazyFrame
+
+    Note:
+        - For monthly data: adds 'month' and 'year' columns
+        - For daily data: adds 'day', 'month', 'year', and 'weekday' columns
+        - For weekly data: adds 'week' and 'year' columns
+        - Features are extracted using Polars datetime methods
     """
 
     # if time period is month
@@ -27,11 +44,44 @@ def create_time_features(df: pl.LazyFrame, SERIES_CONF: dict):
             pl.col("datetime").dt.year().alias("year"),
         )
 
+    return df
 
-def month_as_bspline(df: pl.DataFrame):
-    def spline_transformer(period, degree=3, extrapolation="periodic"):
+
+def month_as_bspline(df: pl.DataFrame) -> pd.DataFrame:
+    """
+    Transform monthly seasonality into B-spline features for machine learning.
+
+    Converts monthly seasonal patterns into smooth B-spline features that can
+    be used effectively in machine learning models. Creates day-of-year features
+    and applies B-spline transformation with periodic extrapolation.
+
+    :param df: DataFrame containing time series data with datetime column
+    :type df: polars.DataFrame
+    :return: DataFrame with original data plus B-spline features
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Converts Polars DataFrame to pandas for sklearn compatibility
+        - Creates day_of_year feature from datetime column
+        - Applies B-spline transformation with 12 knots (monthly period)
+        - Uses periodic extrapolation for smooth seasonal transitions
+        - Removes intermediate day_of_year column after transformation
+    """
+
+    def spline_transformer(
+        period: int, degree: int = 3, extrapolation: str = "periodic"
+    ):
         """
-        Returns a transformer that applies B-spline transformation.
+        Create B-spline transformer for seasonal feature engineering.
+
+        :param period: Seasonal period (e.g., 12 for monthly)
+        :type period: int
+        :param degree: Degree of B-spline (default: 3)
+        :type degree: int
+        :param extrapolation: Extrapolation method (default: "periodic")
+        :type extrapolation: str
+        :return: Configured SplineTransformer
+        :rtype: sklearn.preprocessing.SplineTransformer
         """
         from sklearn.preprocessing import SplineTransformer
 
@@ -60,9 +110,24 @@ def month_as_bspline(df: pl.DataFrame):
     return df_splines
 
 
-def custom_weights(index):
+def custom_weights(index: pd.DatetimeIndex) -> np.ndarray:
     """
-    Return 0 if index is between 2012-06-01 and 2012-10-21.
+    Create custom weights for time series data with specific period exclusion.
+
+    Generates a weight array where values are set to 0 for a specific date range
+    and 1 for all other dates. This is useful for excluding certain periods
+    from model training or evaluation.
+
+    :param index: DatetimeIndex containing the dates to weight
+    :type index: pandas.DatetimeIndex
+    :return: Array of weights (0 or 1) corresponding to each date
+    :rtype: numpy.ndarray
+
+    Note:
+        - Sets weight to 0 for dates between 2012-06-01 and 2012-10-21
+        - Sets weight to 1 for all other dates
+        - Useful for excluding specific periods from analysis
+        - Returns numpy array for efficient computation
     """
     weights = np.where((index >= "2012-06-01") & (index <= "2012-10-21"), 0, 1)
 
