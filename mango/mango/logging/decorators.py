@@ -1,8 +1,7 @@
+import logging
 import time
 from functools import wraps
 from typing import Union
-
-from .logger import get_configured_logger
 
 
 def log_time(logger: str = "root", level: Union[int, str] = "INFO"):
@@ -32,11 +31,10 @@ def log_time(logger: str = "root", level: Union[int, str] = "INFO"):
     """
     # Convert string level to integer if needed
     if isinstance(level, str):
-        import logging
 
         level = getattr(logging, level.upper(), logging.INFO)
 
-    logger_obj = get_configured_logger(logger)
+    logger_obj = logging.getLogger(logger)
 
     def log_decorator(func):
         """

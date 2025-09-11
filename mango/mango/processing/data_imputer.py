@@ -375,7 +375,7 @@ class DataImputer:
             >>> # Apply mean imputation
             >>> imputer = DataImputer(strategy="mean")
             >>> result = imputer.apply_imputation(data)
-            >>> print(result.isnull().sum())  # All zeros
+            >>> print(result.isnull().sum())
         """
         log.info(f"Starting imputation on dataset with shape: {data.shape}")
 
@@ -469,20 +469,16 @@ class DataImputer:
             raise ValueError(f"Columns {invalid_columns} not found in dataset.")
 
         imputed_array = data_array.copy()
-        processed_columns = 0
 
         for i, column in enumerate(columns):
             if column in self.column_strategies:
-                strategy = self.column_strategies[column]
-                log.debug(f"Applying strategy '{strategy}' to column '{column}'")
-                impute_func = self.strategy_methods[strategy]
+                self.strategy = self.column_strategies[column]
+                impute_func = self.strategy_methods[self.strategy]
 
                 # Extract column, reshape to (n,1) for sklearn compatibility
                 column_data = imputed_array[:, i].reshape(-1, 1)
                 imputed_array[:, i] = impute_func(column_data).flatten()
-                processed_columns += 1
 
-        log.info(f"Column-wise imputation completed for {processed_columns} columns")
         return self._convert_back(imputed_array, data_type, columns)
 
     def _simple_impute(self, data_array: np.ndarray):
@@ -625,6 +621,7 @@ class DataImputer:
             >>> # Missing values filled with previous values
         """
         df = pd.DataFrame(data_array)
+        result = data_array.copy()
         if self.strategy == "forward":
             log.debug("Applying forward fill imputation")
             result = df.ffill().to_numpy()

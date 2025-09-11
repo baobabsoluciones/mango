@@ -1,6 +1,5 @@
+import logging
 import time
-
-from .logger import get_configured_logger
 
 
 class Chrono:
@@ -42,7 +41,7 @@ class Chrono:
         self.precision = precision
         self.start_time = {name: time.time()}
         self.end = {name: None}
-        self.logger = get_configured_logger(logger)
+        self.logger = logging.getLogger(logger)
 
     def new(self, name: str):
         """

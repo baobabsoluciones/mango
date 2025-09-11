@@ -291,8 +291,7 @@ def write_excel(path, data):
     with pd.ExcelWriter(path) as writer:
         for sheet_name, content in data.items():
             if isinstance(content, pd.DataFrame):
-                content.to_excel(writer, sheet_name=sheet_name, index=False)
-                df = content
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
             elif isinstance(content, list):
                 df = pd.DataFrame.from_records(content)
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
@@ -453,9 +452,6 @@ def write_csv(path, data, **kwargs):
     elif isinstance(data, dict):
         df = pd.DataFrame.from_dict(data)
         df.to_csv(path, **kwargs, index=False)
-    else:
-        # Assume it's already a DataFrame
-        data.to_csv(path, **kwargs, index=False)
 
 
 def write_csv_light(path, data, sep=None, encoding=None):
