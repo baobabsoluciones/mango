@@ -183,7 +183,6 @@ def load_excel_sheet(path: str, sheet: str, **kwargs):
         >>> df = load_excel_sheet('/path/to/data.xlsx', 'Sheet1')
         >>> print(df.head())
     """
-    # TODO implement open version
     try:
         import pandas as pd
     except ImportError as e:
@@ -695,7 +694,6 @@ def get_default_table_style(sheet_name, content):
     """
     from openpyxl.worksheet.table import Table, TableStyleInfo
 
-    #  TODO: look at interesting styles
     style = TableStyleInfo(
         name="style_1",
         showFirstColumn=False,

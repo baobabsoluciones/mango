@@ -355,9 +355,6 @@ class Population:
         Raises:
             GeneticDiversity: When genetic diversity becomes too low
         """
-        # TODO: add more stop conditions
-        # Some based on CV
-        # Based on fitness stagnation
         fitness_diversity = Counter([ind.fitness for ind in self.population])
         if len(fitness_diversity) == 1:
             raise GeneticDiversity
@@ -728,13 +725,11 @@ class Population:
         Note: This method is only applicable for real-valued encoding.
         """
 
-        # TODO: review bad results for huge genomes
         while len(self.offspring) < len(self.population):
             # First we select three parents. The first two are going to be the primary search space,
             # while the third is going to create the secondary search space with the midpoint between parents 1 and 2
             p1, p2, p3 = self._select_parents(n=3)
 
-            # TODO: this could be changed by config in the future
             # This are parameters for the randomness of the gaussian distribution used in the crossover.
             sigma_eta = 0.35 / sqrt(self._gene_length)
             sigma_xi = 1 / 4

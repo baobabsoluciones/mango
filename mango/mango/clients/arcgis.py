@@ -67,7 +67,6 @@ class ArcGisClient:
         try:
             response = requests.post(url=ARCGIS_TOKEN_URL, data=body)
         except Exception as e:
-            # TODO: narrow down the possible exception errors
             raise InvalidCredentials(f"There was an error on login into ArcGis: {e}")
 
         try:

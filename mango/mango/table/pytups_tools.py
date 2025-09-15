@@ -717,7 +717,6 @@ def join(
         else:
             table1 = TupList(as_list(if_empty_table_1))
 
-    # TODO: check if that always work
     if drop_if_nested:
         table1 = drop_nested(table1)
         table2 = drop_nested(table2)
