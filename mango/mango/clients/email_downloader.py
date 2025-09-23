@@ -1,10 +1,37 @@
 import email
 import imaplib
-import logging as log
 import os
+
+from mango.logging import get_configured_logger
+
+log = get_configured_logger(__name__)
 
 
 class EmailDownloader:
+    """
+    Client for downloading emails and attachments from IMAP servers.
+
+    This class provides functionality to connect to IMAP email servers,
+    download unread emails, and save attachments to the local filesystem.
+    Supports SSL connections and automatic email marking as read.
+
+    :param host: IMAP server hostname (default: from EMAIL_HOST environment variable)
+    :type host: str, optional
+    :param user: Email username (default: from EMAIL_USER environment variable)
+    :type user: str, optional
+    :param password: Email password (default: from EMAIL_PASSWORD environment variable)
+    :type password: str, optional
+    :raises ValueError: If any required configuration is missing
+
+    Example:
+        >>> downloader = EmailDownloader(
+        ...     host="imap.gmail.com",
+        ...     user="user@gmail.com",
+        ...     password="password"
+        ... )
+        >>> emails = downloader.fetch_unread_emails()
+    """
+
     def __init__(self, host: str = None, user: str = None, password: str = None):
         self.host = host if host is not None else os.getenv("EMAIL_HOST", None)
         self.user = user if user is not None else os.getenv("EMAIL_USER", None)
@@ -21,16 +48,34 @@ class EmailDownloader:
 
     def close_connection(self):
         """
-        Method to close the connection to the email provider
+        Close the connection to the IMAP email server.
+
+        Properly closes the IMAP connection to free up resources.
+        Should be called when finished with email operations.
+
+        Example:
+            >>> downloader = EmailDownloader()
+            >>> # ... use downloader ...
+            >>> downloader.close_connection()
         """
         self.connection.close()
 
     def fetch_unread_emails(self) -> list:
         """
-        This method gets all the unread emails, downloads them and marks them as read.
+        Fetch all unread emails from the IMAP server.
 
-        :return: a list with the emails
+        Downloads all unread emails from the server and automatically marks
+        them as read. Returns a list of email message objects that can be
+        processed further.
+
+        :return: List of email message objects
         :rtype: list
+        :raises Exception: If IMAP operations fail
+
+        Example:
+            >>> emails = downloader.fetch_unread_emails()
+            >>> for email in emails:
+            ...     print(f"Subject: {email.get('Subject')}")
         """
         emails = []
         result, messages = self.connection.search(None, "UNSEEN")
@@ -56,12 +101,24 @@ class EmailDownloader:
     @staticmethod
     def save_attachments(msg, download_folder: str = ".") -> list:
         """
-        Method that given an emails downloads the attachments found on them to the local disk
+        Save email attachments to the local filesystem.
 
-        :param msg: an email
-        :param str download_folder: the folder where the attachments have to be downloaded
-        :return: a list of the paths of the downloaded attachments
+        Extracts and saves all attachments from an email message to the
+        specified local directory. Skips files that already exist to
+        avoid overwriting.
+
+        :param msg: Email message object containing attachments
+        :type msg: email.message.Message
+        :param download_folder: Local directory path to save attachments
+        :type download_folder: str
+        :return: List of file paths where attachments were saved
         :rtype: list
+
+        Example:
+            >>> emails = downloader.fetch_unread_emails()
+            >>> for email in emails:
+            ...     attachments = EmailDownloader.save_attachments(email, "./downloads")
+            ...     print(f"Saved {len(attachments)} attachments")
         """
         att_path = []
         for part in msg.walk():

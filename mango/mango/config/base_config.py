@@ -1,5 +1,8 @@
 """
-This file contains the classes that are used to parse the configuration files
+Configuration file parsing classes.
+
+This module provides classes for parsing and managing configuration files
+with INI file structure, including parameter validation and type conversion.
 """
 
 import json
@@ -11,9 +14,40 @@ from typing import Union, List, Dict
 
 class ConfigParameter:
     """
-    This class represents a parameter in a configuration file with INI File syntax.
-    Each parameter has a name (their section gets parsed from the file), value type, default value, list of valid values
-    and a secondary type (if the value type is a list).
+    Represents a configuration parameter with validation and type conversion.
+
+    This class defines a parameter in a configuration file with INI syntax.
+    Each parameter has a name, value type, default value, validation rules,
+    and optional secondary type for complex data structures.
+
+    :param name: Name of the configuration parameter
+    :type name: str
+    :param value_type: Type function for the parameter value (int, float, bool, str, list, dict)
+    :type value_type: callable
+    :param default: Default value if parameter is not found or invalid
+    :type default: Union[int, float, bool, str, List], optional
+    :param validate: List of valid values for the parameter
+    :type validate: List, optional
+    :param secondary_type: Type function for list elements (used when value_type is list)
+    :type secondary_type: callable, optional
+    :param dict_types: Dictionary mapping keys to type functions (used when value_type is dict)
+    :type dict_types: Dict[str, callable], optional
+    :param required: Whether the parameter is required
+    :type required: bool
+    :param min_value: Minimum allowed value for numeric parameters
+    :type min_value: Union[int, float], optional
+    :param max_value: Maximum allowed value for numeric parameters
+    :type max_value: Union[int, float], optional
+
+    Example:
+        >>> param = ConfigParameter(
+        ...     name="timeout",
+        ...     value_type=int,
+        ...     default=30,
+        ...     min_value=1,
+        ...     max_value=300
+        ... )
+
     """
 
     def __init__(
@@ -29,19 +63,11 @@ class ConfigParameter:
         max_value: Union[int, float] = None,
     ):
         """
-        The __init__ function is called when a new instance of the class is created.
-        It sets up the object with attributes that were defined in the class definition.
+        Initialize a configuration parameter with validation rules.
 
-        :param str name: set the name of the parameter
-        :param callable value_type: specify the type of data that is allowed
-        :param default: set the default value of the parameter
-        :param validate: specify a list of values the parameter can take
-        :param callable secondary_type: if the value_type is a list, specify the type of data that is allowed in the list
-        :param dict_types: specify the type of data that is allowed in the dictionary
-        :param bool required: specify if the parameter is required or not
-        :param min_value: specify the minimum value of the parameter (only works if value_type is int or float)
-        :param max_value: specify the maximum value of the parameter (only works if value_type is int or float)
-        :doc-author: baobab soluciones
+        Sets up the parameter with its name, type, default value, and validation
+        constraints. The parameter will be used to parse and validate configuration
+        values from INI files.
         """
         self.name = name
         self.value_type = value_type
@@ -57,14 +83,28 @@ class ConfigParameter:
         self, section: str, config_parser: ConfigParser
     ) -> Union[int, float, bool, str, List]:
         """
-        The parse function takes a section name and a ConfigParser object.
-        It returns the value of the parameter with name `name` from that section.
+        Parse and validate a parameter value from a configuration section.
 
-        :param str section: specify the section in the config file
-        :param config_parser: the config parser class
-        :return: the value of the config parameter
-        :rtype: Union[int, float, bool, str, list]
-        :doc-author: baobab soluciones
+        Extracts the parameter value from the specified section using the
+        ConfigParser, converts it to the appropriate type, and validates
+        it against the defined constraints.
+
+        :param section: Section name in the configuration file
+        :type section: str
+        :param config_parser: ConfigParser instance containing the configuration data
+        :type config_parser: ConfigParser
+        :return: Parsed and validated parameter value
+        :rtype: Union[int, float, bool, str, List]
+        :raises ValueError: If value is outside min/max range or not in validation list
+        :raises TypeError: If value type is not supported
+
+        Example:
+            >>> parser = ConfigParser()
+            >>> parser.read_string('[database]\nport = 5432')
+            >>> param = ConfigParameter("port", int, default=3306)
+            >>> value = param.parse("database", parser)
+            >>> print(value)  # 5432
+
         """
         if int == self.value_type:
             value = config_parser.getint(section, self.name)
@@ -117,10 +157,18 @@ class ConfigParameter:
 
     def __repr__(self):
         """
-        The __repr__ function is what gets called when you try to &quot;print&quot; an object.
+        Return string representation of the ConfigParameter.
 
-        :return: A string representation of the object
-        :doc-author: baobab soluciones
+        Creates a string representation that can be used to recreate
+        the parameter object, showing the name, type, and default value.
+
+        :return: String representation of the parameter
+        :rtype: str
+
+        Example:
+            >>> param = ConfigParameter("timeout", int, default=30)
+            >>> print(repr(param))
+            ConfigParameter('timeout', <class 'int'>, 30)
         """
         if self.default is None:
             return f"ConfigParameter({self.name!r}, {self.value_type!r})"
@@ -129,22 +177,46 @@ class ConfigParameter:
 
 class BaseConfig:
     """
-    This class is used to handle configuration files with INI file structure.
-    Parameters can be defined, their section gets parsed from the configuration file
-    but defined in the params dictionary, and for each parameter a value,
-    type, default value, validation and secondary type can be defined.
+    Base class for handling configuration files with INI structure.
+
+    This class provides a framework for parsing and managing configuration
+    files with INI syntax. Parameters are defined in the class and can
+    include type conversion, validation, and default values.
+
+    :param file_name: Path to the configuration file
+    :type file_name: str
+    :param extend_params: Additional parameters to extend the base configuration
+    :type extend_params: Dict
+
+    Example:
+        >>> class MyConfig(BaseConfig):
+        ...     __params = {
+        ...         "database": [
+        ...             ConfigParameter("host", str, default="localhost"),
+        ...             ConfigParameter("port", int, default=5432)
+        ...         ]
+        ...     }
+        >>> config = MyConfig("config.ini", {})
+        >>> host = config("host")
     """
 
     __params = dict()
 
     def __init__(self, file_name: str, extend_params: Dict):
         """
-        The __init__ function is called when an instance of the class is created.
-        It handles the initial parsing of the config file
+        Initialize configuration by parsing the specified file.
 
-        :param file_name: specify the name of the config file
-        :param extend_params: extend the parameters that are defined in the config file
-        :doc-author: baobab soluciones
+        Loads and parses the configuration file, merging base parameters
+        with extended parameters. Validates all parameters and applies
+        default values where necessary.
+
+        :param file_name: Path to the configuration file to load
+        :type file_name: str
+        :param extend_params: Dictionary of additional parameters to merge
+        :type extend_params: Dict
+        :raises FileNotFoundError: If the configuration file does not exist
+        :raises ValueError: If parameter validation fails
+        :raises TypeError: If parameter type conversion fails
         """
         self.params = dict(self.__params)
         for section, params in extend_params.items():
@@ -196,11 +268,23 @@ class BaseConfig:
 
     def __call__(self, key, default=None):
         """
-        The __call__ function allows the class to be called as a function.
+        Retrieve a configuration parameter value by key.
 
-        :param key: the name of the parameter we want to extract
-        :return: The value of the parameter
-        :doc-author: baobab soluciones
+        Allows the configuration object to be called as a function to
+        retrieve parameter values. Returns the default value if the
+        parameter is not found.
+
+        :param key: Name of the parameter to retrieve
+        :type key: str
+        :param default: Default value to return if parameter is not found
+        :type default: Any, optional
+        :return: Parameter value or default value
+        :rtype: Any
+
+        Example:
+            >>> config = MyConfig("config.ini", {})
+            >>> host = config("database_host", "localhost")
+            >>> port = config("database_port")
         """
         section = self.map_key_to_section.get(key, None)
         if section is None:
@@ -212,11 +296,21 @@ class BaseConfig:
 
     def modify_value(self, key, value):
         """
-        The modify value allows to modify the value of a parameter after it has been loaded
+        Modify the value of a configuration parameter.
 
-        :param key: the name of the parameter we want to extract
-        :return: The value of the parameter
-        :doc-author: baobab soluciones
+        Updates the value of an existing parameter after the configuration
+        has been loaded. The parameter must exist in the configuration.
+
+        :param key: Name of the parameter to modify
+        :type key: str
+        :param value: New value for the parameter
+        :type value: Any
+        :return: None
+        :raises KeyError: If the parameter is not found in the configuration
+
+        Example:
+            >>> config = MyConfig("config.ini", {})
+            >>> config.modify_value("database_port", 3306)
         """
         section = self.map_key_to_section.get(key, None)
         if section is None:
@@ -226,11 +320,19 @@ class BaseConfig:
     @classmethod
     def create_config_template(cls, output_path: str):
         """
-        The create_config_template function creates a configuration file with default values for each parameter.
-        If the parameter has a default value, it will be used, otherwise an empty string will be used.
+        Create a configuration template file with default values.
 
-        :param output_file: specify the output path for the template of the config file
-        :doc-author: baobab soluciones
+        Generates a configuration file template based on the defined
+        parameters. Parameters with default values will use those values,
+        while parameters without defaults will be set to empty strings.
+
+        :param output_path: Path where the template file should be created
+        :type output_path: str
+        :return: None
+        :raises IOError: If the file cannot be written
+
+        Example:
+            >>> MyConfig.create_config_template("config_template.ini")
         """
         parser = ConfigParser()
         # Case sensitive

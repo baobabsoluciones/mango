@@ -1,9 +1,7 @@
 import os
+from typing import List
 
 import pandas as pd
-
-from datetime import datetime
-from typing import List
 
 
 def get_ts_dataset():

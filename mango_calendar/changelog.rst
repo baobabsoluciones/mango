@@ -10,18 +10,18 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 ------------
 
 Added
-~~~~~
+-----
 - Enhanced calendar functionality and date utilities
 - Improved holiday and working day calculations
 - Better integration with the mango ecosystem
 
 Changed
-~~~~~~~
+-------
 - Updated dependencies and package configuration
 - Enhanced test coverage and documentation
 
 Added
-~~~~~
+-----
 - Calendar feature extraction and manipulation
 - Date utility functions for data analysis
 - Holiday and working day calculations
@@ -32,7 +32,7 @@ Added
 - Comprehensive logging and error handling
 
 Features
-~~~~~~~~
+--------
 - Date and time manipulation utilities
 - Calendar feature engineering
 - Business day calculations

@@ -48,101 +48,93 @@ class FileExplorerHandler(ABC):
 
     @abstractmethod
     def is_dir(self, path: str):
-        """
-        Check if the given path is a directory.
+        """Check if the given path is a directory.
 
-        :param path: The path to check.
+        :param path: The path to check
         :type path: str
-        :return: True if the path is a directory, False otherwise.
+        :return: True if the path is a directory, False otherwise
         :rtype: bool
         """
         pass
 
     @abstractmethod
     def path_exists(self, path: str):
-        """
-        Check if the given path exists.
+        """Check if the given path exists.
 
-        :param path: The path to check.
+        :param path: The path to check
         :type path: str
-        :return: True if the path exists, False otherwise.
+        :return: True if the path exists, False otherwise
         :rtype: bool
         """
         pass
 
     @abstractmethod
     def get_file_or_folder_paths(self, path: str, element_type: str) -> List[str]:
-        """
-        Get a list of file or folder paths within the specified directory.
+        """Get a list of file or folder paths within the specified directory.
 
-        :param path: The directory path to search in.
+        :param path: The directory path to search in
         :type path: str
-        :param element_type: Type of elements to return ('file' or 'folder').
+        :param element_type: Type of elements to return ('file' or 'folder')
         :type element_type: str
-        :return: List of file or folder paths.
+        :return: List of file or folder paths
         :rtype: List[str]
-        :raises ValueError: If element_type is not 'file' or 'folder'.
+        :raises ValueError: If element_type is not 'file' or 'folder'
         """
         pass
 
     @abstractmethod
     def read_img(self, path: str):
-        """
-        Read an image file from the specified path.
+        """Read an image file from the specified path.
 
-        :param path: The path to the image file.
+        :param path: The path to the image file
         :type path: str
-        :return: The loaded image object.
+        :return: The loaded image object
         :rtype: PIL.Image.Image
         """
         pass
 
     @abstractmethod
     def read_markdown(self, path: str):
-        """
-        Read a markdown file from the specified path.
+        """Read a markdown file from the specified path.
 
-        :param path: The path to the markdown file.
+        :param path: The path to the markdown file
         :type path: str
-        :return: The content of the markdown file.
+        :return: The content of the markdown file
         :rtype: str
         """
         pass
 
     @abstractmethod
     def read_json(self, path: str):
-        """
-        Read a JSON file from the specified path.
+        """Read a JSON file from the specified path.
 
-        :param path: The path to the JSON file.
+        :param path: The path to the JSON file
         :type path: str
-        :return: The parsed JSON data.
+        :return: The parsed JSON data
         :rtype: dict or list
         """
         pass
 
     @abstractmethod
     def write_json_fe(self, path: str, data: dict):
-        """
-        Write data to a JSON file at the specified path.
+        """Write data to a JSON file at the specified path.
 
-        :param path: The path where to write the JSON file.
+        :param path: The path where to write the JSON file
         :type path: str
-        :param data: The data to write to the JSON file.
+        :param data: The data to write to the JSON file
         :type data: dict
         """
         pass
 
     @abstractmethod
     def read_html(self, path: str, encoding: str = "utf-8"):
-        """
-        Read an HTML file from the specified path.
+        """Read an HTML file from the specified path.
 
-        :param path: The path to the HTML file.
+        :param path: The path to the HTML file
         :type path: str
-        :param encoding: The encoding to use.
+        :param encoding: The encoding to use
         :type encoding: str
-        :return: The content of the HTML file.
+        :return: The content of the HTML file
         :rtype: str
         """
         pass
@@ -157,41 +149,38 @@ class LocalFileExplorerHandler(FileExplorerHandler):
     """
 
     def is_dir(self, path: str):
-        """
-        Check if the given path is a directory using os.path.isdir.
+        """Check if the given path is a directory using os.path.isdir.
 
-        :param path: The path to check.
+        :param path: The path to check
         :type path: str
-        :return: True if the path is a directory, False otherwise.
+        :return: True if the path is a directory, False otherwise
         :rtype: bool
         """
         return os.path.isdir(path)
 
     def path_exists(self, path: str):
-        """
-        Check if the given path exists using os.path.exists.
+        """Check if the given path exists using os.path.exists.
 
-        :param path: The path to check.
+        :param path: The path to check
         :type path: str
-        :return: True if the path exists, False otherwise.
+        :return: True if the path exists, False otherwise
         :rtype: bool
         """
         return os.path.exists(path)
 
     def get_file_or_folder_paths(self, path: str, element_type: str):
-        """
-        Get a list of file or folder paths within the specified directory.
+        """Get a list of file or folder paths within the specified directory.
 
         Uses os.walk to recursively traverse the directory and collect paths
         based on the specified element type.
 
-        :param path: The directory path to search in.
+        :param path: The directory path to search in
         :type path: str
-        :param element_type: Type of elements to return ('file' or 'folder').
+        :param element_type: Type of elements to return ('file' or 'folder')
         :type element_type: str
-        :return: List of file or folder paths.
+        :return: List of file or folder paths
         :rtype: List[str]
-        :raises ValueError: If element_type is not 'file' or 'folder'.
+        :raises ValueError: If element_type is not 'file' or 'folder'
         """
         paths = []
         for root, dirs, files in os.walk(path):
@@ -210,34 +199,31 @@ class LocalFileExplorerHandler(FileExplorerHandler):
         return paths
 
     def read_img(self, path: str):
-        """
-        Read an image file using PIL.Image.open.
+        """Read an image file using PIL.Image.open.
 
-        :param path: The path to the image file.
+        :param path: The path to the image file
         :type path: str
-        :return: The loaded image object.
+        :return: The loaded image object
         :rtype: PIL.Image.Image
         """
         return Image.open(path)
 
     def read_markdown(self, path: str):
-        """
-        Read a markdown file using pathlib.Path.read_text.
+        """Read a markdown file using pathlib.Path.read_text.
 
-        :param path: The path to the markdown file.
+        :param path: The path to the markdown file
         :type path: str
-        :return: The content of the markdown file.
+        :return: The content of the markdown file
         :rtype: str
         """
         return Path(path).read_text()
 
     def read_json(self, path: str):
-        """
-        Read a JSON file using json.load.
+        """Read a JSON file using json.load.
 
-        :param path: The path to the JSON file.
+        :param path: The path to the JSON file
         :type path: str
-        :return: The parsed JSON data.
+        :return: The parsed JSON data
         :rtype: dict or list
         """
         with open(path, "r") as f:
@@ -245,25 +231,23 @@ class LocalFileExplorerHandler(FileExplorerHandler):
         return data
 
     def write_json_fe(self, path: str, data: Union[dict, list]):
-        """
-        Write data to a JSON file using mango.processing.write_json.
+        """Write data to a JSON file using mango.processing.write_json.
 
-        :param path: The path where to write the JSON file.
+        :param path: The path where to write the JSON file
         :type path: str
-        :param data: The data to write to the JSON file.
+        :param data: The data to write to the JSON file
         :type data: Union[dict, list]
         """
         write_json(data, path)
 
     def read_html(self, path: str, encoding: str = "utf-8"):
-        """
-        Read an HTML file with specified encoding.
+        """Read an HTML file with specified encoding.
 
-        :param path: The path to the HTML file.
+        :param path: The path to the HTML file
         :type path: str
-        :param encoding: The encoding to use.
+        :param encoding: The encoding to use
         :type encoding: str
-        :return: The content of the HTML file.
+        :return: The content of the HTML file
         :rtype: str
         """
         with open(path, encoding=encoding) as f:
@@ -302,29 +286,27 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         self._bucket = self._gcp_client.bucket(self._bucket_name)
 
     def is_dir(self, path: str):
-        """
-        Check if the given path is a directory in GCS.
+        """Check if the given path is a directory in GCS.
 
         This method is not fully implemented for GCS as directories
         are virtual constructs in cloud storage.
 
-        :param path: The path to check.
+        :param path: The path to check
         :type path: str
-        :return: Always returns False as this is not implemented.
+        :return: Always returns False as this is not implemented
         :rtype: bool
         """
         pass
 
     def path_exists(self, path: str):
-        """
-        Check if the given path exists in GCS.
+        """Check if the given path exists in GCS.
 
         Lists blobs with the specified prefix and checks if any match
         the given path.
 
-        :param path: The path to check.
+        :param path: The path to check
         :type path: str
-        :return: True if the path exists, False otherwise.
+        :return: True if the path exists, False otherwise
         :rtype: bool
         """
         list_files = [
@@ -341,17 +323,16 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         )
 
     def get_file_or_folder_paths(self, path: str, element_type: str = "file"):
-        """
-        Get a list of file or folder paths within the specified GCS directory.
+        """Get a list of file or folder paths within the specified GCS directory.
 
         Lists blobs in the bucket with the specified prefix and categorizes
         them as files or folders based on whether they end with '/'.
 
-        :param path: The directory path to search in.
+        :param path: The directory path to search in
         :type path: str
-        :param element_type: Type of elements to return.
+        :param element_type: Type of elements to return
         :type element_type: str
-        :return: List of file or folder paths with full GCS URLs.
+        :return: List of file or folder paths with full GCS URLs
         :rtype: List[str]
         """
         if not path.endswith("/"):
@@ -392,42 +373,39 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         return paths
 
     def read_img(self, path: str):
-        """
-        Read an image file from GCS using PIL.Image.open.
+        """Read an image file from GCS using PIL.Image.open.
 
         Downloads the blob as bytes and opens it as an image.
 
-        :param path: The GCS path to the image file.
+        :param path: The GCS path to the image file
         :type path: str
-        :return: The loaded image object.
+        :return: The loaded image object
         :rtype: PIL.Image.Image
         """
         blob_image = self._bucket.blob(path.replace(f"gs://{self._bucket_name}/", ""))
         return Image.open(BytesIO(blob_image.download_as_bytes()))
 
     def read_markdown(self, path: str):
-        """
-        Read a markdown file from GCS.
+        """Read a markdown file from GCS.
 
         Downloads the blob as a string and decodes it as UTF-8.
 
-        :param path: The GCS path to the markdown file.
+        :param path: The GCS path to the markdown file
         :type path: str
-        :return: The content of the markdown file.
+        :return: The content of the markdown file
         :rtype: str
         """
         blob_md = self._bucket.blob(path.replace(f"gs://{self._bucket_name}/", ""))
         return blob_md.download_as_string().decode("utf-8")
 
     def read_json(self, path: str):
-        """
-        Read a JSON file from GCS.
+        """Read a JSON file from GCS.
 
         Downloads the blob as a string, decodes it, and parses as JSON.
 
-        :param path: The GCS path to the JSON file.
+        :param path: The GCS path to the JSON file
         :type path: str
-        :return: The parsed JSON data.
+        :return: The parsed JSON data
         :rtype: dict or list
         """
         blob_json = self._bucket.blob(path.replace(f"gs://{self._bucket_name}/", ""))
@@ -436,14 +414,13 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         return data
 
     def write_json_fe(self, path: str, data: Union[dict, list]):
-        """
-        Write data to a JSON file in GCS.
+        """Write data to a JSON file in GCS.
 
         Converts the data to JSON string and uploads it to the specified path.
 
-        :param path: The GCS path where to write the JSON file.
+        :param path: The GCS path where to write the JSON file
         :type path: str
-        :param data: The data to write to the JSON file.
+        :param data: The data to write to the JSON file
         :type data: Union[dict, list]
         """
         blob_json = self._bucket.blob(path.replace(f"gs://{self._bucket_name}/", ""))
@@ -453,16 +430,15 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         )
 
     def read_html(self, path: str, encoding: str = "utf-8"):
-        """
-        Read an HTML file from GCS.
+        """Read an HTML file from GCS.
 
         Downloads the blob as a string and decodes it with the specified encoding.
 
-        :param path: The GCS path to the HTML file.
+        :param path: The GCS path to the HTML file
         :type path: str
-        :param encoding: The encoding to use.
+        :param encoding: The encoding to use
         :type encoding: str
-        :return: The content of the HTML file.
+        :return: The content of the HTML file
         :rtype: str
         """
         blob_html = self._bucket.blob(path.replace(f"gs://{self._bucket_name}/", ""))

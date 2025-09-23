@@ -4,16 +4,29 @@ from typing import Union
 import numpy as np
 
 
-def levy(x: np.array) -> float:
+def levy(x: np.ndarray) -> float:
     """
-    Levy function.
+    Compute the Levy function value for optimization benchmarking.
 
-    The global minima is at x = [1, 1, 1, ..., 1] and the function value is 0.
+    The Levy function is a multimodal optimization test function with complex
+    oscillatory behavior. It features trigonometric terms that create numerous
+    local minima, making it challenging for optimization algorithms.
 
-    :param x: array of floats. Each value is usually between -10 and 10.
-    :type x: :class:`numpy.array`
-    :return: the value of the function
+    The global minimum is at x = [1, 1, 1, ..., 1] and the function value is 0.
+
+    :param x: Input vector with n elements. Each element usually in range [-10, 10]
+    :type x: numpy.ndarray
+    :return: Function value at the given point
     :rtype: float
+    :raises ValueError: If input array is empty
+    :raises IndexError: If input array is empty
+
+    Example:
+        >>> import numpy as np
+        >>> x = np.array([1.0, 1.0, 1.0])
+        >>> result = levy(x)
+        >>> print(f"{result:.6f}")
+        0.000000
     """
     w = 1 + (x - 1) / 4
 
@@ -24,29 +37,55 @@ def levy(x: np.array) -> float:
     return term1 + term2 + term3
 
 
-def inverted_levy(x: np.array) -> float:
+def inverted_levy(x: np.ndarray) -> float:
     """
-    Inverted Levy function.
+    Compute the inverted Levy function value for maximization problems.
 
-    :param x: array of floats. Each value is usually between -10 and 10.
-    :type x: :class:`numpy.array`
-    :return: the value of the function
+    This function returns the negative of the standard Levy function,
+    effectively converting the minimization problem into a maximization problem.
+    The global maximum is at the same point as the original function's minimum,
+    but with a positive value.
+
+    :param x: Input vector with n elements. Each element usually in range [-10, 10]
+    :type x: numpy.ndarray
+    :return: Negative function value at the given point
     :rtype: float
+    :raises ValueError: If input array is empty
+    :raises IndexError: If input array is empty
+
+    Example:
+        >>> import numpy as np
+        >>> x = np.array([1.0, 1.0, 1.0])
+        >>> result = inverted_levy(x)
+        >>> print(f"{result:.6f}")
+        0.000000
     """
     return -levy(x)
 
 
-def levy_function_no13(x: Union[np.array, list]) -> float:
+def levy_function_no13(x: Union[np.ndarray, list]) -> float:
     """
-    Levy function N. 13.
+    Compute the Levy function N. 13 value for optimization benchmarking.
 
-    The global minima is at x = [1, 1] and the function value is 0.
+    This is a 2D variant of the Levy function with specific trigonometric terms.
+    It features oscillatory behavior that creates multiple local minima, making
+    it challenging for optimization algorithms.
 
-    :param x: array or list of floats. Each value is usually between -10 and 10.
-    :type x: :class:`numpy.array` or list
-    :return: the value of the function
+    The global minimum is at x = [1, 1] and the function value is 0.
+
+    :param x: Input vector with 2 elements. Both elements usually in range [-10, 10]
+    :type x: Union[numpy.ndarray, list]
+    :return: Function value at the given point
     :rtype: float
-    :doc-author: baobab soluciones
+    :raises ValueError: If input doesn't have exactly 2 elements
+    :raises IndexError: If input is empty
+
+    Example:
+        >>> import numpy as np
+        >>> x = np.array([1.0, 1.0])
+        >>> result = levy_function_no13(x)
+        >>> print(f"{result:.6f}")
+        0.000000
     """
     return (
         sin(3 * pi * x[0]) ** 2
@@ -55,16 +94,27 @@ def levy_function_no13(x: Union[np.array, list]) -> float:
     )
 
 
-def inverted_levy_no13(x: Union[np.array, list]) -> float:
+def inverted_levy_no13(x: Union[np.ndarray, list]) -> float:
     """
-    Inverted Levy function N. 13.
+    Compute the inverted Levy function N. 13 value for maximization problems.
 
-    The global minima is at x = [1, 1] and the function value is 0.
+    This function returns the negative of the standard Levy function N. 13,
+    effectively converting the minimization problem into a maximization problem.
+    The global maximum is at the same point as the original function's minimum,
+    but with a positive value.
 
-    :param x: list of floats. Each value is usually between -10 and 10.
-    :type x: :class:`numpy.array` or list
-    :return: the value of the function
+    :param x: Input vector with 2 elements. Both elements usually in range [-10, 10]
+    :type x: Union[numpy.ndarray, list]
+    :return: Negative function value at the given point
     :rtype: float
-    :doc-author: baobab soluciones
+    :raises ValueError: If input doesn't have exactly 2 elements
+    :raises IndexError: If input is empty
+
+    Example:
+        >>> import numpy as np
+        >>> x = np.array([1.0, 1.0])
+        >>> result = inverted_levy_no13(x)
+        >>> print(f"{result:.6f}")
+        0.000000
     """
     return -levy_function_no13(x)

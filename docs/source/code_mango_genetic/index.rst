@@ -1,4 +1,4 @@
-Genetic Algorithms (GA)
+Mango genetic
 -----------------------
 
 This section of the documentation covers the module dedicated to genetic algorithms. The main objective is to give an overview of how this algorithms work, the current genetic operators implemented and how to use this module to solve problems or quickly prototype solutions.

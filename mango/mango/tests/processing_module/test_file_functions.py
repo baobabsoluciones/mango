@@ -134,7 +134,7 @@ class FileTests(TestCase):
             self.assertEqual(len(warning_list), 1)
             self.assertEqual(
                 str(warning_list[0].message),
-                "pandas is not installed so load_excel_open will be used. Data can only be returned as list of dicts.",
+                "pandas is not installed so load_excel_light will be used. Data can only be returned as list of dicts.",
             )
             self.check_test_excel(data)
 
@@ -179,7 +179,7 @@ class FileTests(TestCase):
             self.assertEqual(len(warning_list), 1)
             self.assertEqual(
                 str(warning_list[0].message),
-                "pandas is not installed so write_excel_open will be used.",
+                "pandas is not installed so write_excel_light will be used.",
             )
 
             # Assert that the file was written correctly

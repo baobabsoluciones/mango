@@ -12,10 +12,10 @@ Features
 - Configurable date and message formats
 
 Best Practices
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 Centralized Logger Configuration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The recommended approach is to create a dedicated script for logger configuration (e.g., ``logger.py``) and import it across other modules. This ensures consistent logging behavior throughout your application by having a single source of truth for logger setup.
 
 Creating the Logger Script
@@ -64,7 +64,7 @@ This approach:
 
 
 Logging Guidelines
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 - Use appropriate log levels:
     - DEBUG (10): Detailed information for debugging
     - INFO (20): General operational events
@@ -77,7 +77,7 @@ Logging Guidelines
 - Avoid logging sensitive information
 
 Basic Usage
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Here's a simple example of using the logger:
 
@@ -98,7 +98,7 @@ Here's a simple example of using the logger:
     logger.error("Error message")
 
 File Logging
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 To log to both console and file:
 
@@ -116,7 +116,7 @@ To log to both console and file:
     logger.debug("This only goes to file")
 
 JSON Logging
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 For structured logging in JSON format:
 
@@ -130,37 +130,38 @@ For structured logging in JSON format:
     logger.info("This will be logged in JSON format")
 
 API Reference
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 get_configured_logger
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: mango.logging.logger.get_configured_logger
 
 ColorFormatter
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 .. autoclass:: mango.logging.logger.ColorFormatter
     :members:
     :undoc-members:
     :no-inherited-members:
 
 JSONFormatter
-^^^^^^^^^^^^
+^^^^^^^^^^^^^
 .. autoclass:: mango.logging.logger.JSONFormatter
     :members:
     :undoc-members:
     :no-inherited-members:
 
 JSONFileHandler
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 .. autoclass:: mango.logging.logger.JSONFileHandler
     :members:
     :undoc-members:
     :no-inherited-members:
+
 Deprecated Functions
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 get_basic_logger
-^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 .. autofunction:: mango.logging.logger.get_basic_logger
 
 .. caution::
@@ -168,8 +169,8 @@ get_basic_logger
 
 Chrono
 ~~~~~~
-.. autoclass:: mango.logging.Chrono
+.. autoclass:: mango.logging.chrono.Chrono
 
 Time decorator
-~~~~~~~~~~~~~
-.. autofunction:: mango.logging.log_time
+~~~~~~~~~~~~~~
+.. autofunction:: mango.logging.decorators.log_time

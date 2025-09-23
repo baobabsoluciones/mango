@@ -22,14 +22,27 @@ def plot_loss_history(
     save_path: str,
 ):
     """
-    Plot training and validation loss history.
+    Plot training and validation loss history over epochs.
 
-    :param train_loss: list of training loss values per epoch
+    Creates an interactive Plotly line chart showing the progression of
+    training and validation losses during model training. The plot is
+    saved as an HTML file in the specified directory.
+
+    :param train_loss: Training loss values for each epoch
     :type train_loss: List[float]
-    :param val_loss: list of validation loss values per epoch
+    :param val_loss: Validation loss values for each epoch
     :type val_loss: List[float]
-    :param save_path: path to folder where plot will be saved
+    :param save_path: Directory path where the plot HTML file will be saved
     :type save_path: str
+    :return: None
+    :rtype: None
+
+    Example:
+        >>> train_losses = [0.5, 0.3, 0.2, 0.15, 0.1]
+        >>> val_losses = [0.6, 0.4, 0.25, 0.18, 0.12]
+        >>> plot_loss_history(train_losses, val_losses, "./plots")
+        # Saves loss_history.html in ./plots/ directory
+
     """
     # Create save directory if it doesn't exist
     os.makedirs(save_path, exist_ok=True)
@@ -71,16 +84,29 @@ def plot_actual_and_reconstructed(
 ):
     """
     Plot actual vs reconstructed values for each feature and save to specified folder.
-    Can separate plots by data ID if id_data is provided.
 
-    :param df_actual: DataFrame containing actual values
+    Creates comprehensive visualizations comparing original data with autoencoder
+    reconstructions. Supports different data structures including ID-based data
+    and dataset splits (train/validation/test). Generates multiple plot types
+    including separate views, overlapped views, and combined feature plots.
+
+    :param df_actual: DataFrame containing actual/original values
     :type df_actual: pd.DataFrame
-    :param df_reconstructed: DataFrame containing reconstructed values
+    :param df_reconstructed: DataFrame containing reconstructed values from autoencoder
     :type df_reconstructed: pd.DataFrame
-    :param save_path: path to folder where plots will be saved
+    :param save_path: Directory path where plots will be saved as HTML files
     :type save_path: str
-    :param feature_labels: optional list of labels for each feature
+    :param feature_labels: Optional list of labels for each feature column
     :type feature_labels: Optional[List[str]]
+    :return: None
+    :rtype: None
+
+    Example:
+        >>> import pandas as pd
+        >>> actual_df = pd.DataFrame({"feature1": [1, 2, 3], "feature2": [4, 5, 6]})
+        >>> reconstructed_df = pd.DataFrame({"feature1": [1.1, 1.9, 3.1], "feature2": [3.9, 5.2, 5.8]})
+        >>> plot_actual_and_reconstructed(actual_df, reconstructed_df, "./plots", ["sensor1", "sensor2"])
+
     """
     os.makedirs(save_path, exist_ok=True)
 
@@ -434,15 +460,31 @@ def plot_reconstruction_iterations(
     id_iter: Optional[str] = None,
 ):
     """
-    Plots the original data with missing values, the first full reconstruction,
-    and the iterative reconstruction of NaN values.
+    Plot the original data with missing values and iterative reconstruction progress.
 
-    :param original_data: 2D numpy array (features x timesteps) with the original data.
-    :param reconstructed_iterations: Dictionary {iteration: 2D numpy array}
-                                     containing reconstructions per iteration.
-    :param save_path: Path to save the plots.
-    :param feature_labels: Optional list of labels for each feature.
-    :param id_iter: Optional ID to distinguish plots if working with multiple IDs.
+    Creates detailed visualizations showing the progression of NaN value reconstruction
+    across multiple iterations. Displays original data (with NaNs), intermediate
+    reconstruction iterations, and final reconstruction results for each feature.
+
+    :param original_data: 2D numpy array (features x timesteps) with the original data including NaNs
+    :type original_data: np.ndarray
+    :param reconstructed_iterations: Dictionary mapping iteration numbers to 2D numpy arrays containing reconstructions
+    :type reconstructed_iterations: dict
+    :param save_path: Directory path where plots will be saved as HTML files
+    :type save_path: str
+    :param feature_labels: Optional list of labels for each feature
+    :type feature_labels: Optional[List[str]]
+    :param id_iter: Optional identifier to distinguish plots when working with multiple datasets
+    :type id_iter: Optional[str]
+    :return: None
+    :rtype: None
+
+    Example:
+        >>> import numpy as np
+        >>> original = np.array([[1, np.nan, 3], [4, 5, np.nan]])
+        >>> iterations = {1: np.array([[1, 2, 3], [4, 5, 6]]), 2: np.array([[1, 2.1, 3], [4, 5, 5.9]])}
+        >>> plot_reconstruction_iterations(original, iterations, "./plots", ["feature1", "feature2"])
+
     """
     os.makedirs(save_path, exist_ok=True)
 
@@ -570,24 +612,34 @@ def create_error_analysis_dashboard(
     template: str = "plotly_white",
 ) -> go.Figure:
     """
-    Create an interactive dashboard for error analysis with multiple plots.
+    Create an interactive dashboard for comprehensive error analysis with multiple plots.
 
-    :param error_df: DataFrame containing error data
+    Generates a multi-panel dashboard containing bar plots of mean errors by feature,
+    box plots showing error distributions, and correlation heatmaps between features.
+    Provides comprehensive visualization for understanding reconstruction error patterns.
+
+    :param error_df: DataFrame containing reconstruction error data (samples x features)
     :type error_df: pd.DataFrame
-    :param save_path: Optional path to save the plot
+    :param save_path: Optional directory path to save the dashboard HTML file
     :type save_path: Optional[str]
-    :param filename: Name of the file to save
+    :param filename: Name of the HTML file to save
     :type filename: str
-    :param show: Whether to display the plot
+    :param show: Whether to display the dashboard in browser
     :type show: bool
-    :param height: Height of the figure
+    :param height: Height of the figure in pixels
     :type height: int
-    :param width: Width of the figure
+    :param width: Width of the figure in pixels
     :type width: int
-    :param template: Plotly template to use
+    :param template: Plotly template for styling (e.g., 'plotly_white', 'ggplot2')
     :type template: str
-    :return: Plotly figure object
+    :return: Plotly figure object containing the dashboard
     :rtype: go.Figure
+
+    Example:
+        >>> import pandas as pd
+        >>> error_data = pd.DataFrame({"feature1": [0.1, 0.2, 0.3], "feature2": [0.2, 0.1, 0.4]})
+        >>> dashboard = create_error_analysis_dashboard(error_data, save_path="./plots")
+
     """
     try:
         # Create a subplot figure with 3 plots
@@ -684,28 +736,42 @@ def boxplot_reconstruction_error(
     color_palette: Optional[List[str]] = None,
 ) -> go.Figure:
     """
-    Generate and optionally save a boxplot for reconstruction error using Plotly.
+    Generate and optionally save a boxplot for reconstruction error analysis using Plotly.
 
-    :param reconstruction_error_df: DataFrame with reconstruction error values
+    Creates interactive boxplots showing the distribution of reconstruction errors
+    across features and optionally across dataset splits (train/validation/test).
+    Provides statistical insights into error patterns and outliers.
+
+    :param reconstruction_error_df: DataFrame with reconstruction error values (samples x features)
     :type reconstruction_error_df: pd.DataFrame
-    :param save_path: Optional path to save the plot
+    :param save_path: Optional directory path to save the plot HTML file
     :type save_path: Optional[str]
-    :param filename: Name of the file to save
+    :param filename: Name of the HTML file to save
     :type filename: str
-    :param show: Whether to display the plot
+    :param show: Whether to display the plot in browser
     :type show: bool
-    :param height: Height of the figure (None for auto)
+    :param height: Height of the figure in pixels (None for auto-sizing)
     :type height: Optional[int]
-    :param width: Width of the figure (None for auto)
+    :param width: Width of the figure in pixels (None for auto-sizing)
     :type width: Optional[int]
-    :param template: Plotly template to use
+    :param template: Plotly template for styling (e.g., 'plotly_white', 'ggplot2')
     :type template: str
-    :param xaxis_tickangle: Angle for x-axis labels
+    :param xaxis_tickangle: Angle for x-axis labels in degrees
     :type xaxis_tickangle: int
-    :param color_palette: Optional color mapping
-    :type color_palette: Optional[Dict[str, str]]
-    :return: Plotly figure object
+    :param color_palette: Optional list of colors for data splits
+    :type color_palette: Optional[List[str]]
+    :return: Plotly figure object containing the boxplot
     :rtype: go.Figure
+
+    Example:
+        >>> import pandas as pd
+        >>> error_df = pd.DataFrame({
+        ...     "feature1": [0.1, 0.2, 0.3, 0.4],
+        ...     "feature2": [0.2, 0.1, 0.4, 0.3],
+        ...     "data_split": ["train", "train", "val", "val"]
+        ... })
+        >>> boxplot = boxplot_reconstruction_error(error_df, save_path="./plots")
+
     """
     if reconstruction_error_df.empty:
         raise ValueError("Input DataFrame cannot be empty")
@@ -832,24 +898,35 @@ def create_actual_vs_reconstructed_plot(
     """
     Create an interactive plot comparing actual and reconstructed values.
 
-    :param df_actual: DataFrame with actual values
+    Generates a comprehensive line plot showing the comparison between original
+    data and autoencoder reconstructions across all features. Combines data
+    with type indicators for clear visualization of reconstruction quality.
+
+    :param df_actual: DataFrame containing actual/original values
     :type df_actual: pd.DataFrame
-    :param df_reconstructed: DataFrame with reconstructed values
+    :param df_reconstructed: DataFrame containing reconstructed values from autoencoder
     :type df_reconstructed: pd.DataFrame
-    :param save_path: Optional path to save the plot
+    :param save_path: Optional directory path to save the plot HTML file
     :type save_path: Optional[str]
-    :param filename: Name of the file to save
+    :param filename: Name of the HTML file to save
     :type filename: str
-    :param show: Whether to display the plot
+    :param show: Whether to display the plot in browser
     :type show: bool
-    :param height: Height of the figure
-    :type height: int
-    :param width: Width of the figure
-    :type width: int
-    :param template: Plotly template to use
+    :param height: Height of the figure in pixels
+    :type height: Optional[int]
+    :param width: Width of the figure in pixels
+    :type width: Optional[int]
+    :param template: Plotly template for styling (e.g., 'plotly_white', 'ggplot2')
     :type template: str
-    :return: Plotly figure object
+    :return: Plotly figure object containing the comparison plot
     :rtype: go.Figure
+
+    Example:
+        >>> import pandas as pd
+        >>> actual_df = pd.DataFrame({"feature1": [1, 2, 3], "feature2": [4, 5, 6]})
+        >>> reconstructed_df = pd.DataFrame({"feature1": [1.1, 1.9, 3.1], "feature2": [3.9, 5.2, 5.8]})
+        >>> plot = create_actual_vs_reconstructed_plot(actual_df, reconstructed_df, save_path="./plots")
+
     """
     try:
         # Combine actual and reconstructed data
@@ -908,13 +985,17 @@ def plot_corrected_data(
     """
     Plot original sensor data, autoencoder reconstruction, and corrected (replaced) anomaly points.
 
+    Creates comprehensive visualizations showing the data correction process by displaying
+    original data, autoencoder reconstructions, and specifically highlighting points
+    that were identified as anomalies and replaced with reconstructed values.
+
     :param actual_data_df: Original sensor data including the context window
     :type actual_data_df: pd.DataFrame
     :param autoencoder_output_df: Autoencoder output after context window removal
     :type autoencoder_output_df: pd.DataFrame
-    :param anomaly_mask: DataFrame of boolean values indicating where values categorized as anomalies
+    :param anomaly_mask: DataFrame of boolean values indicating where values were categorized as anomalies
     :type anomaly_mask: pd.DataFrame
-    :param save_path: Optional path to save the plot as an HTML file
+    :param save_path: Optional directory path to save the plot as an HTML file
     :type save_path: Optional[str]
     :param filename: Filename to use if saving the plot
     :type filename: str
@@ -924,7 +1005,7 @@ def plot_corrected_data(
     :type height: Optional[int]
     :param width: Optional width of the figure in pixels
     :type width: Optional[int]
-    :param template: Plotly template for figure styling (e.g. "plotly_white")
+    :param template: Plotly template for figure styling (e.g., 'plotly_white', 'ggplot2')
     :type template: str
     :param color_palette: Optional list of colors to use for plotting each sensor
     :type color_palette: Optional[List[str]]
@@ -932,6 +1013,14 @@ def plot_corrected_data(
     :rtype: go.Figure
     :raises ValueError: If input DataFrames have mismatched lengths, columns, or invalid structure
     :raises Exception: If an error occurs during plotting or file saving
+
+    Example:
+        >>> import pandas as pd
+        >>> actual_df = pd.DataFrame({"sensor1": [1, 2, 3, 4], "sensor2": [5, 6, 7, 8]})
+        >>> reconstructed_df = pd.DataFrame({"sensor1": [1.1, 1.9, 3.1, 3.9], "sensor2": [5.2, 5.8, 7.1, 7.9]})
+        >>> mask_df = pd.DataFrame({"sensor1": [False, True, False, True], "sensor2": [True, False, True, False]})
+        >>> plot = plot_corrected_data(actual_df, reconstructed_df, mask_df, save_path="./plots")
+
     """
 
     # Define context offset based on the length of the actual vs outencoder outut
@@ -1058,30 +1147,44 @@ def plot_anomaly_proportions(
 ) -> go.Figure:
     """
     Generate a bar chart showing anomaly proportions by sensor and data split.
-    Anomaly proportions are calculated as the number of anomalies divided by
-    the total number of observations for each sensor.
+
+    Creates interactive bar charts displaying the proportion of anomalies for each
+    sensor across different dataset splits (train/validation/test). Anomaly proportions
+    are calculated as the number of anomalies divided by the total number of observations
+    for each sensor, providing insights into data quality patterns.
 
     :param anomaly_mask: DataFrame containing boolean anomaly mask (True = anomaly) and a 'data_split' column
     :type anomaly_mask: pd.DataFrame
-    :param save_path: Optional directory to save the output HTML plot
+    :param save_path: Optional directory path to save the output HTML plot
     :type save_path: Optional[str]
     :param filename: Filename for the saved plot (HTML format)
     :type filename: str
-    :param show: Whether to display the plot interactively
+    :param show: Whether to display the plot interactively in browser
     :type show: bool
-    :param height: Optional height of the figure
+    :param height: Optional height of the figure in pixels
     :type height: Optional[int]
-    :param width: Optional width of the figure
+    :param width: Optional width of the figure in pixels
     :type width: Optional[int]
     :param template: Plotly layout template to use (e.g., 'plotly_white', 'ggplot2')
     :type template: str
     :param color_palette: Optional list of color hex codes or names to use per data split
     :type color_palette: Optional[List[str]]
-    :param xaxis_tickangle: Angle for x-axis labels
+    :param xaxis_tickangle: Angle for x-axis labels in degrees
     :type xaxis_tickangle: int
-    :return: Plotly Figure object
+    :return: Plotly Figure object containing the bar chart
     :rtype: go.Figure
+    :raises ValueError: If required columns are missing or data is invalid
     :raises Exception: If plot creation or file saving fails
+
+    Example:
+        >>> import pandas as pd
+        >>> mask_df = pd.DataFrame({
+        ...     "sensor1": [True, False, True, False],
+        ...     "sensor2": [False, True, False, True],
+        ...     "data_split": ["train", "train", "val", "val"]
+        ... })
+        >>> plot = plot_anomaly_proportions(mask_df, save_path="./plots")
+
     """
     if "data_split" not in anomaly_mask.columns:
         raise ValueError("Anomaly mask must contain a 'data_split' column.")

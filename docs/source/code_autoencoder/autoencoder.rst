@@ -6,6 +6,9 @@ Autoencoder
 
 The autoencoder module provides a powerful implementation of autoencoder neural networks specifically designed for time series data. This implementation supports various architectures and configurations for encoding and decoding time series data, making it suitable for tasks like anomaly detection, data reconstruction, and feature learning.
 
+.. note::
+    For complete API reference and method documentation, see :doc:`autoencoder_api`.
+
 Overview
 ~~~~~~~~
 
@@ -23,7 +26,7 @@ The implementation supports multiple neural network architectures:
 - Dense (Fully Connected Neural Network) - Note: Not implemented for time series autoencoders
 
 Theoretical background
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Autoencoders are a class of unsupervised neural networks that learn to compress and reconstruct input data. Their core objective is to encode the input into a latent representation that captures the most relevant information, and then decode it to produce a reconstruction as close as possible to the original input. The loss function—typically Mean Squared Error (MSE)—guides the learning process by penalizing discrepancies between the input and its reconstruction.
 
@@ -60,7 +63,7 @@ Other potential applications that are not currently implemented include:
 - **Multi-variate time series analysis**: While this implementation supports multi-variate time series, specialized applications like cross-series dependency analysis would require additional implementation.
 
 Architecture
-~~~~~~~~~~~
+~~~~~~~~~~~~
 
 The autoencoder architecture is highly configurable through the following components:
 
@@ -104,7 +107,7 @@ The utils module is organized into several submodules:
 - **Sequences**: Time series sequence handling utilities
 
 Configuration and parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The AutoEncoder class provides extensive configuration options through its parameters. Here's a detailed explanation of each parameter and its functionality:
 
@@ -316,7 +319,7 @@ The following parameters are mandatory when calling `build_model` or `build_and_
        Can be a list of weights with length equal to the number of features. Higher weights will increase the importance of those features in the loss function.
 
 Loss function calculation
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The autoencoder uses Mean Squared Error (MSE) as its default loss function, which is calculated as follows:
 
@@ -361,7 +364,7 @@ Example of loss calculation with different configurations:
     )
 
 Input data examples
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 **Basic configuration with automatic splitting**
 
@@ -601,7 +604,7 @@ The `reconstruct_new_data` method generates several visualizations to help analy
    - Saved as "error_distribution.png" in the specified save_path
 
 Model persistence
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 During training, the model is automatically saved in two ways:
 

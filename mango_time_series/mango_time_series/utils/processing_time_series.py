@@ -15,8 +15,7 @@ try:
 except ImportError:
     pl = None
 
-from mango_time_series.logging import log_time
-from mango_time_series.logging import get_configured_logger
+from mango_time_series.logging import log_time, get_configured_logger
 
 logger = get_configured_logger()
 
@@ -24,11 +23,24 @@ logger = get_configured_logger()
 @log_time()
 def aggregate_to_input(df: pd.DataFrame, freq: str, series_conf: dict) -> pd.DataFrame:
     """
-    Aggregate data to the frequency defined in the input
-    :param df: pd.DataFrame with the sales information
-    :param freq: str with the frequency to aggregate the data
-    :param series_conf: dict with the configuration of the series
-    :return: pd.DataFrame
+    Aggregate time series data to specified frequency using pandas.
+
+    Groups the data by key columns and time frequency, then applies
+    aggregation operations defined in the series configuration.
+
+    :param df: DataFrame containing time series data
+    :type df: pandas.DataFrame
+    :param freq: Frequency string for aggregation (e.g., 'D', 'W', 'M')
+    :type freq: str
+    :param series_conf: Configuration dictionary containing KEY_COLS and AGG_OPERATIONS
+    :type series_conf: dict
+    :return: Aggregated DataFrame with specified frequency
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Uses pandas Grouper for time-based grouping
+        - Applies aggregation operations from series_conf["AGG_OPERATIONS"]
+        - Groups by both key columns and time frequency
     """
 
     logger.info(f"Aggregating data to: {freq}")
@@ -46,11 +58,25 @@ def aggregate_to_input_pl(
     df: pd.DataFrame, freq: str, series_conf: dict
 ) -> pd.DataFrame:
     """
-    Aggregate data to the frequency defined in the input
-    :param df: pd.DataFrame with the sales information
-    :param freq: str with the frequency to aggregate the data
-    :param series_conf: dict with the configuration of the series.
-    :return: pd.DataFrame
+    Aggregate time series data to specified frequency using Polars.
+
+    Converts pandas DataFrame to Polars, groups by key columns and time frequency,
+    applies aggregation operations, then converts back to pandas.
+
+    :param df: DataFrame containing time series data
+    :type df: pandas.DataFrame
+    :param freq: Frequency string for aggregation (e.g., 'D', 'W', 'M')
+    :type freq: str
+    :param series_conf: Configuration dictionary containing KEY_COLS and AGG_OPERATIONS
+    :type series_conf: dict
+    :return: Aggregated DataFrame with specified frequency
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Converts pandas to Polars for processing, then back to pandas
+        - Handles month frequency conversion ('m', 'MS', 'ME' -> 'mo')
+        - Uses Polars datetime truncate for time-based grouping
+        - Supports sum, mean, min, max, median aggregation operations
     """
 
     logger.info(f"Aggregating data to: {freq}")
@@ -91,11 +117,25 @@ def aggregate_to_input_pllazy(
     df: pl.LazyFrame, freq: str, series_conf: dict
 ) -> pl.LazyFrame:
     """
-    Aggregate data to the frequency defined in the input
-    :param df: pd.DataFrame with the sales information
-    :param freq: str with the frequency to aggregate the data
-    :param series_conf: dict with the configuration of the series
-    :return: pd.DataFrame
+    Aggregate time series data to specified frequency using Polars LazyFrame.
+
+    Groups LazyFrame by key columns and time frequency, applies aggregation
+    operations, and returns sorted result as LazyFrame.
+
+    :param df: LazyFrame containing time series data
+    :type df: polars.LazyFrame
+    :param freq: Frequency string for aggregation (e.g., 'D', 'W', 'M')
+    :type freq: str
+    :param series_conf: Configuration dictionary containing KEY_COLS and AGG_OPERATIONS
+    :type series_conf: dict
+    :return: Aggregated LazyFrame with specified frequency
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Works with Polars LazyFrame for efficient processing
+        - Uses Polars datetime truncate for time-based grouping
+        - Sorts result by key columns and datetime
+        - Supports sum, mean, min, max, median aggregation operations
     """
 
     logger.info(f"Aggregating data to: {freq}")
@@ -135,11 +175,24 @@ def rename_to_common_ts_names(
     df: pd.DataFrame, time_col: str, value_col: str
 ) -> pd.DataFrame:
     """
-    Rename columns to common time series names
-    :param df: pd.DataFrame
-    :param time_col: str with the name of the time column
-    :param value_col: str with the name of the value column
-    :return: pd.DataFrame
+    Rename columns to standard time series naming convention.
+
+    Standardizes column names by renaming time and value columns to
+    'datetime' and 'y' respectively, and converts all column names to lowercase.
+
+    :param df: DataFrame to rename columns in
+    :type df: pandas.DataFrame
+    :param time_col: Name of the time/datetime column
+    :type time_col: str
+    :param value_col: Name of the value/target column
+    :type value_col: str
+    :return: DataFrame with standardized column names
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Renames time_col to 'datetime' and value_col to 'y'
+        - Converts all column names to lowercase
+        - Standardizes naming for time series processing pipeline
     """
     logger.info("Renaming columns to common time series names")
 
@@ -156,11 +209,24 @@ def rename_to_common_ts_names_pl(
     df: pl.LazyFrame, time_col: str, value_col: str
 ) -> pl.LazyFrame:
     """
-    Rename columns to common time series names
-    :param df: pl.DataFrame
-    :param time_col: str with the name of the time column
-    :param value_col: str with the name of the value column
-    :return: pl.DataFrame
+    Rename columns to standard time series naming convention using Polars.
+
+    Standardizes column names by renaming time and value columns to
+    'datetime' and 'y' respectively, and converts all column names to lowercase.
+
+    :param df: LazyFrame to rename columns in
+    :type df: polars.LazyFrame
+    :param time_col: Name of the time/datetime column
+    :type time_col: str
+    :param value_col: Name of the value/target column
+    :type value_col: str
+    :return: LazyFrame with standardized column names
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Renames time_col to 'datetime' and value_col to 'y'
+        - Converts all column names to lowercase using with_columns
+        - Standardizes naming for time series processing pipeline
     """
     # Rename columns
     df = df.rename({time_col: "datetime", value_col: "y"})
@@ -175,9 +241,20 @@ def rename_to_common_ts_names_pl(
 
 def drop_negative_output(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Drop rows with negative sales
-    :param df: pd.DataFrame
-    :return: pd.DataFrame
+    Remove rows with negative values from time series data.
+
+    Filters out rows where the target variable (y) has negative values,
+    which are typically not meaningful for sales or demand forecasting.
+
+    :param df: DataFrame containing time series data with 'y' column
+    :type df: pandas.DataFrame
+    :return: DataFrame with negative value rows removed
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Removes rows where y < 0
+        - Logs the number of rows being dropped
+        - Preserves all other data and columns
     """
     logger.info("Dropping rows with negative sales")
 
@@ -193,9 +270,22 @@ def drop_negative_output(df: pd.DataFrame) -> pd.DataFrame:
 
 def drop_negative_output_pl(df: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Drop rows with negative sales
-    :param df: pl.LazyFrame
-    :return: pl.LazyFrame
+    Remove rows with negative values from time series data using Polars.
+
+    Filters out rows where the target variable (y) has negative values,
+    which are typically not meaningful for sales or demand forecasting.
+    Uses lazy evaluation for efficient processing.
+
+    :param df: LazyFrame containing time series data with 'y' column
+    :type df: polars.LazyFrame
+    :return: LazyFrame with negative value rows removed
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Removes rows where y < 0 using filter operation
+        - Logs the number of rows being dropped
+        - Uses lazy evaluation for memory efficiency
+        - Preserves all other data and columns
     """
     logger.info("Dropping rows with negative sales")
 
@@ -214,9 +304,20 @@ def drop_negative_output_pl(df: pl.LazyFrame) -> pl.LazyFrame:
 @log_time()
 def add_covid_mark(df: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Add a column to mark the COVID period
-    :param df: pl.LazyFrame with the sales information
-    :return: pl.LazyFrame
+    Add COVID period indicator column to time series data.
+
+    Creates a boolean column 'covid' that marks the COVID-19 pandemic period
+    from March 2020 to March 2021, which can be used for analysis or modeling.
+
+    :param df: LazyFrame containing time series data with datetime column
+    :type df: polars.LazyFrame
+    :return: LazyFrame with added 'covid' boolean column
+    :rtype: polars.LazyFrame
+
+    Note:
+        - COVID period: 2020-03-01 to 2021-03-01
+        - Creates boolean column where True indicates COVID period
+        - Useful for identifying pandemic impact on time series patterns
     """
     logger.info("Adding COVID mark")
 
@@ -242,19 +343,32 @@ def create_lags_col(
     check_col: List[str] = None,
 ) -> pd.DataFrame:
     """
-    The create_lags_col function creates lagged columns for a given dataframe.
-    The function takes four arguments: df, col, lags, and key_cols.
-    The df argument is the dataframe to which we want to add lagged columns.
-    The col argument is the name of the column in the dataframe that we want to create lag variables for (e.g., 'units_value').
-    The lags argument should be a list of integers representing how far back in time we want to shift our new lag features (e.g., [3, 6] would create two new lag features).
-    The key_cols argument should be a list of columns that define each time series in the dataframe (e.g., ['prod_cod', 'country']).
+    Create lagged columns for time series feature engineering.
 
-    :param pd.DataFrame df: The dataframe to be manipulated.
-    :param str col: The column to create lags for.
-    :param list[int] lags: The list of lag values to create.
-    :param list[str] key_cols: The list of columns that define each time series.
-    :param list[str] check_col: The list of columns to check for discontinuities in the lagged series.
-    :return: A dataframe with the lagged columns added.
+    Generates lagged versions of a specified column for time series analysis.
+    Supports both positive lags (past values) and negative lags (future values/leads).
+    Can handle multiple time series by grouping on key columns and optionally
+    handle discontinuities by checking for changes in specified columns.
+
+    :param df: DataFrame to add lagged columns to
+    :type df: pandas.DataFrame
+    :param col: Name of the column to create lags for
+    :type col: str
+    :param lags: List of lag values (positive for past, negative for future)
+    :type lags: list[int]
+    :param key_cols: Columns that define each time series (for grouping)
+    :type key_cols: list[str], optional
+    :param check_col: Columns to check for discontinuities in lagged series
+    :type check_col: list[str], optional
+    :return: DataFrame with lagged columns added
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Positive lags create columns named '{col}_lag{lag}'
+        - Negative lags create columns named '{col}_lead{abs(lag)}'
+        - Groups by key_cols if provided, otherwise treats as single series
+        - Sets lag values to NaN when discontinuities detected in check_col
+        - Requires pandas and numpy to be installed
     """
 
     # Ensure pandas and numpy are imported
@@ -303,12 +417,26 @@ def create_lags_col(
     return df_c
 
 
-def series_as_columns(df, series_conf):
+def series_as_columns(df: pd.DataFrame, series_conf: dict) -> pd.DataFrame:
     """
-    Pivot the dataframe to have the series as columns
-    :param df: pd.DataFrame
-    :param series_conf: dict with the configuration of the series
-    :return: pd.DataFrame
+    Pivot time series data to wide format with series as columns.
+
+    Transforms long-format time series data into wide format where each
+    unique combination of key columns becomes a separate column. Uses
+    sum aggregation for overlapping values.
+
+    :param df: DataFrame in long format with time series data
+    :type df: pandas.DataFrame
+    :param series_conf: Configuration dictionary containing KEY_COLS and VALUE_COL
+    :type series_conf: dict
+    :return: DataFrame in wide format with series as columns
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Pivots using datetime as index and key_cols as columns
+        - Uses sum aggregation for overlapping values
+        - Flattens multi-level column names with underscore separator
+        - Renames first column back to 'datetime'
     """
     logger.info("Pivoting the dataframe")
     key_cols = series_conf["KEY_COLS"]
@@ -327,12 +455,26 @@ def series_as_columns(df, series_conf):
     return pivot_df
 
 
-def series_as_rows(df, series_conf):
+def series_as_rows(df: pd.DataFrame, series_conf: dict) -> pd.DataFrame:
     """
-    Pivot the dataframe to have the series as columns
-    :param df: pd.DataFrame
-    :param series_conf: dict with the configuration of the series
-    :return: pd.DataFrame
+    Pivot time series data to long format with series as rows.
+
+    Transforms wide-format time series data into long format where each
+    time series becomes a separate row. Splits column names to reconstruct
+    the original key columns.
+
+    :param df: DataFrame in wide format with series as columns
+    :type df: pandas.DataFrame
+    :param series_conf: Configuration dictionary containing KEY_COLS and VALUE_COL
+    :type series_conf: dict
+    :return: DataFrame in long format with series as rows
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Uses melt to transform wide to long format
+        - Splits column names by underscore to reconstruct key columns
+        - Arranges columns in order: datetime, key_cols, value_col
+        - Removes temporary 'id' column after processing
     """
     logger.info("Pivoting the dataframe")
     value_col = series_conf["VALUE_COL"]
@@ -358,13 +500,28 @@ def series_as_rows(df, series_conf):
 def process_time_series(
     df: Union[pd.DataFrame, pl.DataFrame, pl.LazyFrame],
     series_conf: Dict,
-):
+) -> pl.LazyFrame:
     """
-    Process the time series data
+    Process time series data through complete preprocessing pipeline.
 
-    :param df: pd.DataFrame with the sales information
-    :param series_conf: dict with the configuration of the series
-    :return: pd.DataFrame
+    Applies a comprehensive preprocessing pipeline including column standardization,
+    negative value removal, aggregation, dense data creation, and COVID marking.
+    Converts input to Polars LazyFrame for efficient processing.
+
+    :param df: Input DataFrame (pandas, Polars, or LazyFrame)
+    :type df: Union[pandas.DataFrame, polars.DataFrame, polars.LazyFrame]
+    :param series_conf: Configuration dictionary containing processing parameters
+    :type series_conf: dict
+    :return: Processed LazyFrame with standardized time series data
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Converts input to LazyFrame for processing
+        - Standardizes column names (TIME_COL -> datetime, VALUE_COL -> y)
+        - Removes negative values from target variable
+        - Aggregates to daily frequency, then to specified frequency
+        - Creates dense data with complete date ranges
+        - Adds COVID period indicator column
     """
     # if df is a pd.DataFrame then convert to pl.DataFrame
     if isinstance(df, pd.DataFrame):
@@ -405,24 +562,42 @@ def process_time_series(
 @log_time()
 def create_dense_data(
     df: pd.DataFrame,
-    id_cols,
+    id_cols: List[str],
     freq: str,
     min_max_by_id: bool = None,
-    date_init=None,
-    date_end=None,
+    date_init: str = None,
+    date_end: str = None,
     time_col: str = "timeslot",
 ) -> pd.DataFrame:
     """
-    Create a dense dataframe with a frequency of freq, given range of dates or inherited from the dataframe,
-     using the id_cols as keys.
-    :param df: dataframe to be expanded
-    :param id_cols: list of columns to be used as keys
-    :param freq: frequency of the new dataframe
-    :param min_max_by_id: boolean to indicate if the range of dates is the min and max of the dataframe by id
-    :param date_init: if it has a value, all initial dates will be set to this value
-    :param date_end: if it has a value, all final dates will be set to this value
-    :param time_col: string with name of the column with the time information
-    :return: dataframe with all the dates using the frequency freq
+    Create dense time series data with complete date ranges.
+
+    Expands sparse time series data to include all dates within the specified
+    frequency, filling missing dates with NaN values. Can use global date range
+    or individual date ranges per ID group.
+
+    :param df: DataFrame to expand with complete date ranges
+    :type df: pandas.DataFrame
+    :param id_cols: List of columns that identify unique time series
+    :type id_cols: list[str]
+    :param freq: Frequency string for date range generation (e.g., 'D', 'W', 'M')
+    :type freq: str
+    :param min_max_by_id: Whether to use individual min/max dates per ID (default: None)
+    :type min_max_by_id: bool, optional
+    :param date_init: Override start date for all series (default: None)
+    :type date_init: str, optional
+    :param date_end: Override end date for all series (default: None)
+    :type date_end: str, optional
+    :param time_col: Name of the time column (default: "timeslot")
+    :type time_col: str
+    :return: DataFrame with complete date ranges and original data merged
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Creates Cartesian product of all dates and ID combinations
+        - Fills missing dates with NaN values
+        - Requires pandas to be installed
+        - Uses cross join to create complete date grid
     """
     try:
         import pandas as pd
@@ -490,24 +665,42 @@ def create_dense_data(
 @log_time()
 def create_dense_data_pl(
     df: pl.LazyFrame,
-    id_cols,
+    id_cols: List[str],
     freq: str,
     min_max_by_id: bool = None,
-    date_init=None,
-    date_end=None,
+    date_init: str = None,
+    date_end: str = None,
     time_col: str = "timeslot",
 ) -> pl.LazyFrame:
     """
-    Create a dense dataframe with a frequency of freq, given range of dates or inherited from the dataframe,
-     using the id_cols as keys.
-    :param df: dataframe to be expanded
-    :param id_cols: list of columns to be used as keys
-    :param freq: frequency of the new dataframe
-    :param min_max_by_id: boolean to indicate if the range of dates is the min and max of the dataframe by id
-    :param date_init: if it has a value, all initial dates will be set to this value
-    :param date_end: if it has a value, all final dates will be set to this value
-    :param time_col: string with name of the column with the time information
-    :return: dataframe with all the dates using the frequency freq
+    Create dense time series data with complete date ranges using Polars.
+
+    Expands sparse time series data to include all dates within the specified
+    frequency, filling missing dates with null values. Uses Polars for efficient
+    processing with lazy evaluation.
+
+    :param df: LazyFrame to expand with complete date ranges
+    :type df: polars.LazyFrame
+    :param id_cols: List of columns that identify unique time series
+    :type id_cols: list[str]
+    :param freq: Frequency string for date range generation (e.g., 'D', 'W', 'M')
+    :type freq: str
+    :param min_max_by_id: Whether to use individual min/max dates per ID (default: None)
+    :type min_max_by_id: bool, optional
+    :param date_init: Override start date for all series (default: None)
+    :type date_init: str, optional
+    :param date_end: Override end date for all series (default: None)
+    :type date_end: str, optional
+    :param time_col: Name of the time column (default: "timeslot")
+    :type time_col: str
+    :return: LazyFrame with complete date ranges and original data merged
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Collects LazyFrame for date range calculations
+        - Creates cross join of all dates and ID combinations
+        - Converts time column to datetime format
+        - Returns LazyFrame for efficient processing
     """
 
     df_w = df.collect()
@@ -592,6 +785,7 @@ def create_dense_data_pllazy(
     """
     Create a dense dataframe with a frequency of freq, given range of dates or inherited from the dataframe,
      using the id_cols as keys.
+
     :param df: dataframe to be expanded
     :param id_cols: list of columns to be used as keys
     :param freq: frequency of the new dataframe
@@ -670,34 +864,39 @@ def create_dense_data_pllazy(
 
 
 def create_recurrent_dataset(
-    data: np.array,
+    data: np.ndarray,
     look_back: int,
     include_output_lags: bool = False,
     lags: List[int] = None,
     output_last: bool = True,
-):
+) -> tuple[np.ndarray, np.ndarray]:
     """
-    The create_recurrent_dataset function creates a dataset for recurrent neural networks.
-    The function takes in an array of data, and returns two arrays: one containing the input data,
-    and another containing the output labels. The input is a 2D array with shape (num_samples, num_features).
-    The input data output is a 3D array with shape (num_samples, look_back, num_features), while the labels output
-    have a 1D array with shape (num_samples, ).
+    Create dataset for recurrent neural networks with time series sequences.
 
-    The function allows to include the output lags in the input output data. If include_output_lags is True,
-    the function will create the lags indicated on the lags' argument.
+    Transforms 2D time series data into 3D sequences suitable for RNN training.
+    Creates sliding windows of historical data as input and corresponding future
+    values as targets. Supports optional output lag features and flexible target
+    column positioning.
 
-    The function allows for the label to be the first "column" of the input data, or the last "column" of the input data
-    by setting the output_last argument to False or True, respectively.
+    :param data: 2D array with shape (num_samples, num_features)
+    :type data: numpy.ndarray
+    :param look_back: Number of previous time steps to use as input
+    :type look_back: int
+    :param include_output_lags: Whether to include output lag features (default: False)
+    :type include_output_lags: bool
+    :param lags: List of lag periods to include as features (default: None)
+    :type lags: list[int], optional
+    :param output_last: Whether target is last column (True) or first column (False)
+    :type output_last: bool
+    :return: Tuple containing (input_sequences, target_values)
+    :rtype: tuple[numpy.ndarray, numpy.ndarray]
 
-    :param :class:`np.array` data: pass the data to be used for training
-    :param int look_back: define the number of previous time steps to use as input variables
-    to predict the next time period
-    :param bool include_output_lags: decide whether the output lags should be included in the input data
-    :param lags:sSpecify which lags should be included in the input data
-    :param output_last: indicate if the label column is the first or last one in the original data
-    :return: A tuple of numpy arrays: (input_data, labels)
-    :rtype: tuple
-    :doc-author: baobab soluciones
+    Note:
+        - Input shape: (num_samples, look_back, num_features)
+        - Output shape: (num_samples,)
+        - Supports both positive and negative lags
+        - Handles output column positioning (first vs last)
+        - Creates sequences with proper temporal alignment
     """
     x, y = [], []
     if output_last:
@@ -742,23 +941,38 @@ def create_recurrent_dataset(
 def get_corr_matrix(
     df: pd.DataFrame,
     n_top: int = None,
-    threshold: int = None,
+    threshold: float = None,
     date_col: str = None,
-    years_corr: List = None,
-    subset: List = None,
-):
+    years_corr: List[int] = None,
+    subset: List[str] = None,
+) -> Dict[str, Dict[str, float]]:
     """
-    The get_corr_matrix function takes a dataframe and returns the correlation matrix of the columns.
+    Calculate correlation matrix for time series data with filtering options.
 
-    :param df: pd.DataFrame: Pass in the dataframe that we want to get the correlation matrix for
-    :param n_top: int: Select the top n correlated variables
-    :param threshold: int: Filter the correlation matrix by a threshold value
-    :param date_col: str: Specify the name of the column that contains dates
-    :param years_corr: List: Specify the years for which we want to calculate the correlation matrix
-    :param subset: List: Specify a subset of columns to be used in the correlation matrix
-    :param : Specify the number of top correlated variables to be returned
-    :return: A correlation matrix of the dataframe
-    :doc-author: baobab soluciones
+    Computes Pearson correlation matrix for time series data with various filtering
+    and selection options. Automatically detects date columns and validates data format.
+    Returns top correlations or correlations above threshold for each time series.
+
+    :param df: DataFrame containing time series data
+    :type df: pandas.DataFrame
+    :param n_top: Number of top correlations to return per series (default: None)
+    :type n_top: int, optional
+    :param threshold: Minimum correlation threshold to filter results (default: None)
+    :type threshold: float, optional
+    :param date_col: Name of the date column (auto-detected if None)
+    :type date_col: str, optional
+    :param years_corr: List of years to filter data for correlation calculation (default: None)
+    :type years_corr: list[int], optional
+    :param subset: List of series names to focus correlation analysis on (default: None)
+    :type subset: list[str], optional
+    :return: Dictionary with series names as keys and correlation dictionaries as values
+    :rtype: dict[str, dict[str, float]]
+
+    Note:
+        - Automatically detects datetime columns or uses index
+        - Validates data format and raises errors for inconsistencies
+        - Sets diagonal correlations to -100 to avoid self-correlation
+        - Returns all correlations if both n_top and threshold are None
     """
     if not date_col:
         date_col, as_index = get_date_col_candidate(df)
@@ -770,15 +984,24 @@ def get_corr_matrix(
     return get_corr_matrix_aux(df, years_corr, n_top, threshold, subset)
 
 
-def get_date_col_candidate(df: pd.DataFrame):
+def get_date_col_candidate(df: pd.DataFrame) -> tuple[List[str] | None, bool]:
     """
-    The get_date_col_candidate function takes a dataframe as an input and returns the name of the column that is
-    a datetime type. If there are no columns with datetime types, it will return None. It also returns a boolean value
-    that indicates whether or not the index is a datetime type.
+    Identify datetime columns in DataFrame for time series analysis.
 
-    :param df: pd.DataFrame: Pass the dataframe to the function
-    :return: A list of columns that have datetime dtypes
-    :doc-author: baobab soluciones
+    Searches for datetime columns in the DataFrame and determines whether
+    the index contains datetime information. Returns the datetime column
+    names and a boolean indicating if the index is datetime-based.
+
+    :param df: DataFrame to analyze for datetime columns
+    :type df: pandas.DataFrame
+    :return: Tuple containing (datetime_columns, index_is_datetime)
+    :rtype: tuple[list[str] or None, bool]
+
+    Note:
+        - Returns None for datetime_columns if no datetime columns found
+        - Returns True for index_is_datetime if index is DatetimeIndex
+        - Searches all columns for datetime64 dtypes
+        - Used by correlation functions for automatic date detection
     """
     date_column = [
         column
@@ -799,15 +1022,32 @@ def get_date_col_candidate(df: pd.DataFrame):
     return date_column, as_index
 
 
-def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool):
+def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool) -> None:
     """
-    The raise_if_inconsistency function raises a ValueError if the input dataframe is not in the correct format.
+    Validate DataFrame format for time series correlation analysis.
 
-    :param df: pd.DataFrame: Pass the dataframe to the function
-    :param date_col: str: Specify the name of the column that contains the date
-    :param as_index: bool: Check if the dataframe is pivoted or not
-    :return: A valueerror if the dataframe is not in the correct format
-    :doc-author: baobab soluciones
+    Performs comprehensive validation of DataFrame structure to ensure
+    it's suitable for correlation analysis. Checks for datetime columns,
+    duplicate indices, numeric columns, and proper pivoted format.
+
+    :param df: DataFrame to validate
+    :type df: pandas.DataFrame
+    :param date_col: Name of the date column (or None if using index)
+    :type date_col: str
+    :param as_index: Whether the DataFrame uses datetime index
+    :type as_index: bool
+    :return: None (raises ValueError if validation fails)
+    :rtype: None
+
+    Raises:
+        ValueError: If DataFrame format is inconsistent or invalid
+
+    Note:
+        - Validates presence of exactly one datetime column
+        - Checks for duplicate indices in time series data
+        - Ensures all non-datetime columns are numeric
+        - Provides example format in error messages
+        - Used by correlation functions for data validation
     """
     if date_col is None and as_index is False:
         raise ValueError("Dataframe must contain one datetime column")
@@ -869,24 +1109,37 @@ def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool):
 
 def get_corr_matrix_aux(
     df: pd.DataFrame,
-    years_corr,
-    n_top,
-    threshold,
-    subset: List = None,
+    years_corr: List[int] = None,
+    n_top: int = None,
+    threshold: float = None,
+    subset: List[str] = None,
 ) -> Dict[str, Dict[str, float]]:
     """
-    The get_corr_matrix_aux function computes the correlation matrix of a dataframe and returns
-    a dictionary with the top n correlations for each time series.
-    The function can also filter by years, subset and threshold.
+    Compute correlation matrix with filtering and selection options.
 
-    :param df: pd.DataFrame: Pass the dataframe to the function
-    :param years_corr: Filter the dataframe by year
-    :param n_top: Get the top n correlations for each time series
-    :param threshold: Filter the correlation matrix by a threshold value
-    :param subset: List: Specify a subset of time series to compare the correlations with
-    :param : Filter the dataframe by years
-    :return: A dictionary with the names of the time series as keys and a list of tuples (name, correlation) as values
-    :doc-author: baobab soluciones
+    Calculates Pearson correlation matrix for time series data and returns
+    filtered results based on various criteria. Supports year filtering,
+    top N correlations, threshold filtering, and subset analysis.
+
+    :param df: DataFrame with datetime index and numeric columns
+    :type df: pandas.DataFrame
+    :param years_corr: List of years to filter data for correlation calculation (default: None)
+    :type years_corr: list[int], optional
+    :param n_top: Number of top correlations to return per series (default: None)
+    :type n_top: int, optional
+    :param threshold: Minimum correlation threshold to filter results (default: None)
+    :type threshold: float, optional
+    :param subset: List of series names to focus correlation analysis on (default: None)
+    :type subset: list[str], optional
+    :return: Dictionary with series names as keys and correlation dictionaries as values
+    :rtype: dict[str, dict[str, float]]
+
+    Note:
+        - Filters data by specified years before correlation calculation
+        - Sets diagonal correlations to -100 to avoid self-correlation
+        - Supports subset analysis for focused correlation studies
+        - Returns all correlations if both n_top and threshold are None
+        - Issues warnings for edge cases (no threshold matches, etc.)
     """
     if n_top is not None and n_top >= df.shape[1]:
         warnings.warn(

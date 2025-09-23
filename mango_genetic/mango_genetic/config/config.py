@@ -10,6 +10,25 @@ from mango_genetic.const import (
 
 
 class GeneticBaseConfig(BaseConfig):
+    """
+    Configuration class for genetic algorithm parameters.
+
+    This class extends BaseConfig to provide configuration management for genetic
+    algorithms. It defines all the necessary parameters for population initialization,
+    selection methods, crossover operations, mutation strategies, and replacement
+    mechanisms.
+
+    The configuration is organized into logical groups:
+    - main: Core algorithm parameters (population size, generations, objectives)
+    - individual: Individual encoding and gene parameters
+    - selection: Selection method specific parameters
+    - crossover: Crossover operation parameters
+    - mutation: Mutation strategy parameters
+
+    :param filename: Path to the configuration file
+    :type filename: str
+    """
+
     __params = {
         "main": [
             ConfigParameter("population_size", int, 100),
@@ -61,4 +80,16 @@ class GeneticBaseConfig(BaseConfig):
     }
 
     def __init__(self, filename):
+        """
+        Initialize the genetic algorithm configuration.
+
+        Loads configuration parameters from the specified file and validates
+        them according to the defined parameter schema.
+
+        :param filename: Path to the configuration file containing genetic algorithm parameters
+        :type filename: str
+
+        Raises:
+            ConfigurationError: If the configuration file is invalid or missing required parameters
+        """
         super().__init__(filename, self.__params)

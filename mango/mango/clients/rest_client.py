@@ -9,14 +9,39 @@ from requests import HTTPError
 
 
 class RESTClient(ABC):
+    """
+    Abstract base class for REST API clients.
+
+    This class provides a foundation for implementing REST API clients with
+    common functionality for request handling, error management, and response
+    validation. Concrete implementations must provide their own connect method.
+
+    Example:
+        >>> class MyAPIClient(RESTClient):
+        ...     def connect(self):
+        ...         # Implementation for API connection
+        ...         pass
+    """
+
     def __init__(self):
         pass
 
     @abstractmethod
     def connect(self, *args, **kwargs):
         """
-        This method must be implemented in the child class and must connect to the API
-        Can be used to check if the API is available and API keys are valid
+        Establish connection to the REST API.
+
+        This abstract method must be implemented by subclasses to establish
+        a connection to their specific API. It can be used to verify API
+        availability and validate authentication credentials.
+
+        :param args: Variable length argument list
+        :param kwargs: Arbitrary keyword arguments
+        :raises NotImplementedError: If not implemented in subclass
+
+        Example:
+            >>> client = MyAPIClient()
+            >>> client.connect(api_key="your_key")
         """
         raise NotImplementedError("This method must be implemented in the child class")
 
@@ -29,14 +54,35 @@ class RESTClient(ABC):
         expected_schema: Type[BaseModel] = None,
     ) -> Union[dict, List[dict]]:
         """
-        This function will handle the request to a URL, implements the wait time and checks for errors.
+        Handle HTTP GET requests with error management and response validation.
+
+        Makes a GET request to the specified URL with the given parameters,
+        implements rate limiting through wait time, and provides flexible
+        error handling options. Optionally validates response against a
+        Pydantic schema.
+
         :param url: URL to make the request to
+        :type url: str
         :param params: Parameters to pass to the request
-        :param wait_time: Wait time in seconds. Default: 0.5 seconds
-        :param if_error: What to do if an error is found. Options: raise, warn, ignore
-        :param expected_schema: Pydantic schema to validate the response or generate a default response
-        :return: Dictionary with the response
-        :doc-author: baobab soluciones
+        :type params: dict
+        :param wait_time: Wait time in seconds after the request
+        :type wait_time: Union[float, int]
+        :param if_error: Error handling strategy - "raise", "warn", or "ignore"
+        :type if_error: Literal["raise", "warn", "ignore"]
+        :param expected_schema: Pydantic schema to validate response structure
+        :type expected_schema: Type[BaseModel], optional
+        :return: Parsed JSON response as dictionary or list of dictionaries
+        :rtype: Union[dict, List[dict]]
+        :raises HTTPError: If request fails and if_error is "raise"
+        :raises ValueError: If if_error parameter is invalid
+
+        Example:
+            >>> response = RESTClient.request_handler(
+            ...     url="https://api.example.com/data",
+            ...     params={"key": "value"},
+            ...     wait_time=1.0,
+            ...     if_error="warn"
+            ... )
         """
         response = requests.get(url, params=params)
         try:
@@ -88,9 +134,27 @@ class RESTClient(ABC):
         func, expected_status=None, response_type: Literal["json", "raw"] = "json"
     ):
         """
-        Decorator for functions that return a response from the server using requests library. It will check the status
-        code of the response and raise an exception if the status of the response is not the expected
-        and raise an exception if the status of the response is not the expected
+        Decorator to validate HTTP response status codes and format responses.
+
+        This decorator wraps functions that return HTTP responses and validates
+        the status code against the expected value. It also handles response
+        formatting to return either JSON data or raw response objects.
+
+        :param func: Function that returns a requests.Response object
+        :type func: callable
+        :param expected_status: Expected HTTP status code (e.g., 200, 201)
+        :type expected_status: int, optional
+        :param response_type: Format of returned data - "json" or "raw"
+        :type response_type: Literal["json", "raw"]
+        :return: Decorated function that validates status and formats response
+        :rtype: callable
+        :raises HTTPError: If response status doesn't match expected_status
+        :raises ValueError: If response_type is invalid
+
+        Example:
+            >>> @RESTClient.expect_status(expected_status=200, response_type="json")
+            ... def get_data():
+            ...     return requests.get("https://api.example.com/data")
         """
 
         def decorator(*args, **kwargs):

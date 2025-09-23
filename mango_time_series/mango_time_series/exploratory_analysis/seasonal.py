@@ -1,19 +1,31 @@
 import numpy as np
+from mango_time_series.logging import get_configured_logger
 from scipy.signal import periodogram
 from statsmodels.tsa.stattools import acf
-
-from mango_time_series.logging import get_configured_logger
 
 logger = get_configured_logger()
 
 
 class SeasonalityDetector:
+    """
+    Detector for identifying seasonal patterns in time series data.
+
+    Combines autocorrelation function (ACF) analysis and periodogram analysis
+    to detect and validate seasonal patterns in time series. Uses configurable
+    thresholds to determine significance of detected patterns.
+    """
+
     def __init__(self, threshold_acf: float = 0.1, percentile_periodogram: float = 99):
         """
-        Initialize the SeasonalityDetector with thresholds for ACF and periodogram.
+        Initialize the SeasonalityDetector with analysis thresholds.
 
-        :param threshold_acf: The ACF value threshold to consider a peak significant (default 0.1).
-        :param percentile_periodogram: The percentile to consider significant peaks in the periodogram (default 99).
+        Sets up the detector with configurable thresholds for determining
+        the significance of seasonal patterns detected through different methods.
+
+        :param threshold_acf: ACF value threshold for significant peaks
+        :type threshold_acf: float
+        :param percentile_periodogram: Percentile threshold for periodogram peaks
+        :type percentile_periodogram: float
         """
         self.threshold_acf = threshold_acf
         self.percentile_periodogram = percentile_periodogram
@@ -26,19 +38,28 @@ class SeasonalityDetector:
         min_repetitions: int = 2,
     ) -> int:
         """
-        Detect the most significant seasonality in time series data using ACF (Autocorrelation Function) analysis.
+        Detect significant seasonality using autocorrelation function analysis.
 
-        This function calculates the ACF values for the time series up to the specified maximum lag. It identifies
-        local maxima in the ACF values, which are indicative of potential seasonal periods. The local maxima are then
-        filtered to retain only those that exceed the specified ACF threshold. The function determines the most common
-        period among the significant local maxima and verifies that this period has a sufficient number of significant
-        ACF values at its multiples. If the most common period meets these criteria, it is returned; otherwise, 0 is returned.
+        Analyzes the time series using ACF to identify seasonal patterns by finding
+        local maxima in autocorrelation values. Validates detected periods by ensuring
+        sufficient repetitions at period multiples, indicating true seasonality.
 
-        :param ts: The time series data as a NumPy array.
-        :param max_lag: The maximum lag to consider for ACF analysis. Default is set to 366 to cover yearly seasonality.
-        :param acf_threshold: The ACF value threshold to consider peaks significant (default 0.2).
-        :param min_repetitions: Minimum number of significant multiples to consider a period as a valid seasonality (default 2).
-        :return: The most common detected seasonal period if significant; 0 otherwise.
+        :param ts: Time series data to analyze
+        :type ts: numpy.ndarray
+        :param max_lag: Maximum lag for ACF analysis (default: 366 for yearly seasonality)
+        :type max_lag: int
+        :param acf_threshold: ACF threshold for significant peaks (default: 0.2)
+        :type acf_threshold: float
+        :param min_repetitions: Minimum significant multiples for valid seasonality (default: 2)
+        :type min_repetitions: int
+        :return: Most significant seasonal period, or 0 if none detected
+        :rtype: int
+
+        Note:
+            - Identifies local maxima in ACF values as potential seasonal periods
+            - Filters peaks above the ACF threshold and confidence intervals
+            - Validates periods by checking for significant ACF values at multiples
+            - Returns 0 if no valid seasonality pattern is found
         """
         acf_values, confint = acf(ts, nlags=max_lag, alpha=0.05)
 
@@ -82,14 +103,32 @@ class SeasonalityDetector:
     @staticmethod
     def detect_seasonality_periodogram(
         ts: np.ndarray, min_period: int = 2, max_period: int = 365
-    ) -> [list, np.ndarray, np.ndarray]:
+    ) -> tuple[list, np.ndarray, np.ndarray]:
         """
-        Detect seasonality in a time series using the periodogram.
+        Detect seasonality using periodogram analysis.
 
-        :param ts: The time series data as a numpy array.
-        :param min_period: The minimum period to consider as a seasonality (default 2 days).
-        :param max_period: The maximum period to consider as a seasonality (default 365 days).
-        :return: A list of detected seasonal periods.
+        Analyzes the power spectral density of the time series to identify
+        significant periodic components. Filters periods within specified range,
+        applies strict percentile thresholds, and refines peaks to avoid
+        redundant multiples while keeping only near-integer periods.
+
+        :param ts: Time series data to analyze
+        :type ts: numpy.ndarray
+        :param min_period: Minimum period to consider (default: 2)
+        :type min_period: int
+        :param max_period: Maximum period to consider (default: 365)
+        :type max_period: int
+        :return: Tuple containing:
+            - List of detected seasonal periods
+            - Array of filtered periods
+            - Array of filtered power spectrum values
+        :rtype: tuple[list, numpy.ndarray, numpy.ndarray]
+
+        Note:
+            - Uses 99th percentile threshold for peak detection
+            - Refines peaks by ensuring sufficient power difference (1.5x)
+            - Removes redundant multiples of detected periods
+            - Keeps only periods close to integers (tolerance: 0.05)
         """
 
         frequencies, power_spectrum = periodogram(x=ts)
@@ -137,16 +176,27 @@ class SeasonalityDetector:
 
     def detect_seasonality(self, ts: np.ndarray, max_lag: int = 366) -> list:
         """
-        Detect seasonality in a time series using ACF to check if there is seasonality,
-        and then use the periodogram to identify the exact seasonal periods.
+        Detect seasonality using combined ACF and periodogram analysis.
 
-        ACF (Autocorrelation Function) is used to detect if there is seasonality in the time series.
-        This is because the periodogram could find some periodic components even if there is no true seasonality.
-        If ACF indicates the presence of seasonality, then the periodogram is used to accurately identify the specific seasonal periods.
+        Implements a two-step approach for robust seasonality detection:
+        1. Uses ACF analysis to confirm the presence of seasonality
+        2. Uses periodogram analysis to identify specific seasonal periods
 
-        :param ts: The time series data as a numpy array.
-        :param max_lag: The maximum lag to consider for ACF analysis. Default is set to 366 to cover yearly seasonality.
-        :return: A list of detected seasonal periods. If no seasonality is detected, an empty list is returned.
+        This combination prevents false positives from periodogram analysis
+        while ensuring accurate identification of true seasonal patterns.
+
+        :param ts: Time series data to analyze
+        :type ts: numpy.ndarray
+        :param max_lag: Maximum lag for ACF analysis (default: 366 for yearly seasonality)
+        :type max_lag: int
+        :return: Sorted list of detected seasonal periods, empty if none found
+        :rtype: list
+
+        Note:
+            - ACF analysis validates the presence of seasonality
+            - Periodogram analysis identifies specific periods
+            - Automatically adjusts max_lag based on time series length
+            - Combines results from both methods, removing duplicates
         """
         # Adjust max_lag based on the length of the time series
         if len(ts) < max_lag:

@@ -4,7 +4,6 @@ from random import randint
 from typing import Union
 
 import numpy as np
-
 from mango_genetic.config import GeneticBaseConfig
 from mango_genetic.individual import Individual
 from mango_genetic.problem import Problem
@@ -12,6 +11,19 @@ from mango_genetic.shared.exceptions import GeneticDiversity, ConfigurationError
 
 
 class Population:
+    """
+    Main population class for genetic algorithm operations.
+
+    Manages a population of individuals through the complete genetic algorithm lifecycle,
+    including initialization, selection, crossover, mutation, and replacement phases.
+    Supports various selection methods, crossover operators, and mutation strategies.
+
+    :param config: Configuration object containing genetic algorithm parameters
+    :type config: GeneticBaseConfig
+    :param evaluator: Function or class for evaluating individual fitness
+    :type evaluator: Union[callable, Problem]
+    """
+
     def __init__(self, config, evaluator):
         # General configuration
         self.config = config
@@ -79,45 +91,61 @@ class Population:
     @property
     def config(self):
         """
-        Property to store the configuration that the mango_genetic algorithm has to use.
+        Get the configuration object for the genetic algorithm.
 
-        :getter: Returns the configuration object.
-        :setter: Sets the configuration object.
-        :param value: The configuration object.
-        :type value: :class:`GeneticBaseConfig<mango.models.mango_genetic.config.GeneticBaseConfig>`
+        Returns the configuration object containing all genetic algorithm parameters
+        such as population size, encoding type, selection method, etc.
+
+        :return: Configuration object with genetic algorithm parameters
+        :rtype: GeneticBaseConfig
         """
         return self._config
 
     @config.setter
     def config(self, value: GeneticBaseConfig):
+        """
+        Set the configuration object for the genetic algorithm.
+
+        :param value: New configuration object
+        :type value: GeneticBaseConfig
+        """
         self._config = value
 
     @property
     def evaluator(self):
         """
-        Property to store the function or class that evaluates the fitness of an individual.
+        Get the fitness evaluation function or class.
 
-        :getter: Returns the evaluator function.
-        :setter: Sets the evaluator function.
-        :param value: The evaluator function or class.
-        :type value: Union[callable, :class:`Problem<mango.models.mango_genetic.problem.Problem>`]
+        Returns the function or class responsible for evaluating the fitness
+        of individuals in the population.
+
+        :return: Evaluator function or Problem class instance
+        :rtype: Union[callable, Problem]
         """
         return self._evaluator
 
     @evaluator.setter
     def evaluator(self, value: Union[callable, Problem]):
+        """
+        Set the fitness evaluation function or class.
+
+        :param value: New evaluator function or Problem class instance
+        :type value: Union[callable, Problem]
+        """
         self._evaluator = value
 
     def run(self):
         """
-        Method to run the evolution process on the population.
+        Run the complete genetic algorithm evolution process.
 
-        This method does not have any input argument as all the information should be passed through the config class.
-        This method does not return anything, but it can be stopped due to the exceptions that can be raised on
-        other parts of the algorithm.
+        Executes the genetic algorithm for the specified number of generations,
+        performing selection, crossover, mutation, and replacement operations
+        in each generation. The algorithm can be stopped early due to low
+        genetic diversity or other stop conditions.
 
-        :raise GeneticDiversity: When the mango_genetic diversity is too low this exception gets raised. it can be raised
-            during the parent selection process or during the stop phase of the algorithm.
+        Raises:
+            GeneticDiversity: When genetic diversity becomes too low during
+                parent selection or stop phase evaluation
         """
 
         if self.generation == 1:
@@ -137,27 +165,29 @@ class Population:
 
     def continue_running(self, generations: int):
         """
-        Method to rerun the Genetic Algorithm from the point it stopped for more generations.
+        Continue running the genetic algorithm for additional generations.
 
-        This method only works if the algorithm has previously stopped due to reaching the initial generation limit,
-        if it is due to a :class:`GeneticDiversity<mango.models.mango_genetic.shared.exceptions.GeneticDiversity>` exception,
-        it will probably raise said exception again.
+        Extends the maximum generation limit and continues the evolution process
+        from where it previously stopped. This method works best when the algorithm
+        stopped due to reaching the generation limit rather than low genetic diversity.
 
-        :param generations: Number of generations to run the Genetic Algorithm.
-        :raises GeneticDiversity: When the mango_genetic diversity is too low this exception gets raised. it can be raised
-            during the parent selection process or during the stop phase of the algorithm.
+        :param generations: Number of additional generations to run
+        :type generations: int
+
+        Raises:
+            GeneticDiversity: When genetic diversity becomes too low during
+                parent selection or stop phase evaluation
         """
         self.max_generations += generations
         self.run()
 
     def init_population(self):
         """
-        Method to initialize the population in the Genetic Algorithm
+        Initialize the population with random individuals.
 
-        The initialization of the population is done by creating a list of random individuals with size
-        equal to the population_size parameter.
-        The creation of the individuals is controlled by the create_random_individual class method of the
-        :class:`Individual<mango.models.mango_genetic.individual.Individual>` class.
+        Creates a population of random individuals with size equal to the
+        configured population_size. Each individual is created using the
+        Individual.create_random_individual method with the current configuration.
         """
         self.population = np.array(
             [
@@ -171,20 +201,20 @@ class Population:
 
     def selection(self):
         """
-        Method to run the selection phase of the Genetic Algorithm.
-        The selection process actually just creates the list of probabilities of a given individual
-        to be chosen on the crossover phase. The values of said probabilities depend on the selection method chosen..
+        Execute the selection phase of the genetic algorithm.
 
-        Currently, there is seven selection methods implemented:
-        - Random (:meth:`_random_selection`).
-        - Elitism (:meth:`_elitism_selection`).
-        - Rank (:meth:`_rank_selection`).
-        - Order (:meth:`_order_selection`).
-        - Roulette (:meth:`_roulette_selection`).
-        - Tournament (:meth:`_tournament_selection`)
-        - Boltzmann (:meth:`_boltzmann_selection`, not implemented yet).
+        Creates selection probabilities for each individual based on the configured
+        selection method. These probabilities determine how likely each individual
+        is to be chosen as a parent during the crossover phase.
 
-        The details of how each of these methods work can be found on the :ref:`selection-label` documentation.
+        Supported selection methods:
+        - Random: Equal probability for all individuals
+        - Elitism: Only the best k individuals can be selected
+        - Rank: Probability based on individual ranking
+        - Order: Probability based on fitness order
+        - Roulette: Probability proportional to fitness
+        - Tournament: Selection through tournament competition
+        - Boltzmann: Temperature-based selection (not implemented)
         """
         if self._selection_type == "random":
             self._random_selection()
@@ -205,19 +235,21 @@ class Population:
 
     def crossover(self):
         """
-        Method to run the crossover phase of the Genetic Algorithm
+        Execute the crossover phase of the genetic algorithm.
 
-        Currently, there is eight crossover method implemented:
-        - One-split (:meth:`_one_split_crossover`).
-        - Two-split (:meth:`_two_split_crossover`).
-        - Mask (:meth:`_mask_crossover`).
-        - Linear (:meth:`_linear_crossover`).
-        - Flat (:meth:`_flat_crossover`).
-        - Blend (:meth:`_blend_crossover`).
-        - Gaussian (:meth:`_gaussian_crossover`).
-        - Morphology (:meth:`_morphology_crossover`, not implemented yet).
+        Creates offspring individuals by combining genetic information from selected
+        parents using the configured crossover method. The crossover operation
+        generates new individuals that inherit traits from their parents.
 
-        The details of how each of these cross over works can be found on the :ref:`crossover-label` documentation.
+        Supported crossover methods:
+        - One-split: Single crossover point
+        - Two-split: Two crossover points
+        - Mask: Random binary mask selection
+        - Linear: Linear combination of parents (real encoding only)
+        - Flat: Random values within parent range (real encoding only)
+        - Blend: Extended range crossover (real encoding only)
+        - Gaussian: Gaussian distribution crossover (real encoding only)
+        - Morphology: Morphological crossover (not implemented)
         """
         if self._crossover_type == "one-split":
             self._one_split_crossover()
@@ -240,11 +272,13 @@ class Population:
 
     def mutate(self):
         """
-        Method to run the mutation phase of the Genetic Algorithm.
+        Execute the mutation phase of the genetic algorithm.
 
-        The actual implementation of the mutation is done in the individual as it is heavily dependent on the encoding.
-        The only change is when using adaptative mutation that the mutation rate has to be updated before calling
-        the individual.
+        Applies mutation to offspring individuals based on the configured mutation
+        strategy. The actual mutation implementation is handled by individual
+        objects as it depends on the encoding type. For adaptive mutation,
+        the mutation rate is updated based on population diversity before
+        applying mutations.
         """
         if self._mutation_type in ["static", "gene-based", "population-based"]:
             self._base_mutation()
@@ -253,21 +287,26 @@ class Population:
 
     def update_population(self):
         """
-        Method to make sure that all individuals in the population have a fitness value.
+        Update fitness values for all individuals in the population.
+
+        Ensures that all individuals in both the main population and offspring
+        have their fitness values calculated using the configured evaluator.
         """
         self._update_fitness(np.concatenate((self.population, self.offspring)))
 
     def replace(self):
         """
-        Method to run the replacement phase of the Genetic Algorithm.
+        Execute the replacement phase of the genetic algorithm.
 
-        Currently, there is one replacement method implemented:
-        - Random (:meth:`_random_replacement`).
-        - Offspring (:meth:`_offspring_replacement`).
-        - Elitist (:meth:`_elitist_replacement`).
-        - Elistist stochastic (:meth:`_elitist_stochastic_replacement`).
+        Determines which individuals from the current population and offspring
+        will survive to the next generation based on the configured replacement
+        strategy.
 
-        The details of how each of these replacement methods work can be found on the :ref:`replacement-label`
+        Supported replacement methods:
+        - Random: Random selection from population and offspring
+        - Only-offspring: Replace entire population with offspring
+        - Elitist: Keep best individuals from combined population
+        - Elitist-stochastic: Probabilistic selection based on fitness
         """
         if self._replacement_type == "random":
             self._random_replacement()
@@ -282,9 +321,10 @@ class Population:
 
     def update_best(self):
         """
-        Method to update the best adapted individual on the population.
+        Update the best individual in the population.
 
-        The best individual gets updated based on the optimization objective of the problem.
+        Identifies and stores the best individual based on the optimization
+        objective (maximization or minimization) and their fitness value.
         """
         if self._optimization_objective == "max":
             current_best = max(self.population, key=lambda x: x.fitness)
@@ -303,13 +343,18 @@ class Population:
 
     def stop(self):
         """
-        Method to implement stop conditions based on information about the population or the mango_genetic diversity.
+        Check stop conditions for the genetic algorithm.
 
-        Currently, the only check done is that the mango_genetic diversity is not too low.
+        Evaluates whether the algorithm should stop based on population
+        characteristics. Currently checks for low genetic diversity by
+        examining fitness value distribution in the population.
+
+        Returns:
+            bool: False (algorithm continues) or raises GeneticDiversity exception
+
+        Raises:
+            GeneticDiversity: When genetic diversity becomes too low
         """
-        # TODO: add more stop conditions
-        # Some based on CV
-        # Based on fitness stagnation
         fitness_diversity = Counter([ind.fitness for ind in self.population])
         if len(fitness_diversity) == 1:
             raise GeneticDiversity
@@ -326,20 +371,22 @@ class Population:
     # -------------------
     def _random_selection(self):
         """
-        Method to perform random selection.
+        Perform random selection with equal probabilities.
 
-        In this case the probability to select any individual is equal.
+        Sets equal selection probability for all individuals in the population,
+        making each individual equally likely to be chosen as a parent.
         """
         self.selection_probs = np.ones(self.population_size) / self.population_size
 
     def _elitism_selection(self):
         """
-        Method to perform elitism selection.
+        Perform elitism selection based on fitness ranking.
 
-        Based on the config parameter rank_size (k), the k-best individuals are selected for crossover.
-        That means that k individuals will have the same selection probability and the rest will have zero.
+        Selects only the k-best individuals (where k is the elitism_size parameter)
+        for crossover. The best k individuals have equal selection probability,
+        while all others have zero probability.
 
-        This selection method could create a diversity problem on the long run if k is small compared
+        Note: This method may reduce genetic diversity if k is small compared
         to the population size.
         """
         temp = np.argsort(
@@ -362,9 +409,11 @@ class Population:
 
     def _rank_selection(self):
         """
-        Method to perform rank selection.
+        Perform rank-based selection.
 
-        This method is based on the rank of the individuals on the population.
+        Assigns selection probabilities based on the rank of individuals
+        in the population, with higher-ranked individuals having higher
+        selection probability.
         """
         fitness_values = np.array(
             [self.extract_fitness(obj) for obj in self.population]
@@ -385,7 +434,10 @@ class Population:
 
     def _order_selection(self):
         """
-        Method to perform order selection
+        Perform order-based selection.
+
+        Assigns selection probabilities based on the order of individuals
+        in the population, with better individuals having higher probability.
         """
         temp = np.argsort(
             np.array([self.extract_fitness(obj) for obj in self.population])
@@ -400,7 +452,10 @@ class Population:
 
     def _roulette_selection(self):
         """
-        Method to perform roulette selection.
+        Perform roulette wheel selection.
+
+        Assigns selection probabilities proportional to fitness values,
+        with better individuals having higher probability of selection.
         """
         fitness_values = np.array(
             [self.extract_fitness(obj) for obj in self.population]
@@ -435,7 +490,11 @@ class Population:
 
     def _tournament_selection(self):
         """
-        Method to perform tournament selection
+        Perform tournament selection.
+
+        Simulates tournaments where individuals compete against each other,
+        with the winner being selected based on fitness. Selection probability
+        is proportional to the number of tournament wins.
         """
         self.selection_probs = np.zeros(self.population_size)
         fitness_values = np.array(
@@ -463,19 +522,27 @@ class Population:
 
     def _boltzmann_selection(self):
         """
-        Not implemented yet
+        Perform Boltzmann selection (not implemented).
+
+        This method is not yet implemented. Boltzmann selection uses
+        temperature-based probability distribution for selection.
         """
         pass
 
     def _select_parents(self, n: int = 2) -> tuple:
         """
-        Method to select n parents from the population based on the selection probabilities
-        established on the selection phase.
+        Select n parents from the population based on selection probabilities.
 
-        :param int n: number of parents to select from the population. It defaults to two, but it has the capability
-            to be a different number.
-        :return: a tuple with the selected parents
+        Selects parents using the probabilities established during the selection phase.
+        Ensures that different parents are selected to maintain genetic diversity.
+
+        :param n: Number of parents to select (default: 2)
+        :type n: int
+        :return: Tuple containing the selected parent individuals
         :rtype: tuple
+
+        Raises:
+            GeneticDiversity: When unable to select different parents due to low diversity
         """
 
         parents = np.random.choice(
@@ -506,12 +573,12 @@ class Population:
     # -------------------
     def _one_split_crossover(self):
         """
-        Method to perform one-split crossover.
+        Perform one-point crossover operation.
 
-        This method creates two children individuals from two parents.
-        It selects a random split point and creates two children by combining the genes of the parents.
-
-        More details of this crossover can be found on the :ref:`one-split-label` section of the documentation.
+        Creates two offspring by selecting a random split point and exchanging
+        genetic material between two parents at that point. The first offspring
+        gets genes from parent 1 before the split and from parent 2 after the split,
+        while the second offspring gets the opposite combination.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -525,12 +592,12 @@ class Population:
 
     def _two_split_crossover(self):
         """
-        Method to perform two-split crossover.
+        Perform two-point crossover operation.
 
-        This method creates two children individuals from two parents.
-        It selects two random split points and creates two children by combining the genes of the parents.
-
-        More details of this crossover can be found on the :ref:`two-split-label` section of the documentation.
+        Creates two offspring by selecting two random split points and exchanging
+        genetic material between two parents in the middle segment. The first
+        offspring gets genes from parent 1 in the outer segments and from parent 2
+        in the middle segment, while the second offspring gets the opposite combination.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -552,15 +619,12 @@ class Population:
 
     def _mask_crossover(self):
         """
-        Method to perform mask crossover.
+        Perform uniform crossover using a random mask.
 
-        This method creates two children individuals from two parents.
-        It selects a random mask and creates two children by combining the genes of the parents.
-        The first children is created by taking the genes of the first parent where the mask is 1 and the genes of
-        the second parent where the mask is 0. The second children is created by taking the genes of the first parent
-        where the mask is 0 and the genes of the second parent where the mask is 1.
-
-        More details of this crossover can be found on the :ref:`mask-label` section of the documentation.
+        Creates two offspring using a random binary mask to determine which
+        parent contributes each gene position. The first offspring gets genes
+        from parent 1 where the mask is 1 and from parent 2 where the mask is 0.
+        The second offspring gets the opposite combination.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -575,15 +639,14 @@ class Population:
 
     def _linear_crossover(self):
         """
-        Method to perform the linear crossover proposed by Wright (1991).
+        Perform linear crossover as proposed by Wright (1991).
 
-        This method creates three child individuals. The first child is calculated as the midpoint between both parents.
-        The other two lie on the line defined by the parents are calculated as:
+        Creates three offspring individuals using linear combinations of parent genes:
+        - First offspring: Midpoint between parents (p1 + p2) / 2
+        - Second offspring: 1.5 * p1 - 0.5 * p2
+        - Third offspring: -0.5 * p1 + 1.5 * p2
 
-        - child2 = 1.5 * p1 - 0.5 * p2
-        - child3 = -0.5 * p1 + 1.5 * p2
-
-        More details of this crossover can be found on the :ref:`linear-label` section of the documentation.
+        Note: This method is only applicable for real-valued encoding.
         """
 
         while len(self.offspring) < len(self.population):
@@ -599,11 +662,14 @@ class Population:
 
     def _flat_crossover(self):
         """
-        This method implements Radcliffe's flat crossover (1990).
+        Implement Radcliffe's flat crossover (1990).
 
-        It creates two child individuals with each gene created randomly inside the interval defined by the parents.
+        Creates two offspring where each gene is randomly generated within the
+        interval defined by the corresponding genes of the two parents.
+        Each gene value is uniformly distributed between the minimum and maximum
+        values of the parent genes at that position.
 
-        More details of this crossover can be found on the :ref:`flat-label` section of the documentation.
+        Note: This method is only applicable for real-valued encoding.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -619,15 +685,16 @@ class Population:
 
     def _blend_crossover(self):
         """
-        This method implements the Blend crossover proposed by Eshelman and Schaffer (1993).
+        Implement Blend crossover as proposed by Eshelman and Schaffer (1993).
 
-        The alpha parameter defined for the crossover is defined as blend_expansion parameter.
-        With a value of 0 it is equal to a Radcliffe's flat crossover while a value of 0.5 is
-        equal to Wright's linear crossover intervals (but the values are randomly selected).
+        Creates two offspring using an extended interval around the parent genes.
+        The blend_expansion parameter controls the expansion: 0 equals flat crossover,
+        0.5 equals linear crossover intervals (with random selection).
 
-        The main difference with Wrights linear crossover is that only two childs are created instead of two.
+        The first offspring is randomly generated in the expanded interval,
+        while the second offspring is calculated to maintain the average of the parents.
 
-        More details of this crossover can be found on the :ref:`blend-label` section of the documentation.
+        Note: This method is only applicable for real-valued encoding.
         """
         while len(self.offspring) < len(self.population):
             p1, p2 = self._select_parents()
@@ -648,21 +715,21 @@ class Population:
 
     def _gaussian_crossover(self):
         """
-        Method to perform the Gaussian crossover, also known as Unimodal Normal Distribution Crossover
-        or UNDX, proposed by Ono (2003).
+        Perform Gaussian crossover (UNDX) as proposed by Ono (2003).
 
-        This method is only implemented for real encoding.
+        Implements the Unimodal Normal Distribution Crossover using three parents
+        to create offspring with Gaussian-distributed genes. The first two parents
+        define the primary search space, while the third parent creates the secondary
+        search space with the midpoint between the first two parents.
 
-        More details of this crossover can be found on the :ref:`gaussian-label` section of the documentation.
+        Note: This method is only applicable for real-valued encoding.
         """
 
-        # TODO: review bad results for huge genomes
         while len(self.offspring) < len(self.population):
             # First we select three parents. The first two are going to be the primary search space,
             # while the third is going to create the secondary search space with the midpoint between parents 1 and 2
             p1, p2, p3 = self._select_parents(n=3)
 
-            # TODO: this could be changed by config in the future
             # This are parameters for the randomness of the gaussian distribution used in the crossover.
             sigma_eta = 0.35 / sqrt(self._gene_length)
             sigma_xi = 1 / 4
@@ -705,17 +772,23 @@ class Population:
 
     def _morphology_crossover(self):
         """
-        This method is not yet implemented
+        Perform morphological crossover (not implemented).
+
+        This method is not yet implemented. Morphological crossover would
+        use morphological operations to combine parent genetic information.
         """
         raise NotImplementedError("Morphology crossover not implemented")
 
     def _add_offspring(self, genes: np.array, *parents: tuple):
         """
-        Method to add an offspring to the offspring array
+        Add a new offspring individual to the offspring array.
 
-        :param genes: Genes of the offspring
-        :type genes: :class:`numpy.array`
-        :param parents: Parents of the offspring
+        Creates a new individual with the specified genes and parent information,
+        assigns it a unique index, and adds it to the offspring population.
+
+        :param genes: Genetic information for the new offspring
+        :type genes: numpy.ndarray
+        :param parents: Parent individuals of the offspring
         :type parents: tuple
         """
         self._count_individuals += 1
@@ -735,17 +808,22 @@ class Population:
 
     def _base_mutation(self):
         """
-        This is the based mutation applied for the base mutation rate or
-        the ones calculated based on gene length or population size.
+        Apply base mutation to all offspring individuals.
+
+        Applies mutation to each offspring individual using the configured
+        mutation rate, which can be static, gene-based, or population-based.
         """
         for ind in self.offspring:
             ind.mutate(mutation_prob=self._mutation_rate)
 
     def _adaptative_mutation(self):
         """
-        Method to implement adaptative mutation operator.
+        Implement adaptive mutation with dynamic rate adjustment.
 
-        For the update of the mutation rate we use the coefficient of variation of the fitness of the population.
+        Adjusts the mutation rate based on the coefficient of variation of
+        population fitness. If diversity decreases, mutation rate increases;
+        if diversity increases, mutation rate decreases. The mutation rate
+        is capped at 0.9 to prevent excessive mutation.
         """
 
         if self.generation % self._generation_adaptative == 0:
@@ -765,7 +843,13 @@ class Population:
 
     def _calculate_coefficient_variation(self):
         """
-        Method to calculate the coefficient of variation of the fitness of the population.
+        Calculate the coefficient of variation of population fitness.
+
+        Computes the ratio of standard deviation to mean fitness, which
+        indicates the relative variability in fitness values across the population.
+
+        :return: Coefficient of variation (std/mean)
+        :rtype: float
         """
         mean_fitness = sum([ind.fitness for ind in self.population]) / len(
             self.population
@@ -782,7 +866,13 @@ class Population:
     # -------------------
     def _update_fitness(self, population):
         """
-        Internal method to update the fitness of a gioven population or subpopulation of the GA.
+        Update fitness values for individuals in the given population.
+
+        Evaluates fitness for all individuals that don't already have a fitness value,
+        using the configured evaluator function or class.
+
+        :param population: Array of individuals to evaluate
+        :type population: numpy.ndarray
         """
         for ind in population:
             if ind.fitness is None:
@@ -793,10 +883,10 @@ class Population:
     # -------------------
     def _random_replacement(self):
         """
-        Method to implement a random replacement operator.
+        Implement random replacement strategy.
 
-        In this case the offspring is added to the population and then a random selection is done to select
-        the individuals that will pass to the next generation.
+        Combines the current population with offspring and randomly selects
+        individuals to form the next generation, maintaining the population size.
         """
         self.population = np.concatenate((self.population, self.offspring))
 
@@ -808,14 +898,20 @@ class Population:
 
     def _offspring_replacement(self):
         """
-        The population gets completely substituted by the offspring.
+        Implement offspring-only replacement strategy.
+
+        Completely replaces the current population with the offspring,
+        discarding all individuals from the previous generation.
         """
         self.population = self.offspring
         self.offspring = np.array([], dtype=Individual)
 
     def _elitist_replacement(self):
         """
-        The best adapted individuals on the population are the ones that pass to the next generation
+        Implement elitist replacement strategy.
+
+        Selects the best individuals from the combined population and offspring
+        to form the next generation, ensuring the best solutions are preserved.
         """
         self.population = np.concatenate((self.population, self.offspring))
         temp = np.argsort(
@@ -831,9 +927,10 @@ class Population:
 
     def _elitist_stochastic_replacement(self):
         """
-        Method to implement an elitist stochastic replacement operator.
+        Implement elitist stochastic replacement strategy.
 
-        In this case each individual has a replacement probability based on their fitness.
+        Assigns replacement probabilities to individuals based on their fitness values,
+        with better individuals having higher probability of survival to the next generation.
         """
         self.population = np.concatenate((self.population, self.offspring))
 
@@ -882,6 +979,14 @@ class Population:
     @staticmethod
     def extract_fitness(obj):
         """
-        Helper static method to extract the fitness of an individual.
+        Extract fitness value from an individual.
+
+        Helper method to extract the fitness value from an individual object,
+        used for sorting and comparison operations.
+
+        :param obj: Individual object
+        :type obj: Individual
+        :return: Fitness value of the individual
+        :rtype: float
         """
         return obj.fitness

@@ -34,14 +34,27 @@ _WEIGHT_DICT = {
 
 
 def _calculate_distances(df: pd.DataFrame, distances_config: dict) -> pd.DataFrame:
-    """Calculate the distance of each date to the next holiday
+    """
+    Calculate the distance of each date to the next holiday.
 
-    It takes a dataframe and a dictionary with the configuration for the distance
-    calculation as arguments.
+    This function takes a dataframe containing holiday dates and a configuration
+    dictionary to calculate the distance (in days) from each date to the next holiday.
+    It creates a cross join with a range of days around each holiday date.
 
-    :param pd.DataFrame df: Specify the dataframe that will be used in the function
-    :param dict distances_config: Specify the configuration for the distance calculation
-    :return: A dataframe with the distance of each date to the next holiday
+    :param df: DataFrame containing holiday dates and information
+    :type df: pd.DataFrame
+    :param distances_config: Configuration dictionary with 'steps_back' and 'steps_forward' keys
+    :type distances_config: dict
+    :return: DataFrame with expanded date ranges and distance calculations
+    :rtype: pd.DataFrame
+    :raises KeyError: If required keys are missing from distances_config
+
+    Example:
+        >>> config = {'steps_back': 7, 'steps_forward': 7}
+        >>> df = pd.DataFrame({'date': ['2023-12-25'], 'name': ['Christmas']})
+        >>> result = _calculate_distances(df, config)
+        >>> print(result['distance'].min(), result['distance'].max())
+        -7 7
     """
     tmp = df.copy()
     back_days = distances_config["steps_back"]
@@ -67,32 +80,68 @@ def get_calendar(
     pivot: bool = False,
     pivot_keep_communities: bool = False,
 ) -> pd.DataFrame:
-    """Get a pandas DataFrame with the calendar information
+    """
+    Get a comprehensive calendar DataFrame with holiday information.
 
-    The DataFrame has the following columns:
-        - date: Date of the holiday.
-        - name: Name of the holiday.
-        - country_code: Country code (ISO 3166-2). Only if communities=True
-        - community_code (optional): Autonomous Community code (ISO 3166-2) name.
-        Only if communities=True.
+    This function generates a pandas DataFrame containing holiday information for a
+    specified country and date range. It can include national holidays, regional
+    community holidays (for Spain), and custom calendar events like Black Friday.
+    The function supports various transformations and output formats.
 
-    :param str country: Specify the country code
-    :param int start_year: Set the first year of the calendar
-    :param int end_year: Set the end year of the calendar
-    :param bool communities: Include the holidays of each autonomous community in spain
-    :param bool calendar_events: Add black friday to the calendar.
-    :param bool name_transformations: Apply transformations to the names of the holidays
-    :param dict weight_communities: Dictionary with the weight of each community
-    :param bool return_weights: Return the weight of each date
-    :param bool return_distances: Return the distance of each date to the next holiday
-    :param dict distances_config: Configuration for the distance calculation. Dictionary
-    with the following keys:
-        - steps_back: Number of steps back to calculate the distance
-        - steps_forward: Number of steps forward to calculate the distance
-    :param bool pivot: Pivot the calendar to get a column for each date
-    :param bool pivot_keep_communities: Keep the communities column when pivoting
-    :return: A pandas DataFrame with the calendar
-    :doc-author: baobab soluciones
+    The resulting DataFrame contains the following columns:
+        - date: Date of the holiday
+        - name: Name of the holiday
+        - country_code: Country code (ISO 3166-2)
+        - community_code: Autonomous Community code (ISO 3166-2), only if communities=True
+        - community_name: Name of the autonomous community, only if communities=True
+        - weight: Weight of the holiday, only if return_weights=True
+        - distance: Distance to holiday in days, only if return_distances=True
+
+    :param country: Country code (ISO 3166-2) for which to retrieve holidays
+    :type country: str
+    :param start_year: First year to include in the calendar
+    :type start_year: int
+    :param end_year: Last year to include in the calendar (exclusive)
+    :type end_year: int
+    :param communities: Whether to include autonomous community holidays (Spain only)
+    :type communities: bool
+    :param weight_communities: Dictionary mapping community codes to their weights
+    :type weight_communities: dict | None
+    :param calendar_events: Whether to add Black Friday to the calendar
+    :type calendar_events: bool
+    :param return_weights: Whether to return holiday weights (auto-set if communities=True)
+    :type return_weights: bool | None
+    :param return_distances: Whether to return distance calculations to holidays
+    :type return_distances: bool
+    :param distances_config: Configuration for distance calculations with 'steps_back' and 'steps_forward'
+    :type distances_config: dict | None
+    :param name_transformations: Whether to apply text transformations to holiday names
+    :type name_transformations: bool
+    :param pivot: Whether to pivot the calendar to have columns for each holiday
+    :type pivot: bool
+    :param pivot_keep_communities: Whether to keep community information when pivoting
+    :type pivot_keep_communities: bool
+    :return: DataFrame containing calendar information with holidays and metadata
+    :rtype: pd.DataFrame
+    :raises ValueError: If start_year > end_year or invalid parameter combinations
+    :raises UserWarning: If return_weights is requested without communities=True
+
+    Example:
+        >>> # Get basic Spanish calendar for 2023
+        >>> calendar = get_calendar(country="ES", start_year=2023, end_year=2024)
+        >>> print(calendar.columns.tolist())
+        ['date', 'name', 'country_code']
+        >>>
+        >>> # Get calendar with community holidays and weights
+        >>> calendar_with_communities = get_calendar(
+        ...     country="ES",
+        ...     start_year=2023,
+        ...     end_year=2024,
+        ...     communities=True,
+        ...     return_weights=True
+        ... )
+        >>> print('weight' in calendar_with_communities.columns)
+        True
     """
     if weight_communities is None:
         weight_communities = _WEIGHT_DICT
@@ -161,14 +210,35 @@ def get_calendar(
 def _add_communities_holidays(
     country: str, weight_communities: dict, years: list[int], df: pd.DataFrame
 ) -> pd.DataFrame:
-    """Add the holidays of each autonomous community to the calendar
+    """
+    Add autonomous community holidays to the calendar DataFrame.
 
-    :param str country: Specify the country to add the communities holidays for
-    :param dict weight_communities: Specify the weight of each community
-    :param list[int] years: Specify the years to add the communities holidays for
-    :param pd.DataFrame df: Specify the dataframe that will be used in the function
-    :return: A dataframe with the communities holidays added
-    :doc-author: baobab soluciones
+    This function retrieves holidays for each autonomous community in Spain and
+    adds them to the existing calendar DataFrame. It calculates weighted holidays
+    based on community populations and filters out duplicates with national holidays.
+
+    :param country: Country code for which to add community holidays (typically "ES")
+    :type country: str
+    :param weight_communities: Dictionary mapping community codes to their population weights
+    :type weight_communities: dict
+    :param years: List of years for which to retrieve community holidays
+    :type years: list[int]
+    :param df: Base calendar DataFrame to which community holidays will be added
+    :type df: pd.DataFrame
+    :return: DataFrame with community holidays added, including weight calculations
+    :rtype: pd.DataFrame
+    :raises KeyError: If community codes in weight_communities are not found
+
+    Example:
+        >>> base_df = pd.DataFrame({
+        ...     'date': ['2023-01-01'],
+        ...     'name': ['New Year'],
+        ...     'country_code': ['ES']
+        ... })
+        >>> weights = {'CT': 1.0, 'MD': 1.0}
+        >>> result = _add_communities_holidays('ES', weights, [2023], base_df)
+        >>> print('community_code' in result.columns)
+        True
     """
     code_name_dict = _get_code_name_dict(country=country)
     list_com = []
@@ -218,13 +288,32 @@ def _add_communities_holidays(
 
 
 def _add_black_friday(country: str, years: list[int], df: pd.DataFrame) -> pd.DataFrame:
-    """Add Black Friday to the calendar
+    """
+    Add Black Friday dates to the calendar DataFrame.
 
-    :param str country: Specify the country that we want to add the black friday for
-    :param list[int] years: Specify the years that we want to add the black friday for
-    :param pd.DataFrame df: Specify the dataframe that will be used in the function
-    :return: A dataframe with the black friday added
-    :doc-author: baobab soluciones
+    This function retrieves Thanksgiving dates from US holidays and adds Black Friday
+    (the day after Thanksgiving) to the calendar. Black Friday is calculated as
+    Thanksgiving + 1 day for each year specified.
+
+    :param country: Country code for which to add Black Friday (will be set in country_code column)
+    :type country: str
+    :param years: List of years for which to calculate Black Friday dates
+    :type years: list[int]
+    :param df: Calendar DataFrame to which Black Friday will be added
+    :type df: pd.DataFrame
+    :return: DataFrame with Black Friday dates added
+    :rtype: pd.DataFrame
+
+    Example:
+        >>> base_df = pd.DataFrame({
+        ...     'date': ['2023-01-01'],
+        ...     'name': ['New Year'],
+        ...     'country_code': ['ES']
+        ... })
+        >>> result = _add_black_friday('ES', [2023], base_df)
+        >>> black_friday = result[result['name'] == 'Black Friday']
+        >>> print(len(black_friday) > 0)
+        True
     """
     usa_holidays_dict = country_holidays(
         country="US",
@@ -246,11 +335,25 @@ def _add_black_friday(country: str, years: list[int], df: pd.DataFrame) -> pd.Da
 
 
 def _get_code_name_dict(country: str) -> dict:
-    """Get a dictionary of the state/province codes and names for that country
+    """
+    Get a dictionary mapping subdivision codes to their names for a country.
 
-    :param country: str: Specify the country that we want to get the subdivisions for
-    :return: A dictionary that maps a subdivision code to its name
-    :doc-author: baobab soluciones
+    This function uses the pycountry library to retrieve administrative subdivisions
+    (states, provinces, autonomous communities, etc.) for a given country and
+    returns a dictionary mapping their codes to their names.
+
+    :param country: ISO 3166-1 alpha-2 country code (e.g., 'ES', 'US', 'FR')
+    :type country: str
+    :return: Dictionary mapping subdivision codes to subdivision names
+    :rtype: dict
+    :raises LookupError: If the country code is not found in pycountry database
+
+    Example:
+        >>> code_dict = _get_code_name_dict('ES')
+        >>> print('ES-CT' in code_dict)
+        True
+        >>> print(code_dict['ES-CT'])
+        Cataluña
     """
     return {
         subdivision.code: subdivision.name
@@ -259,19 +362,33 @@ def _get_code_name_dict(country: str) -> dict:
 
 
 def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
-    """Perform the following transformations on the name column
+    """
+    Apply comprehensive text transformations to holiday names.
 
-    The following transformations are performed on the name column:
-        1. Drop special characters in column name
-        2. Replace characters with accents in columns Name
-        3. Drop non-ascii characters
-        4. Remove special characters in column name (except for whitespace)
-        5. Drop extra whitespace in column name
-        6. Remove "observed" and "trasladado" in column name
+    This function performs multiple text cleaning operations on the 'name' column
+    to standardize holiday names. The transformations include:
 
-    :param pd.DataFrame df: Specify the dataframe that will be used in the function
-    :return: A dataframe with the name column transformed
-    :doc-author: baobab soluciones
+    1. Replace newline, carriage return, and tab characters with spaces
+    2. Remove accents and diacritical marks using unidecode
+    3. Remove non-ASCII characters
+    4. Remove special characters except alphanumeric and whitespace
+    5. Strip leading and trailing whitespace
+    6. Replace multiple consecutive spaces with single spaces
+    7. Remove common holiday status words (observed, trasladado, estimated, estimado)
+
+    :param df: DataFrame containing a 'name' column with holiday names to transform
+    :type df: pd.DataFrame
+    :return: DataFrame with transformed holiday names in the 'name' column
+    :rtype: pd.DataFrame
+    :raises KeyError: If the 'name' column is not present in the DataFrame
+
+    Example:
+        >>> df = pd.DataFrame({
+        ...     'name': ['Día de la Constitución (observed)', 'Navidad\n\r']
+        ... })
+        >>> result = _name_transformations(df)
+        >>> print(result['name'].tolist())
+        ['Dia de la Constitucion', 'Navidad']
     """
     # Drop special characters in column name
     df["name"] = df["name"].str.replace("\n", " ", regex=True)
@@ -312,14 +429,33 @@ def _name_transformations(df: pd.DataFrame) -> pd.DataFrame:
 def _pivot_calendar(
     df_calendar: pd.DataFrame, pivot_keep_communities: bool = False
 ) -> pd.DataFrame:
-    """Pivot the calendar to get a column for each date.
+    """
+    Pivot the calendar DataFrame to create columns for each holiday type.
 
-    :param pd.DataFrame df_calendar: Specify the dataframe that will be used in this
-                                     function
-    :param bool communities: Specify if the dataframe has a column with the weight of
-                             each date
-    :return: A dataframe with a column for each date
-    :doc-author: baobab soluciones
+    This function transforms the long-format calendar DataFrame into a wide format
+    where each holiday type becomes a separate column. It handles weight and distance
+    columns by creating dummy variables and applying appropriate transformations.
+    The function can optionally preserve community information during pivoting.
+
+    :param df_calendar: Calendar DataFrame in long format with holiday names and metadata
+    :type df_calendar: pd.DataFrame
+    :param pivot_keep_communities: Whether to preserve community information in the pivoted result
+    :type pivot_keep_communities: bool
+    :return: Pivoted DataFrame with holiday types as columns and dates as rows
+    :rtype: pd.DataFrame
+    :raises KeyError: If required columns ('name', 'date') are missing from the DataFrame
+
+    Example:
+        >>> df = pd.DataFrame({
+        ...     'date': ['2023-01-01', '2023-12-25'],
+        ...     'name': ['New Year', 'Christmas'],
+        ...     'weight': [1.0, 1.0]
+        ... })
+        >>> result = _pivot_calendar(df)
+        >>> print('New Year' in result.columns)
+        True
+        >>> print('Christmas' in result.columns)
+        True
     """
     # Check weight and distance columns in df_calendar
     available_columns = list(

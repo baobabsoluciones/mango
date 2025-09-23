@@ -2,20 +2,37 @@ import re
 
 import pandas as pd
 import polars as pl
-
 from mango_time_series.logging import log_time, get_configured_logger
 
 logger = get_configured_logger()
 
 
 @log_time()
-def create_tabular_structure(df, horizon, SERIES_CONF):
+def create_tabular_structure(
+    df: pd.DataFrame, horizon: int, SERIES_CONF: dict
+) -> pd.DataFrame:
     """
-    Create a tabular structure for a time series dataframe
-    :param df: pd.DataFrame
-    :param horizon: int
-    :param SERIES_CONF: dict
-    :return: pd.DataFrame
+    Create tabular structure for time series forecasting with multiple horizons.
+
+    Transforms time series data into a tabular format suitable for machine learning
+    by creating all possible combinations of forecast origins and horizons. Each
+    row represents a forecast point with its corresponding horizon.
+
+    :param df: DataFrame containing time series data with datetime column
+    :type df: pandas.DataFrame
+    :param horizon: Maximum forecast horizon to create (e.g., 7 for 7-day ahead forecasts)
+    :type horizon: int
+    :param SERIES_CONF: Configuration dictionary containing KEY_COLS and TIME_PERIOD settings
+    :type SERIES_CONF: dict
+    :return: DataFrame with tabular structure including horizon and forecast_origin columns
+    :rtype: pandas.DataFrame
+
+    Note:
+        - Creates Cartesian product of original data with horizon range (1 to horizon)
+        - Calculates forecast_origin by subtracting horizon from datetime
+        - Handles different time periods (months vs other units)
+        - Sorts result by key columns and datetime
+        - Each row represents one forecast point for one horizon
     """
 
     logger.info("Creating tabular structure")
@@ -51,11 +68,27 @@ def create_tabular_structure_pl(
     df: pl.LazyFrame, horizon: int, SERIES_CONF: dict
 ) -> pl.LazyFrame:
     """
-    Create a tabular structure for a time series dataframe using Polars
-    :param df: pl.DataFrame
-    :param horizon: int
-    :param SERIES_CONF: dict
-    :return: pl.DataFrame
+    Create tabular structure for time series forecasting using Polars.
+
+    Transforms time series data into a tabular format suitable for machine learning
+    using Polars LazyFrame for efficient processing. Creates all possible combinations
+    of forecast origins and horizons with optimized operations.
+
+    :param df: LazyFrame containing time series data with datetime column
+    :type df: polars.LazyFrame
+    :param horizon: Maximum forecast horizon to create (e.g., 7 for 7-day ahead forecasts)
+    :type horizon: int
+    :param SERIES_CONF: Configuration dictionary containing TIME_PERIOD settings
+    :type SERIES_CONF: dict
+    :return: LazyFrame with tabular structure including horizon and forecast_origin columns
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Uses Polars cross join for efficient Cartesian product creation
+        - Extracts time unit from TIME_PERIOD configuration
+        - Calculates forecast_origin using Polars datetime offset operations
+        - Maintains lazy evaluation for memory efficiency
+        - Each row represents one forecast point for one horizon
     """
 
     # Logging info

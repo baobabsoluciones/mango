@@ -5,36 +5,61 @@ import numpy as np
 
 class Problem(ABC):
     """
-    Metaclass to implement an abstract problem class for mango_genetic algorithms.
+    Abstract base class for defining optimization problems in genetic algorithms.
 
-    The problem class is used to define the fitness function for the mango_genetic algorithm.
+    This class provides the interface for implementing fitness functions that
+    can be used with genetic algorithms. Subclasses must implement the
+    calculate_fitness method to define how solutions are evaluated.
+
+    The class can be used as a callable object, making it compatible with
+    genetic algorithm evaluators that expect function-like interfaces.
     """
 
     def __init__(self):
         """
-        In this method all the logic to load initial data that is needed for the problem to calculate its fitness
-        should be implemented
+        Initialize the problem instance.
+
+        Override this method in subclasses to load any initial data or
+        configuration needed for the problem to calculate fitness values.
+        This is where you would typically load datasets, set parameters,
+        or perform other initialization tasks specific to your problem.
         """
         pass
 
     @abstractmethod
     def calculate_fitness(self, x: np.array) -> float:
         """
-        Calculate the fitness of a given solution.
+        Calculate the fitness value for a given solution.
 
-        This method has to be implemented on the subclasses
+        This abstract method must be implemented by subclasses to define
+        how solutions are evaluated. The fitness value represents how well
+        a solution performs according to the optimization objective.
 
-        :param x: Solution to calculate the fitness of.
-        :type x: :class:`numpy.array`
-        :return: Fitness of the solution.
+        :param x: Solution vector to evaluate
+        :type x: numpy.ndarray
+        :return: Fitness value of the solution
         :rtype: float
+
+        Raises:
+            NotImplementedError: This method must be implemented by subclasses
         """
         raise NotImplemented
 
     def __call__(self, x):
         """
-        Method to call the instance of the class as a method to calculate to return the fitness value.
+        Make the problem instance callable like a function.
 
-        This way the class can be sued as a method.
+        Allows the problem instance to be used directly as a function,
+        delegating to the calculate_fitness method. This makes the class
+        compatible with genetic algorithm evaluators that expect function-like interfaces.
+
+        :param x: Solution vector to evaluate
+        :type x: numpy.ndarray
+        :return: Fitness value of the solution
+        :rtype: float
+
+        Example:
+            >>> problem = MyProblem()
+            >>> fitness = problem(solution_vector)  # Equivalent to problem.calculate_fitness(solution_vector)
         """
         return self.calculate_fitness(x)

@@ -9,16 +9,37 @@ logger = get_configured_logger()
 
 def decoder(form: str, **kwargs):
     """
-    Decoder module for different models.
-    It can be of different types: Dense, RNN, GRU and LSTM decoders.
+    Create a decoder model for different neural network architectures.
 
-    :param form: type of decoder, one of "dense", "rnn", "gru" or "lstm"
+    Factory function that creates decoder models of various types including
+    Dense, RNN, GRU and LSTM decoders. The decoder reconstructs the original
+    input from the encoded representation.
+
+    :param form: Type of decoder architecture
     :type form: str
-    :param kwargs: keyword arguments for the decoder.
-      This can vary depending on the underlying type of decoder.
-      Go to specific documentation for more details
-    :return: decoder model
+    :param kwargs: Keyword arguments specific to the decoder type
+    :type kwargs: dict
+    :return: Configured decoder model
     :rtype: keras.Model
+    :raises ValueError: If an invalid decoder form is specified
+
+    Example:
+        >>> # Create LSTM decoder
+        >>> lstm_dec = decoder(
+        ...     form="lstm",
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Create Dense decoder
+        >>> dense_dec = decoder(
+        ...     form="dense",
+        ...     features=10,
+        ...     hidden_dim=[64, 128],
+        ...     num_layers=2
+        ... )
+
     """
     if form == "dense":
         return _decoder_dense(**kwargs)
@@ -40,21 +61,32 @@ def _decoder_dense(
     verbose: bool = False,
 ) -> Model:
     """
-    Dense decoder
+    Create a dense (fully-connected) decoder model.
 
-    :param features: number of features in the output
+    Builds a feedforward neural network decoder that reconstructs the original
+    input from encoded representations. Layer dimensions are reversed from
+    encoder configuration to create a symmetric architecture.
+
+    :param features: Number of output features to reconstruct
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the dense layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: Hidden layer dimensions (reversed internally). Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of dense layers
+    :param num_layers: Number of dense layers to create
     :type num_layers: int
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for dense layers
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: dense decoder model
+    :return: Compiled dense decoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Uniform layer dimensions (reversed internally)
+        >>> decoder = _decoder_dense(features=10, hidden_dim=64, num_layers=3)
+        >>> # Custom layer dimensions (will be reversed: [32, 64, 128])
+        >>> decoder = _decoder_dense(features=10, hidden_dim=[128, 64, 32], num_layers=3)
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers
@@ -92,25 +124,47 @@ def _decoder_lstm(
     verbose: bool = False,
 ) -> Model:
     """
-    LSTM decoder
+    Create an LSTM-based decoder model for sequence data reconstruction.
 
-    :param context_window: number of timesteps in the input
+    Builds a Long Short-Term Memory decoder that reconstructs original sequences
+    from encoded representations. Layer dimensions are reversed from encoder
+    configuration and includes flattening and dense output layers.
+
+    :param context_window: Number of timesteps in input sequences
     :type context_window: int
-    :param features: number of features in the output
+    :param features: Number of output features to reconstruct
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the LSTM layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: LSTM layer dimensions (reversed internally). Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of LSTM layers
+    :param num_layers: Number of LSTM layers to stack
     :type num_layers: int
-    :param use_bidirectional: whether to use bidirectional LSTM
+    :param use_bidirectional: Whether to use bidirectional LSTM layers
     :type use_bidirectional: bool
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for final dense layer
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: LSTM decoder model
+    :return: Compiled LSTM decoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Standard LSTM decoder
+        >>> decoder = _decoder_lstm(
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Bidirectional LSTM with custom dimensions (will be reversed)
+        >>> decoder = _decoder_lstm(
+        ...     context_window=20,
+        ...     features=3,
+        ...     hidden_dim=[64, 128],
+        ...     num_layers=2,
+        ...     use_bidirectional=True
+        ... )
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers
@@ -155,25 +209,47 @@ def _decoder_gru(
     verbose: bool = False,
 ) -> Model:
     """
-    GRU decoder
+    Create a GRU-based decoder model for sequence data reconstruction.
 
-    :param context_window: number of timesteps in the input
+    Builds a Gated Recurrent Unit decoder that reconstructs original sequences
+    from encoded representations. Layer dimensions are reversed from encoder
+    configuration and includes flattening and dense output layers.
+
+    :param context_window: Number of timesteps in input sequences
     :type context_window: int
-    :param features: number of features in the output
+    :param features: Number of output features to reconstruct
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the GRU layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: GRU layer dimensions (reversed internally). Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of GRU layers
+    :param num_layers: Number of GRU layers to stack
     :type num_layers: int
-    :param use_bidirectional: whether to use bidirectional GRU
+    :param use_bidirectional: Whether to use bidirectional GRU layers
     :type use_bidirectional: bool
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for final dense layer
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: GRU decoder model
+    :return: Compiled GRU decoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Standard GRU decoder
+        >>> decoder = _decoder_gru(
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Bidirectional GRU with custom dimensions (will be reversed)
+        >>> decoder = _decoder_gru(
+        ...     context_window=20,
+        ...     features=3,
+        ...     hidden_dim=[64, 128],
+        ...     num_layers=2,
+        ...     use_bidirectional=True
+        ... )
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers
@@ -217,25 +293,47 @@ def _decoder_rnn(
     verbose: bool = False,
 ) -> Model:
     """
-    RNN decoder
+    Create an RNN-based decoder model for sequence data reconstruction.
 
-    :param context_window: number of timesteps in the input
+    Builds a Simple Recurrent Neural Network decoder that reconstructs original
+    sequences from encoded representations. Layer dimensions are reversed from
+    encoder configuration and includes flattening and dense output layers.
+
+    :param context_window: Number of timesteps in input sequences
     :type context_window: int
-    :param features: number of features in the output
+    :param features: Number of output features to reconstruct
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the RNN layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: RNN layer dimensions (reversed internally). Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of RNN layers
+    :param num_layers: Number of RNN layers to stack
     :type num_layers: int
-    :param use_bidirectional: whether to use bidirectional RNN
+    :param use_bidirectional: Whether to use bidirectional RNN layers
     :type use_bidirectional: bool
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for final dense layer
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: RNN decoder model
+    :return: Compiled RNN decoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Standard RNN decoder
+        >>> decoder = _decoder_rnn(
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Bidirectional RNN with custom dimensions (will be reversed)
+        >>> decoder = _decoder_rnn(
+        ...     context_window=20,
+        ...     features=3,
+        ...     hidden_dim=[64, 128],
+        ...     num_layers=2,
+        ...     use_bidirectional=True
+        ... )
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers

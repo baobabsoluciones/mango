@@ -1,10 +1,25 @@
 from math import radians, cos, sin, asin, sqrt
-from .decorators import pydantic_validation
-from pydantic import BaseModel, confloat
 from typing import Tuple
+
+from pydantic import BaseModel, confloat
+
+from .decorators import pydantic_validation
 
 
 class HaversineArgs(BaseModel):
+    """
+    Pydantic model for validating Haversine distance calculation arguments.
+
+    Validates that the provided coordinates are within valid latitude and
+    longitude ranges for geographic calculations.
+
+    :param point1: First geographic point as (latitude, longitude) tuple
+    :type point1: Tuple[float, float]
+    :param point2: Second geographic point as (latitude, longitude) tuple
+    :type point2: Tuple[float, float]
+    :raises ValidationError: If coordinates are outside valid ranges
+    """
+
     point1: Tuple[confloat(ge=-90.0, le=90.0), confloat(ge=-180.0, le=180.0)]
     point2: Tuple[confloat(ge=-90.0, le=90.0), confloat(ge=-180.0, le=180.0)]
 
@@ -12,11 +27,37 @@ class HaversineArgs(BaseModel):
 @pydantic_validation(HaversineArgs)
 def haversine(point1, point2) -> float:
     """
-    Calculate the great circle distance in kilometers between two points
-    on the earth (specified in decimal degrees).
-    If you need more precision use geopy implementation as it uses geodesics.
-    :param point1: Tuple with latitude and longitude of the first point
-    :param point2: Tuple with latitude and longitude of the second point
+    Calculate the great circle distance between two points on Earth.
+
+    Computes the shortest distance between two points on the surface of a
+    sphere (Earth) using the Haversine formula. The result is returned in
+    kilometers. This implementation assumes Earth is a perfect sphere.
+
+    For higher precision calculations, consider using geopy which implements
+    geodesic calculations that account for Earth's ellipsoidal shape.
+
+    :param point1: First geographic point as (latitude, longitude) tuple in decimal degrees
+    :type point1: Tuple[float, float]
+    :param point2: Second geographic point as (latitude, longitude) tuple in decimal degrees
+    :type point2: Tuple[float, float]
+    :return: Distance between the two points in kilometers
+    :rtype: float
+    :raises ValidationError: If coordinates are outside valid ranges (-90 to 90 for latitude, -180 to 180 for longitude)
+
+    Example:
+        >>> # Distance between Madrid and Barcelona
+        >>> madrid = (40.4168, -3.7038)
+        >>> barcelona = (41.3851, 2.1734)
+        >>> distance = haversine(madrid, barcelona)
+        >>> print(f"Distance: {distance:.2f} km")
+        Distance: 504.47 km
+        >>>
+        >>> # Distance between New York and London
+        >>> nyc = (40.7128, -74.0060)
+        >>> london = (51.5074, -0.1278)
+        >>> distance = haversine(nyc, london)
+        >>> print(f"Distance: {distance:.2f} km")
+        Distance: 5570.25 km
     """
     # convert decimal degrees to radians
     lat1, lon1 = point1

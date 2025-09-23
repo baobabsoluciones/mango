@@ -1,7 +1,6 @@
 import os
 
 import click
-
 from mango_dashboard.file_explorer.cli import cli
 
 

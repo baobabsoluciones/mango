@@ -18,20 +18,44 @@ This repository contains multiple libraries developed by the team at Baobab Solu
 
 The functions are divided in different modules so even though everything is imported the dependencies can be installed only for the modules that are needed.
 
+Overview
+--------
+
+The Mango ecosystem consists of specialized libraries for different domains:
+
+- **mango**: Data processing, analysis, machine learning workflows, and imputation of missing values
+- **mango_autoencoder**: Neural autoencoders for anomaly detection in time series
+- **mango_calendar**: Calendar data, holidays, and date-related features with holiday support
+- **mango_dashboard**: Interactive web applications including time series dashboards and a customizable file explorer app
+- **mango_genetic**: Genetic algorithms and evolutionary computation methods
+- **mango_time_series**: Comprehensive time series analysis, exploratory data analysis, and data processing utilities
+
+Each library is designed to work independently or as part of the integrated Mango ecosystem, providing flexibility in dependency management and usage.
+
+Quick Start
+-----------
+
+.. code-block:: python
+
+   # Data processing and imputation
+   import mango
+   
+   # Time series anomaly detection
+   from mango_autoencoder import AutoEncoder
+   
+   # Calendar and holiday data
+   from mango_calendar import get_calendar
+   
+   # Genetic algorithms
+   from mango_genetic import Population, GeneticBaseConfig
+   
+   # Time series analysis
+   from mango_time_series import TimeSeriesAnalyzer
+
 Installation
-===========
+============
 
-**Using uv (recommended):**
-
-.. code-block:: bash
-
-   git clone https://github.com/baobabsoluciones/mango.git
-   cd mango
-   uv venv
-   uv sync
-   uv run pip install -e .
-
-**Individual libraries with uv:**
+**Using uv:**
 
 .. code-block:: bash
 
@@ -53,13 +77,27 @@ Installation
    pip install mango-genetic
    pip install mango-time-series
 
+Documentation
+=============
+
+Full documentation is available at: https://mango.readthedocs.io/
+
+Individual library documentation:
+
+- `Mango <https://mango.readthedocs.io/en/latest/code_mango/index.html>`_
+- `Mango Autoencoder <https://mango.readthedocs.io/en/latest/code_autoencoder/index.html>`_
+- `Mango Calendar <https://mango.readthedocs.io/en/latest/code_mango_calendar/index.html>`_
+- `Mango Dashboard <https://mango.readthedocs.io/en/latest/code_mango_dashboard/index.html>`_
+- `Mango Genetic <https://mango.readthedocs.io/en/latest/code_mango_genetic/index.html>`_
+- `Mango Time Series <https://mango.readthedocs.io/en/latest/code_mango_time_series/index.html>`_
+
 Contributing
-===========
+============
 
 We welcome contributions! Please see our `contributing guidelines <https://github.com/baobabsoluciones/mango/blob/master/CONTRIBUTING.rst>`_ for more details.
 
 Discussion and Development
-=========================
+==========================
 
 We encourage open discussion and collaboration on development via GitHub issues. If you have ideas, suggestions, or encounter any issues, please feel free to open an issue on our `GitHub repository <https://github.com/baobabsoluciones/mango/issues>`_.
 
@@ -67,3 +105,15 @@ License
 =======
 
 This project is licensed under the MIT License - see the `LICENSE <https://github.com/baobabsoluciones/mango/blob/master/LICENSE>`_ file for details.
+
+Support
+-------
+
+For questions, issues, or contributions, please contact:
+
+- Email: mango@baobabsoluciones.es
+- Create an issue on the repository
+
+---
+
+Made with ❤️ by `baobab soluciones <mailto:mango@baobabsoluciones.es>`_

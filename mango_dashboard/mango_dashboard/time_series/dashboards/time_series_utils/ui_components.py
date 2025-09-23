@@ -20,11 +20,26 @@ from .data_processing import (
 
 
 def select_series(data: pd.DataFrame, columns: List, ui_text: Dict):
-    """
-    Create a sidebar to select a series from the DataFrame based on the values in the specified columns.
-    :param data: The DataFrame containing the time series data.
-    :param columns: The columns to use for filtering the series.
-    :param ui_text: The dictionary containing the UI text.
+    """Create a sidebar interface for selecting time series based on specified columns.
+
+    This function creates a cascading selection interface in the sidebar where users
+    can filter time series data by selecting values from specified columns. Each
+    column creates a selectbox that filters the data progressively, allowing for
+    hierarchical selection of specific time series.
+
+    :param data: DataFrame containing the time series data with filtering columns
+    :type data: pd.DataFrame
+    :param columns: List of column names to use for filtering the series
+    :type columns: List
+    :param ui_text: Dictionary containing UI text labels and messages
+    :type ui_text: Dict
+    :return: Dictionary containing the selected values for each column
+    :rtype: Dict
+
+    Example:
+        >>> selected = select_series(data, ['region', 'product'], ui_text)
+        >>> print(selected)
+        {'region': 'North', 'product': 'Widget A'}
     """
     st.sidebar.title(ui_text["select_series"])
     filtered_data = data.copy()
@@ -55,20 +70,47 @@ def plot_time_series(
     columns_id_name: str,
     experimental_features: bool,
 ):
-    """
-    Plot the selected time series data. The user can choose between different types of plots:
-    - Original series: Plot the original time series data.
-    - Series by year: Plot the time series data for each year.
-    - STL: Plot the original series and its STL decomposition.
-    - Lag analysis: Plot the ACF and PACF of the time series data.
-    - Seasonality boxplot: Plot boxplots of the time series data by day of year, day of week, or month.
-    - Periodogram: Plot the periodogram of the time series data.
-    :param time_series: The DataFrame containing the time series data.
-    :param selected_series: The list of selected series to plot.
-    :param select_agr_tmp_dict: The dictionary mapping the temporal grouping options to their corresponding frequency.
-    :param select_agr_tmp: The selected temporal grouping option.
-    :param ui_text: The dictionary containing the UI text.
-    :param columns_id_name: The name of the column containing the series identifiers.
+    """Create interactive time series visualizations with multiple plot types.
+
+    This function provides a comprehensive plotting interface for time series analysis,
+    offering six different visualization types:
+
+    1. **Original Series**: Basic line plots with date range selection
+    2. **Series by Year**: Yearly comparisons with multi-year selection
+    3. **STL Decomposition**: Seasonal and Trend decomposition using Loess
+    4. **Lag Analysis**: ACF and PACF plots for autocorrelation analysis
+    5. **Seasonality Boxplots**: Distribution analysis by time periods
+    6. **Periodogram**: Frequency domain analysis for seasonality detection
+
+    Features:
+        - Interactive date range selection
+        - Multiple series comparison with scaling options
+        - Automatic seasonality detection
+        - Experimental features toggle
+        - Responsive plot layouts
+
+    :param time_series: DataFrame containing time series data with datetime and y columns
+    :type time_series: pd.DataFrame
+    :param selected_series: List of selected series dictionaries for plotting
+    :type selected_series: List
+    :param select_agr_tmp_dict: Dictionary mapping temporal grouping to pandas frequency strings
+    :type select_agr_tmp_dict: Dict
+    :param select_agr_tmp: Selected temporal aggregation option
+    :type select_agr_tmp: str
+    :param ui_text: Dictionary containing UI text labels and messages
+    :type ui_text: Dict
+    :param columns_id_name: Name of the column containing series identifiers
+    :type columns_id_name: str
+    :param experimental_features: Flag to enable experimental visualization features
+    :type experimental_features: bool
+    :return: None (displays plots in Streamlit interface)
+    :rtype: None
+
+    Example:
+        >>> plot_time_series(
+        ...     time_series, selected_series, freq_dict, 'daily', ui_text, 'id', True
+        ... )
+        # Displays interactive time series plots
     """
     col1, col2, col3 = st.columns([0.25, 1, 0.25])
 
@@ -738,13 +780,37 @@ def plot_time_series(
 def setup_sidebar(
     time_series: pd.DataFrame, columns_id: List, ui_text: Dict, columns_id_name: str
 ):
-    """
-    Set up the sidebar for the time series analysis dashboard.
-    :param time_series: The DataFrame containing the time series data.
-    :param columns_id: The list of columns to use as identifiers for the series.
-    :param ui_text: The dictionary containing the UI text.
-    :param columns_id_name: The name of the column containing the series identifiers.
-    :return: The selected temporal grouping option, the selected visualization option, and the list of visualization options.
+    """Set up the main sidebar interface for time series analysis dashboard.
+
+    This function creates the primary navigation and configuration interface in the
+    sidebar, including visualization mode selection, temporal grouping options,
+    and series selection management. It automatically determines available temporal
+    aggregations based on data frequency and manages series selection state.
+
+    Features:
+        - Visualization mode selection (time series vs forecast analysis)
+        - Dynamic temporal grouping based on data frequency
+        - Series selection and management interface
+        - Automatic forecast mode detection
+        - Session state management for selections
+
+    :param time_series: DataFrame containing time series data with datetime column
+    :type time_series: pd.DataFrame
+    :param columns_id: List of column names to use as series identifiers
+    :type columns_id: List
+    :param ui_text: Dictionary containing UI text labels and messages
+    :type ui_text: Dict
+    :param columns_id_name: Name of the primary identifier column
+    :type columns_id_name: str
+    :return: Tuple containing (temporal_grouping, visualization_mode, available_options, selected_series)
+    :rtype: tuple[str, str, List, List]
+
+    Example:
+        >>> grouping, viz_mode, options, series = setup_sidebar(
+        ...     time_series, ['region', 'product'], ui_text, 'id'
+        ... )
+        >>> print(f"Selected grouping: {grouping}")
+        Selected grouping: daily
     """
     st.sidebar.title(ui_text["sidebar_title"])
 
@@ -879,12 +945,34 @@ def setup_sidebar(
 def plot_forecast(
     forecast: pd.DataFrame, selected_series: List, ui_text: Dict, columns_id_name: str
 ):
-    """
-    Plot the forecast for the selected series.
-    :param forecast: The DataFrame containing the forecast data.
-    :param selected_series: The list of selected series to plot.
-    :param ui_text: The dictionary containing the UI text.
-    :param columns_id_name: The name of the column containing the series identifiers.
+    """Create interactive forecast visualization plots with error analysis.
+
+    This function generates comprehensive forecast plots showing both actual and
+    predicted values with detailed error metrics. It supports multiple models
+    comparison and provides interactive date selection for forecast origin analysis.
+
+    Features:
+        - Interactive forecast origin date selection
+        - Multiple model comparison with color coding
+        - Detailed hover information with error metrics
+        - Weekday information display
+        - Automatic legend and label management
+        - Error calculation and display
+
+    :param forecast: DataFrame containing forecast data with y, f, and error columns
+    :type forecast: pd.DataFrame
+    :param selected_series: List of selected series dictionaries for plotting
+    :type selected_series: List
+    :param ui_text: Dictionary containing UI text labels and messages
+    :type ui_text: Dict
+    :param columns_id_name: Name of the column containing series identifiers
+    :type columns_id_name: str
+    :return: None (displays forecast plots in Streamlit interface)
+    :rtype: None
+
+    Example:
+        >>> plot_forecast(forecast_data, selected_series, ui_text, 'series_id')
+        # Displays interactive forecast plots with error analysis
     """
 
     if not selected_series:
@@ -1048,13 +1136,39 @@ def plot_error_visualization(
     freq: str = None,
     columns_id_name: str = None,
 ):
-    """
-    Plot the error visualization for the selected series.
-    :param forecast: The DataFrame containing the forecast data.
-    :param selected_series: The list of selected series to plot.
-    :param ui_text: The dictionary containing the UI text.
-    :param freq: The frequency of the time series.
-    :param columns_id_name: The name of the column to use as an identifier for the series.
+    """Create comprehensive error analysis visualizations for forecast evaluation.
+
+    This function provides detailed error analysis through multiple visualization
+    types and statistical summaries. It includes filtering capabilities, model
+    comparison, and various error distribution analyses.
+
+    Features:
+        - Dual filtering (datetime and forecast origin ranges)
+        - Top 10 error identification by model
+        - Statistical summaries (mean/median errors and percentiles)
+        - Multiple plot types: box plots, scatter plots, horizon analysis
+        - Model performance ranking
+        - Interactive percentile selection
+        - Temporal aggregation options
+
+    :param forecast: DataFrame containing forecast data with error metrics
+    :type forecast: pd.DataFrame
+    :param selected_series: List of selected series dictionaries for analysis
+    :type selected_series: List
+    :param ui_text: Dictionary containing UI text labels and messages
+    :type ui_text: Dict[str, str]
+    :param freq: Frequency string for time series (e.g., 'D', 'H', 'M')
+    :type freq: str, optional
+    :param columns_id_name: Name of the column containing series identifiers
+    :type columns_id_name: str, optional
+    :return: None (displays error analysis in Streamlit interface)
+    :rtype: None
+
+    Example:
+        >>> plot_error_visualization(
+        ...     forecast_data, selected_series, ui_text, 'D', 'series_id'
+        ... )
+        # Displays comprehensive error analysis dashboard
     """
     if not selected_series:
         return
@@ -1352,8 +1466,24 @@ def plot_error_visualization(
 
 
 def pad_to_end_of_year(df, year):
-    """
-    Pad dataframe with nulls until end of year
+    """Pad DataFrame with null values to extend data until the end of the specified year.
+
+    This utility function extends a time series DataFrame by adding null values
+    from the last available date to December 31st of the specified year. This
+    is useful for creating consistent yearly visualizations where some series
+    may end before the year's end.
+
+    :param df: DataFrame with datetime column to be padded
+    :type df: pd.DataFrame
+    :param year: Year to pad until (integer)
+    :type year: int
+    :return: DataFrame extended with null values until end of year
+    :rtype: pd.DataFrame
+
+    Example:
+        >>> df_padded = pad_to_end_of_year(df, 2023)
+        >>> print(df_padded['datetime'].max())
+        2023-12-31 23:59:59
     """
     last_date = df["datetime"].max()
     year_end = pd.Timestamp(f"{year}-12-31 23:59:59")
