@@ -10,18 +10,18 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 ------------
 
 Added
-~~~~~
+-----
 - Enhanced time series analysis capabilities
 - Improved data processing and validation functions
 - Better integration with the mango ecosystem
 
 Changed
-~~~~~~~
+-------
 - Updated dependencies and package configuration
 - Enhanced test coverage and documentation
 
 Added
-~~~~~
+-----
 - Core time series data structures and classes
 - Exploratory analysis tools for time series data
 - Data validation and processing utilities
@@ -32,7 +32,7 @@ Added
 - Comprehensive logging and error handling
 
 Features
-~~~~~~~~
+--------
 - Time series data loading and manipulation
 - Statistical analysis and visualization
 - Feature engineering for machine learning

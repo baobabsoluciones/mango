@@ -6,8 +6,6 @@ Mango time series code
     :maxdepth: 1
     :caption: Contents:
 
-    features
     time_series
-    time_series_class
     utils
-    validation
+    data

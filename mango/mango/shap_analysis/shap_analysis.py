@@ -5,47 +5,60 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shap
+from mango.logging import get_configured_logger
 from mango.shap_analysis.const import TREE_EXPLAINER_MODELS, KERNEL_EXPLAINER_MODELS
 from sklearn.pipeline import Pipeline
+
+log = get_configured_logger(__name__)
 
 
 class ShapAnalyzer:
     """
-    Class to analyze the shap values of a model.
+    Comprehensive SHAP (SHapley Additive exPlanations) analysis tool for machine learning models.
 
-    :doc-author: baobab soluciones
+    This class provides a unified interface for generating various SHAP visualizations
+    and analyses for machine learning models. It supports regression, binary classification,
+    and multiclass classification problems with both tree-based and kernel explainers.
 
-    Usage
-    -----
+    The analyzer can generate summary plots, bar plots, waterfall plots, and partial
+    dependence plots, as well as filter data based on SHAP values.
 
-    >>> from mango.shap_analysis import ShapAnalyzer
-    >>> shap_analyzer = ShapAnalyzer(
-    ...     problem_type="regression",
-    ...     model_name="model_name",
-    ...     estimator=estimator,
-    ...     data=data,
-    ...     metadata=metadata,
-    ...     shap_folder=shap_folder,
-    ... )
-    >>> shap_analyzer.summary_plot(show=True, file_path_save=file_path_save)
-    >>> shap_analyzer.bar_summary_plot(show=True, file_path_save=file_path_save)
-    >>> shap_analyzer.waterfall_plot(query="age > 30", path_save=path_save)
-    >>> shap_analyzer.partial_dependence_plot(
-    ...     feature="age",
-    ...     interaction_feature="height",
-    ...     class_name=1,
-    ...     file_path_save=file_path_save,
-    ... )
-    >>> shap_analyzer.get_sample_by_shap_value(
-    ...     shap_value=0.5,
-    ...     feature_name="age",
-    ...     class_name=1,
-    ...     operator=">=",
-    ... )
-    >>> shap_analyzer.make_shap_analysis(
-    ...     queries=["age > 30"],
-    ...     pdp_tuples=[("age", "height")],
-    ... )
+    :param problem_type: Type of machine learning problem ("regression", "binary_classification", "multiclass_classification")
+    :type problem_type: str
+    :param model_name: Name identifier for the model
+    :type model_name: str
+    :param estimator: Trained machine learning model or sklearn Pipeline
+    :type estimator: object
+    :param data: Training or test data for SHAP analysis
+    :type data: Union[pd.DataFrame, np.ndarray]
+    :param metadata: Column names to exclude from analysis (metadata columns)
+    :type metadata: Union[str, List[str]], optional
+    :param shap_folder: Directory path to save SHAP plots and analysis
+    :type shap_folder: str, optional
+
+    Example:
+        >>> from mango.shap_analysis import ShapAnalyzer
+        >>> from sklearn.ensemble import RandomForestRegressor
+        >>> import pandas as pd
+        >>>
+        >>> # Create sample data and model
+        >>> X = pd.DataFrame({'age': [25, 30, 35], 'income': [50000, 60000, 70000]})
+        >>> y = [100, 120, 140]
+        >>> model = RandomForestRegressor().fit(X, y)
+        >>>
+        >>> # Initialize analyzer
+        >>> analyzer = ShapAnalyzer(
+        ...     problem_type="regression",
+        ...     model_name="income_predictor",
+        ...     estimator=model,
+        ...     data=X,
+        ...     shap_folder="./shap_outputs"
+        ... )
+        >>>
+        >>> # Generate plots
+        >>> analyzer.summary_plot(show=True)
+        >>> analyzer.bar_summary_plot(show=True)
+        >>> analyzer.make_shap_analysis()
     """
 
     def __init__(
@@ -58,6 +71,28 @@ class ShapAnalyzer:
         metadata: Union[str, List[str]] = None,
         shap_folder: str = None,
     ):
+        """
+        Initialize the SHAP analyzer with model and data.
+
+        Sets up the analyzer by validating inputs, extracting the model from
+        potential pipelines, configuring the appropriate SHAP explainer, and
+        computing SHAP values for the provided data.
+
+        :param problem_type: Type of machine learning problem
+        :type problem_type: str
+        :param model_name: Name identifier for the model
+        :type model_name: str
+        :param estimator: Trained machine learning model or sklearn Pipeline
+        :type estimator: object
+        :param data: Training or test data for SHAP analysis
+        :type data: Union[pd.DataFrame, np.ndarray]
+        :param metadata: Column names to exclude from analysis
+        :type metadata: Union[str, List[str]], optional
+        :param shap_folder: Directory path to save SHAP plots
+        :type shap_folder: str, optional
+        :raises ValueError: If problem_type is invalid or model is not supported
+        :raises OSError: If shap_folder cannot be created
+        """
         # Set attributes
         self.problem_type = problem_type
         self._model_name = model_name
@@ -72,21 +107,33 @@ class ShapAnalyzer:
         self._set_explainer()
 
         # Get shap values
+        log.info(f"Computing SHAP values for {self._model_name}")
         self.shap_values = self._explainer.shap_values(self._x_transformed)
+        log.info(f"SHAP analysis initialized successfully for {self._model_name}")
 
     @property
     def problem_type(self):
         """
-        This property is the problem type of the model.
-        :return: problem type
-        :doc-author: baobab soluciones
+        Get the problem type of the model.
+
+        Returns the type of machine learning problem this analyzer is configured for.
+
+        :return: Problem type ("regression", "binary_classification", or "multiclass_classification")
+        :rtype: str
         """
         return self._problem_type
 
     @problem_type.setter
     def problem_type(self, problem_type: str):
         """
-        Validate the problem_type and set the problem_type attribute of the class.
+        Validate and set the problem type.
+
+        Validates that the problem type is one of the supported options and
+        sets the internal attribute.
+
+        :param problem_type: Type of machine learning problem
+        :type problem_type: str
+        :raises ValueError: If problem_type is not supported
         """
         problem_type_options = [
             "binary_classification",
@@ -94,6 +141,7 @@ class ShapAnalyzer:
             "regression",
         ]
         if problem_type not in problem_type_options:
+            log.error(f"Invalid problem_type: {problem_type}")
             raise ValueError(
                 f"Invalid problem_type. Valid options are: {problem_type_options}"
             )
@@ -102,32 +150,46 @@ class ShapAnalyzer:
     @property
     def model_name(self):
         """
-        This property is the model name.
-        :return: model name
-        :doc-author: baobab soluciones
+        Get the model name.
+
+        Returns the name identifier for the model being analyzed.
+
+        :return: Model name
+        :rtype: str
         """
         return self._model_name
 
     @property
     def shap_folder(self):
         """
-        This property is the shap folder.
-        :return: shap folder
-        :doc-author: baobab soluciones
+        Get the SHAP folder path.
+
+        Returns the directory path where SHAP plots and analysis results are saved.
+
+        :return: SHAP folder path
+        :rtype: str
         """
         return self._shap_folder
 
     @shap_folder.setter
     def shap_folder(self, shap_folder: str):
         """
-        Validate the shap_folder and set the shap_folder attribute of the class.
+        Validate and set the SHAP folder path.
+
+        Validates the folder path and creates the directory if it doesn't exist.
+
+        :param shap_folder: Directory path for saving SHAP outputs
+        :type shap_folder: str
+        :raises OSError: If the directory cannot be created
         """
         if shap_folder is None:
             pass
         elif not os.path.exists(shap_folder):
             try:
                 os.makedirs(shap_folder)
-            except OSError:
+                log.info(f"Created SHAP folder: {shap_folder}")
+            except OSError as e:
+                log.error(f"Failed to create directory {shap_folder}: {e}")
                 raise OSError(f"Creation of the directory {shap_folder} failed")
 
         self._shap_folder = shap_folder
@@ -135,18 +197,29 @@ class ShapAnalyzer:
     @property
     def data(self):
         """
-        This property is the data used to train the model.
-        :return: Data used to train the model
-        :doc-author: baobab soluciones
+        Get the processed data used for SHAP analysis.
+
+        Returns the data with metadata columns removed, ready for SHAP analysis.
+
+        :return: Processed data for SHAP analysis
+        :rtype: Union[pd.DataFrame, np.ndarray]
         """
         return self._data
 
     @data.setter
     def data(self, data: Union[pd.DataFrame, np.ndarray]):
         """
-        Validate the data and set the data attribute of the class.
+        Validate and process the input data.
+
+        Validates the data format, removes metadata columns, and prepares
+        the data for SHAP analysis.
+
+        :param data: Input data for SHAP analysis
+        :type data: Union[pd.DataFrame, np.ndarray]
+        :raises ValueError: If data is not a supported format
         """
         if not isinstance(data, (pd.DataFrame, np.ndarray)):
+            log.error(f"Invalid data type: {type(data)}")
             raise ValueError(f"data must be a pandas DataFrame or a numpy array")
         if isinstance(data, pd.DataFrame):
             data.reset_index(drop=True, inplace=True)
@@ -156,27 +229,39 @@ class ShapAnalyzer:
         if self._metadata:
             if isinstance(data, pd.DataFrame):
                 data = data.drop(columns=self._metadata, errors="ignore")
+                log.debug(f"Removed metadata columns: {self._metadata}")
 
         self._data = data
 
     @property
     def metadata(self):
         """
-        This property is the data used to train the model.
-        :return: Columns of data that are metadata
-        :doc-author: baobab soluciones
+        Get the metadata column names.
+
+        Returns the list of column names that are considered metadata and
+        excluded from SHAP analysis.
+
+        :return: List of metadata column names
+        :rtype: List[str]
         """
         return self._metadata
 
     @metadata.setter
     def metadata(self, metadata: Union[str, List[str]]):
         """
-        Validate the data and set the data attribute of the class.
+        Validate and set the metadata column names.
+
+        Converts metadata to a list format and validates the input.
+
+        :param metadata: Column names to exclude from analysis
+        :type metadata: Union[str, List[str]]
+        :raises ValueError: If metadata is not a string or list
         """
         if metadata is None:
             metadata = []
         if not isinstance(metadata, (str, list)):
-            raise ValueError(f"data must be a pandas DataFrame or a numpy array")
+            log.error(f"Invalid metadata type: {type(metadata)}")
+            raise ValueError(f"metadata must be a string or list")
         if isinstance(metadata, str):
             metadata = [metadata]
 
@@ -185,9 +270,12 @@ class ShapAnalyzer:
     @property
     def shap_explainer(self):
         """
-        This property is the shap explainer.
-        :return: Shap explainer
-        :doc-author: baobab soluciones
+        Get the SHAP explainer object.
+
+        Returns the configured SHAP explainer used for computing SHAP values.
+
+        :return: SHAP explainer object
+        :rtype: shap.Explainer
         """
         return self._explainer
 
@@ -195,62 +283,88 @@ class ShapAnalyzer:
         """
         Get the index of a class based on its name or index.
 
-        :param class_name: Name or index of the class
-        :return: Index of the class
-        :doc-author: baobab soluciones
+        Converts class names to their corresponding indices for use in SHAP
+        analysis. Supports both string class names and integer indices.
+
+        :param class_ind_name: Name or index of the class
+        :type class_ind_name: Union[str, int]
+        :return: Integer index of the class
+        :rtype: int
+        :raises ValueError: If class name is not found or index is out of range
+
+        Example:
+            >>> analyzer._get_class_index("positive")  # Returns 1
+            >>> analyzer._get_class_index(0)           # Returns 0
         """
         if isinstance(class_ind_name, str):
             try:
                 class_index = list(self._model.classes_).index(class_ind_name)
             except ValueError:
+                log.error(
+                    f"Class name '{class_ind_name}' not found in {self._model.classes_}"
+                )
                 raise ValueError(f"class_name must be one of {self._model.classes_}")
         elif isinstance(class_ind_name, int):
             if len(self._model.classes_) <= class_ind_name:
+                log.error(
+                    f"Class index {class_ind_name} out of range for {len(self._model.classes_)} classes"
+                )
                 raise ValueError(
                     f"class_index must be less than {len(self._model.classes_)}"
                 )
             class_index = class_ind_name
         else:
+            log.error(f"Invalid class_ind_name type: {type(class_ind_name)}")
             raise ValueError(f"class_name must be a string or an integer")
         return class_index
 
     def _set_explainer(self):
         """
-        Get the shap explainer based on the model type.
+        Set the appropriate SHAP explainer based on the model type.
 
-        :return: Shap explainer
-        :doc-author: baobab soluciones
+        Automatically selects the best SHAP explainer for the given model type:
+        - TreeExplainer for tree-based models
+        - KernelExplainer for other models
+
+        :raises ValueError: If the model type is not supported
         """
-        if type(self._model).__name__ in TREE_EXPLAINER_MODELS:
+        model_type = type(self._model).__name__
+        if model_type in TREE_EXPLAINER_MODELS:
+            log.info(f"Using TreeExplainer for {model_type}")
             self._explainer = shap.TreeExplainer(self._model)
 
-        elif type(self._model).__name__ in KERNEL_EXPLAINER_MODELS:
+        elif model_type in KERNEL_EXPLAINER_MODELS:
+            log.info(f"Using KernelExplainer for {model_type}")
             self._explainer = shap.KernelExplainer(
                 self._model.predict, shap.sample(self._data, 5)
             )
 
         else:
+            log.error(f"Unsupported model type: {model_type}")
             raise ValueError(
-                f"Model {type(self._model).__name__} is not supported by ShapAnalyzer class"
+                f"Model {model_type} is not supported by ShapAnalyzer class"
             )
 
     def _set_estimator(self, estimator):
         """
-        The _set_estimator function is used to extract the model from a pipeline.
-        It also extracts the feature names and transformed data if there are any transformers in the pipeline.
+        Extract and configure the model from an estimator or pipeline.
 
+        Handles both standalone models and sklearn Pipelines. For pipelines,
+        it extracts the final estimator and applies any transformers to the data.
+        Also extracts feature names for proper labeling in SHAP plots.
 
-        :param self: Access the class attributes and methods
-        :param estimator: Pass the model to be used for prediction
-        :return: The model, the feature names and the transformed data
-        :doc-author: baobab soluciones
+        :param estimator: Trained model or sklearn Pipeline
+        :type estimator: object
+        :raises AttributeError: If the model doesn't have required feature name attributes
         """
         if isinstance(estimator, Pipeline):
+            log.info("Processing sklearn Pipeline")
             self._model = estimator.steps[-1][1]
             if len(estimator.steps) > 1:
                 transformer = Pipeline(estimator.steps[0:-1])
                 self._x_transformed = transformer.transform(self._data)
                 self._feature_names = transformer.get_feature_names_out()
+                log.info(f"Applied {len(estimator.steps)-1} transformers")
             else:
                 self._x_transformed = self._data
                 if isinstance(self._data, np.ndarray):
@@ -260,6 +374,7 @@ class ShapAnalyzer:
                 else:
                     self._feature_names = self._get_feature_names(self._model)
         else:
+            log.info(f"Processing standalone model: {type(estimator).__name__}")
             self._model = estimator
             self._x_transformed = self._data
             if isinstance(self._data, np.ndarray):
@@ -272,13 +387,17 @@ class ShapAnalyzer:
     @staticmethod
     def _get_feature_names(estimator):
         """
-        The _get_feature_names function is a helper function that attempts to get the feature names from an estimator.
-        It first tries to get the feature_names_in_ attribute, which is used by sklearn models. If this fails, it then tries
-        to get the feature_name attribute, which is used by LightGBM models.
+        Extract feature names from a trained estimator.
 
-        :param estimator: Pass the model to be used for feature importance
-        :return: The feature names of the model
-        :doc-author: baobab soluciones
+        Attempts to get feature names from various model types:
+        - sklearn models: uses feature_names_in_ attribute
+        - LightGBM models: uses feature_name_ attribute
+
+        :param estimator: Trained model to extract feature names from
+        :type estimator: object
+        :return: List of feature names
+        :rtype: list[str]
+        :raises AttributeError: If the model doesn't have feature name attributes
         """
         try:
             # sklearn
@@ -288,46 +407,62 @@ class ShapAnalyzer:
                 # LightGBM
                 feature_names = estimator.feature_name_
             except AttributeError:
+                log.error(
+                    f"Model {type(estimator).__name__} has no feature name attributes"
+                )
                 raise AttributeError(
-                    "Model does not have attribute feature_names_in_ or feature_names_"
+                    "Model does not have attribute feature_names_in_ or feature_name_"
                 )
         return feature_names
 
     @staticmethod
     def _save_fig(title: str, file_path_save: str):
         """
-        The _save_fig function takes in a title and path_save as arguments.
-        It then saves the current figure with the given title to the specified path.
+        Save the current matplotlib figure with a title.
 
-        :param str title: Set the title of the figure
-        :param str path_save: Save the figure to a specific location
-        :return: A plot with a title and saves it in the path_save directory
-        :doc-author: baobab soluciones
+        Saves the current figure to the specified path with proper formatting
+        and closes the figure to free memory.
+
+        :param title: Title for the figure
+        :type title: str
+        :param file_path_save: Path where to save the figure
+        :type file_path_save: str
+        :return: None
         """
         fig1 = plt.gcf()
         fig1.suptitle(title)
         fig1.tight_layout()
         fig1.savefig(file_path_save)
         plt.close()
+        log.debug(f"Saved figure: {file_path_save}")
 
     def bar_summary_plot(self, file_path_save: str = None, **kwargs):
         """
-        The bar_summary_plot function is a wrapper for the SHAP summary_plot function.
-        It takes in the shap values and plots them as a bar chart, with each feature on the x-axis and its corresponding
-        SHAP value on the y-axis. The plot can be sorted by mean absolute value or not, depending on user preference.
+        Create a bar plot showing mean absolute SHAP values for each feature.
 
-        :param self: Make the function a method of the class
-        :param str file_path_save: Specify the path to save the plot
-        :param **kwargs: Pass keyword arguments to the function
+        Generates a horizontal bar chart where each bar represents the mean
+        absolute SHAP value for a feature, providing a clear view of feature
+        importance. Features are sorted by importance (highest to lowest).
+
+        :param file_path_save: Path to save the plot (optional)
+        :type file_path_save: str, optional
+        :param kwargs: Additional keyword arguments passed to shap.summary_plot
         :return: None
-        :doc-author: baobab soluciones
+
+        Example:
+            >>> analyzer.bar_summary_plot(show=True)
+            >>> analyzer.bar_summary_plot(file_path_save="bar_plot.png")
         """
         if file_path_save != None:
             if not os.path.exists(os.path.dirname(file_path_save)):
+                log.error(
+                    f"Directory does not exist: {os.path.dirname(file_path_save)}"
+                )
                 raise ValueError(
                     f"Path: {os.path.dirname(file_path_save)} does not exist"
                 )
 
+        log.info("Generating bar summary plot")
         shap.summary_plot(
             self.shap_values,
             plot_type="bar",
@@ -353,24 +488,34 @@ class ShapAnalyzer:
         self, class_name: Union[str, int] = 1, file_path_save: str = None, **kwargs
     ):
         """
-        The summary_plot function plots the SHAP values of every feature for all samples.
-        The plot is a standard deviation centered histogram of the impacts each feature has on the model output.
-        The color represents whether that impact was positive or negative and intensity shows how important it was.
-        This function works with Numpy arrays or pandas DataFrames as input, and can plot either regression or classification models.
+        Create a summary plot showing SHAP values for all features and samples.
 
-        :param self: Refer to the object itself
-        :param int class_name: Specify which class to plot the summary for
-        :param str file_path_save: Save the plot as a png file
-        :param **kwargs: Pass keyworded, variable-length argument list to a function
+        Generates a plot where each point represents a SHAP value for a feature
+        and sample. Features are ordered by importance, and the color represents
+        the feature value (high/low). This provides insight into how each feature
+        affects predictions across all samples.
+
+        :param class_name: Class to plot for (classification only, default: 1)
+        :type class_name: Union[str, int], optional
+        :param file_path_save: Path to save the plot (optional)
+        :type file_path_save: str, optional
+        :param kwargs: Additional keyword arguments passed to shap.summary_plot
         :return: None
-        :doc-author: baobab soluciones
+
+        Example:
+            >>> analyzer.summary_plot(show=True)
+            >>> analyzer.summary_plot(class_name="positive", file_path_save="summary.png")
         """
         if file_path_save != None:
             if not os.path.exists(os.path.dirname(file_path_save)):
+                log.error(
+                    f"Directory does not exist: {os.path.dirname(file_path_save)}"
+                )
                 raise ValueError(
                     f"Path {os.path.dirname(file_path_save)} does not exist"
                 )
 
+        log.info(f"Generating summary plot for class: {class_name}")
         shap.summary_plot(
             (
                 self.shap_values[self._get_class_index(class_name)]
@@ -399,21 +544,35 @@ class ShapAnalyzer:
 
     def waterfall_plot(self, query: str, path_save: str = None, **kwargs):
         """
-        The waterfall_plot function plots the SHAP values for a single sample.
+        Create waterfall plots for samples matching a query.
 
-        :param self: Make the method belong to the class
-        :param str query: Filter the data
-        :param str path_save: Specify the path to save all the waterfall plots
-        :param **kwargs: Pass keyworded, variable-length argument list
+        Generates waterfall plots showing how each feature contributes to the
+        final prediction for individual samples. The plot shows the base value
+        and how each feature pushes the prediction up or down.
+
+        :param query: Pandas query string to filter samples
+        :type query: str
+        :param path_save: Directory path to save waterfall plots
+        :type path_save: str, optional
+        :param kwargs: Additional keyword arguments passed to shap.waterfall_plot
         :return: None
-        :doc-author: baobab soluciones
+        :raises ValueError: If path_save is not a directory or no data matches query
+
+        Example:
+            >>> analyzer.waterfall_plot("age > 30", path_save="./waterfalls")
+            >>> analyzer.waterfall_plot("income > 50000", show=True)
         """
-        if not os.path.isdir(path_save):
+        if path_save is not None and not os.path.isdir(path_save):
+            log.error(f"path_save must be a directory: {path_save}")
             raise ValueError("path_save must be a directory")
+
+        log.info(f"Filtering data with query: {query}")
         filter_data = self._data_with_metadata.query(query).copy()
         if filter_data.shape[0] == 0:
+            log.error(f"No data found for query: {query}")
             raise ValueError(f"No data found for query: {query}")
         else:
+            log.info(f"Found {filter_data.shape[0]} samples matching query")
             list_idx = filter_data.index.to_list()
             for i, idx in enumerate(list_idx):
                 if self._problem_type in [
@@ -469,17 +628,30 @@ class ShapAnalyzer:
         **kwargs,
     ):
         """
-        The partial_dependence_plot function is a wrapper around the shap.dependence_plot function,
-        which plots the partial dependence of a feature on another feature.
+        Create a partial dependence plot showing feature interactions.
 
-        :param self: Make the function a method of the class
-        :param Union[str, int] feature: Specify the feature for which we want to plot the partial dependence
-        :param Union[str, int] interaction_feature: Specify the feature that will be used to interact with the feature specified in the first parameter
-        :param str file_path_save: Save the plot to a file
-        :param **kwargs: Pass a variable number of keyword arguments to a function
+        Generates a scatter plot showing how the SHAP values of one feature
+        depend on the values of another feature, revealing potential interactions
+        between features.
+
+        :param feature: Primary feature to analyze
+        :type feature: Union[str, int]
+        :param interaction_feature: Feature to show interaction with
+        :type interaction_feature: Union[str, int]
+        :param class_name: Class to plot for (classification only)
+        :type class_name: Union[str, int], optional
+        :param file_path_save: Path to save the plot
+        :type file_path_save: str, optional
+        :param kwargs: Additional keyword arguments passed to shap.dependence_plot
         :return: None
-        :doc-author: baobab soluciones
+
+        Example:
+            >>> analyzer.partial_dependence_plot("age", "income", show=True)
+            >>> analyzer.partial_dependence_plot(0, 1, file_path_save="pdp.png")
         """
+        log.info(
+            f"Generating partial dependence plot: {feature} vs {interaction_feature}"
+        )
         shap.dependence_plot(
             feature,
             (
@@ -511,31 +683,47 @@ class ShapAnalyzer:
         operator: str = ">=",
     ):
         """
-        The get_sample_by_shap_value function returns a sample of the data that has a shap value for
-        a given feature and class greater than or equal to the specified shap_value.
+        Filter data samples based on SHAP values for a specific feature.
 
-        :param self: Bind the method to a class
-        :param shap_value: Specify the value of shap that we want to use as a filter
-        :param Union[str, int] feature_name: Specify the feature name that we want to use in our analysis
-        :param Union[str, int] class_name: Specify the class for which we want to get samples
-        :param operator: str: Specify the operator to use when comparing the shap_value with the feature value
-        :return: A dataframe with the samples that have a shap value greater than or equal to the one specified
-        :doc-author: baobab soluciones
+        Returns a subset of the data where samples have SHAP values for the
+        specified feature that meet the given condition (>= or <=). This is
+        useful for analyzing samples with high/low feature importance.
+
+        :param shap_value: Threshold SHAP value for filtering
+        :type shap_value: float
+        :param feature_name: Name or index of the feature to filter by
+        :type feature_name: Union[str, int]
+        :param class_name: Class to filter for (classification only)
+        :type class_name: Union[str, int], optional
+        :param operator: Comparison operator (">=" or "<=")
+        :type operator: str
+        :return: Filtered DataFrame with matching samples
+        :rtype: pd.DataFrame
+        :raises ValueError: If operator is invalid or feature not found
+
+        Example:
+            >>> high_impact = analyzer.get_sample_by_shap_value(0.5, "age", operator=">=")
+            >>> low_impact = analyzer.get_sample_by_shap_value(-0.3, "income", operator="<=")
         """
         operator_dict = {
             ">=": lambda x, y: x >= y,
             "<=": lambda x, y: x <= y,
         }
         if operator not in operator_dict.keys():
+            log.error(f"Invalid operator: {operator}")
             raise ValueError(
                 f"Operator {operator} not valid. Valid operators are: {operator_dict.keys()}"
             )
 
         if feature_name not in self._feature_names:
+            log.error(f"Feature {feature_name} not found in {self._feature_names}")
             raise ValueError(
                 f"Feature {feature_name} is not in model. Must be one of: {self._feature_names}"
             )
         index_feature = list(self._feature_names).index(feature_name)
+        log.info(
+            f"Filtering samples with {operator} {shap_value} for feature '{feature_name}'"
+        )
 
         if self._problem_type in ["binary_classification", "multiclass_classification"]:
             return self._data_with_metadata[
@@ -557,17 +745,29 @@ class ShapAnalyzer:
         self, queries: List[str] = None, pdp_tuples: List[tuple] = None
     ):
         """
-        The make_shap_analysis function is a wrapper function that calls the summary_plot and bar_summary_plot functions.
-        It also checks if the shap folder exists, and creates it if not. It then saves all plots to this folder.
+        Generate a comprehensive SHAP analysis with multiple plot types.
 
-        :param self: Bind the method to an object
-        :param List[str] queries: Specify the queries to use in the waterfall plot
-        :param List[tuple] pdp_tuples: Specify the features to use in the partial dependence plot
+        Creates a complete SHAP analysis including summary plots, bar plots,
+        waterfall plots (if queries provided), and partial dependence plots
+        (if feature tuples provided). All plots are saved to organized directories.
+
+        :param queries: List of pandas query strings for waterfall plots
+        :type queries: List[str], optional
+        :param pdp_tuples: List of (feature1, feature2) tuples for partial dependence plots
+        :type pdp_tuples: List[tuple], optional
         :return: None
-        :doc-author: baobab soluciones
+        :raises ValueError: If shap_folder is not set
+
+        Example:
+            >>> analyzer.make_shap_analysis()
+            >>> analyzer.make_shap_analysis(
+            ...     queries=["age > 30", "income > 50000"],
+            ...     pdp_tuples=[("age", "income"), ("height", "weight")]
+            ... )
         """
         # Check path to save plots
         if self._shap_folder == None:
+            log.error("shap_folder is not set")
             raise ValueError(
                 "Set path to save plots: the attribute shap_folder is None"
             )
@@ -576,6 +776,7 @@ class ShapAnalyzer:
             "shap_analysis",
             self.model_name,
         )
+        log.info(f"Starting comprehensive SHAP analysis for {self.model_name}")
 
         list_paths = [
             os.path.join(base_path, "summary/"),
@@ -584,6 +785,7 @@ class ShapAnalyzer:
         ]
         # Make dirs to save plots
         _ = [os.makedirs(os.path.dirname(path), exist_ok=True) for path in list_paths]
+        log.info(f"Created analysis directories in: {base_path}")
 
         # Make summary plot
         if self._problem_type in ["binary_classification", "multiclass_classification"]:

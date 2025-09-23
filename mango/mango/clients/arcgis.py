@@ -1,11 +1,11 @@
 import json
-import logging
 import os
 import time
 import warnings
 from datetime import datetime, timezone
 
 import requests
+from mango.logging import get_configured_logger
 from mango.processing import load_json
 from mango.shared import InvalidCredentials, ARCGIS_TOKEN_URL, validate_args, JobError
 from mango.shared.const import (
@@ -15,27 +15,49 @@ from mango.shared.const import (
     ARCGIS_ODMATRIX_DIRECT_URL,
 )
 
+log = get_configured_logger(__name__)
+
 this_dir, file = os.path.split(__file__)
 schema = load_json(f"{this_dir}/../schemas/location.json")
 
 
 class ArcGisClient:
+    """
+    Client for accessing ArcGIS services including geocoding and routing.
+
+    This class provides access to ArcGIS REST API services for geocoding addresses
+    and calculating origin-destination matrices. Authentication is required using
+    client credentials.
+
+    :param client_id: ArcGIS client ID for authentication
+    :type client_id: str
+    :param client_secret: ArcGIS client secret for authentication
+    :type client_secret: str
+
+    Example:
+        >>> client = ArcGisClient(client_id="your_client_id", client_secret="your_secret")
+        >>> client.connect()
+        >>> coords = client.get_geolocation("Madrid, Spain")
+    """
+
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = None
-        logging.getLogger("root")
 
     def connect(self):
         """
-        The connect function is used to authenticate the user and get a token.
-        It takes in two parameters, client_id and client_secret, which are both strings.
-        The function then makes a POST request to the ArcGIS API for Python login URL
-        with these parameters as form data.
-        If successful, it stores an access token that can be used for subsequent requests.
+        Authenticate with ArcGIS services and obtain access token.
 
-        :return: nothing
-        :doc-author: baobab soluciones
+        Establishes connection to ArcGIS REST API using client credentials.
+        The obtained access token is stored for use in subsequent API calls.
+        This method must be called before using other methods in the class.
+
+        :raises InvalidCredentials: If authentication fails or credentials are invalid
+
+        Example:
+            >>> client = ArcGisClient(client_id="your_id", client_secret="your_secret")
+            >>> client.connect()
         """
         body = {
             "client_id": self.client_id,
@@ -45,7 +67,6 @@ class ArcGisClient:
         try:
             response = requests.post(url=ARCGIS_TOKEN_URL, data=body)
         except Exception as e:
-            # TODO: narrow down the possible exception errors
             raise InvalidCredentials(f"There was an error on login into ArcGis: {e}")
 
         try:
@@ -57,13 +78,24 @@ class ArcGisClient:
 
     def get_geolocation(self, address: str, country: str = "ESP") -> tuple:
         """
-        Get the geolocation of an address.
+        Get the geolocation coordinates for a given address.
 
-        :param str address: the address to get the geolocation
-        :param str country: the country of the address to get the geolocation (default Spain)
-        :return: a tuple with the longitude and the latitude for the geolocation
+        Uses ArcGIS geocoding service to convert an address into longitude
+        and latitude coordinates. The service returns the best match for
+        the provided address.
+
+        :param address: The address to geocode
+        :type address: str
+        :param country: Country code for the address (default: "ESP" for Spain)
+        :type country: str
+        :return: Tuple containing (longitude, latitude) coordinates
         :rtype: tuple
-        :doc-author: baobab soluciones
+        :raises Exception: If API request fails or returns invalid status
+        :raises JobError: If geocoding fails or no candidates are found
+
+        Example:
+            >>> coords = client.get_geolocation("Madrid, Spain")
+            >>> print(f"Longitude: {coords[0]}, Latitude: {coords[1]}")
         """
         url = f"{ARCGIS_GEOCODE_URL}?f=json&token={self.token}&singleLine={address}&sourceCountry={country}&forStorage=false"
         response = requests.get(url=url)
@@ -78,7 +110,7 @@ class ArcGisClient:
                 f"There was an error on login into ArcGis: {response.json()}. Exception: {e}"
             )
         except IndexError as e:
-            logging.warning(f"There was no candidates for address {address}")
+            log.warning(f"There was no candidates for address {address}")
             return None, None
         return location["x"], location["y"]
 
@@ -96,16 +128,33 @@ class ArcGisClient:
         sleep_time: int = 2,
     ) -> list:
         """
-        Get the origin destination matrix for a list of origins and destinations.
+        Calculate origin-destination matrix with travel times and distances.
 
-        :param str mode: the mode to get the matrix. It can be "sync" or "async".
-        :param list origins: a list of dictionaries with the origin information. Keys needed: "name", "x", "y".
-        :param list destinations: a list of dictionaries with the destination information. Keys needed: "Name", "x", "y".
-        :param dict travel_mode: a dictionary with the configuration for the travel mode
-        :param int sleep_time: the time to wait for the response in asynchronous mode
-        :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
+        Computes travel times and distances between multiple origins and destinations
+        using ArcGIS routing services. Supports both synchronous and asynchronous modes.
+        The method automatically switches to async mode for large matrices.
+
+        :param mode: Processing mode - "sync" for immediate results, "async" for large datasets
+        :type mode: str
+        :param origins: List of origin points with keys: "name", "x", "y"
+        :type origins: list
+        :param destinations: List of destination points with keys: "name", "x", "y"
+        :type destinations: list
+        :param travel_mode: Travel mode configuration (default: car travel mode)
+        :type travel_mode: dict, optional
+        :param sleep_time: Wait time between status checks in async mode (seconds)
+        :type sleep_time: int
+        :return: List of dictionaries with origin, destination, distance (meters), and time (seconds)
         :rtype: list
-        :doc-author: baobab soluciones
+        :raises NotImplementedError: If matrix size exceeds 1000x1000 limit
+        :raises ValueError: If mode is invalid
+
+        Example:
+            >>> origins = [{"name": "Madrid", "x": -3.7038, "y": 40.4168}]
+            >>> destinations = [{"name": "Barcelona", "x": 2.1734, "y": 41.3851}]
+            >>> matrix = client.get_origin_destination_matrix(
+            ...     origins=origins, destinations=destinations, mode="sync"
+            ... )
         """
 
         if mode is None:
@@ -176,17 +225,28 @@ class ArcGisClient:
         sleep_time: int = 2,
     ):
         """
-        Get the origin destination matrix for a list of origins and destinations in async mode
-        For more information about the request and the parameters, see:
-        https://developers.arcgis.com/rest/network/api-reference/origin-destination-cost-matrix-service.htm
+        Calculate origin-destination matrix using asynchronous processing.
 
-        :param dict origins: a dict with the features and attributes of the origins
-        :param dict destinations: a dict with the features and attributes of the destinations
-        :param dict travel_mode:
-        :param int sleep_time: the time to wait for the response in asynchronous mode
-        :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
+        Processes large matrices asynchronously by submitting a job and polling
+        for completion. This method is used for matrices that are too large
+        for synchronous processing (>10x10 origins/destinations).
+
+        :param origins: Dictionary with features and attributes of origin points
+        :type origins: dict
+        :param destinations: Dictionary with features and attributes of destination points
+        :type destinations: dict
+        :param travel_mode: Travel mode configuration for routing calculations
+        :type travel_mode: dict, optional
+        :param sleep_time: Wait time between status checks in seconds
+        :type sleep_time: int
+        :return: List of dictionaries with origin, destination, distance (meters), and time (seconds)
         :rtype: list
-        :doc-author: baobab soluciones
+        :raises Exception: If API request fails or returns invalid status
+        :raises JobError: If job submission, execution, or retrieval fails
+
+        Note:
+            For more information about the API, see:
+            https://developers.arcgis.com/rest/network/api-reference/origin-destination-cost-matrix-service.htm
         """
 
         url = (
@@ -249,24 +309,28 @@ class ArcGisClient:
         return results
 
     def _get_origin_destination_matrix_sync(
-        self,
-        *,
-        origins: dict,
-        destinations: dict,
-        travel_mode: dict = None,
-        sleep: int = 2,
+        self, *, origins: dict, destinations: dict, travel_mode: dict = None
     ):
         """
-        Get the origin destination matrix for a list of origins and destinations in sync mode.
-        For more information about the request and the parameters, see:
-        https://developers.arcgis.com/rest/network/api-reference/origin-destination-cost-matrix-synchronous-service.htm
+        Calculate origin-destination matrix using synchronous processing.
 
-        :param dict origins: a dict with the features and attributes of the origins
-        :param dict destinations: a dict with the features and attributes of the destinations
-        :param dict travel_mode: the travel mode configuration
-        :return: list of dictionaries with the origin destination matrix with distance in meters and time in seconds
+        Processes small to medium matrices synchronously for immediate results.
+        This method is suitable for matrices up to 10x10 origins/destinations.
+        Results are returned immediately without job polling.
+
+        :param origins: Dictionary with features and attributes of origin points
+        :type origins: dict
+        :param destinations: Dictionary with features and attributes of destination points
+        :type destinations: dict
+        :param travel_mode: Travel mode configuration for routing calculations
+        :type travel_mode: dict, optional
+        :return: List of dictionaries with origin, destination, distance (meters), and time (seconds)
         :rtype: list
-        :doc-author: baobab soluciones
+        :raises Exception: If API request fails or calculation errors occur
+
+        Note:
+            For more information about the API, see:
+            https://developers.arcgis.com/rest/network/api-reference/origin-destination-cost-matrix-synchronous-service.htm
         """
         url = (
             f"{ARCGIS_ODMATRIX_DIRECT_URL}?f=json&token={self.token}"

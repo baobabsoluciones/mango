@@ -11,17 +11,54 @@ from pydantic_core import ValidationError as ValidationErrorPydantic
 
 
 def validate_args(**schemas):
+    """
+    Decorator to validate function arguments against JSON schemas.
+
+    Validates keyword arguments against provided JSON schemas before
+    executing the decorated function. Schemas can be provided as
+    dictionaries or file paths to JSON schema files.
+
+    :param schemas: Dictionary mapping argument names to their validation schemas
+    :type schemas: dict
+    :return: Decorator function
+    :rtype: callable
+    :raises ValidationError: If any argument fails validation
+    :raises ValueError: If schema format is invalid
+
+    Example:
+        >>> schema = {
+        ...     "type": "object",
+        ...     "properties": {
+        ...         "name": {"type": "string"},
+        ...         "age": {"type": "integer", "minimum": 0}
+        ...     },
+        ...     "required": ["name"]
+        ... }
+        >>> @validate_args(user=schema)
+        ... def create_user(user):
+        ...     return f"Created user: {user['name']}"
+        >>> create_user(user={"name": "John", "age": 30})
+        'Created user: John'
+    """
+
     def decorator(func: callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
-            The wrapper function validates the arguments against a schema and then calls
-            the original function.
+            Validate arguments against schemas and execute the original function.
 
-            :param args: Pass a non-keyworded, variable-length argument list to the function
-            :param kwargs: Pass the arguments to the function
-            :return: The same as the original function
-            :doc-author: baobab soluciones
+            Validates each specified argument against its corresponding schema
+            before calling the original function. If validation fails, raises
+            a ValidationError with details about the validation failure.
+
+            :param args: Positional arguments passed to the function
+            :type args: tuple
+            :param kwargs: Keyword arguments passed to the function
+            :type kwargs: dict
+            :return: Result of the original function
+            :rtype: Any
+            :raises ValidationError: If argument validation fails
+            :raises ValueError: If schema format is invalid
             """
 
             for key, value in schemas.items():
@@ -52,87 +89,64 @@ def pydantic_validation(
     **named_validators,
 ):
     """
-    Decorator to validate the arguments of a function using pydantic models. The decorator can be used in two ways:
-    1. Passing a single positional argument: the pydantic model to validate the arguments against.
-    2. Passing multiple keyword arguments: the name of the argument to validate and the pydantic model to validate (useful
-    when the argument is a dictionary or a list of dictionaries).
+    Decorator to validate function arguments using Pydantic models.
 
-    :param validator: The pydantic model to validate all the arguments against
-    :param on_validation_error: What to do when there is a validation error. One of 'raise', 'warn', 'ignore'
-    :param strict_validation: Whether to validate the arguments strictly or not (if false pydantic will try to convert)
-    :param named_validators: The name of the argument to validate and the pydantic model to validate
-    :return: The original function with arguments validated
+    Provides comprehensive argument validation using Pydantic models with
+    flexible error handling options. Supports both global validation (all
+    arguments) and selective validation (specific arguments only).
 
+    :param validator: Pydantic model to validate all arguments against
+    :type validator: BaseModel, optional
+    :param on_validation_error: Action to take on validation failure
+    :type on_validation_error: Literal["raise", "warn", "ignore"]
+    :param strict_validation: Whether to use strict validation (no type coercion)
+    :type strict_validation: bool
+    :param named_validators: Dictionary mapping argument names to Pydantic models
+    :type named_validators: dict[str, BaseModel]
+    :return: Decorator function
+    :rtype: callable
+    :raises ValidationError: If validation fails and on_validation_error="raise"
+    :raises ValueError: If function has positional arguments or invalid error handling option
 
-    Usage
-    -----
-
-    1. Passing a single positional argument:
-
-    >>> from mango.shared import pydantic_validation
-    >>> from pydantic import BaseModel
-    >>> class DummyArgs(BaseModel):
-    ...     name: str
-    ...     x: int
-    ...     y: int
-    >>> @pydantic_validation(DummyArgs)
-    ... def do_nothing(*, name: str, x: int, y: int):
-    ...     return True
-    >>> do_nothing(name="random", x=0, y=1) # No error
-    ... True
-    >>> do_nothing(name="random", x=0, y="1") # Error (validation is strict by default can be changed with strict_validation=False)
-    ... Raises ValidationError
-
-    2. Passing multiple keyword arguments for JSON arguments (For compatibility with the previous version of the decorator) or if
-    just want to validate some of the arguments:
-
-    >>> from mango.shared import pydantic_validation
-    >>> from pydantic import BaseModel
-    >>> class JSONModel(BaseModel):
-    ...     self.model_config = {"extra": "forbid"} # This is to avoid extra arguments in the JSON
-    ...     c_1: str
-    ...     c_2: int
-    >>> @pydantic_validation(c=JSONModel)
-    ... def dummy(a: str, b: int, c: dict):
-    ...     return True
-    >>> dummy(a="a", b=1, c={"c_1": "a", "c_2": 1}) # No error
-    ... True
-    >>> dummy(a="a", b=1, c={"c_1": "a", "c_2": "1"}) # Error
-    ... Raises ValidationError
-
-    Intended usage:
-
-    >>> from mango.shared import pydantic_validation
-    >>> from pydantic import BaseModel
-    >>> class JSONModel(BaseModel):
-    ...     self.model_config = {"extra": "forbid"}
-    ...     c_1: str
-    ...     c_2: int
-    >>> class DummyArgs(BaseModel):
-    ...     name: str
-    ...     x: int
-    ...     y: int
-    ...     c: JSONModel
-    >>> @pydantic_validation(DummyArgs)
-    ... def do_nothing(*, name: str, x: int, y: int, c: dict):
-    ...     return True
-    >>> do_nothing(name="random", x=0, y=1, c={"c_1": "a", "c_2": 1}) # No error
-    ... True
-    >>> do_nothing(name="random", x=0, y=1, c={"c_1": "a", "c_2": "1"}) # Error
-    ... Raises ValidationError
+    Example:
+        >>> from pydantic import BaseModel
+        >>>
+        >>> class UserModel(BaseModel):
+        ...     name: str
+        ...     age: int
+        ...     email: str
+        >>>
+        >>> @pydantic_validation(UserModel)
+        ... def create_user(*, name: str, age: int, email: str):
+        ...     return f"User {name} created"
+        >>>
+        >>> create_user(name="John", age=30, email="john@example.com")
+        'User John created'
+        >>>
+        >>> # With selective validation
+        >>> @pydantic_validation(user_data=UserModel)
+        ... def process_user(user_data: dict, action: str):
+        ...     return f"Processing {user_data['name']} with action {action}"
     """
 
     def decorator(func: callable):
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
-            The wrapper function validates the arguments against a schema and then calls
-            the original function.
+            Validate arguments using Pydantic models and execute the original function.
 
-            :param args: Pass a non-keyworded, variable-length argument list to the function
-            :param kwargs: Pass the arguments to the function
-            :return: The same as the original function
-            :doc-author: baobab soluciones
+            Performs validation on specified arguments using Pydantic models.
+            Handles validation errors according to the configured error handling
+            strategy (raise, warn, or ignore).
+
+            :param args: Positional arguments (not supported, must be empty)
+            :type args: tuple
+            :param kwargs: Keyword arguments to validate
+            :type kwargs: dict
+            :return: Result of the original function
+            :rtype: Any
+            :raises ValueError: If positional arguments are provided
+            :raises ValidationError: If validation fails and error handling is set to raise
             """
             if args:
                 raise ValueError(
@@ -159,6 +173,7 @@ def pydantic_validation(
                     msg = f"There are {len(validation_errors)} validation errors: {validation_errors}"
                 else:
                     msg = f"There is {len(validation_errors)} validation error: {validation_errors[0]}"
+
                 if on_validation_error == "raise":
                     raise ValidationError(msg) from None
                 elif on_validation_error == "warn":

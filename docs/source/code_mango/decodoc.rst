@@ -35,7 +35,7 @@ Decodoc will automatically three types of files:
 
 
 Inner information dictionary and output JSON file
-=========
+=================================================
 
 The inner dictionary used for storing the metadata is called INFO_DICT. This dictionary is used to store the metadata collected during the execution of the functions. The INFO_DICT dictionary is structured as follows (with one entry per function call) and the JSON file containing this dictionary is automatically generated at the end of the execution:
 
@@ -64,7 +64,7 @@ The inner dictionary used for storing the metadata is called INFO_DICT. This dic
    }
 
 Mermaid diagram generation
-==================
+==========================
 
 The Mermaid diagram is a visual representation of the function call relationships. It is generated in a markdown file for each caller function and a complete diagram of all functions. The diagram is generated using the Mermaid library, which is a simple markdown-like script language for generating diagrams from text.
 
@@ -154,7 +154,7 @@ The Mermaid diagram for each of these functions will show the function and its d
 
 
 Memory address issue
-==================
+====================
 .. caution:: Please pay close attention to the following warning to prevent errors in the decodoc implementation.
 
 An issue to take into account is the use of memory addresses in the INFO_DICT dictionary. These are used for identifying the reuse of functions and to keep track of the use of the same variable across different functions.

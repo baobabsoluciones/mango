@@ -8,7 +8,26 @@ logger = get_configured_logger()
 
 
 @log_time()
-def create_season_unit_previous_date(df, time_unit):
+def create_season_unit_previous_date(df: pl.DataFrame, time_unit: str) -> pl.DataFrame:
+    """
+    Create previous date mapping for seasonal unit analysis.
+
+    Calculates the previous occurrence date for each seasonal unit (day of week)
+    relative to the forecast origin. This is used for creating seasonal variables
+    that reference the same day of week from previous periods.
+
+    :param df: DataFrame containing forecast_origin and season_unit columns
+    :type df: polars.DataFrame
+    :param time_unit: Time unit string (e.g., 'd' for days, 'w' for weeks)
+    :type time_unit: str
+    :return: DataFrame with previous_dow_date column added
+    :rtype: polars.DataFrame
+
+    Note:
+        - Calculates weekday difference between season_unit and forecast_origin
+        - Adjusts for week boundaries (handles day-of-week wrapping)
+        - Creates offset dates for seasonal variable creation
+    """
     aux = (
         df.select(["forecast_origin", "season_unit"])
         .unique()
@@ -46,20 +65,39 @@ def create_recent_variables(
     gap: int = 0,
     freq: int = 1,
     colname: str = "",
-    season_unit=False,
+    season_unit: bool = False,
 ) -> pl.LazyFrame:
     """
-    Create rolling averages for the last window days, excluding the current row,
-    but only for rows where horizon = 1. Creating one column for each window, and grouping
-    by the key columns in SERIES_CONF.
+    Create rolling averages and lag variables for time series forecasting.
 
-    :param df: pd.DataFrame
-    :param group_cols: list of columns to group by
-    :param window: list of integers specifying the rolling window sizes in time unit.
-    :param lags: list of integers specifying the lag sizes in time unit.
-    :param gap: integer specifying how many previous rows to start the window from, excluding the current row.
-    :param colname: string specifying the prefix for the new rolling average columns.
-    :return: pd.DataFrame with new columns for each rolling average.
+    Generates rolling average and lag features for time series data, with optional
+    seasonal unit grouping. Creates multiple columns for different window sizes
+    and lag periods, grouped by the key columns specified in SERIES_CONF.
+
+    :param df: Input LazyFrame containing time series data
+    :type df: polars.LazyFrame
+    :param SERIES_CONF: Configuration dictionary containing KEY_COLS and TIME_PERIOD
+    :type SERIES_CONF: dict
+    :param window: List of window sizes for rolling averages
+    :type window: list
+    :param lags: List of lag periods to create
+    :type lags: list
+    :param gap: Number of periods to skip before starting window (default: 0)
+    :type gap: int
+    :param freq: Frequency multiplier for lag calculations (default: 1)
+    :type freq: int
+    :param colname: Prefix for new column names (default: "")
+    :type colname: str
+    :param season_unit: Whether to group by seasonal unit (default: False)
+    :type season_unit: bool
+    :return: LazyFrame with new rolling average and lag columns
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Rolling averages exclude current row (shifted by gap)
+        - Lag variables are shifted by (gap - 1 + lag * freq)
+        - Seasonal unit mode uses previous day-of-week dates for alignment
+        - Column naming: y_{colname}roll_{window} and y_{colname}lag_{lag*freq}
     """
 
     group_cols = SERIES_CONF["KEY_COLS"]
@@ -127,18 +165,35 @@ def create_seasonal_variables(
     gap: int = 0,
 ) -> pl.LazyFrame:
     """
-    Create rolling averages for the last window days, excluding the current row,
-    but only for rows where horizon = 1. Creating one column for each window, and grouping
-    by the key columns in SERIES_CONF.
+    Create seasonal rolling averages and lag variables.
 
-    :param df: pd.DataFrame
-    :param SERIES_CONF: dictionary with the configuration of the series.
-    :param window: list of integers specifying the rolling window sizes in time unit.
-    :param lags: list of integers specifying the lag sizes in time unit.
-    :param season_unit: string specifying the unit of the seasonality.
-    :param freq: integer specifying the frequency of the seasonality.
-    :param gap: integer specifying how many previous rows to start the window from, excluding the current row.
-    :return: pd.DataFrame with new columns for each rolling average.
+    Generates seasonal features by creating rolling averages and lag variables
+    grouped by seasonal units (day of week, week, or month). Automatically
+    extracts the appropriate seasonal unit from datetime and creates variables
+    that capture seasonal patterns in the time series.
+
+    :param df: Input LazyFrame containing time series data with datetime column
+    :type df: polars.LazyFrame
+    :param SERIES_CONF: Configuration dictionary containing KEY_COLS and TIME_PERIOD
+    :type SERIES_CONF: dict
+    :param window: List of window sizes for rolling averages
+    :type window: list
+    :param lags: List of lag periods to create
+    :type lags: list
+    :param season_unit: Seasonal unit type ('day', 'week', or 'month')
+    :type season_unit: str
+    :param freq: Frequency multiplier for lag calculations
+    :type freq: int
+    :param gap: Number of periods to skip before starting window (default: 0)
+    :type gap: int
+    :return: LazyFrame with seasonal rolling average and lag columns
+    :rtype: polars.LazyFrame
+
+    Note:
+        - Extracts seasonal unit from datetime column based on season_unit parameter
+        - Uses ``sea_`` prefix for seasonal variable column names
+        - Removes season_unit column after processing
+        - Supports day (weekday), week, and month seasonal units
     """
 
     if season_unit == "day":

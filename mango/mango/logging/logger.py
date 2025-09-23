@@ -25,10 +25,21 @@ from typing import Dict, List, Optional
 
 class ColorFormatter(logging.Formatter):
     """
-    Enhance log readability by applying different colors to console log messages.
+    Enhanced log formatter with color support for console output.
+
+    This formatter applies different colors to log messages based on their
+    severity level, making it easier to distinguish between different types
+    of log entries in console output. Colors are automatically reset after
+    each message to prevent color bleeding.
 
     :cvar Dict[str, str] _ESCAPE_CODES: Terminal color escape codes for text formatting
     :cvar Dict[int, str] _LEVEL_COLORS: Mapping of log levels to their corresponding colors
+
+    Example:
+        >>> formatter = ColorFormatter()
+        >>> handler = logging.StreamHandler()
+        >>> handler.setFormatter(formatter)
+        >>> logger.addHandler(handler)
     """
 
     _ESCAPE_CODES = {
@@ -76,12 +87,20 @@ class ColorFormatter(logging.Formatter):
         format: Optional[str] = None,
     ):
         """
-        Initialize the ColorFormatter.
+        Initialize the ColorFormatter with optional formatting options.
 
-        :param Optional[str] fmt: Format string for log messages
-        :param Optional[str] datefmt: Date format string
-        :param str style: Format style (default is '%')
-        :param Optional[str] format: Alternative argument for format (for compatibility)
+        Creates a new color formatter with the specified format string and
+        date format. The format parameter takes precedence over fmt if both
+        are provided for compatibility with different logging configurations.
+
+        :param fmt: Format string for log messages
+        :type fmt: Optional[str]
+        :param datefmt: Date format string for timestamps
+        :type datefmt: Optional[str]
+        :param style: Format style (default is '%')
+        :type style: str
+        :param format: Alternative format parameter for compatibility
+        :type format: Optional[str]
         """
         # Prefer 'format' if provided, otherwise use 'fmt'
         effective_fmt = (
@@ -93,10 +112,15 @@ class ColorFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """
-        Format the log record with appropriate color.
+        Format the log record with appropriate color based on log level.
 
-        :param logging.LogRecord record: The log record to format
-        :return: The formatted log message with color codes
+        Applies color formatting to the log message based on the record's
+        log level. The color is automatically reset after the message to
+        prevent color bleeding in subsequent output.
+
+        :param record: The log record to format
+        :type record: logging.LogRecord
+        :return: The formatted log message with color escape codes
         :rtype: str
         """
         color = self._LEVEL_COLORS.get(record.levelno, self._ESCAPE_CODES["reset"])
@@ -106,11 +130,12 @@ class ColorFormatter(logging.Formatter):
 
 class JSONFormatter(logging.Formatter):
     """
-    A formatter that outputs log records as JSON.
+    Formatter that outputs log records as structured JSON.
 
     This formatter creates structured log output in JSON format with
     customizable fields. It maintains a list of log entries that can be
-    serialized as a JSON array.
+    serialized as a JSON array, making it suitable for log aggregation
+    systems and structured logging applications.
 
     :ivar List[str] fields: List of fields to include in JSON output
     :ivar str datefmt: Date format string for timestamp formatting
@@ -130,16 +155,28 @@ class JSONFormatter(logging.Formatter):
         * processName: Process name where the log was generated
         * thread: Thread ID of the thread where the log was generated
         * threadName: Thread name where the log was generated
+
+    Example:
+        >>> formatter = JSONFormatter(fields=['level', 'message', 'time'])
+        >>> handler = logging.FileHandler('app.json')
+        >>> handler.setFormatter(formatter)
+        >>> logger.addHandler(handler)
     """
 
     def __init__(
         self, fields: Optional[List[str]] = None, datefmt: Optional[str] = None
     ):
         """
-        Initialize the JSONFormatter.
+        Initialize the JSONFormatter with customizable fields.
 
-        :param Optional[List[str]] fields: List of fields to include in JSON output
-        :param Optional[str] datefmt: Date format string for timestamp formatting
+        Creates a new JSON formatter with the specified fields to include
+        in the output. If no fields are specified, uses a default set of
+        commonly useful fields.
+
+        :param fields: List of fields to include in JSON output
+        :type fields: Optional[List[str]]
+        :param datefmt: Date format string for timestamp formatting
+        :type datefmt: Optional[str]
         """
         super().__init__()
         self.fields = fields or [
@@ -156,12 +193,15 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """
-        Format the log record as a JSON object.
+        Format the log record as a JSON object and add to entries list.
+
+        Processes the log record and extracts the specified fields into a
+        JSON object. The object is added to the internal entries list and
+        the complete list is returned as a JSON string.
 
         :param record: The log record to format
         :type record: logging.LogRecord
-
-        :returns: JSON string containing the formatted log entries
+        :return: JSON string containing all formatted log entries
         :rtype: str
         """
         log_record = {}
@@ -190,11 +230,19 @@ class JSONFormatter(logging.Formatter):
 
 
 class JSONFileHandler(logging.FileHandler):
-    """A file handler that overwrites the file with each log entry.
+    """
+    File handler that overwrites the file with each log entry for valid JSON.
 
     This handler is specifically designed for JSON logging, ensuring that
     the output file always contains valid JSON by overwriting it completely
-    with each update.
+    with each update. This prevents malformed JSON files that could occur
+    with standard file handlers when the application terminates unexpectedly.
+
+    Example:
+        >>> handler = JSONFileHandler('logs.json')
+        >>> formatter = JSONFormatter()
+        >>> handler.setFormatter(formatter)
+        >>> logger.addHandler(handler)
     """
 
     def __init__(
@@ -204,20 +252,35 @@ class JSONFileHandler(logging.FileHandler):
         encoding: Optional[str] = None,
         delay: bool = False,
     ):
-        """Initialize the JSONFileHandler.
+        """
+        Initialize the JSONFileHandler with file overwrite behavior.
 
-        :param str filename: Path to the log file
-        :param str mode: File open mode (always 'w' for this handler)
-        :param Optional[str] encoding: File encoding
-        :param bool delay: Whether to delay file opening
+        Creates a new JSON file handler that always overwrites the file
+        to ensure valid JSON output. The mode parameter is ignored as this
+        handler always uses write mode.
+
+        :param filename: Path to the log file
+        :type filename: str
+        :param mode: File open mode (ignored, always uses 'w')
+        :type mode: str
+        :param encoding: File encoding for text output
+        :type encoding: Optional[str]
+        :param delay: Whether to delay file opening until first log
+        :type delay: bool
         """
         super().__init__(filename, "w", encoding, delay)
         self.terminator = ""
 
     def emit(self, record: logging.LogRecord) -> None:
-        """Write the log record to file.
+        """
+        Write the formatted log record to file, overwriting previous content.
 
-        :param logging.LogRecord record: The log record to write
+        Formats the log record and writes the complete JSON array to the
+        file, overwriting any previous content to ensure valid JSON format.
+
+        :param record: The log record to write
+        :type record: logging.LogRecord
+        :raises Exception: If file writing fails, handled by parent class
         """
         try:
             msg = self.format(record)
@@ -284,9 +347,19 @@ def ensure_log_directory(log_file_path: str) -> str:
     """
     Ensure the log directory exists and return the absolute path.
 
-    :param str log_file_path: Relative or absolute path to the log file
+    Creates the directory structure for the log file if it doesn't exist
+    and returns the absolute path to the log file. Handles both relative
+    and absolute paths correctly.
+
+    :param log_file_path: Relative or absolute path to the log file
+    :type log_file_path: str
     :return: Absolute path to the log file
     :rtype: str
+    :raises OSError: If directory creation fails
+
+    Example:
+        >>> path = ensure_log_directory('logs/app.log')
+        >>> print(path)  # /absolute/path/to/logs/app.log
     """
     script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
     if not os.path.isabs(log_file_path):
@@ -317,20 +390,32 @@ def get_configured_logger(
 
     Provides a comprehensive way to configure logging with support for
     console and file output, including advanced features like JSON formatting
-    and colored console logs.
+    and colored console logs. Supports both root logger and named loggers
+    with extensive customization options.
 
-    :param logger_type: The type of logger to configure
-    :param config_dict: Custom configuration dictionary
-    :param log_console_level: Console logging level
-    :param log_console_format: Console log message format
-    :param log_console_datefmt: Console date format
+    :param logger_type: The type of logger to configure (default: "mango_logging")
+    :type logger_type: str
+    :param config_dict: Custom configuration dictionary for advanced setups
+    :type config_dict: Optional[Dict]
+    :param log_console_level: Console logging level (e.g., logging.INFO)
+    :type log_console_level: Optional[int]
+    :param log_console_format: Console log message format string
+    :type log_console_format: Optional[str]
+    :param log_console_datefmt: Console date format string
+    :type log_console_datefmt: Optional[str]
     :param mango_color: Enable colored console output
-    :param log_file_path: Path to log file
-    :param log_file_mode: File open mode
-    :param log_file_level: File logging level
-    :param log_file_format: File log message format
-    :param log_file_datefmt: File date format
-    :param json_fields: Fields to include in JSON output. Options are:
+    :type mango_color: bool
+    :param log_file_path: Path to log file (supports .txt, .json, .log extensions)
+    :type log_file_path: Optional[str]
+    :param log_file_mode: File open mode ('a' for append, 'w' for overwrite)
+    :type log_file_mode: str
+    :param log_file_level: File logging level (e.g., logging.DEBUG)
+    :type log_file_level: Optional[int]
+    :param log_file_format: File log message format string
+    :type log_file_format: Optional[str]
+    :param log_file_datefmt: File date format string
+    :type log_file_datefmt: Optional[str]
+    :param json_fields: Fields to include in JSON output. Available options:
         - level: Log level name (e.g., INFO, DEBUG) (default)
         - message: Log message (default)
         - time: Timestamp of the log record (default)
@@ -344,9 +429,26 @@ def get_configured_logger(
         - processName: Process name where the log was generated
         - thread: Thread ID of the thread where the log was generated
         - threadName: Thread name where the log was generated
+    :type json_fields: Optional[List[str]]
     :return: Configured logger instance
     :rtype: logging.Logger
     :raises ValueError: If log file extension is invalid or logger type not found
+
+    Example:
+        >>> # Basic colored console logger
+        >>> logger = get_configured_logger(mango_color=True)
+        >>>
+        >>> # Logger with file output
+        >>> logger = get_configured_logger(
+        ...     log_file_path="logs/app.log",
+        ...     log_console_level=logging.DEBUG
+        ... )
+        >>>
+        >>> # JSON logger
+        >>> logger = get_configured_logger(
+        ...     log_file_path="logs/app.json",
+        ...     json_fields=['level', 'message', 'time']
+        ... )
     """
     # Special handling for root logger
     if logger_type == "root":
@@ -548,19 +650,26 @@ def get_basic_logger(
     format_str: str = "%(asctime)s | %(levelname)s | %(name)s: %(message)s",
     datefmt: str = "%Y-%m-%d",
 ) -> logging.Logger:
-    """Get a basic logger with console and/or file output (Deprecated).
+    """
+    Get a basic logger with console and/or file output (Deprecated).
 
     This function is deprecated and will be removed in a future version.
-    Use get_configured_logger instead.
+    Use get_configured_logger instead for more advanced configuration options.
 
     :param log_file: Path to the log file
+    :type log_file: Optional[str]
     :param console: Enable console output
-    :param level: Logging level
-    :param format_str: Log message format
-    :param datefmt: Date format
+    :type console: bool
+    :param level: Logging level (e.g., logging.INFO)
+    :type level: int
+    :param format_str: Log message format string
+    :type format_str: str
+    :param datefmt: Date format string
+    :type datefmt: str
     :return: Configured logger instance
     :rtype: logging.Logger
     :deprecated: Version 0.4.0: Use get_configured_logger instead
+    :raises DeprecationWarning: Always raises deprecation warning
     """
     warnings.warn(
         "get_basic_logger is deprecated. Use get_configured_logger instead.",

@@ -6,20 +6,20 @@ Time series
 
 Decomposition
 ~~~~~~~~~~~~~
-.. autoclass:: mango_time_series.time_series.decomposition.SeasonalityDecompose
+.. autoclass:: mango_time_series.exploratory_analysis.decomposition.SeasonalityDecompose
 
 Differentiation
 ~~~~~~~~~~~~~~~~
-.. automodule:: mango_time_series.time_series.differentiation
+.. automodule:: mango_time_series.exploratory_analysis.differentiation
 
 Heteroscedasticity
 ~~~~~~~~~~~~~~~~~~
-.. automodule:: mango_time_series.time_series.heteroscedasticity
+.. automodule:: mango_time_series.exploratory_analysis.heteroscedasticity
 
 Seasonal
 ~~~~~~~~
-.. autoclass:: mango_time_series.time_series.seasonal.SeasonalityDetector
+.. autoclass:: mango_time_series.exploratory_analysis.seasonal.SeasonalityDetector
 
 Stationary
 ~~~~~~~~~~
-.. autoclass:: mango_time_series.time_series.stationary.StationaryTester
+.. autoclass:: mango_time_series.exploratory_analysis.stationary.StationaryTester

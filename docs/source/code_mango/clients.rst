@@ -31,6 +31,10 @@ EmailSender
 
 GoogleCloudStorage
 ==================
+.. note::
+   This class inherits from :class:`mango.clients.cloud_storage.CloudStorage` which is an abstract base class.
+   The autoclass documentation may not generate properly due to the abstract nature of the parent class.
+
 .. autoclass:: mango.clients.google_cloud_storage.GoogleCloudStorage
    :members:
    :undoc-members:

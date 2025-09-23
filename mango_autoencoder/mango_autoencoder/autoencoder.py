@@ -10,12 +10,11 @@ import tensorflow as tf
 from keras import Sequential
 from keras.src.optimizers import SGD, Adadelta, Adagrad, Adam, Adamax, Nadam, RMSprop
 from mango.processing.data_imputer import DataImputer
-from tensorflow.keras.layers import Dense
-
 from mango_autoencoder.logging import get_configured_logger
 from mango_autoencoder.modules import anomaly_detector, decoder, encoder
 from mango_autoencoder.utils import plots, processing
 from mango_autoencoder.utils.sequences import time_series_to_sequence
+from tensorflow.keras.layers import Dense
 
 logger = get_configured_logger()
 
@@ -31,6 +30,20 @@ class AutoEncoder:
     The model can be highly configurable but is already set up for quick training
     and profiling. It supports data normalization, masking for missing values,
     and various training options including early stopping and checkpointing.
+
+    :param TRAIN_SIZE: Proportion of data used for training (default: 0.8)
+    :type TRAIN_SIZE: float
+    :param VAL_SIZE: Proportion of data used for validation (default: 0.1)
+    :type VAL_SIZE: float
+    :param TEST_SIZE: Proportion of data used for testing (default: 0.1)
+    :type TEST_SIZE: float
+
+    Example:
+        >>> autoencoder = AutoEncoder()
+        >>> autoencoder.form = "LSTM"
+        >>> autoencoder.context_window = 10
+        >>> autoencoder.fit(data)
+        >>> predictions = autoencoder.predict(test_data)
     """
 
     TRAIN_SIZE = 0.8
@@ -42,10 +55,17 @@ class AutoEncoder:
         Initialize the Autoencoder model with default parameters.
 
         Initializes internal state variables including paths, model configuration,
-        and normalization settings.
+        and normalization settings. Sets up default values for all configurable
+        parameters and prepares the model for training.
 
         :return: None
         :rtype: None
+
+        Example:
+            >>> autoencoder = AutoEncoder()
+            >>> print(autoencoder.form)  # Default form
+            >>> print(autoencoder.context_window)  # Default context window
+
         """
         # Path settings
         self._num_layers = None
@@ -327,14 +347,33 @@ class AutoEncoder:
     @feature_weights.setter
     def feature_weights(self, value: Optional[List[float]]) -> None:
         """
-        Set the feature weights.
+        Set the feature weights for loss calculation.
+
+        Feature weights allow for different importance levels for each feature
+        during model training. Higher weights increase the influence of that
+        feature in the loss calculation.
+
+        :param value: List of weights for each feature (None to disable weighting)
+        :type value: Optional[List[float]]
+        :return: None
+        :rtype: None
+        :raises ValueError: If weights list length doesn't match number of features
+
+        Example:
+            >>> autoencoder = AutoEncoder()
+            >>> autoencoder.feature_weights = [1.0, 2.0, 0.5]  # Weight features differently
+            >>> autoencoder.feature_weights = None  # Disable weighting
+
         """
         self._feature_weights = value
 
     @property
     def features_name(self) -> Optional[List[str]]:
         """
-        Get the features name used for training the model.
+        Get the feature names used for training the model.
+
+        :return: List of feature names or None if not set
+        :rtype: Optional[List[str]]
         """
         return self._features_name
 
@@ -364,6 +403,23 @@ class AutoEncoder:
     def data(self, value: Optional[np.ndarray]) -> None:
         """
         Set the data used for training the model.
+
+        :param value: Training data as numpy array or tuple of three arrays (train, val, test)
+        :type value: Optional[np.ndarray]
+        :return: None
+        :rtype: None
+        :raises ValueError: If data format is invalid
+
+        Example:
+            >>> autoencoder = AutoEncoder()
+            >>> # Single dataset (will be split automatically)
+            >>> autoencoder.data = np.random.randn(1000, 5)
+            >>> # Pre-split datasets
+            >>> train_data = np.random.randn(800, 5)
+            >>> val_data = np.random.randn(100, 5)
+            >>> test_data = np.random.randn(100, 5)
+            >>> autoencoder.data = (train_data, val_data, test_data)
+
         """
         # Validate that data is a single array or a tuple of three arrays
         if isinstance(value, tuple):
@@ -731,7 +787,10 @@ class AutoEncoder:
     @property
     def num_layers(self) -> int:
         """
-        Get the number of layers.
+        Get the number of layers in the encoder/decoder architecture.
+
+        :return: Number of layers (0 if hidden_dim is not set)
+        :rtype: int
         """
         if self._hidden_dim is None:
             return 0
@@ -740,35 +799,57 @@ class AutoEncoder:
     @num_layers.setter
     def num_layers(self, value: int) -> None:
         """
-        Set the number of layers.
+        Set the number of layers in the encoder/decoder architecture.
+
+        :param value: Number of layers
+        :type value: int
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is negative
         """
         self._num_layers = value
 
     @property
     def id_data(self) -> Optional[np.ndarray]:
         """
-        Get the ID data.
+        Get the ID data used for grouping time series.
+
+        :return: ID data array or None if not using ID-based processing
+        :rtype: Optional[np.ndarray]
         """
         return self._id_data
 
     @id_data.setter
     def id_data(self, value: Optional[np.ndarray]) -> None:
         """
-        Set the ID data.
+        Set the ID data for grouping time series.
+
+        :param value: ID data array or None to disable ID-based processing
+        :type value: Optional[np.ndarray]
+        :return: None
+        :rtype: None
         """
         self._id_data = value
 
     @property
     def id_data_dict(self) -> Optional[Dict[str, np.ndarray]]:
         """
-        Get the ID data dictionary.
+        Get the ID data dictionary mapping IDs to their respective datasets.
+
+        :return: Dictionary mapping ID strings to numpy arrays or None if not using ID-based processing
+        :rtype: Optional[Dict[str, np.ndarray]]
         """
         return self._id_data_dict
 
     @id_data_dict.setter
     def id_data_dict(self, value: Optional[Dict[str, np.ndarray]]) -> None:
         """
-        Set the ID data dictionary.
+        Set the ID data dictionary mapping IDs to their respective datasets.
+
+        :param value: Dictionary mapping ID strings to numpy arrays or None to disable ID-based processing
+        :type value: Optional[Dict[str, np.ndarray]]
+        :return: None
+        :rtype: None
         """
         self._id_data_dict = value
 
@@ -803,28 +884,45 @@ class AutoEncoder:
     @property
     def id_columns_indices(self) -> List[int]:
         """
-        Get the indices of the ID columns.
+        Get the indices of the ID columns used for grouping data.
+
+        :return: List of column indices that contain ID information
+        :rtype: List[int]
         """
         return self._id_columns_indices
 
     @id_columns_indices.setter
     def id_columns_indices(self, value: List[int]) -> None:
         """
-        Set the indices of the ID columns.
+        Set the indices of the ID columns used for grouping data.
+
+        :param value: List of column indices that contain ID information
+        :type value: List[int]
+        :return: None
+        :rtype: None
         """
         self._id_columns_indices = value
 
     @property
     def use_mask(self) -> bool:
         """
-        Get the use_mask flag.
+        Get the use_mask flag indicating whether masking is enabled for missing values.
+
+        :return: True if masking is enabled, False otherwise
+        :rtype: bool
         """
         return self._use_mask
 
     @use_mask.setter
     def use_mask(self, value: bool) -> None:
         """
-        Set the use_mask flag.
+        Set the use_mask flag for handling missing values.
+
+        :param value: True to enable masking for missing values, False to disable
+        :type value: bool
+        :return: None
+        :rtype: None
+        :raises ValueError: If data contains NaNs but use_mask is False
         """
         if not value and getattr(self, "_data", False):
             arrays_to_check = (
@@ -840,14 +938,23 @@ class AutoEncoder:
     @property
     def custom_mask(self) -> Optional[np.ndarray]:
         """
-        Get the custom mask.
+        Get the custom mask for missing values.
+
+        :return: Custom mask array or None if not set
+        :rtype: Optional[np.ndarray]
         """
         return self._custom_mask
 
     @custom_mask.setter
     def custom_mask(self, value: Optional[np.ndarray]) -> None:
         """
-        Set the custom mask.
+        Set the custom mask for missing values.
+
+        :param value: Custom mask array or None to disable custom masking
+        :type value: Optional[np.ndarray]
+        :return: None
+        :rtype: None
+        :raises ValueError: If mask format is invalid or doesn't match data shape
         """
         if self._use_mask and value is not None and self.id_data is not None:
             if isinstance(self.id_data, tuple) and isinstance(self.id_data_mask, tuple):
@@ -893,14 +1000,23 @@ class AutoEncoder:
     @property
     def mask_train(self) -> np.ndarray:
         """
-        Get the training mask.
+        Get the training mask for missing values.
+
+        :return: Training mask array
+        :rtype: np.ndarray
         """
         return self._mask_train
 
     @mask_train.setter
     def mask_train(self, value: np.ndarray) -> None:
         """
-        Set the training mask.
+        Set the training mask for missing values.
+
+        :param value: Training mask array
+        :type value: np.ndarray
+        :return: None
+        :rtype: None
+        :raises ValueError: If mask shape doesn't match training data shape
         """
         if hasattr(value, "shape"):
             if value.shape != self.x_train.shape:
@@ -912,14 +1028,23 @@ class AutoEncoder:
     @property
     def mask_val(self) -> np.ndarray:
         """
-        Get the validation mask.
+        Get the validation mask for missing values.
+
+        :return: Validation mask array
+        :rtype: np.ndarray
         """
         return self._mask_val
 
     @mask_val.setter
     def mask_val(self, value: np.ndarray) -> None:
         """
-        Set the validation mask.
+        Set the validation mask for missing values.
+
+        :param value: Validation mask array
+        :type value: np.ndarray
+        :return: None
+        :rtype: None
+        :raises ValueError: If mask shape doesn't match validation data shape
         """
         if hasattr(value, "shape"):
             if value.shape != self.x_val.shape:
@@ -931,14 +1056,23 @@ class AutoEncoder:
     @property
     def mask_test(self) -> np.ndarray:
         """
-        Get the test mask.
+        Get the test mask for missing values.
+
+        :return: Test mask array
+        :rtype: np.ndarray
         """
         return self._mask_test
 
     @mask_test.setter
     def mask_test(self, value: np.ndarray) -> None:
         """
-        Set the test mask.
+        Set the test mask for missing values.
+
+        :param value: Test mask array
+        :type value: np.ndarray
+        :return: None
+        :rtype: None
+        :raises ValueError: If mask shape doesn't match test data shape
         """
         if hasattr(value, "shape"):
             if value.shape != self.x_test.shape:
@@ -950,42 +1084,67 @@ class AutoEncoder:
     @property
     def imputer(self) -> Optional[DataImputer]:
         """
-        Get the imputer.
+        Get the data imputer used for handling missing values.
+
+        :return: DataImputer instance or None if not set
+        :rtype: Optional[DataImputer]
         """
         return self._imputer
 
     @imputer.setter
     def imputer(self, value: Optional[DataImputer]) -> None:
         """
-        Set the imputer.
+        Set the data imputer for handling missing values.
+
+        :param value: DataImputer instance or None to disable imputation
+        :type value: Optional[DataImputer]
+        :return: None
+        :rtype: None
         """
         self._imputer = value
 
     @property
     def shuffle(self) -> bool:
         """
-        Get the shuffle flag.
+        Get the shuffle flag indicating whether training data should be shuffled.
+
+        :return: True if shuffling is enabled, False otherwise
+        :rtype: bool
         """
         return self._shuffle
 
     @shuffle.setter
     def shuffle(self, value: bool) -> None:
         """
-        Set the shuffle flag.
+        Set the shuffle flag for training data.
+
+        :param value: True to enable shuffling of training data, False to disable
+        :type value: bool
+        :return: None
+        :rtype: None
         """
         self._shuffle = value
 
     @property
     def shuffle_buffer_size(self) -> Optional[int]:
         """
-        Get the shuffle buffer size.
+        Get the shuffle buffer size for training data shuffling.
+
+        :return: Buffer size for shuffling or None if not set
+        :rtype: Optional[int]
         """
         return self._shuffle_buffer_size
 
     @shuffle_buffer_size.setter
     def shuffle_buffer_size(self, value: Optional[int]) -> None:
         """
-        Set the shuffle buffer size.
+        Set the shuffle buffer size for training data shuffling.
+
+        :param value: Buffer size for shuffling (None to disable or use default)
+        :type value: Optional[int]
+        :return: None
+        :rtype: None
+        :raises ValueError: If value is not a positive integer
         """
         if value is not None:
             if not isinstance(value, int) or value <= 0:
@@ -996,7 +1155,10 @@ class AutoEncoder:
     @property
     def x_train_no_shuffle(self) -> np.ndarray:
         """
-        Get the x_train_no_shuffle.
+        Get the unshuffled training data for reconstruction purposes.
+
+        :return: Training data without shuffling applied
+        :rtype: np.ndarray
         """
         if self._x_train_no_shuffle is None:
             return self.x_train
@@ -1005,7 +1167,12 @@ class AutoEncoder:
     @x_train_no_shuffle.setter
     def x_train_no_shuffle(self, value: np.ndarray) -> None:
         """
-        Set the x_train_no_shuffle.
+        Set the unshuffled training data for reconstruction purposes.
+
+        :param value: Training data without shuffling applied
+        :type value: np.ndarray
+        :return: None
+        :rtype: None
         """
         self._x_train_no_shuffle = value
 
@@ -1276,6 +1443,20 @@ class AutoEncoder:
         :raises ValueError: If invalid parameters are provided
         :return: None
         :rtype: None
+
+        Example:
+            >>> autoencoder = AutoEncoder()
+            >>> data = np.random.randn(1000, 5)  # 1000 samples, 5 features
+            >>> autoencoder.build_model(
+            ...     context_window=10,
+            ...     data=data,
+            ...     time_step_to_check=[5, 7],
+            ...     feature_to_check=[0, 1, 2],
+            ...     hidden_dim=[64, 32],
+            ...     form="lstm",
+            ...     normalize=True
+            ... )
+
         """
         self.seed = seed
         self.form = form

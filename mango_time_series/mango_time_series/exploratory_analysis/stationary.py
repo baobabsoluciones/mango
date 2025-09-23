@@ -3,17 +3,24 @@ from typing import Tuple
 
 import pandas as pd
 import polars as pl
-from statsmodels.tools.sm_exceptions import InterpolationWarning
-from statsmodels.tsa.stattools import adfuller, kpss
-
-from mango_time_series.logging import get_configured_logger
 from mango_time_series.exploratory_analysis.decomposition import SeasonalityDecompose
 from mango_time_series.exploratory_analysis.seasonal import SeasonalityDetector
+from mango_time_series.logging import get_configured_logger
+from statsmodels.tools.sm_exceptions import InterpolationWarning
+from statsmodels.tsa.stattools import adfuller, kpss
 
 logger = get_configured_logger()
 
 
 class StationaryTester:
+    """
+    Tester for making time series stationary through differencing.
+
+    Implements a comprehensive approach to stationarity testing and transformation
+    using ADF and KPSS tests combined with seasonal strength analysis. Applies
+    regular and seasonal differencing iteratively until the series becomes
+    stationary in both trend and seasonal components.
+    """
 
     def __init__(
         self,
@@ -21,10 +28,16 @@ class StationaryTester:
         fs_threshold: float = 0.64,
     ):
         """
-        Initialize the StationaryTester with a significance level for the ADF test and a threshold for seasonal strength.
+        Initialize the StationaryTester with analysis thresholds.
 
-        :param threshold: Significance level for the ADF test (default 0.05).
-        :param fs_threshold: Threshold for the seasonal strength to decide if seasonal differencing is needed (default 0.64).
+        Sets up the tester with configurable thresholds for stationarity testing
+        and seasonal strength evaluation. Initializes seasonality detection
+        and decomposition components.
+
+        :param threshold: Significance level for ADF test (default: 0.05)
+        :type threshold: float
+        :param fs_threshold: Seasonal strength threshold for differencing (default: 0.64)
+        :type fs_threshold: float
         """
         self.threshold = threshold
         self.fs_threshold = fs_threshold
@@ -34,12 +47,19 @@ class StationaryTester:
     @staticmethod
     def _convert_to_pandas(df: pl.DataFrame, date_column: str) -> pd.DataFrame:
         """
-        Convert a Polars DataFrame to a Pandas DataFrame and set the index.
+        Convert Polars DataFrame to Pandas DataFrame with date index.
 
-        :param df: The input Polars DataFrame.
-        :param date_column: The name of the date column to set as the index.
-        :return: A Pandas DataFrame with the date column set as the index.
-        :raises ValueError: If the date column is not found in the DataFrame.
+        Converts the input Polars DataFrame to a Pandas DataFrame and sets
+        the specified date column as the index. Automatically converts the
+        date column to datetime format.
+
+        :param df: Input Polars DataFrame to convert
+        :type df: polars.DataFrame
+        :param date_column: Name of the date column to use as index
+        :type date_column: str
+        :return: Pandas DataFrame with date column as index
+        :rtype: pandas.DataFrame
+        :raises ValueError: If the specified date column is not found
         """
         df = df.to_pandas()
         if date_column not in df.columns:
@@ -50,22 +70,40 @@ class StationaryTester:
     @staticmethod
     def test_adf(series: pd.Series) -> float:
         """
-        Test the stationarity of the time series data using the Augmented Dickey-Fuller (ADF) test.
+        Test stationarity using the Augmented Dickey-Fuller test.
 
-        :param series: The time series data as a pandas Series.
-        :return: The p-value of the ADF test.
+        Performs the ADF test to determine if the time series is stationary.
+        The null hypothesis is that the series has a unit root (non-stationary).
+
+        :param series: Time series data to test
+        :type series: pandas.Series
+        :return: P-value of the ADF test
+        :rtype: float
+
+        Note:
+            - p-value < 0.05 typically indicates stationarity
+            - Lower p-values suggest stronger evidence against unit root
         """
         adf_result = adfuller(x=series)
         p_value = adf_result[1]
         return p_value
 
     @staticmethod
-    def test_kpss(series: pd.Series):
+    def test_kpss(series: pd.Series) -> float | None:
         """
-        Test the stationarity of the time series data using the KPSS test.
+        Test stationarity using the KPSS test.
 
-        :param series: The time series data as a pandas Series.
-        :return: The p-value of the KPSS test.
+        Performs the KPSS test to determine if the time series is stationary.
+        The null hypothesis is that the series is stationary around a constant.
+
+        :param series: Time series data to test
+        :type series: pandas.Series
+        :return: P-value of the KPSS test, or None if test fails
+        :rtype: float or None
+
+        Note:
+            - p-value < 0.05 typically indicates non-stationarity
+            - Handles InterpolationWarning and returns None on errors
         """
         try:
             with warnings.catch_warnings(record=True) as w:
@@ -86,10 +124,21 @@ class StationaryTester:
 
     def _run_stationarity_tests(self, series: pd.Series) -> Tuple[float, float]:
         """
-        Run the ADF and KPSS tests to check for stationarity.
+        Run both ADF and KPSS stationarity tests.
 
-        :param series: The time series data as a pandas Series.
-        :return: A tuple containing the p-values of the ADF and KPSS tests.
+        Executes both the Augmented Dickey-Fuller and KPSS tests to comprehensively
+        assess the stationarity of the time series. The combination of these tests
+        provides a more robust assessment than either test alone.
+
+        :param series: Time series data to test
+        :type series: pandas.Series
+        :return: Tuple containing (ADF_p_value, KPSS_p_value)
+        :rtype: tuple[float, float]
+
+        Note:
+            - ADF test: null hypothesis is unit root (non-stationary)
+            - KPSS test: null hypothesis is stationarity
+            - Combined results help determine appropriate transformation
         """
         p_value_adf = self.test_adf(series=series)
         p_value_kpss = self.test_kpss(series=series)
@@ -99,12 +148,24 @@ class StationaryTester:
         self, p_value_adf: float, p_value_kpss: float, seasonal_strength: float
     ) -> bool:
         """
-        Check if the series is already stationary in both regular and seasonal terms.
+        Check if the series is already stationary.
 
-        :param p_value_adf: The p-value of the ADF test.
-        :param p_value_kpss: The p-value of the KPSS test.
-        :param seasonal_strength: The seasonal strength of the series.
-        :return: True if the series is already stationary, False otherwise.
+        Evaluates whether the time series is already stationary based on
+        ADF and KPSS test results combined with seasonal strength analysis.
+        Considers both trend and seasonal stationarity.
+
+        :param p_value_adf: P-value from ADF test
+        :type p_value_adf: float
+        :param p_value_kpss: P-value from KPSS test
+        :type p_value_kpss: float
+        :param seasonal_strength: Seasonal strength measure (Fs)
+        :type seasonal_strength: float
+        :return: True if series is stationary, False otherwise
+        :rtype: bool
+
+        Note:
+            - Stationary if: ADF p-value < threshold AND KPSS p-value >= threshold AND seasonal_strength < fs_threshold
+            - Logs the decision with test statistics
         """
         if (
             p_value_adf < self.threshold <= p_value_kpss
@@ -118,10 +179,21 @@ class StationaryTester:
 
     def _detect_seasonality(self, series: pd.Series) -> Tuple[int, int, float]:
         """
-        Detect seasonality using STL decomposition and calculate seasonal strength.
+        Detect seasonality and calculate seasonal strength.
 
-        :param series: The time series data as a pandas Series.
-        :return: A tuple containing the detected period, the period used for STL decomposition, and the seasonal strength.
+        Uses the seasonality detector to identify seasonal periods and then
+        applies STL decomposition to calculate the seasonal strength measure.
+        Adjusts the period for STL decomposition to ensure it's odd.
+
+        :param series: Time series data to analyze
+        :type series: pandas.Series
+        :return: Tuple containing (detected_period, stl_period, seasonal_strength)
+        :rtype: tuple[int, int, float]
+
+        Note:
+            - Returns period=1, stl_period=1, seasonal_strength=0 if no seasonality detected
+            - STL period is adjusted to be odd (period+1 if even)
+            - Seasonal strength calculated from STL decomposition components
         """
         detected_seasonalities = self.seasonality_detector.detect_seasonality(
             ts=series.values
@@ -148,28 +220,32 @@ class StationaryTester:
         period_stl: int,
     ) -> Tuple[pd.Series, int]:
         """
-        Apply regular differencing iteratively until the series becomes stationary.
+        Apply regular differencing iteratively until series becomes stationary.
 
-        This function applies both the ADF (Augmented Dickey-Fuller) and KPSS (Kwiatkowski-Phillips-Schmidt-Shin) tests to assess the stationarity of the time series.
-        Based on the outcomes, it applies regular or seasonal differencing to make the series stationary.
+        Implements a comprehensive approach to regular differencing based on
+        ADF and KPSS test results. Handles three main cases:
 
-        The approach works as follows:
+        1. Both tests indicate non-stationarity: Apply regular differencing
+        2. KPSS indicates stationarity, ADF indicates non-stationarity:
+           Series is trend-stationary, apply differencing
+        3. KPSS indicates non-stationarity, ADF indicates stationarity:
+           Series is difference-stationary, apply detrending
 
-        - ADF Test: If p-value < `threshold_adf`, the null hypothesis of non-stationarity is rejected, meaning the series is stationary.
-        - KPSS Test: If p-value < `threshold_kpss`, the null hypothesis of stationarity is rejected, meaning the series is not stationary.
-        Possible outcomes of applying these stationary tests are as follows:
+        :param series: Time series data to transform
+        :type series: pandas.Series
+        :param p_value_adf: P-value from ADF test
+        :type p_value_adf: float
+        :param p_value_kpss: P-value from KPSS test
+        :type p_value_kpss: float
+        :param period_stl: Period for STL decomposition
+        :type period_stl: int
+        :return: Tuple containing (differenced_series, number_of_differencing_steps)
+        :rtype: tuple[pandas.Series, int]
 
-        Case 1: Both tests conclude that the series is not stationary - The series is not stationary.
-        Case 2: KPSS indicates stationarity and ADF indicates non-stationarity - The series is trend stationary.
-                Trend needs to be removed to make series strict stationary. The detrended series is checked for stationarity.
-        Case 3: KPSS indicates non-stationarity and ADF indicates stationarity - The series is difference stationary.
-                Differencing is to be used to make series stationary. The differenced series is checked for stationarity.
-
-        :param series: The time series data as a pandas Series.
-        :param p_value_adf: The p-value of the ADF test.
-        :param p_value_kpss: The p-value of the KPSS test.
-        :param period_stl: The period used for STL decomposition.
-        :return: A tuple containing the differenced series and the number of regular differencing steps applied.
+        Note:
+            - Iteratively applies transformations until stationarity is achieved
+            - Recalculates test statistics after each transformation
+            - Logs the transformation decisions and progress
         """
         d_regular = 0
         while p_value_adf >= self.threshold or p_value_kpss < self.threshold:
@@ -204,13 +280,27 @@ class StationaryTester:
         self, series: pd.Series, seasonal_strength: float, period: int, period_stl: int
     ) -> Tuple[pd.Series, int]:
         """
-        Apply seasonal differencing iteratively until the seasonal strength drops below the threshold.
+        Apply seasonal differencing iteratively until seasonal strength is reduced.
 
-        :param series: The time series data as a pandas Series.
-        :param seasonal_strength: The seasonal strength of the series.
-        :param period: The detected seasonal period.
-        :param period_stl: The period used for STL decomposition.
-        :return: A tuple containing the differenced series and the number of seasonal differencing steps applied.
+        Applies seasonal differencing at the detected seasonal period until
+        the seasonal strength measure falls below the configured threshold.
+        Recalculates seasonal strength after each differencing step.
+
+        :param series: Time series data to transform
+        :type series: pandas.Series
+        :param seasonal_strength: Current seasonal strength measure
+        :type seasonal_strength: float
+        :param period: Detected seasonal period for differencing
+        :type period: int
+        :param period_stl: Period for STL decomposition
+        :type period_stl: int
+        :return: Tuple containing (differenced_series, number_of_seasonal_differencing_steps)
+        :rtype: tuple[pandas.Series, int]
+
+        Note:
+            - Continues until seasonal_strength < fs_threshold
+            - Uses STL decomposition to recalculate seasonal strength
+            - Logs seasonal strength values after each step
         """
         d_seasonal = 0
         while seasonal_strength > self.fs_threshold:
@@ -238,13 +328,26 @@ class StationaryTester:
         target_column: str,
     ) -> pd.DataFrame:
         """
-        Prepare the final DataFrame with the transformed time series and adjusted date index.
+        Prepare final DataFrame with transformed series and adjusted dates.
 
-        :param df: The original DataFrame.
-        :param differentiated_series: The differenced time series data.
-        :param date_column: The name of the date column.
-        :param target_column: The name of the target column.
-        :return: A DataFrame with the transformed time series and adjusted date index.
+        Creates a new DataFrame containing the transformed time series data
+        with appropriately adjusted date indices to match the length of the
+        differenced series.
+
+        :param df: Original DataFrame with date index
+        :type df: pandas.DataFrame
+        :param differentiated_series: Transformed time series data
+        :type differentiated_series: pandas.Series
+        :param date_column: Name of the date column
+        :type date_column: str
+        :param target_column: Name of the target column
+        :type target_column: str
+        :return: DataFrame with transformed data and adjusted dates
+        :rtype: pandas.DataFrame
+
+        Note:
+            - Adjusts date index to match the length of differenced series
+            - Takes the last N dates where N is the length of differentiated series
         """
         original_dates = df.index.to_series()
         adjusted_dates = original_dates.iloc[-len(differentiated_series) :].reset_index(
@@ -258,12 +361,27 @@ class StationaryTester:
         self, df: pl.DataFrame, target_column: str, date_column: str
     ) -> Tuple[pd.DataFrame, int, int]:
         """
-        Main function to iteratively transform the time series to make it stationary in both regular and seasonal components.
+        Transform time series to make it stationary in trend and seasonal components.
 
-        :param df: The input Polars DataFrame.
-        :param target_column: The name of the target column containing the time series data.
-        :param date_column: The name of the date column.
-        :return: A tuple containing the transformed DataFrame, the number of regular differencing steps, and the number of seasonal differencing steps.
+        Main function that implements a comprehensive approach to making time series
+        stationary through iterative application of regular and seasonal differencing.
+        Uses ADF and KPSS tests combined with seasonal strength analysis to determine
+        the appropriate transformations.
+
+        :param df: Input Polars DataFrame containing time series data
+        :type df: polars.DataFrame
+        :param target_column: Name of the column containing time series values
+        :type target_column: str
+        :param date_column: Name of the column containing dates
+        :type date_column: str
+        :return: Tuple containing (transformed_DataFrame, regular_differencing_steps, seasonal_differencing_steps)
+        :rtype: tuple[pandas.DataFrame, int, int]
+
+        Note:
+            - Returns original data if already stationary
+            - Applies regular differencing first, then seasonal differencing
+            - Logs final differencing parameters for reference
+            - Converts Polars DataFrame to Pandas for processing
         """
         df = self._convert_to_pandas(df=df, date_column=date_column)
         series = df[target_column]

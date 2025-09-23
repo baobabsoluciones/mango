@@ -9,16 +9,37 @@ logger = get_configured_logger()
 
 def encoder(form: str, **kwargs):
     """
-    Encoder module for different models.
-    It can be of different types: Dense, RNN, GRU and LSTM encoders.
+    Create an encoder model for different neural network architectures.
 
-    :param form: type of encoder, one of "dense", "rnn", "gru" or "lstm"
+    Factory function that creates encoder models of various types including
+    Dense, RNN, GRU and LSTM encoders. The specific parameters depend on
+    the encoder type selected.
+
+    :param form: Type of encoder architecture
     :type form: str
-    :param kwargs: keyword arguments for the encoder.
-      This can vary depending on the underlying type of encoder.
-      Go to specific documentation for more details
-    :return: encoder model
+    :param kwargs: Keyword arguments specific to the encoder type
+    :type kwargs: dict
+    :return: Configured encoder model
     :rtype: keras.Model
+    :raises ValueError: If an invalid encoder form is specified
+
+    Example:
+        >>> # Create LSTM encoder
+        >>> lstm_enc = encoder(
+        ...     form="lstm",
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Create Dense encoder
+        >>> dense_enc = encoder(
+        ...     form="dense",
+        ...     features=10,
+        ...     hidden_dim=[128, 64],
+        ...     num_layers=2
+        ... )
+
     """
     if form == "dense":
         return _encoder_dense(**kwargs)
@@ -40,21 +61,31 @@ def _encoder_dense(
     verbose: bool = False,
 ) -> Model:
     """
-    Dense encoder
+    Create a dense (fully-connected) encoder model.
 
-    :param features: number of features in the input
+    Builds a feedforward neural network encoder with configurable layers
+    and dimensions. Each layer is a dense layer with optional activation.
+
+    :param features: Number of input features
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the dense layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: Hidden layer dimensions. Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of dense layers
+    :param num_layers: Number of dense layers to create
     :type num_layers: int
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for dense layers
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: dense encoder model
+    :return: Compiled dense encoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Uniform layer dimensions
+        >>> encoder = _encoder_dense(features=10, hidden_dim=64, num_layers=3)
+        >>> # Custom layer dimensions
+        >>> encoder = _encoder_dense(features=10, hidden_dim=[128, 64, 32], num_layers=3)
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers
@@ -89,25 +120,47 @@ def _encoder_lstm(
     verbose: bool = False,
 ) -> Model:
     """
-    LSTM encoder
+    Create an LSTM-based encoder model for sequence data.
 
-    :param context_window: number of timesteps in the input
+    Builds a Long Short-Term Memory encoder that processes sequential data
+    with configurable layers, dimensions, and bidirectional processing.
+    Includes a final dense layer with optional activation.
+
+    :param context_window: Number of timesteps in input sequences
     :type context_window: int
-    :param features: number of features in the input
+    :param features: Number of features per timestep
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the LSTM layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: LSTM layer dimensions. Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of LSTM layers
+    :param num_layers: Number of LSTM layers to stack
     :type num_layers: int
-    :param use_bidirectional: whether to use bidirectional LSTM
+    :param use_bidirectional: Whether to use bidirectional LSTM layers
     :type use_bidirectional: bool
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for final dense layer
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: LSTM encoder model
+    :return: Compiled LSTM encoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Standard LSTM encoder
+        >>> encoder = _encoder_lstm(
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Bidirectional LSTM with custom dimensions
+        >>> encoder = _encoder_lstm(
+        ...     context_window=20,
+        ...     features=3,
+        ...     hidden_dim=[128, 64],
+        ...     num_layers=2,
+        ...     use_bidirectional=True
+        ... )
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers
@@ -146,25 +199,47 @@ def _encoder_gru(
     verbose: bool = False,
 ) -> Model:
     """
-    GRU encoder
+    Create a GRU-based encoder model for sequence data.
 
-    :param context_window: number of timesteps in the input
+    Builds a Gated Recurrent Unit encoder that processes sequential data
+    with configurable layers, dimensions, and bidirectional processing.
+    Includes a final dense layer with optional activation.
+
+    :param context_window: Number of timesteps in input sequences
     :type context_window: int
-    :param features: number of features in the input
+    :param features: Number of features per timestep
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the GRU layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: GRU layer dimensions. Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of GRU layers
+    :param num_layers: Number of GRU layers to stack
     :type num_layers: int
-    :param use_bidirectional: whether to use bidirectional GRU
+    :param use_bidirectional: Whether to use bidirectional GRU layers
     :type use_bidirectional: bool
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for final dense layer
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: GRU encoder model
+    :return: Compiled GRU encoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Standard GRU encoder
+        >>> encoder = _encoder_gru(
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Bidirectional GRU with custom dimensions
+        >>> encoder = _encoder_gru(
+        ...     context_window=20,
+        ...     features=3,
+        ...     hidden_dim=[128, 64],
+        ...     num_layers=2,
+        ...     use_bidirectional=True
+        ... )
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers
@@ -206,25 +281,47 @@ def _encoder_rnn(
     verbose: bool = False,
 ) -> Model:
     """
-    RNN encoder
+    Create an RNN-based encoder model for sequence data.
 
-    :param context_window: number of timesteps in the input
+    Builds a Simple Recurrent Neural Network encoder that processes sequential data
+    with configurable layers, dimensions, and bidirectional processing.
+    Includes a final dense layer with optional activation.
+
+    :param context_window: Number of timesteps in input sequences
     :type context_window: int
-    :param features: number of features in the input
+    :param features: Number of features per timestep
     :type features: int
-    :param hidden_dim: number of hidden dimensions in the RNN layer. It can be a single integer (same for all layers)
-      or a list of dimensions for each layer.
+    :param hidden_dim: RNN layer dimensions. Single int for uniform layers or list for custom dimensions
     :type hidden_dim: Union[int, List[int]]
-    :param num_layers: number of RNN layers
+    :param num_layers: Number of RNN layers to stack
     :type num_layers: int
-    :param use_bidirectional: whether to use bidirectional RNN
+    :param use_bidirectional: Whether to use bidirectional RNN layers
     :type use_bidirectional: bool
-    :param activation: activation function for the dense layer
-    :type activation: str
-    :param verbose: whether to print the model summary
+    :param activation: Activation function for final dense layer
+    :type activation: str, optional
+    :param verbose: Whether to print model summary
     :type verbose: bool
-    :return: RNN encoder model
+    :return: Compiled RNN encoder model
     :rtype: keras.Model
+    :raises ValueError: If hidden_dim list length doesn't match num_layers
+
+    Example:
+        >>> # Standard RNN encoder
+        >>> encoder = _encoder_rnn(
+        ...     context_window=10,
+        ...     features=5,
+        ...     hidden_dim=64,
+        ...     num_layers=2
+        ... )
+        >>> # Bidirectional RNN with custom dimensions
+        >>> encoder = _encoder_rnn(
+        ...     context_window=20,
+        ...     features=3,
+        ...     hidden_dim=[128, 64],
+        ...     num_layers=2,
+        ...     use_bidirectional=True
+        ... )
+
     """
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim] * num_layers

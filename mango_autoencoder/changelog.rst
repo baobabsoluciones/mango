@@ -10,18 +10,18 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 ------------
 
 Added
-~~~~~
+-----
 - Enhanced autoencoder functionality and performance
 - Improved anomaly detection capabilities
 - Better integration with the mango ecosystem
 
 Changed
-~~~~~~~
+-------
 - Updated dependencies and package configuration
 - Enhanced test coverage and documentation
 
 Added
-~~~~~
+-----
 - Neural network autoencoder implementation
 - Encoder and decoder modules with customizable architectures
 - Anomaly detection using reconstruction error
@@ -31,7 +31,7 @@ Added
 - Support for various input data formats
 
 Features
-~~~~~~~~
+--------
 - Flexible neural network architectures
 - Customizable encoder and decoder layers
 - Anomaly detection algorithms

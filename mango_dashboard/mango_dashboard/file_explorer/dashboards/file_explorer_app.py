@@ -20,12 +20,34 @@ from mango_dashboard.file_explorer.dashboards.file_explorer_handlers import (
 
 
 class DisplayablePath(object):
+    """A class for creating tree-like directory structure displays.
+
+    This class provides functionality to create a visual tree representation
+    of directory structures using ASCII characters. It supports hierarchical
+    display with proper indentation and tree-like connectors.
+
+    Attributes:
+        display_filename_prefix_middle (str): Prefix for middle items in tree
+        display_filename_prefix_last (str): Prefix for last items in tree
+        display_parent_prefix_middle (str): Indentation for middle parent levels
+        display_parent_prefix_last (str): Indentation for last parent levels
+    """
+
     display_filename_prefix_middle = "├──"
     display_filename_prefix_last = "└──"
     display_parent_prefix_middle = "    "
     display_parent_prefix_last = "│   "
 
     def __init__(self, path, parent_path, is_last):
+        """Initialize a DisplayablePath instance.
+
+        :param path: The file or directory path to display
+        :type path: str or Path
+        :param parent_path: The parent DisplayablePath instance (None for root)
+        :type parent_path: DisplayablePath or None
+        :param is_last: Whether this is the last item in its parent's children
+        :type is_last: bool
+        """
         self.path = Path(str(path))
         self.parent = parent_path
         self.is_last = is_last
@@ -36,12 +58,46 @@ class DisplayablePath(object):
 
     @property
     def displayname(self):
+        """Get the display name for the path.
+
+        Returns the name of the file or directory with a trailing slash
+        for directories to distinguish them from files.
+
+        :return: Display name with trailing slash for directories
+        :rtype: str
+        """
         if self.path.is_dir():
             return self.path.name + "/"
         return self.path.name
 
     @classmethod
     def make_tree(cls, root, parent=None, is_last=False, criteria=None):
+        """Generate a tree structure of DisplayablePath objects.
+
+        Creates a hierarchical tree structure starting from the root path.
+        Recursively processes directories and applies filtering criteria.
+        Children are sorted alphabetically (case-insensitive).
+
+        :param root: Root directory path to start the tree from
+        :type root: str or Path
+        :param parent: Parent DisplayablePath instance (None for root)
+        :type parent: DisplayablePath or None
+        :param is_last: Whether this is the last item in its parent's children
+        :type is_last: bool
+        :param criteria: Function to filter paths (default: include all)
+        :type criteria: callable or None
+        :return: Generator yielding DisplayablePath objects in tree order
+        :rtype: Generator[DisplayablePath]
+
+        Example:
+            >>> for path in DisplayablePath.make_tree('/some/directory'):
+            ...     print(path.displayable())
+            /some/directory/
+            ├── subdir1/
+            │   ├── file1.txt
+            │   └── file2.txt
+            └── subdir2/
+        """
         root = Path(str(root))
         criteria = criteria or cls._default_criteria
 
@@ -65,15 +121,29 @@ class DisplayablePath(object):
 
     @classmethod
     def _default_criteria(cls, path):
+        """Default criteria function that includes all paths.
+
+        :param path: Path to evaluate
+        :type path: Path
+        :return: Always True (include all paths)
+        :rtype: bool
+        """
         return True
 
-    @property
-    def displayname(self):
-        if self.path.is_dir():
-            return self.path.name + "/"
-        return self.path.name
-
     def displayable(self):
+        """Generate the complete display string for this path.
+
+        Creates a tree-like string representation with proper indentation
+        and connectors based on the hierarchical position in the tree.
+
+        :return: Formatted string representation of the path in tree format
+        :rtype: str
+
+        Example:
+            >>> path = DisplayablePath('/some/dir/file.txt', parent, True)
+            >>> print(path.displayable())
+            └── file.txt
+        """
         if self.parent is None:
             return self.displayname
 
@@ -98,6 +168,21 @@ class DisplayablePath(object):
 
 
 class FileExplorerApp:
+    """A Streamlit-based file explorer application.
+
+    This class provides a web-based interface for exploring and managing files
+    and directories. It supports various file formats including CSV, Excel, JSON,
+    images, HTML plots, and Markdown files. The application can work with both
+    local file systems and Google Cloud Storage.
+
+    Features:
+        - Interactive file browsing with tree view
+        - File content preview and editing
+        - Support for multiple file formats
+        - Configurable layout and display options
+        - Integration with GCP storage
+    """
+
     # Config
     _APP_CONFIG = {
         "logo_path": os.path.join("assets", "logo.png"),
@@ -116,16 +201,29 @@ class FileExplorerApp:
         config_path: str = None,
         file_handler: FileExplorerHandler = None,
     ):
-        """
-        The __init__ function is called when the class is instantiated.
-        It sets up the instance of the class, and defines all its attributes.
+        """Initialize the FileExplorerApp instance.
 
+        Sets up the Streamlit application with configuration, file handler,
+        and initial settings. Loads configuration from file or uses defaults.
+        Configures Streamlit page settings and validates paths.
 
-        :param self: Represent the instance of the class
-        :param str path: Set the default path of the app
-        :param bool editable: Determine whether the user can edit the config file or not
-        :param str config_path: Set the path to a config file
-        :doc-author: baobab soluciones
+        :param path: Default directory path for the file explorer
+        :type path: str or None
+        :param editable: Whether the interface should allow editing and configuration
+        :type editable: bool
+        :param config_path: Path to configuration JSON file
+        :type config_path: str or None
+        :param file_handler: File handler for accessing files (local or GCP)
+        :type file_handler: FileExplorerHandler or None
+        :raises FileNotFoundError: If config file path doesn't exist
+        :raises json.JSONDecodeError: If config file contains invalid JSON
+
+        Example:
+            >>> app = FileExplorerApp(
+            ...     path="/path/to/directory",
+            ...     editable=True,
+            ...     config_path="config.json"
+            ... )
         """
         if config_path is None:
             if os.path.exists(os.path.join(os.getcwd(), "config.json")):
@@ -178,15 +276,14 @@ class FileExplorerApp:
         )
 
     def _render_header(self):
-        # TODO: DONE
-        """
-        The _render_header function is a helper function that renders the header of the app.
-        It takes in no arguments and returns nothing. It uses Streamlit's st module to render
-        the logo, title, and header of the app.
+        """Render the application header with logo, title, and header text.
 
-        :param self: Refer to the instance of the class
-        :return: None.
-        :doc-author: baobab soluciones
+        Creates a three-column layout displaying the application logo,
+        title, and header text. Handles logo path resolution and applies
+        custom CSS styling to hide certain UI elements.
+
+        :return: None
+        :rtype: None
         """
         # Create columns display
         col3_1, col3_2, col3_3 = st.columns(3)
@@ -218,16 +315,15 @@ class FileExplorerApp:
             st.header(self.config.get("header", self._APP_CONFIG["header"]))
 
     def _render_configuration(self):
-        # TODO: DONE
-        """
-        The _render_configuration function is used to render the configuration sidebar.
-        It allows the user to select a folder, a config path, and set title and number of columns/rows.
-        The function also checks if the selected folder exists and if it does not, an error message is displayed.
-        Similarly for config path: it must be in *.json format in correct directory.
+        """Render the configuration sidebar with user input controls.
 
-        :param self: Refer to the object itself
+        Creates a sidebar with configuration options including folder selection,
+        config path, title, layout settings (rows/columns), and file-specific
+        settings like width/height for images and HTML files. Validates inputs
+        and provides error messages for invalid configurations.
+
         :return: None
-        :doc-author: baobab soluciones
+        :rtype: None
         """
         with st.sidebar:
             st.header("Configuration")
@@ -349,13 +445,14 @@ class FileExplorerApp:
                 )
 
     def _render_tree_folder(self):
-        """
-        The _render_tree_folder function is a helper function that renders the folder tree of the directory path specified in config.
-        It uses DisplayablePath.make_tree to create a list of paths, and then iterates through them to display each one.
+        """Render the directory tree structure using DisplayablePath.
 
-        :param self: Bind the method to an object
+        Creates a visual tree representation of the directory structure
+        starting from the configured directory path. Only displays directories
+        (not files) in the tree view.
+
         :return: None
-        :doc-author: baobab soluciones
+        :rtype: None
         """
         paths = DisplayablePath.make_tree(
             Path(self.config["dir_path"]), criteria=lambda p: p.is_dir()
@@ -367,13 +464,18 @@ class FileExplorerApp:
 
     def _render_dropdown(self, i_row: int, i_col: int):
         """
-        The _render_dropdown function is a helper function that renders the dropdown menu for selecting files.
+        Render dropdown selectors and file content for a specific grid position.
 
-        :param self: Access the attributes and methods of the class
-        :param int i_row: Specify the row number of the file to be rendered
-        :param int i_col: Specify the column number of the file to be rendered
+        Creates folder and file selection dropdowns for the specified row and column
+        position in the grid layout. Renders the selected file content using the
+        appropriate handler based on file type.
+
+        :param i_row: Row index in the grid layout (1-based)
+        :type i_row: int
+        :param i_col: Column index in the grid layout (1-based)
+        :type i_col: int
         :return: None
-        :doc-author: baobab soluciones
+        :rtype: None
         """
         if self.editable:
             # Select folder
@@ -414,19 +516,20 @@ class FileExplorerApp:
         key: str = None,
     ):
         """
-        The _element_selector function is a helper function that allows the user to select an element from a folder.
-        The function takes in three arguments:
-            - self: The class instance of the Streamlit app. This is required for all functions within this class, as it allows us to access other functions and variables within the same class.
-            - folder_path (str): The path of the folder where we want to select an element from.
-                For example, if we want to select a file from our data directory, then we would pass in `self._data_dir` as our argument for `folder_path`.
+        Create a selectbox for choosing files or folders from a directory.
 
+        Generates a Streamlit selectbox populated with files or folders from the
+        specified directory path. Handles default selection based on saved
+        configuration and formats display names appropriately.
 
-        :param self: Bind the method to an object
-        :param str folder_path: Specify the path of the folder to be searched
-        :param str element_type: Specify whether the function should return a list of files or folders
-        :param str key: Identify the selectbox in the config file
+        :param folder_path: Path to the directory to browse
+        :type folder_path: str
+        :param element_type: Type of elements to display ('file' or 'folder')
+        :type element_type: str
+        :param key: Unique key for the selectbox widget
+        :type key: str or None
         :return: None
-        :doc-author: baobab soluciones
+        :rtype: None
         """
         paths = self.file_handler.get_file_or_folder_paths(
             path=folder_path, element_type=element_type
@@ -492,18 +595,27 @@ class FileExplorerApp:
 
     def _render_file_content(self, path_selected: str, key: str):
         """
-        The _render_file_content function is a helper function that renders the content of a file in the Streamlit app.
-        It takes as input:
-            - path_selected: The path to the selected file. It can be None, an empty string or Select a file. In these cases, nothing is rendered.
-            - If it ends with .csv, then it renders its content as a dataframe using st.dataframe().
-            - If it ends with .png or .jpg or .jpeg, then it renders its content as an image using st.image().
-            - If it ends with .html.
-            - If it ends with .xlsx, then it renders its content as a dataframe using st.dataframe().
+        Render file content based on file type with appropriate handlers.
 
-        :param self: Represent the instance of the class
-        :param path_selected: str: Specify the path of the file to be rendered
+        Displays file content using the appropriate Streamlit component based on
+        the file extension. Supports CSV, Excel, JSON, images, HTML plots,
+        and Markdown files. Provides editing capabilities for data files and
+        interactive features for HTML content.
+
+        Supported file types:
+            - CSV: Editable data table with save functionality
+            - Excel: Multi-sheet data tables with editing
+            - JSON: Raw JSON or tabular view with editing
+            - Images (PNG, JPG, JPEG): Image display with configurable width
+            - HTML: Plotly charts with interactive features
+            - Markdown: Rendered markdown content
+
+        :param path_selected: Path to the file to render
+        :type path_selected: str
+        :param key: Unique key for the file content widget
+        :type key: str
         :return: None
-        :doc-author: baobab soluciones
+        :rtype: None
         """
         if (
             path_selected is None
@@ -652,11 +764,14 @@ class FileExplorerApp:
 
     def _render_body_content(self):
         """
-        The _render_body_content function is responsible for rendering the body content of the widget.
+        Render the main body content with configurable grid layout.
 
-        :param self: Refer to the object itself
+        Creates a grid layout based on the configuration settings for rows and columns.
+        Each grid cell contains file selection dropdowns and content rendering.
+        Supports both single-column and two-column layouts per row.
+
         :return: None
-        :doc-author: baobab soluciones
+        :rtype: None
         """
         n_rows = self.config.get("n_rows", 1)
 
@@ -676,13 +791,15 @@ class FileExplorerApp:
 
     def _save_config(self):
         """
-        The _save_config function is called when the user clicks on the &quot;Save&quot; button in the sidebar.
-        It updates self.config with all of the new values that were entered into st.sidebar, and then saves
-        the updated config to a json file.
+        Save the current configuration to a JSON file.
 
-        :param self: Refer to the object itself
-        :return: The new configuration
-        :doc-author: baobab soluciones
+        Collects all current configuration values from the Streamlit session state,
+        updates the internal config dictionary, and saves it to the configured
+        JSON file path. Handles layout configuration for all grid positions.
+
+        :return: None
+        :rtype: None
+        :raises IOError: If unable to write to the configuration file
         """
         # Get max of config row in dict_layout
         for row in range(1, 101):
@@ -716,13 +833,15 @@ class FileExplorerApp:
 
     def run(self):
         """
-        The run function is the main entry point for the Streamlit app.
-        It renders all of the components in order, and then returns a dictionary
-        of values that can be used by other functions.
+        Run the complete Streamlit file explorer application.
 
-        :param self: Represent the instance of the class
+        Main entry point that orchestrates the rendering of all application
+        components in the correct order: header, configuration sidebar,
+        folder tree, and main content area. Handles error cases gracefully
+        with appropriate user feedback.
+
         :return: None
-        :doc-author: baobab soluciones
+        :rtype: None
         """
         # Render header
         self._render_header()
