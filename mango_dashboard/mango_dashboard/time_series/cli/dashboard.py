@@ -2,6 +2,7 @@ import os
 import sys
 
 import click
+
 from mango_dashboard.time_series.cli import cli
 
 
@@ -33,7 +34,10 @@ def dashboard():
 def time_series(project_name, logo_url, experimental_features):
     # Python Run os command
     path_to_app = os.path.join(
-        os.path.dirname(__file__), "../../../../mango_time_series/mango_time_series", "dashboards", "time_series_app.py"
+        os.path.dirname(__file__),
+        "../../../../mango_time_series/mango_time_series",
+        "dashboards",
+        "time_series_app.py",
     )
     if project_name is None:
         project_name = os.getenv("TS_DASHBOARD_PROJECT_NAME", "Project")

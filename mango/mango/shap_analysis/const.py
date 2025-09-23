@@ -1,4 +1,4 @@
-""" This file contains the constants used in the shap_analysis module. """
+"""This file contains the constants used in the shap_analysis module."""
 
 TREE_EXPLAINER_MODELS = [
     "XGBRegressor",

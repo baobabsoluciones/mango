@@ -89,3 +89,17 @@ jobs:
       - name: Build binary wheel and source tarball
         run: |
           uv build
+  formatting:
+    needs: unit-testing
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Black Code Format
+        uses: baobabsoluciones/check-formatting-python@v1.0.0
+        with:
+          black_version: '24.10.0'
+          python_version: '3.13'
+          fail-on-error: false
+          paths: mango_genetic
+          comment-mode: append
