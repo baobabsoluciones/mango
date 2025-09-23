@@ -21,13 +21,14 @@ The functions are divided in different modules so even though everything is impo
 Overview
 --------
 
-**Mango** is the core library providing essential tools for data processing, analysis, and machine learning workflows. The ecosystem includes specialized libraries for different domains:
+The Mango ecosystem consists of specialized libraries for different domains:
 
+- **mango**: Data processing, analysis, machine learning workflows, and imputation of missing values
 - **mango_autoencoder**: Neural autoencoders for anomaly detection in time series
-- **mango_calendar**: Calendar data, holidays, and date-related features with Spanish holiday support
-- **mango_dashboard**: Interactive web applications for data exploration and visualization
+- **mango_calendar**: Calendar data, holidays, and date-related features with holiday support
+- **mango_dashboard**: Interactive web applications including time series dashboards and a customizable file explorer app
 - **mango_genetic**: Genetic algorithms and evolutionary computation methods
-- **mango_time_series**: Comprehensive time series analysis, forecasting, and feature engineering
+- **mango_time_series**: Comprehensive time series analysis, exploratory data analysis, and data processing utilities
 
 Each library is designed to work independently or as part of the integrated Mango ecosystem, providing flexibility in dependency management and usage.
 
@@ -36,7 +37,7 @@ Quick Start
 
 .. code-block:: python
 
-   # Core data processing
+   # Data processing and imputation
    import mango
    
    # Time series anomaly detection
@@ -83,7 +84,7 @@ Full documentation is available at: https://mango.readthedocs.io/
 
 Individual library documentation:
 
-- `Mango Core <https://mango.readthedocs.io/en/latest/code_mango/index.html>`_
+- `Mango <https://mango.readthedocs.io/en/latest/code_mango/index.html>`_
 - `Mango Autoencoder <https://mango.readthedocs.io/en/latest/code_autoencoder/index.html>`_
 - `Mango Calendar <https://mango.readthedocs.io/en/latest/code_mango_calendar/index.html>`_
 - `Mango Dashboard <https://mango.readthedocs.io/en/latest/code_mango_dashboard/index.html>`_
