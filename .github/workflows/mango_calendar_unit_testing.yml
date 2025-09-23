@@ -104,3 +104,4 @@ jobs:
           python_version: '3.13'
           fail-on-error: false
           paths: mango_calendar
+          comment-mode: append

@@ -102,3 +102,4 @@ jobs:
           python_version: '3.13'
           fail-on-error: false
           paths: mango_time_series
+          comment-mode: append

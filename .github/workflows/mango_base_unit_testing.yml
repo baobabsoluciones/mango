@@ -92,6 +92,7 @@ jobs:
           python_version: '3.13'
           fail-on-error: false
           paths: mango
+          comment-mode: append
 
   setup-testing:
     name: Build the library to test that it gets correctly built
