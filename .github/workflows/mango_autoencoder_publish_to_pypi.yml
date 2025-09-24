@@ -1,0 +1,33 @@
+name: Publish mango autoencoder to Pypi
+
+on:
+  push:
+    tags:
+      - 'autoencoder*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/autoencoder')
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: latest
+
+      - name: Build package
+        run: uv build --sdist --wheel
+        working-directory: mango_autoencoder
+
+      - name: Publish to PyPI
+        run: uv publish --token ${{ secrets.PYPI_AUTOENCODER_TOKEN }} dist/*
+        working-directory: mango_autoencoder

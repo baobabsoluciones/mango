@@ -1,0 +1,39 @@
+coverage:
+  status:
+    project: off
+    patch: off
+
+fixes:
+  - "::mango/"
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 5%
+      - type: patch
+        target: 90%
+  individual_flags:
+    - name: base-tests
+      paths:
+        - mango/
+    - name: autoencoder-tests
+      paths:
+        - mango_autoencoder/
+    - name: calendar-tests
+      paths:
+        - mango_calendar/
+    - name: dashboard-tests
+      paths:
+        - mango_dashboard/
+    - name: genetic-tests
+      paths:
+        - mango_genetic/
+    - name: time-series-tests
+      paths:
+        - mango_time_series/
+    - name: unit-tests
+      paths:
+        - ./
