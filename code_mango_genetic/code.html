@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Genetic - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Bibliography" href="../bib.html" /><link rel="prev" title="Usage" href="usage.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Genetic"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango genetic</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual"><code class="docutils literal notranslate"><span class="pre">Individual</span></code></a><ul>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.genes"><code class="docutils literal notranslate">genes</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.idx"><code class="docutils literal notranslate">idx</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.config"><code class="docutils literal notranslate">config</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.parents"><code class="docutils literal notranslate">parents</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.encoding"><code class="docutils literal notranslate">encoding</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.fitness"><code class="docutils literal notranslate">fitness</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.create_random_individual"><code class="docutils literal notranslate">create_random_individual()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.create_random_genes"><code class="docutils literal notranslate">create_random_genes()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.mutate"><code class="docutils literal notranslate">mutate()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual._mutate_binary"><code class="docutils literal notranslate">_mutate_binary()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual._mutate_integer"><code class="docutils literal notranslate">_mutate_integer()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual._mutate_real"><code class="docutils literal notranslate">_mutate_real()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.dominates"><code class="docutils literal notranslate">dominates()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.copy"><code class="docutils literal notranslate">copy()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.__hash__"><code class="docutils literal notranslate">__hash__()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.individual.Individual.__eq__"><code class="docutils literal notranslate">__eq__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango_genetic.population.Population"><code class="docutils literal notranslate"><span class="pre">Population</span></code></a><ul>
+<li><a class="reference internal" href="#mango_genetic.population.Population.config"><code class="docutils literal notranslate">config</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.evaluator"><code class="docutils literal notranslate">evaluator</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.run"><code class="docutils literal notranslate">run()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.continue_running"><code class="docutils literal notranslate">continue_running()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.init_population"><code class="docutils literal notranslate">init_population()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.selection"><code class="docutils literal notranslate">selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.crossover"><code class="docutils literal notranslate">crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.mutate"><code class="docutils literal notranslate">mutate()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.update_population"><code class="docutils literal notranslate">update_population()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.replace"><code class="docutils literal notranslate">replace()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.update_best"><code class="docutils literal notranslate">update_best()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.stop"><code class="docutils literal notranslate">stop()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._random_selection"><code class="docutils literal notranslate">_random_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._elitism_selection"><code class="docutils literal notranslate">_elitism_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._rank_selection"><code class="docutils literal notranslate">_rank_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._order_selection"><code class="docutils literal notranslate">_order_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._roulette_selection"><code class="docutils literal notranslate">_roulette_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._tournament_selection"><code class="docutils literal notranslate">_tournament_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._boltzmann_selection"><code class="docutils literal notranslate">_boltzmann_selection()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._select_parents"><code class="docutils literal notranslate">_select_parents()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._one_split_crossover"><code class="docutils literal notranslate">_one_split_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._two_split_crossover"><code class="docutils literal notranslate">_two_split_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._mask_crossover"><code class="docutils literal notranslate">_mask_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._linear_crossover"><code class="docutils literal notranslate">_linear_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._flat_crossover"><code class="docutils literal notranslate">_flat_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._blend_crossover"><code class="docutils literal notranslate">_blend_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._gaussian_crossover"><code class="docutils literal notranslate">_gaussian_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._morphology_crossover"><code class="docutils literal notranslate">_morphology_crossover()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._add_offspring"><code class="docutils literal notranslate">_add_offspring()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._base_mutation"><code class="docutils literal notranslate">_base_mutation()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._adaptative_mutation"><code class="docutils literal notranslate">_adaptative_mutation()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._calculate_coefficient_variation"><code class="docutils literal notranslate">_calculate_coefficient_variation()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._update_fitness"><code class="docutils literal notranslate">_update_fitness()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._random_replacement"><code class="docutils literal notranslate">_random_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._offspring_replacement"><code class="docutils literal notranslate">_offspring_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._elitist_replacement"><code class="docutils literal notranslate">_elitist_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population._elitist_stochastic_replacement"><code class="docutils literal notranslate">_elitist_stochastic_replacement()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.population.Population.extract_fitness"><code class="docutils literal notranslate">extract_fitness()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig"><code class="docutils literal notranslate"><span class="pre">GeneticBaseConfig</span></code></a><ul>
+<li><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig.__params"><code class="docutils literal notranslate">__params</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig.create_config_template"><code class="docutils literal notranslate">create_config_template()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig.modify_value"><code class="docutils literal notranslate">modify_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango_genetic.problem.Problem"><code class="docutils literal notranslate"><span class="pre">Problem</span></code></a><ul>
+<li><a class="reference internal" href="#mango_genetic.problem.Problem.calculate_fitness"><code class="docutils literal notranslate">calculate_fitness()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.problem.Problem._abc_impl"><code class="docutils literal notranslate">_abc_impl</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango_genetic.shared.exceptions.GeneticDiversity"><code class="docutils literal notranslate"><span class="pre">GeneticDiversity</span></code></a><ul>
+<li><a class="reference internal" href="#mango_genetic.shared.exceptions.GeneticDiversity.add_note"><code class="docutils literal notranslate">add_note()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.shared.exceptions.GeneticDiversity.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango_genetic.shared.exceptions.ConfigurationError"><code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a><ul>
+<li><a class="reference internal" href="#mango_genetic.shared.exceptions.ConfigurationError.add_note"><code class="docutils literal notranslate">add_note()</span></code></a></li>
+<li><a class="reference internal" href="#mango_genetic.shared.exceptions.ConfigurationError.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango genetic</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Genetic</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="genetic">
+<h1>Genetic<a class="headerlink" href="#genetic" title="Link to this heading">¶</a></h1>
+<p>Here we have the code documentation for the main classes of the genetic algorithm: individual, population, configuration and problem.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_genetic.individual.</span></span><span class="sig-name descname"><span class="pre">Individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual" title="Link to this definition">¶</a></dt>
+<dd><p>Base class representing an individual in a genetic algorithm.</p>
+<p>An individual contains genes (genetic information), fitness value, and metadata
+about its parents and configuration. The class supports different encoding types
+(real, binary, integer) and provides methods for mutation and genetic operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>genes</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – Initial genetic information as numpy array</p></li>
+<li><p><strong>idx</strong> (<em>int</em>) – Unique identifier for the individual</p></li>
+<li><p><strong>parents</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Tuple of parent individuals</p></li>
+<li><p><strong>config</strong> (<a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig" title="mango_genetic.config.GeneticBaseConfig"><em>GeneticBaseConfig</em></a><em>, </em><em>optional</em>) – Configuration object containing genetic algorithm parameters</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.genes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">genes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#mango_genetic.individual.Individual.genes" title="Link to this definition">¶</a></dt>
+<dd><p>Get the genetic information of the individual.</p>
+<p>Returns the numpy array containing the individual’s genes. If bounds are set,
+gene values are automatically clipped to stay within the specified range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array containing the individual’s genetic information</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.idx">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">idx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#mango_genetic.individual.Individual.idx" title="Link to this definition">¶</a></dt>
+<dd><p>Get the unique identifier of the individual.</p>
+<p>Returns the internal index used to distinguish between different individuals
+in the population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Unique identifier for the individual</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig" title="mango_genetic.config.config.GeneticBaseConfig"><span class="pre">GeneticBaseConfig</span></a></em><a class="headerlink" href="#mango_genetic.individual.Individual.config" title="Link to this definition">¶</a></dt>
+<dd><p>Get the configuration object for the individual.</p>
+<p>Returns the configuration object containing genetic algorithm parameters
+such as encoding type, bounds, and gene length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configuration object with genetic algorithm parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig" title="mango_genetic.config.GeneticBaseConfig">GeneticBaseConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.parents">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parents</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span></em><a class="headerlink" href="#mango_genetic.individual.Individual.parents" title="Link to this definition">¶</a></dt>
+<dd><p>Get the parent individuals of this individual.</p>
+<p>Returns a tuple containing the parent individuals. When parents are set,
+the parents_idx attribute is automatically updated with their indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of parent individuals</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.encoding">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">encoding</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#mango_genetic.individual.Individual.encoding" title="Link to this definition">¶</a></dt>
+<dd><p>Get the encoding type for the individual’s genes.</p>
+<p>Returns the encoding type used for the genetic representation.
+Supported types include ‘real’, ‘binary’, and ‘integer’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Encoding type string</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.fitness">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fitness</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#mango_genetic.individual.Individual.fitness" title="Link to this definition">¶</a></dt>
+<dd><p>Get the fitness value of the individual.</p>
+<p>Returns the fitness value representing how well this individual
+performs according to the optimization objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Fitness value of the individual</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.create_random_individual">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_random_individual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig" title="mango_genetic.config.config.GeneticBaseConfig"><span class="pre">GeneticBaseConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#mango_genetic.individual.Individual" title="mango_genetic.individual.base_individual.Individual"><span class="pre">Individual</span></a></span></span><a class="headerlink" href="#mango_genetic.individual.Individual.create_random_individual" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new individual with randomly generated genes.</p>
+<p>Factory method that creates a new individual with the specified index
+and configuration, then generates random genes based on the encoding type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx</strong> (<em>int</em>) – Unique identifier for the new individual</p></li>
+<li><p><strong>config</strong> (<a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig" title="mango_genetic.config.GeneticBaseConfig"><em>GeneticBaseConfig</em></a>) – Configuration object containing genetic algorithm parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New individual with random genes</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#mango_genetic.individual.Individual" title="mango_genetic.individual.Individual">Individual</a></p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">GeneticBaseConfig</span><span class="p">()</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">individual</span> <span class="o">=</span> <span class="n">Individual</span><span class="o">.</span><span class="n">create_random_individual</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.create_random_genes">
+<span class="sig-name descname"><span class="pre">create_random_genes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual.create_random_genes" title="Link to this definition">¶</a></dt>
+<dd><p>Generate random genes for the individual based on the encoding type.</p>
+<p>Creates random genetic information according to the individual’s encoding
+type and configuration bounds. The generated genes are stored in the
+genes attribute.</p>
+<p>Supported encoding types:
+- ‘real’: Continuous values between min_bound and max_bound
+- ‘binary’: Binary values (0 or 1)
+- ‘integer’: Integer values between min_bound and max_bound (inclusive)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.mutate">
+<span class="sig-name descname"><span class="pre">mutate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mutation_prob</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual.mutate" title="Link to this definition">¶</a></dt>
+<dd><p>Mutate the individual’s genes based on the encoding type.</p>
+<p>Applies mutation to the individual’s genes with the specified probability.
+The mutation process continues until the probability check fails, meaning
+an individual can have multiple genes mutated in a single call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mutation_prob</strong> (<em>float</em>) – Probability of mutation (0.0 to 1.0)</p>
+</dd>
+</dl>
+<dl>
+<dt>Raises:</dt><dd><p>NotImplementedError: If encoding type is not supported</p>
+</dd>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">individual</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">mutation_prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># 10% chance of mutation</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual._mutate_binary">
+<span class="sig-name descname"><span class="pre">_mutate_binary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual._mutate_binary" title="Link to this definition">¶</a></dt>
+<dd><p>Mutate a binary-encoded gene by flipping its value.</p>
+<p>Performs a simple bit flip mutation on a randomly selected gene position.
+Changes 0 to 1 or 1 to 0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual._mutate_integer">
+<span class="sig-name descname"><span class="pre">_mutate_integer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual._mutate_integer" title="Link to this definition">¶</a></dt>
+<dd><p>Mutate an integer-encoded gene with a random value.</p>
+<p>Replaces a randomly selected gene with a new random integer value
+between the minimum and maximum bounds (inclusive).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual._mutate_real">
+<span class="sig-name descname"><span class="pre">_mutate_real</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual._mutate_real" title="Link to this definition">¶</a></dt>
+<dd><p>Mutate a real-encoded gene with a random value.</p>
+<p>Replaces a randomly selected gene with a new random real value
+between the minimum and maximum bounds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.dominates">
+<span class="sig-name descname"><span class="pre">dominates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual.dominates" title="Link to this definition">¶</a></dt>
+<dd><p>Check if this individual dominates another individual.</p>
+<p>This method should implement the logic to determine if one individual
+dominates another in multi-objective optimization problems.</p>
+<p>A solution dominates another when:
+- It is equal or better in all objectives
+- It is strictly better in at least one objective</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#mango_genetic.individual.Individual" title="mango_genetic.individual.Individual"><em>Individual</em></a>) – The other individual to compare against</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if this individual dominates the other, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raises:</dt><dd><p>NotImplementedError: This method must be implemented by subclasses</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#mango_genetic.individual.Individual" title="mango_genetic.individual.base_individual.Individual"><span class="pre">Individual</span></a></span></span><a class="headerlink" href="#mango_genetic.individual.Individual.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Create a deep copy of the individual.</p>
+<p>Creates a new individual with the same genetic information, index,
+configuration, and parent information as this individual.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new individual that is a copy of this one</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#mango_genetic.individual.Individual" title="mango_genetic.individual.Individual">Individual</a></p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">original</span> <span class="o">=</span> <span class="n">Individual</span><span class="p">(</span><span class="n">genes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">copy</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">copy</span><span class="o">.</span><span class="n">genes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">original</span><span class="o">.</span><span class="n">genes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Still 1</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.individual.Individual.__hash__" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the hash of the individual based on its genetic information.</p>
+<p>The hash is calculated from the byte representation of the individual’s genes,
+ensuring that only individuals with identical genetic information have the same hash.
+This enables efficient comparison and storage in hash-based data structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Hash value based on the individual’s genes</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.individual.Individual.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#mango_genetic.individual.Individual.__eq__" title="Link to this definition">¶</a></dt>
+<dd><p>Compare two individuals for equality based on their genetic information.</p>
+<p>Uses pre-generated hash values for fast comparison. The comparison is based
+on genotype (genetic information) rather than phenotype (fitness/behavior),
+as individuals with different genotypes should be considered distinct for
+genetic diversity and crossover purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#mango_genetic.individual.Individual" title="mango_genetic.individual.Individual"><em>Individual</em></a>) – The other individual to compare against</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if individuals have identical genetic information, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_genetic.population.Population">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_genetic.population.</span></span><span class="sig-name descname"><span class="pre">Population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population" title="Link to this definition">¶</a></dt>
+<dd><p>Main population class for genetic algorithm operations.</p>
+<p>Manages a population of individuals through the complete genetic algorithm lifecycle,
+including initialization, selection, crossover, mutation, and replacement phases.
+Supports various selection methods, crossover operators, and mutation strategies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig" title="mango_genetic.config.GeneticBaseConfig"><em>GeneticBaseConfig</em></a>) – Configuration object containing genetic algorithm parameters</p></li>
+<li><p><strong>evaluator</strong> (<em>Union</em><em>[</em><em>callable</em><em>, </em><a class="reference internal" href="#mango_genetic.problem.Problem" title="mango_genetic.problem.Problem"><em>Problem</em></a><em>]</em>) – Function or class for evaluating individual fitness</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#mango_genetic.population.Population.config" title="Link to this definition">¶</a></dt>
+<dd><p>Get the configuration object for the genetic algorithm.</p>
+<p>Returns the configuration object containing all genetic algorithm parameters
+such as population size, encoding type, selection method, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configuration object with genetic algorithm parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#mango_genetic.config.GeneticBaseConfig" title="mango_genetic.config.GeneticBaseConfig">GeneticBaseConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.evaluator">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluator</span></span><a class="headerlink" href="#mango_genetic.population.Population.evaluator" title="Link to this definition">¶</a></dt>
+<dd><p>Get the fitness evaluation function or class.</p>
+<p>Returns the function or class responsible for evaluating the fitness
+of individuals in the population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Evaluator function or Problem class instance</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Union[callable, <a class="reference internal" href="#mango_genetic.problem.Problem" title="mango_genetic.problem.Problem">Problem</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.run" title="Link to this definition">¶</a></dt>
+<dd><p>Run the complete genetic algorithm evolution process.</p>
+<p>Executes the genetic algorithm for the specified number of generations,
+performing selection, crossover, mutation, and replacement operations
+in each generation. The algorithm can be stopped early due to low
+genetic diversity or other stop conditions.</p>
+<dl class="simple">
+<dt>Raises:</dt><dd><dl class="simple">
+<dt>GeneticDiversity: When genetic diversity becomes too low during</dt><dd><p>parent selection or stop phase evaluation</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.continue_running">
+<span class="sig-name descname"><span class="pre">continue_running</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.continue_running" title="Link to this definition">¶</a></dt>
+<dd><p>Continue running the genetic algorithm for additional generations.</p>
+<p>Extends the maximum generation limit and continues the evolution process
+from where it previously stopped. This method works best when the algorithm
+stopped due to reaching the generation limit rather than low genetic diversity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>generations</strong> (<em>int</em>) – Number of additional generations to run</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raises:</dt><dd><dl class="simple">
+<dt>GeneticDiversity: When genetic diversity becomes too low during</dt><dd><p>parent selection or stop phase evaluation</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.init_population">
+<span class="sig-name descname"><span class="pre">init_population</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.init_population" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the population with random individuals.</p>
+<p>Creates a population of random individuals with size equal to the
+configured population_size. Each individual is created using the
+Individual.create_random_individual method with the current configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.selection">
+<span class="sig-name descname"><span class="pre">selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.selection" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the selection phase of the genetic algorithm.</p>
+<p>Creates selection probabilities for each individual based on the configured
+selection method. These probabilities determine how likely each individual
+is to be chosen as a parent during the crossover phase.</p>
+<p>Supported selection methods:
+- Random: Equal probability for all individuals
+- Elitism: Only the best k individuals can be selected
+- Rank: Probability based on individual ranking
+- Order: Probability based on fitness order
+- Roulette: Probability proportional to fitness
+- Tournament: Selection through tournament competition
+- Boltzmann: Temperature-based selection (not implemented)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.crossover">
+<span class="sig-name descname"><span class="pre">crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the crossover phase of the genetic algorithm.</p>
+<p>Creates offspring individuals by combining genetic information from selected
+parents using the configured crossover method. The crossover operation
+generates new individuals that inherit traits from their parents.</p>
+<p>Supported crossover methods:
+- One-split: Single crossover point
+- Two-split: Two crossover points
+- Mask: Random binary mask selection
+- Linear: Linear combination of parents (real encoding only)
+- Flat: Random values within parent range (real encoding only)
+- Blend: Extended range crossover (real encoding only)
+- Gaussian: Gaussian distribution crossover (real encoding only)
+- Morphology: Morphological crossover (not implemented)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.mutate">
+<span class="sig-name descname"><span class="pre">mutate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.mutate" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the mutation phase of the genetic algorithm.</p>
+<p>Applies mutation to offspring individuals based on the configured mutation
+strategy. The actual mutation implementation is handled by individual
+objects as it depends on the encoding type. For adaptive mutation,
+the mutation rate is updated based on population diversity before
+applying mutations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.update_population">
+<span class="sig-name descname"><span class="pre">update_population</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.update_population" title="Link to this definition">¶</a></dt>
+<dd><p>Update fitness values for all individuals in the population.</p>
+<p>Ensures that all individuals in both the main population and offspring
+have their fitness values calculated using the configured evaluator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.replace" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the replacement phase of the genetic algorithm.</p>
+<p>Determines which individuals from the current population and offspring
+will survive to the next generation based on the configured replacement
+strategy.</p>
+<p>Supported replacement methods:
+- Random: Random selection from population and offspring
+- Only-offspring: Replace entire population with offspring
+- Elitist: Keep best individuals from combined population
+- Elitist-stochastic: Probabilistic selection based on fitness</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.update_best">
+<span class="sig-name descname"><span class="pre">update_best</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.update_best" title="Link to this definition">¶</a></dt>
+<dd><p>Update the best individual in the population.</p>
+<p>Identifies and stores the best individual based on the optimization
+objective (maximization or minimization) and their fitness value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Check stop conditions for the genetic algorithm.</p>
+<p>Evaluates whether the algorithm should stop based on population
+characteristics. Currently checks for low genetic diversity by
+examining fitness value distribution in the population.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>bool: False (algorithm continues) or raises GeneticDiversity exception</p>
+</dd>
+<dt>Raises:</dt><dd><p>GeneticDiversity: When genetic diversity becomes too low</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._random_selection">
+<span class="sig-name descname"><span class="pre">_random_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._random_selection" title="Link to this definition">¶</a></dt>
+<dd><p>Perform random selection with equal probabilities.</p>
+<p>Sets equal selection probability for all individuals in the population,
+making each individual equally likely to be chosen as a parent.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._elitism_selection">
+<span class="sig-name descname"><span class="pre">_elitism_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._elitism_selection" title="Link to this definition">¶</a></dt>
+<dd><p>Perform elitism selection based on fitness ranking.</p>
+<p>Selects only the k-best individuals (where k is the elitism_size parameter)
+for crossover. The best k individuals have equal selection probability,
+while all others have zero probability.</p>
+<p>Note: This method may reduce genetic diversity if k is small compared
+to the population size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._rank_selection">
+<span class="sig-name descname"><span class="pre">_rank_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._rank_selection" title="Link to this definition">¶</a></dt>
+<dd><p>Perform rank-based selection.</p>
+<p>Assigns selection probabilities based on the rank of individuals
+in the population, with higher-ranked individuals having higher
+selection probability.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._order_selection">
+<span class="sig-name descname"><span class="pre">_order_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._order_selection" title="Link to this definition">¶</a></dt>
+<dd><p>Perform order-based selection.</p>
+<p>Assigns selection probabilities based on the order of individuals
+in the population, with better individuals having higher probability.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._roulette_selection">
+<span class="sig-name descname"><span class="pre">_roulette_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._roulette_selection" title="Link to this definition">¶</a></dt>
+<dd><p>Perform roulette wheel selection.</p>
+<p>Assigns selection probabilities proportional to fitness values,
+with better individuals having higher probability of selection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._tournament_selection">
+<span class="sig-name descname"><span class="pre">_tournament_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._tournament_selection" title="Link to this definition">¶</a></dt>
+<dd><p>Perform tournament selection.</p>
+<p>Simulates tournaments where individuals compete against each other,
+with the winner being selected based on fitness. Selection probability
+is proportional to the number of tournament wins.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._boltzmann_selection">
+<span class="sig-name descname"><span class="pre">_boltzmann_selection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._boltzmann_selection" title="Link to this definition">¶</a></dt>
+<dd><p>Perform Boltzmann selection (not implemented).</p>
+<p>This method is not yet implemented. Boltzmann selection uses
+temperature-based probability distribution for selection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._select_parents">
+<span class="sig-name descname"><span class="pre">_select_parents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#mango_genetic.population.Population._select_parents" title="Link to this definition">¶</a></dt>
+<dd><p>Select n parents from the population based on selection probabilities.</p>
+<p>Selects parents using the probabilities established during the selection phase.
+Ensures that different parents are selected to maintain genetic diversity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – Number of parents to select (default: 2)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing the selected parent individuals</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raises:</dt><dd><p>GeneticDiversity: When unable to select different parents due to low diversity</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._one_split_crossover">
+<span class="sig-name descname"><span class="pre">_one_split_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._one_split_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Perform one-point crossover operation.</p>
+<p>Creates two offspring by selecting a random split point and exchanging
+genetic material between two parents at that point. The first offspring
+gets genes from parent 1 before the split and from parent 2 after the split,
+while the second offspring gets the opposite combination.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._two_split_crossover">
+<span class="sig-name descname"><span class="pre">_two_split_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._two_split_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Perform two-point crossover operation.</p>
+<p>Creates two offspring by selecting two random split points and exchanging
+genetic material between two parents in the middle segment. The first
+offspring gets genes from parent 1 in the outer segments and from parent 2
+in the middle segment, while the second offspring gets the opposite combination.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._mask_crossover">
+<span class="sig-name descname"><span class="pre">_mask_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._mask_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Perform uniform crossover using a random mask.</p>
+<p>Creates two offspring using a random binary mask to determine which
+parent contributes each gene position. The first offspring gets genes
+from parent 1 where the mask is 1 and from parent 2 where the mask is 0.
+The second offspring gets the opposite combination.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._linear_crossover">
+<span class="sig-name descname"><span class="pre">_linear_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._linear_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Perform linear crossover as proposed by Wright (1991).</p>
+<p>Creates three offspring individuals using linear combinations of parent genes:
+- First offspring: Midpoint between parents (p1 + p2) / 2
+- Second offspring: 1.5 * p1 - 0.5 * p2
+- Third offspring: -0.5 * p1 + 1.5 * p2</p>
+<p>Note: This method is only applicable for real-valued encoding.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._flat_crossover">
+<span class="sig-name descname"><span class="pre">_flat_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._flat_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Implement Radcliffe’s flat crossover (1990).</p>
+<p>Creates two offspring where each gene is randomly generated within the
+interval defined by the corresponding genes of the two parents.
+Each gene value is uniformly distributed between the minimum and maximum
+values of the parent genes at that position.</p>
+<p>Note: This method is only applicable for real-valued encoding.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._blend_crossover">
+<span class="sig-name descname"><span class="pre">_blend_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._blend_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Implement Blend crossover as proposed by Eshelman and Schaffer (1993).</p>
+<p>Creates two offspring using an extended interval around the parent genes.
+The blend_expansion parameter controls the expansion: 0 equals flat crossover,
+0.5 equals linear crossover intervals (with random selection).</p>
+<p>The first offspring is randomly generated in the expanded interval,
+while the second offspring is calculated to maintain the average of the parents.</p>
+<p>Note: This method is only applicable for real-valued encoding.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._gaussian_crossover">
+<span class="sig-name descname"><span class="pre">_gaussian_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._gaussian_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Perform Gaussian crossover (UNDX) as proposed by Ono (2003).</p>
+<p>Implements the Unimodal Normal Distribution Crossover using three parents
+to create offspring with Gaussian-distributed genes. The first two parents
+define the primary search space, while the third parent creates the secondary
+search space with the midpoint between the first two parents.</p>
+<p>Note: This method is only applicable for real-valued encoding.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._morphology_crossover">
+<span class="sig-name descname"><span class="pre">_morphology_crossover</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._morphology_crossover" title="Link to this definition">¶</a></dt>
+<dd><p>Perform morphological crossover (not implemented).</p>
+<p>This method is not yet implemented. Morphological crossover would
+use morphological operations to combine parent genetic information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._add_offspring">
+<span class="sig-name descname"><span class="pre">_add_offspring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">parents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._add_offspring" title="Link to this definition">¶</a></dt>
+<dd><p>Add a new offspring individual to the offspring array.</p>
+<p>Creates a new individual with the specified genes and parent information,
+assigns it a unique index, and adds it to the offspring population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>genes</strong> (<em>numpy.ndarray</em>) – Genetic information for the new offspring</p></li>
+<li><p><strong>parents</strong> (<em>tuple</em>) – Parent individuals of the offspring</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._base_mutation">
+<span class="sig-name descname"><span class="pre">_base_mutation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._base_mutation" title="Link to this definition">¶</a></dt>
+<dd><p>Apply base mutation to all offspring individuals.</p>
+<p>Applies mutation to each offspring individual using the configured
+mutation rate, which can be static, gene-based, or population-based.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._adaptative_mutation">
+<span class="sig-name descname"><span class="pre">_adaptative_mutation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._adaptative_mutation" title="Link to this definition">¶</a></dt>
+<dd><p>Implement adaptive mutation with dynamic rate adjustment.</p>
+<p>Adjusts the mutation rate based on the coefficient of variation of
+population fitness. If diversity decreases, mutation rate increases;
+if diversity increases, mutation rate decreases. The mutation rate
+is capped at 0.9 to prevent excessive mutation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._calculate_coefficient_variation">
+<span class="sig-name descname"><span class="pre">_calculate_coefficient_variation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._calculate_coefficient_variation" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the coefficient of variation of population fitness.</p>
+<p>Computes the ratio of standard deviation to mean fitness, which
+indicates the relative variability in fitness values across the population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Coefficient of variation (std/mean)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._update_fitness">
+<span class="sig-name descname"><span class="pre">_update_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._update_fitness" title="Link to this definition">¶</a></dt>
+<dd><p>Update fitness values for individuals in the given population.</p>
+<p>Evaluates fitness for all individuals that don’t already have a fitness value,
+using the configured evaluator function or class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>population</strong> (<em>numpy.ndarray</em>) – Array of individuals to evaluate</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._random_replacement">
+<span class="sig-name descname"><span class="pre">_random_replacement</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._random_replacement" title="Link to this definition">¶</a></dt>
+<dd><p>Implement random replacement strategy.</p>
+<p>Combines the current population with offspring and randomly selects
+individuals to form the next generation, maintaining the population size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._offspring_replacement">
+<span class="sig-name descname"><span class="pre">_offspring_replacement</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._offspring_replacement" title="Link to this definition">¶</a></dt>
+<dd><p>Implement offspring-only replacement strategy.</p>
+<p>Completely replaces the current population with the offspring,
+discarding all individuals from the previous generation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._elitist_replacement">
+<span class="sig-name descname"><span class="pre">_elitist_replacement</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._elitist_replacement" title="Link to this definition">¶</a></dt>
+<dd><p>Implement elitist replacement strategy.</p>
+<p>Selects the best individuals from the combined population and offspring
+to form the next generation, ensuring the best solutions are preserved.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population._elitist_stochastic_replacement">
+<span class="sig-name descname"><span class="pre">_elitist_stochastic_replacement</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population._elitist_stochastic_replacement" title="Link to this definition">¶</a></dt>
+<dd><p>Implement elitist stochastic replacement strategy.</p>
+<p>Assigns replacement probabilities to individuals based on their fitness values,
+with better individuals having higher probability of survival to the next generation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.population.Population.extract_fitness">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.population.Population.extract_fitness" title="Link to this definition">¶</a></dt>
+<dd><p>Extract fitness value from an individual.</p>
+<p>Helper method to extract the fitness value from an individual object,
+used for sorting and comparison operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<a class="reference internal" href="#mango_genetic.individual.Individual" title="mango_genetic.individual.Individual"><em>Individual</em></a>) – Individual object</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fitness value of the individual</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_genetic.config.GeneticBaseConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_genetic.config.</span></span><span class="sig-name descname"><span class="pre">GeneticBaseConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.config.GeneticBaseConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../code_mango/config.html#mango.config.BaseConfig" title="mango.config.base_config.BaseConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConfig</span></code></a></p>
+<p>Configuration class for genetic algorithm parameters.</p>
+<p>This class extends BaseConfig to provide configuration management for genetic
+algorithms. It defines all the necessary parameters for population initialization,
+selection methods, crossover operations, mutation strategies, and replacement
+mechanisms.</p>
+<p>The configuration is organized into logical groups:
+- main: Core algorithm parameters (population size, generations, objectives)
+- individual: Individual encoding and gene parameters
+- selection: Selection method specific parameters
+- crossover: Crossover operation parameters
+- mutation: Mutation strategy parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Path to the configuration file</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mango_genetic.config.GeneticBaseConfig.__params">
+<span class="sig-name descname"><span class="pre">__params</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'crossover':</span> <span class="pre">[ConfigParameter('offspring_size',</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">100),</span> <span class="pre">ConfigParameter('blend_expansion',</span> <span class="pre">&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">0.1)],</span> <span class="pre">'individual':</span> <span class="pre">[ConfigParameter('encoding',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;),</span> <span class="pre">ConfigParameter('gene_length',</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">0),</span> <span class="pre">ConfigParameter('gene_min_value',</span> <span class="pre">&lt;class</span> <span class="pre">'float'&gt;),</span> <span class="pre">ConfigParameter('gene_max_value',</span> <span class="pre">&lt;class</span> <span class="pre">'float'&gt;)],</span> <span class="pre">'main':</span> <span class="pre">[ConfigParameter('population_size',</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">100),</span> <span class="pre">ConfigParameter('max_generations',</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">500),</span> <span class="pre">ConfigParameter('optimization_objective',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;),</span> <span class="pre">ConfigParameter('selection',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;),</span> <span class="pre">ConfigParameter('crossover',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;),</span> <span class="pre">ConfigParameter('replacement',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;),</span> <span class="pre">ConfigParameter('mutation_control',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">'none'),</span> <span class="pre">ConfigParameter('mutation_base_rate',</span> <span class="pre">&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">0.1)],</span> <span class="pre">'mutation':</span> <span class="pre">[ConfigParameter('generation_adaptative',</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">10)],</span> <span class="pre">'selection':</span> <span class="pre">[ConfigParameter('elitism_size',</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">20),</span> <span class="pre">ConfigParameter('tournament_size',</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">2),</span> <span class="pre">ConfigParameter('rank_pressure',</span> <span class="pre">&lt;class</span> <span class="pre">'float'&gt;,</span> <span class="pre">2.0)]}</span></em><a class="headerlink" href="#mango_genetic.config.GeneticBaseConfig.__params" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.config.GeneticBaseConfig.create_config_template">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_config_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.config.GeneticBaseConfig.create_config_template" title="Link to this definition">¶</a></dt>
+<dd><p>Create a configuration template file with default values.</p>
+<p>Generates a configuration file template based on the defined
+parameters. Parameters with default values will use those values,
+while parameters without defaults will be set to empty strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_path</strong> (<em>str</em>) – Path where the template file should be created</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>IOError</strong> – If the file cannot be written</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">MyConfig</span><span class="o">.</span><span class="n">create_config_template</span><span class="p">(</span><span class="s2">&quot;config_template.ini&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.config.GeneticBaseConfig.modify_value">
+<span class="sig-name descname"><span class="pre">modify_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.config.GeneticBaseConfig.modify_value" title="Link to this definition">¶</a></dt>
+<dd><p>Modify the value of a configuration parameter.</p>
+<p>Updates the value of an existing parameter after the configuration
+has been loaded. The parameter must exist in the configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>) – Name of the parameter to modify</p></li>
+<li><p><strong>value</strong> (<em>Any</em>) – New value for the parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – If the parameter is not found in the configuration</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span><span class="o">.</span><span class="n">modify_value</span><span class="p">(</span><span class="s2">&quot;database_port&quot;</span><span class="p">,</span> <span class="mi">3306</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_genetic.problem.Problem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_genetic.problem.</span></span><span class="sig-name descname"><span class="pre">Problem</span></span><a class="headerlink" href="#mango_genetic.problem.Problem" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for defining optimization problems in genetic algorithms.</p>
+<p>This class provides the interface for implementing fitness functions that
+can be used with genetic algorithms. Subclasses must implement the
+calculate_fitness method to define how solutions are evaluated.</p>
+<p>The class can be used as a callable object, making it compatible with
+genetic algorithm evaluators that expect function-like interfaces.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.problem.Problem.calculate_fitness">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango_genetic.problem.Problem.calculate_fitness" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the fitness value for a given solution.</p>
+<p>This abstract method must be implemented by subclasses to define
+how solutions are evaluated. The fitness value represents how well
+a solution performs according to the optimization objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Solution vector to evaluate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fitness value of the solution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raises:</dt><dd><p>NotImplementedError: This method must be implemented by subclasses</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mango_genetic.problem.Problem._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#mango_genetic.problem.Problem._abc_impl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p>There is also some other helper classes that are used by the genetic algorithm that are documented below.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_genetic.shared.exceptions.GeneticDiversity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_genetic.shared.exceptions.</span></span><span class="sig-name descname"><span class="pre">GeneticDiversity</span></span><a class="headerlink" href="#mango_genetic.shared.exceptions.GeneticDiversity" title="Link to this definition">¶</a></dt>
+<dd><p>Exception raised when the mango_genetic diversity of the population is too low.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.shared.exceptions.GeneticDiversity.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.shared.exceptions.GeneticDiversity.add_note" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.shared.exceptions.GeneticDiversity.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.shared.exceptions.GeneticDiversity.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_genetic.shared.exceptions.ConfigurationError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_genetic.shared.exceptions.</span></span><span class="sig-name descname"><span class="pre">ConfigurationError</span></span><a class="headerlink" href="#mango_genetic.shared.exceptions.ConfigurationError" title="Link to this definition">¶</a></dt>
+<dd><p>Exception raised when the configuration of the mango_genetic algorithm is not valid.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.shared.exceptions.ConfigurationError.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.shared.exceptions.ConfigurationError.add_note" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_genetic.shared.exceptions.ConfigurationError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_genetic.shared.exceptions.ConfigurationError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="usage.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Usage</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../bib.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Bibliography</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

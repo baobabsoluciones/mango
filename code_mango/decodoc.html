@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Decodoc - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Logging" href="logging.html" /><link rel="prev" title="Config" href="config.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Decodoc"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Config</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#inner-information-dictionary-and-output-json-file">Inner information dictionary and output JSON file</a></li>
+<li><a class="reference internal" href="#mermaid-diagram-generation">Mermaid diagram generation</a></li>
+<li><a class="reference internal" href="#example-usage">Example usage</a></li>
+<li><a class="reference internal" href="#memory-address-issue">Memory address issue</a></li>
+<li><a class="reference internal" href="#module-mango.mango.decodoc.decodoc">Code documentation</a><ul>
+<li><a class="reference internal" href="#mango.mango.decodoc.decodoc.decodoc"><code class="docutils literal notranslate"><span class="pre">decodoc()</span></code></a></li>
+<li><a class="reference internal" href="#mango.mango.decodoc.decodoc.decodoc_setup"><code class="docutils literal notranslate"><span class="pre">decodoc_setup()</span></code></a></li>
+<li><a class="reference internal" href="#mango.mango.decodoc.decodoc.get_dict"><code class="docutils literal notranslate"><span class="pre">get_dict()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Decodoc</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="decodoc">
+<h1>Decodoc<a class="headerlink" href="#decodoc" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation is still under development. If you find any bug or have any suggestion in the decodoc module, please, open an issue in the <a class="reference external" href="https://github.com/baobabsoluciones/mango">GitHub repository</a>.</p>
+</div>
+<p>The decodoc module is a powerful and versatile Python tool designed to facilitate advanced function logging, metadata
+generation, and execution tracking. It automates the collection of detailed information about functions, including their
+inputs, outputs, and execution context, while also supporting visualization and documentation workflows.</p>
+<p>This tool is particularly valuable in complex applications where understanding the relationships between function calls,
+debugging, or generating insightful documentation is crucial. With features like Mermaid diagram generation and JSON
+metadata export, decodoc helps bridge the gap between code execution and documentation, ensuring traceability and
+clarity throughout the development process.</p>
+<p>Key Features:</p>
+<ul class="simple">
+<li><p>Function Execution Metadata Logging: Tracks function names, input values, output values, caller functions, and even the source code.</p></li>
+<li><p>Customizable Metadata Storage: Stores metadata in a global dictionary (INFO_DICT) for later use in debugging, analysis, and documentation.</p></li>
+<li><p>Support for Mermaid Diagrams: Generates visual diagrams of function call relationships for enhanced clarity.</p></li>
+<li><p>JSON and Prompt Outputs: Enables structured and customizable output for automated documentation pipelines.</p></li>
+<li><p>Flexible Setup Options: Allows developers to customize settings such as output formats, directory paths, and confidentiality preferences.</p></li>
+</ul>
+<p>Decodoc will automatically three types of files:</p>
+<ul class="simple">
+<li><p>A JSON file containing all the metadata for each function call.</p></li>
+<li><p>A Mermaid diagram in a markdown file for each caller function plus a complete diagram of all functions.</p></li>
+<li><p>A prompt in a markdown file for each caller function plus.</p></li>
+</ul>
+<section id="inner-information-dictionary-and-output-json-file">
+<h2>Inner information dictionary and output JSON file<a class="headerlink" href="#inner-information-dictionary-and-output-json-file" title="Link to this heading">¶</a></h2>
+<p>The inner dictionary used for storing the metadata is called INFO_DICT. This dictionary is used to store the metadata collected during the execution of the functions. The INFO_DICT dictionary is structured as follows (with one entry per function call) and the JSON file containing this dictionary is automatically generated at the end of the execution:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="linenos"> 1</span><span class="p">{</span>
+</span><span data-line="2"><span class="linenos"> 2</span><span class="w">    </span><span class="nt">&quot;function id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span data-line="3"><span class="linenos"> 3</span><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sample function&quot;</span><span class="p">,</span>
+</span><span data-line="4"><span class="linenos"> 4</span><span class="w">        </span><span class="nt">&quot;caller&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;caller function&quot;</span><span class="p">,</span>
+</span><span data-line="5"><span class="linenos"> 5</span><span class="w">        </span><span class="nt">&quot;docstring&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;docstring of the function&quot;</span><span class="p">,</span>
+</span><span data-line="6"><span class="linenos"> 6</span><span class="w">        </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;source code of the function&quot;</span><span class="p">,</span>
+</span><span data-line="7"><span class="linenos"> 7</span><span class="w">        </span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span data-line="8"><span class="linenos"> 8</span><span class="w">            </span><span class="nt">&quot;input variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span data-line="9"><span class="linenos"> 9</span><span class="w">                  </span><span class="nt">&quot;memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;variable memory address&quot;</span><span class="p">,</span>
+</span><span data-line="10"><span class="linenos">10</span><span class="w">                  </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;variable value&quot;</span>
+</span><span data-line="11"><span class="linenos">11</span><span class="w">            </span><span class="p">}</span>
+</span><span data-line="12"><span class="linenos">12</span><span class="w">        </span><span class="p">},</span>
+</span><span data-line="13"><span class="linenos">13</span><span class="w">        </span><span class="nt">&quot;output&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span data-line="14"><span class="linenos">14</span><span class="w">             </span><span class="nt">&quot;output variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span data-line="15"><span class="linenos">15</span><span class="w">                     </span><span class="nt">&quot;memory&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;variable memory address&quot;</span><span class="p">,</span>
+</span><span data-line="16"><span class="linenos">16</span><span class="w">                     </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;variable value&quot;</span>
+</span><span data-line="17"><span class="linenos">17</span><span class="w">             </span><span class="p">}</span>
+</span><span data-line="18"><span class="linenos">18</span><span class="w">        </span><span class="p">}</span>
+</span><span data-line="19"><span class="linenos">19</span><span class="w">    </span><span class="p">},</span>
+</span><span data-line="20"><span class="linenos">20</span><span class="p">}</span>
+</span></pre></div>
+</div>
+</section>
+<section id="mermaid-diagram-generation">
+<h2>Mermaid diagram generation<a class="headerlink" href="#mermaid-diagram-generation" title="Link to this heading">¶</a></h2>
+<p>The Mermaid diagram is a visual representation of the function call relationships. It is generated in a markdown file for each caller function and a complete diagram of all functions. The diagram is generated using the Mermaid library, which is a simple markdown-like script language for generating diagrams from text.</p>
+<p>The different caller function refer to functions which are called by other functions. One diagram is generated for each caller function, showing the function and its direct children. The complete diagram shows all the functions and their relationships.</p>
+</section>
+<section id="example-usage">
+<h2>Example usage<a class="headerlink" href="#example-usage" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span data-line="2"><span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">mango.decodoc</span><span class="w"> </span><span class="kn">import</span> <span class="n">decodoc</span>
+</span><span data-line="3"><span class="linenos"> 3</span>
+</span><span data-line="4"><span class="linenos"> 4</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;Start&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;input_df_copy&quot;</span><span class="p">])</span>
+</span><span data-line="5"><span class="linenos"> 5</span><span class="k">def</span><span class="w"> </span><span class="nf">extract_data</span><span class="p">():</span>
+</span><span data-line="6"><span class="linenos"> 6</span>    <span class="n">extracted_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+</span><span data-line="7"><span class="linenos"> 7</span>    <span class="k">return</span> <span class="n">extracted_df</span>
+</span><span data-line="8"><span class="linenos"> 8</span>
+</span><span data-line="9"><span class="linenos"> 9</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_with_C_column&quot;</span><span class="p">])</span>
+</span><span data-line="10"><span class="linenos">10</span><span class="k">def</span><span class="w"> </span><span class="nf">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="11"><span class="linenos">11</span>    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">]</span>
+</span><span data-line="12"><span class="linenos">12</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="13"><span class="linenos">13</span>
+</span><span data-line="14"><span class="linenos">14</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df_with_C_column&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_columns&quot;</span><span class="p">])</span>
+</span><span data-line="15"><span class="linenos">15</span><span class="k">def</span><span class="w"> </span><span class="nf">delete_A_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="16"><span class="linenos">16</span>    <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span>
+</span><span data-line="17"><span class="linenos">17</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="18"><span class="linenos">18</span>
+</span><span data-line="19"><span class="linenos">19</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;input_df_copy&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_columns&quot;</span><span class="p">])</span>
+</span><span data-line="20"><span class="linenos">20</span><span class="k">def</span><span class="w"> </span><span class="nf">handle_columns</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="21"><span class="linenos">21</span>    <span class="n">df</span> <span class="o">=</span> <span class="n">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="22"><span class="linenos">22</span>    <span class="n">df</span> <span class="o">=</span> <span class="n">delete_A_column</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="23"><span class="linenos">23</span>    <span class="k">return</span> <span class="n">df</span>
+</span><span data-line="24"><span class="linenos">24</span>
+</span><span data-line="25"><span class="linenos">25</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df_columns&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;End&quot;</span><span class="p">])</span>
+</span><span data-line="26"><span class="linenos">26</span><span class="k">def</span><span class="w"> </span><span class="nf">save_csv</span><span class="p">(</span><span class="n">input_df</span><span class="p">):</span>
+</span><span data-line="27"><span class="linenos">27</span>    <span class="k">pass</span>
+</span><span data-line="28"><span class="linenos">28</span>
+</span><span data-line="29"><span class="linenos">29</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;Start&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;End&quot;</span><span class="p">])</span>
+</span><span data-line="30"><span class="linenos">30</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="31"><span class="linenos">31</span>    <span class="n">df</span> <span class="o">=</span> <span class="n">extract_data</span><span class="p">()</span>
+</span><span data-line="32"><span class="linenos">32</span>    <span class="n">df</span> <span class="o">=</span> <span class="n">handle_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="33"><span class="linenos">33</span>    <span class="n">save_csv</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="34"><span class="linenos">34</span>
+</span><span data-line="35"><span class="linenos">35</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span data-line="36"><span class="linenos">36</span>    <span class="n">main</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>In this script we have three different calling functions:</p>
+<ul class="simple">
+<li><p>module: calling the main function.</p></li>
+<li><p>main: calling extract_data, handle_columns and save_csv.</p></li>
+<li><p>handle_columns: calling add_C_column and delete_A_column.</p></li>
+</ul>
+<p>The complete diagram will show all the functions and their relationships.</p>
+<a class="reference internal image-reference" href="../_images/complete.png"><img alt="Alternate text for the image" class="align-center" src="../_images/complete.png" style="width: 800px;" /></a>
+<p>The Mermaid diagram for each of these functions will show the function and its direct children.</p>
+<ul class="simple">
+<li><p>module</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/module.png"><img alt="Alternate text for the image" class="align-center" src="../_images/module.png" style="width: 800px;" /></a>
+<ul class="simple">
+<li><p>main</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/main.png"><img alt="Alternate text for the image" class="align-center" src="../_images/main.png" style="width: 800px;" /></a>
+<ul class="simple">
+<li><p>handle_columns</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/handle_columns.png"><img alt="Alternate text for the image" class="align-center" src="../_images/handle_columns.png" style="width: 800px;" /></a>
+</section>
+<section id="memory-address-issue">
+<h2>Memory address issue<a class="headerlink" href="#memory-address-issue" title="Link to this heading">¶</a></h2>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Please pay close attention to the following warning to prevent errors in the decodoc implementation.</p>
+</div>
+<p>An issue to take into account is the use of memory addresses in the INFO_DICT dictionary. These are used for identifying the reuse of functions and to keep track of the use of the same variable across different functions.</p>
+<p>An issue that arises with this is the use of single lines of code (not functions) that change the memory position of a variable. For example, the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="linenos"> 1</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_with_C_column&quot;</span><span class="p">])</span>
+</span><span data-line="2"><span class="linenos"> 2</span><span class="k">def</span><span class="w"> </span><span class="nf">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="3"><span class="linenos"> 3</span>    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">]</span>
+</span><span data-line="4"><span class="linenos"> 4</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="5"><span class="linenos"> 5</span>
+</span><span data-line="6"><span class="linenos"> 6</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df_with_C_column&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_columns&quot;</span><span class="p">])</span>
+</span><span data-line="7"><span class="linenos"> 7</span><span class="k">def</span><span class="w"> </span><span class="nf">delete_A_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="8"><span class="linenos"> 8</span>    <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span>
+</span><span data-line="9"><span class="linenos"> 9</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="10"><span class="linenos">10</span>
+</span><span data-line="11"><span class="linenos">11</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;input_df_copy&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_columns&quot;</span><span class="p">])</span>
+</span><span data-line="12"><span class="linenos">12</span><span class="k">def</span><span class="w"> </span><span class="nf">handle_columns</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="13"><span class="linenos">13</span>    <span class="n">df_with_C_column</span> <span class="o">=</span> <span class="n">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="14"><span class="linenos">14</span>
+</span><span data-line="15"><span class="linenos">15</span>    <span class="c1"># This line changes the memory address of df_with_C_column</span>
+</span><span data-line="16"><span class="linenos">16</span>    <span class="n">df_with_C_column_copy</span> <span class="o">=</span> <span class="n">df_with_C_column</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="17"><span class="linenos">17</span>
+</span><span data-line="18"><span class="linenos">18</span>    <span class="n">df_columns</span> <span class="o">=</span> <span class="n">delete_A_column</span><span class="p">(</span><span class="n">df_with_C_column_copy</span><span class="p">)</span>
+</span><span data-line="19"><span class="linenos">19</span>    <span class="k">return</span> <span class="n">df_columns</span>
+</span></pre></div>
+</div>
+<p>In this script the function delete_A_column will get a variable that has been seen before and will not be able to trace back to the function add_C_column. This is because the memory address of df_with_C_column has changed in the line df_with_C_column_copy = df_with_C_column.copy().</p>
+<p>To avoid this issue, the user should avoid changing the memory address of a variable in a single line of code. Instead, the user should create a new function that changes the memory address of the variable and call this function in the main function, as shown in the following example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="linenos"> 1</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_with_C_column&quot;</span><span class="p">])</span>
+</span><span data-line="2"><span class="linenos"> 2</span><span class="k">def</span><span class="w"> </span><span class="nf">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="3"><span class="linenos"> 3</span>    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">]</span>
+</span><span data-line="4"><span class="linenos"> 4</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="5"><span class="linenos"> 5</span>
+</span><span data-line="6"><span class="linenos"> 6</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df_with_C_column&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_columns&quot;</span><span class="p">])</span>
+</span><span data-line="7"><span class="linenos"> 7</span><span class="k">def</span><span class="w"> </span><span class="nf">delete_A_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="8"><span class="linenos"> 8</span>    <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span>
+</span><span data-line="9"><span class="linenos"> 9</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="10"><span class="linenos">10</span>
+</span><span data-line="11"><span class="linenos">11</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;input_df_copy&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_columns&quot;</span><span class="p">])</span>
+</span><span data-line="12"><span class="linenos">12</span><span class="k">def</span><span class="w"> </span><span class="nf">handle_columns</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="13"><span class="linenos">13</span>    <span class="n">df_with_C_column</span> <span class="o">=</span> <span class="n">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="14"><span class="linenos">14</span>
+</span><span data-line="15"><span class="linenos">15</span>    <span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;df_with_C_column&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_with_C_column_copy&quot;</span><span class="p">])</span>
+</span><span data-line="16"><span class="linenos">16</span>    <span class="k">def</span><span class="w"> </span><span class="nf">copy_df</span><span class="p">(</span><span class="n">df_with_C_column</span><span class="p">):</span>
+</span><span data-line="17"><span class="linenos">17</span>        <span class="k">return</span> <span class="n">df_with_C_column</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="18"><span class="linenos">18</span>    <span class="n">df_with_C_column_copy</span> <span class="o">=</span> <span class="n">copy_df_with_C_column</span><span class="p">(</span><span class="n">df_with_C_column</span><span class="p">)</span>
+</span><span data-line="19"><span class="linenos">19</span>
+</span><span data-line="20"><span class="linenos">20</span>    <span class="n">df_columns</span> <span class="o">=</span> <span class="n">delete_A_column</span><span class="p">(</span><span class="n">df_with_C_column_copy</span><span class="p">)</span>
+</span><span data-line="21"><span class="linenos">21</span>    <span class="k">return</span> <span class="n">df_columns</span>
+</span></pre></div>
+</div>
+<p>Another option will be to simply not log the functions inside of handle_columns, as shown in the following example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="linenos"> 1</span><span class="k">def</span><span class="w"> </span><span class="nf">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="2"><span class="linenos"> 2</span>    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">]</span>
+</span><span data-line="3"><span class="linenos"> 3</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="4"><span class="linenos"> 4</span>
+</span><span data-line="5"><span class="linenos"> 5</span><span class="k">def</span><span class="w"> </span><span class="nf">delete_A_column</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="6"><span class="linenos"> 6</span>    <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span>
+</span><span data-line="7"><span class="linenos"> 7</span>    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="8"><span class="linenos"> 8</span>
+</span><span data-line="9"><span class="linenos"> 9</span><span class="nd">@decodoc</span><span class="p">([</span><span class="s2">&quot;input_df_copy&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;df_columns&quot;</span><span class="p">])</span>
+</span><span data-line="10"><span class="linenos">10</span><span class="k">def</span><span class="w"> </span><span class="nf">handle_columns</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+</span><span data-line="11"><span class="linenos">11</span>    <span class="n">df_with_C_column</span> <span class="o">=</span> <span class="n">add_C_column</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="12"><span class="linenos">12</span>    <span class="n">df_with_C_column_copy</span> <span class="o">=</span> <span class="n">df_with_C_column</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span data-line="13"><span class="linenos">13</span>    <span class="n">df_columns</span> <span class="o">=</span> <span class="n">delete_A_column</span><span class="p">(</span><span class="n">df_with_C_column_copy</span><span class="p">)</span>
+</span><span data-line="14"><span class="linenos">14</span>    <span class="k">return</span> <span class="n">df_columns</span>
+</span></pre></div>
+</div>
+<p>In this case, the functions add_C_column and delete_A_column will not be logged and the memory address issue will be avoided.</p>
+</section>
+<section id="module-mango.mango.decodoc.decodoc">
+<span id="code-documentation"></span><h2>Code documentation<a class="headerlink" href="#module-mango.mango.decodoc.decodoc" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.mango.decodoc.decodoc.decodoc">
+<span class="sig-prename descclassname"><span class="pre">mango.mango.decodoc.decodoc.</span></span><span class="sig-name descname"><span class="pre">decodoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.mango.decodoc.decodoc.decodoc" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator to automatically log function execution metadata.</p>
+<p>A decorator that captures and stores comprehensive metadata about function
+execution, including inputs, outputs, caller information, docstrings, and
+source code. This metadata is stored in a global dictionary for later use
+in debugging, documentation generation, and creating visual representations
+of function call relationships.</p>
+<p>The decorator supports both single and multiple return values and handles
+cases where inputs or outputs are missing or undefined. It’s particularly
+useful for creating detailed logs in complex applications and generating
+Mermaid diagrams showing function call relationships.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of parameter names corresponding to function arguments</p></li>
+<li><p><strong>outputs</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of return value names corresponding to function outputs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Decorated function that stores execution metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>UserWarning</strong> – If function lacks docstring or has missing parameter names</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mango.decodoc</span><span class="w"> </span><span class="kn">import</span> <span class="n">decodoc</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@decodoc</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">])</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Metadata stored in INFO_DICT with function name, caller, inputs, outputs</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.mango.decodoc.decodoc.decodoc_setup">
+<span class="sig-prename descclassname"><span class="pre">mango.mango.decodoc.decodoc.</span></span><span class="sig-name descname"><span class="pre">decodoc_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">setup_dict_arg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.mango.decodoc.decodoc.decodoc_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Update the default configuration settings for decodoc.</p>
+<p>Modifies the global configuration dictionary with new settings. Only the
+provided settings will be updated; existing settings not specified will
+remain unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>setup_dict_arg</strong> (<em>dict</em>) – Dictionary containing configuration parameters to update</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Configuration Parameters:</dt><dd><ul class="simple">
+<li><p>base_directory: Base directory for output files (default: “decodoc”)</p></li>
+<li><p>json_directory: Subdirectory for JSON files (default: “json”)</p></li>
+<li><p>mermaid_directory: Subdirectory for Mermaid files (default: “mermaid”)</p></li>
+<li><p>prompts_directory: Subdirectory for prompt files (default: “prompts”)</p></li>
+<li><p>json: Enable/disable JSON file generation (default: True)</p></li>
+<li><p>mermaid: Enable/disable Mermaid file generation (default: True)</p></li>
+<li><p>prompts: Enable/disable prompt file generation (default: True)</p></li>
+<li><p>confidential: Hide variable values in prompts (default: False)</p></li>
+<li><p>autowrite: Automatically write files on exit (default: True)</p></li>
+</ul>
+</dd>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">decodoc_setup</span><span class="p">({</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s2">&quot;confidential&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="s2">&quot;base_directory&quot;</span><span class="p">:</span> <span class="s2">&quot;my_output&quot;</span>
+</span><span data-line="5"><span class="gp">... </span><span class="p">})</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.mango.decodoc.decodoc.get_dict">
+<span class="sig-prename descclassname"><span class="pre">mango.mango.decodoc.decodoc.</span></span><span class="sig-name descname"><span class="pre">get_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.mango.decodoc.decodoc.get_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve the global information dictionary used by decodoc.</p>
+<p>Returns the global dictionary containing all function execution metadata
+collected by the decodoc decorator. This includes function names, callers,
+inputs, outputs, docstrings, and source code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing function execution metadata</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mango.decodoc</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_dict</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">info_dict</span> <span class="o">=</span> <span class="n">get_dict</span><span class="p">()</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Captured </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">info_dict</span><span class="p">)</span><span class="si">}</span><span class="s2"> function executions&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="config.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Config</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="logging.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Logging</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Calendar Features - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Mango dashboard" href="../code_mango_dashboard/index.html" /><link rel="prev" title="Mango calendar code" href="index.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Calendar Features"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango calendar code</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#">Calendar Features</a><ul>
+<li><a class="reference internal" href="#mango_calendar.calendar_features.get_calendar"><code class="docutils literal notranslate"><span class="pre">get_calendar()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango_calendar.date_utils">Date Utils</a><ul>
+<li><a class="reference internal" href="#mango_calendar.date_utils.get_holidays_df"><code class="docutils literal notranslate"><span class="pre">get_holidays_df()</span></code></a></li>
+<li><a class="reference internal" href="#mango_calendar.date_utils.get_covid_lockdowns"><code class="docutils literal notranslate"><span class="pre">get_covid_lockdowns()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango calendar code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Calendar Features</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="module-mango_calendar.calendar_features">
+<span id="calendar-features"></span><h1>Calendar Features<a class="headerlink" href="#module-mango_calendar.calendar_features" title="Link to this heading">¶</a></h1>
+<p>Calendar features.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_calendar.calendar_features.get_calendar">
+<span class="sig-prename descclassname"><span class="pre">mango_calendar.calendar_features.</span></span><span class="sig-name descname"><span class="pre">get_calendar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ES'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2027</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">communities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_communities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calendar_events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_distances</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distances_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_transformations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_keep_communities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_calendar.calendar_features.get_calendar" title="Link to this definition">¶</a></dt>
+<dd><p>Get a comprehensive calendar DataFrame with holiday information.</p>
+<p>This function generates a pandas DataFrame containing holiday information for a
+specified country and date range. It can include national holidays, regional
+community holidays (for Spain), and custom calendar events like Black Friday.
+The function supports various transformations and output formats.</p>
+<dl class="simple">
+<dt>The resulting DataFrame contains the following columns:</dt><dd><ul class="simple">
+<li><p>date: Date of the holiday</p></li>
+<li><p>name: Name of the holiday</p></li>
+<li><p>country_code: Country code (ISO 3166-2)</p></li>
+<li><p>community_code: Autonomous Community code (ISO 3166-2), only if communities=True</p></li>
+<li><p>community_name: Name of the autonomous community, only if communities=True</p></li>
+<li><p>weight: Weight of the holiday, only if return_weights=True</p></li>
+<li><p>distance: Distance to holiday in days, only if return_distances=True</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>country</strong> (<em>str</em>) – Country code (ISO 3166-2) for which to retrieve holidays</p></li>
+<li><p><strong>start_year</strong> (<em>int</em>) – First year to include in the calendar</p></li>
+<li><p><strong>end_year</strong> (<em>int</em>) – Last year to include in the calendar (exclusive)</p></li>
+<li><p><strong>communities</strong> (<em>bool</em>) – Whether to include autonomous community holidays (Spain only)</p></li>
+<li><p><strong>weight_communities</strong> (<em>dict</em><em> | </em><em>None</em>) – Dictionary mapping community codes to their weights</p></li>
+<li><p><strong>calendar_events</strong> (<em>bool</em>) – Whether to add Black Friday to the calendar</p></li>
+<li><p><strong>return_weights</strong> (<em>bool</em><em> | </em><em>None</em>) – Whether to return holiday weights (auto-set if communities=True)</p></li>
+<li><p><strong>return_distances</strong> (<em>bool</em>) – Whether to return distance calculations to holidays</p></li>
+<li><p><strong>distances_config</strong> (<em>dict</em><em> | </em><em>None</em>) – Configuration for distance calculations with ‘steps_back’ and ‘steps_forward’</p></li>
+<li><p><strong>name_transformations</strong> (<em>bool</em>) – Whether to apply text transformations to holiday names</p></li>
+<li><p><strong>pivot</strong> (<em>bool</em>) – Whether to pivot the calendar to have columns for each holiday</p></li>
+<li><p><strong>pivot_keep_communities</strong> (<em>bool</em>) – Whether to keep community information when pivoting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame containing calendar information with holidays and metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If start_year &gt; end_year or invalid parameter combinations</p></li>
+<li><p><strong>UserWarning</strong> – If return_weights is requested without communities=True</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get basic Spanish calendar for 2023</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">country</span><span class="o">=</span><span class="s2">&quot;ES&quot;</span><span class="p">,</span> <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span> <span class="n">end_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">calendar</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+</span><span data-line="4"><span class="go">[&#39;date&#39;, &#39;name&#39;, &#39;country_code&#39;]</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get calendar with community holidays and weights</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">calendar_with_communities</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span>
+</span><span data-line="8"><span class="gp">... </span>    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;ES&quot;</span><span class="p">,</span>
+</span><span data-line="9"><span class="gp">... </span>    <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span>
+</span><span data-line="10"><span class="gp">... </span>    <span class="n">end_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">,</span>
+</span><span data-line="11"><span class="gp">... </span>    <span class="n">communities</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="12"><span class="gp">... </span>    <span class="n">return_weights</span><span class="o">=</span><span class="kc">True</span>
+</span><span data-line="13"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="14"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span> <span class="ow">in</span> <span class="n">calendar_with_communities</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+</span><span data-line="15"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango_calendar.date_utils">
+<span id="date-utils"></span><h1>Date Utils<a class="headerlink" href="#module-mango_calendar.date_utils" title="Link to this heading">¶</a></h1>
+<p>Utility functions for working with dates and calendars.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_calendar.date_utils.get_holidays_df">
+<span class="sig-prename descclassname"><span class="pre">mango_calendar.date_utils.</span></span><span class="sig-name descname"><span class="pre">get_holidays_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps_back</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_forward</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2014</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ES'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'polars'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_calendar.date_utils.get_holidays_df" title="Link to this definition">¶</a></dt>
+<dd><p>Get national holidays DataFrame with distance window bounds.</p>
+<p>This function retrieves holiday data for a specified country and creates a
+DataFrame with distance calculations around each holiday. It filters holidays
+by weight (&gt;= 0.5), removes duplicates, and pivots the data to have each
+holiday as a separate column with distance values.</p>
+<dl class="simple">
+<dt>The resulting DataFrame contains:</dt><dd><ul class="simple">
+<li><p>datetime: Date column (as date type)</p></li>
+<li><p>Holiday columns: Each holiday name becomes a column with distance values</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>steps_back</strong> (<em>int</em>) – Number of days to go back from each holiday date</p></li>
+<li><p><strong>steps_forward</strong> (<em>int</em>) – Number of days to go forward from each holiday date</p></li>
+<li><p><strong>start_year</strong> (<em>int</em>) – Starting year for the holiday calendar (default: 2014)</p></li>
+<li><p><strong>country</strong> (<em>str</em>) – ISO 3166-1 alpha-2 country code for holiday calendar (default: “ES”)</p></li>
+<li><p><strong>output_format</strong> (<em>str</em>) – Output format, either ‘polars’ or ‘pandas’ (default: “polars”)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with holidays as columns and distance values, in specified format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[pl.DataFrame, pd.DataFrame]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If output_format is not ‘polars’ or ‘pandas’</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get Spanish holidays with 7-day window in Polars format</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">holidays</span> <span class="o">=</span> <span class="n">get_holidays_df</span><span class="p">(</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">steps_back</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="n">steps_forward</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+</span><span data-line="5"><span class="gp">... </span>    <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;ES&quot;</span><span class="p">,</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;polars&quot;</span>
+</span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">holidays</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+</span><span data-line="10"><span class="go">[&#39;datetime&#39;, &#39;New Year&#39;, &#39;Epiphany&#39;, &#39;Good Friday&#39;, ...]</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get holidays in Pandas format</span>
+</span><span data-line="13"><span class="gp">&gt;&gt;&gt; </span><span class="n">holidays_pd</span> <span class="o">=</span> <span class="n">get_holidays_df</span><span class="p">(</span>
+</span><span data-line="14"><span class="gp">... </span>    <span class="n">steps_back</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span data-line="15"><span class="gp">... </span>    <span class="n">steps_forward</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span data-line="16"><span class="gp">... </span>    <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span>
+</span><span data-line="17"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="18"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">holidays_pd</span><span class="p">))</span>
+</span><span data-line="19"><span class="go">&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_calendar.date_utils.get_covid_lockdowns">
+<span class="sig-prename descclassname"><span class="pre">mango_calendar.date_utils.</span></span><span class="sig-name descname"><span class="pre">get_covid_lockdowns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="headerlink" href="#mango_calendar.date_utils.get_covid_lockdowns" title="Link to this definition">¶</a></dt>
+<dd><p>Get COVID-19 lockdown period as a Polars DataFrame.</p>
+<p>This function creates a DataFrame representing the COVID-19 lockdown period
+from March 1, 2020 to March 1, 2022. The DataFrame contains daily records
+with the lockdown name and boundary values set to 0.</p>
+<dl class="simple">
+<dt>The resulting DataFrame contains:</dt><dd><ul class="simple">
+<li><p>ds: Date column (datetime with nanosecond precision)</p></li>
+<li><p>name: Lockdown identifier (“COVID”)</p></li>
+<li><p>lower_bound: Lower boundary value (0)</p></li>
+<li><p>upper_bound: Upper boundary value (0)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Polars DataFrame with COVID lockdown period data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pl.DataFrame</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">covid_data</span> <span class="o">=</span> <span class="n">get_covid_lockdowns</span><span class="p">()</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">(730, 4)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">[&#39;ds&#39;, &#39;name&#39;, &#39;lower_bound&#39;, &#39;upper_bound&#39;]</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+</span><span data-line="7"><span class="go">[&#39;COVID&#39;]</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check date range</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+</span><span data-line="10"><span class="go">2020-03-01 00:00:00</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</span><span data-line="12"><span class="go">2022-02-28 00:00:00</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="index.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Mango calendar code</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../code_mango_dashboard/index.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Mango dashboard</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Autoencoder - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="AutoEncoder API Reference" href="autoencoder_api.html" /><link rel="prev" title="Mango autoencoder code" href="index.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Autoencoder"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango autoencoder code</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#theoretical-background">Theoretical background</a></li>
+<li><a class="reference internal" href="#architecture">Architecture</a></li>
+<li><a class="reference internal" href="#configuration-and-parameters">Configuration and parameters</a></li>
+<li><a class="reference internal" href="#loss-function-calculation">Loss function calculation</a></li>
+<li><a class="reference internal" href="#input-data-examples">Input data examples</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#model-persistence">Model persistence</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango autoencoder code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Autoencoder</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="autoencoder">
+<h1>Autoencoder<a class="headerlink" href="#autoencoder" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation is still under development. If you find any bug or have any suggestion in the decodoc module, please, open an issue in the <a class="reference external" href="https://github.com/baobabsoluciones/mango">GitHub repository</a>. Any contribution is welcome!</p>
+</div>
+<p>The autoencoder module provides a powerful implementation of autoencoder neural networks specifically designed for time series data. This implementation supports various architectures and configurations for encoding and decoding time series data, making it suitable for tasks like anomaly detection, data reconstruction, and feature learning.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For complete API reference and method documentation, see <a class="reference internal" href="autoencoder_api.html"><span class="doc">AutoEncoder API Reference</span></a>.</p>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>The autoencoder consists of three main components:</p>
+<ul class="simple">
+<li><p><strong>Encoder</strong>: Compresses the input time series data into a lower-dimensional representation.</p></li>
+<li><p><strong>Decoder</strong>: Reconstructs the original data from the compressed representation.</p></li>
+<li><p><strong>Training pipeline</strong>: Handles data preprocessing, model training, and evaluation.</p></li>
+</ul>
+<p>The implementation supports multiple neural network architectures:</p>
+<ul class="simple">
+<li><p>LSTM (Long Short-Term Memory)</p></li>
+<li><p>GRU (Gated Recurrent Unit)</p></li>
+<li><p>RNN (Simple Recurrent Neural Network)</p></li>
+<li><p>Dense (Fully Connected Neural Network) - Note: Not implemented for time series autoencoders</p></li>
+</ul>
+</section>
+<section id="theoretical-background">
+<h2>Theoretical background<a class="headerlink" href="#theoretical-background" title="Link to this heading">¶</a></h2>
+<p>Autoencoders are a class of unsupervised neural networks that learn to compress and reconstruct input data. Their core objective is to encode the input into a latent representation that captures the most relevant information, and then decode it to produce a reconstruction as close as possible to the original input. The loss function—typically Mean Squared Error (MSE)—guides the learning process by penalizing discrepancies between the input and its reconstruction.</p>
+<p>In the context of time series, choosing the appropriate network architecture is critical due to the sequential and often variable-length nature of the data. This implementation supports three recurrent neural network (RNN) architectures, each suited to different characteristics of time series dynamics.</p>
+<p><strong>Long Short-Term Memory (LSTM)</strong> networks are designed to capture long-term dependencies by maintaining a cell state that is modulated through input, forget, and output gates. This makes them well suited for datasets where patterns or influences persist over many time steps.</p>
+<p><strong>Gated Recurrent Units (GRU)</strong> offer a simplified version of LSTM with fewer gates and parameters, often resulting in faster training and comparable performance. GRUs are effective when training time or computational resources are limited, or when the dataset does not require the full complexity of an LSTM.</p>
+<p><strong>Simple RNNs</strong> are the most basic recurrent architecture. While easier to implement and interpret, they often suffer from vanishing or exploding gradients when processing long sequences, making them more suitable for shorter-term dependencies.</p>
+<p>Although <strong>dense (fully connected) layers</strong> are also available in this module, they are not designed for time series autoencoders. Dense layers operate on fixed-size input vectors and lack temporal memory, meaning they cannot effectively model sequential dependencies unless paired with specific preprocessing or architectural adaptations. In this implementation, dense layers are supported only as post-processing layers or for non-sequential encoders and decoders.</p>
+<p>Currently, this implementation specifically supports several key applications while providing a foundation for others:</p>
+<ul class="simple">
+<li><p><strong>Missing data reconstruction</strong>: This is one of the primary implemented features of this autoencoder. The model can intelligently reconstruct missing values in time series data by learning the underlying patterns from the available data. This capability is particularly valuable for sensor data with intermittent failures, financial time series with missing trading days, or environmental data with measurement gaps. The <cite>use_mask</cite> parameter allows you to specify which values are missing, and the model will focus on reconstructing those specific points. This approach is more sophisticated than simple interpolation methods, as it considers the entire context of the time series rather than just neighboring values.</p></li>
+<li><p><strong>Data compression and feature extraction</strong>: The encoder component of this autoencoder compresses time series data into a lower-dimensional representation while preserving the most important patterns. This compressed representation can be used as features for other machine learning tasks, reducing dimensionality while maintaining essential information. This is particularly useful for high-dimensional time series data where dimensionality reduction is critical.</p></li>
+<li><p><strong>Noise reduction and smoothing</strong>: This implementation can effectively filter out noise from time series data. By forcing the network to reconstruct the original data from a compressed representation, it learns to ignore random fluctuations and focus on the underlying patterns. This results in smoother, more interpretable time series with reduced impact of measurement errors. The <cite>normalize</cite> parameter can help standardize the data before processing, further enhancing the noise reduction capabilities.</p></li>
+<li><p><strong>Anomaly detection</strong> (in development): This feature is currently in development and not yet fully implemented. The autoencoder architecture has the potential to detect anomalies in time series data by identifying patterns that deviate from the learned normal behavior. When this feature is completed, it will allow users to identify unusual patterns or outliers in time series data, which is particularly useful for identifying system failures, unusual trading patterns, or process deviations.</p></li>
+</ul>
+<p>Other potential applications that are not currently implemented include:</p>
+<ul class="simple">
+<li><p><strong>Time series forecasting</strong>: While this autoencoder can learn patterns in time series data, it does not directly implement forecasting functionality. The context window parameter is used for sequence processing during training and reconstruction, not for making future predictions. For forecasting tasks, consider using specialized forecasting models or using the autoencoder’s compressed representation as input features for a forecasting model.</p></li>
+<li><p><strong>Change point detection</strong>: Autoencoders can be used to detect significant changes in time series patterns, such as regime shifts or structural breaks. While not directly implemented in this module, the reconstruction error patterns could be analyzed to identify potential change points.</p></li>
+<li><p><strong>Dimensionality reduction for visualization</strong>: The compressed representation from the encoder can be used for visualizing high-dimensional time series data in lower dimensions (e.g., 2D or 3D) for exploratory analysis. This application is supported indirectly through the feature extraction capabilities.</p></li>
+<li><p><strong>Transfer learning</strong>: The learned representations from this autoencoder could be transferred to other related time series tasks, though this would require additional implementation beyond the current module.</p></li>
+<li><p><strong>Multi-variate time series analysis</strong>: While this implementation supports multi-variate time series, specialized applications like cross-series dependency analysis would require additional implementation.</p></li>
+</ul>
+</section>
+<section id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">¶</a></h2>
+<p>The autoencoder architecture is highly configurable through the following components:</p>
+<p><strong>Encoder</strong></p>
+<p>The encoder compresses the input time series data into a lower-dimensional representation. Available architectures:</p>
+<ul class="simple">
+<li><p><strong>LSTM Encoder</strong>: Uses Long Short-Term Memory layers for capturing long-term dependencies</p></li>
+<li><p><strong>GRU Encoder</strong>: Uses Gated Recurrent Unit layers for efficient sequence processing</p></li>
+<li><p><strong>RNN Encoder</strong>: Uses Simple RNN layers for basic sequence processing</p></li>
+<li><p><strong>Dense Encoder</strong>: Uses fully connected layers for non-sequential data</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Dense architecture in autoencoders</strong>:</p>
+<p>The Dense architecture is available for individual encoders and decoders, but <strong>not implemented for time series autoencoders</strong> because:</p>
+<ol class="arabic simple">
+<li><p>Time series data is inherently sequential and variable-length</p></li>
+<li><p>Dense layers require fixed-size input tensors</p></li>
+<li><p>Dense layers cannot capture temporal dependencies between time steps</p></li>
+</ol>
+<p>For time series autoencoders, use LSTM, GRU, or RNN architectures instead.</p>
+</div>
+<p><strong>Decoder</strong></p>
+<p>The decoder reconstructs the original data from the compressed representation. Available architectures:</p>
+<ul class="simple">
+<li><p><strong>LSTM Decoder</strong>: Reconstructs sequences using LSTM layers</p></li>
+<li><p><strong>GRU Decoder</strong>: Reconstructs sequences using GRU layers</p></li>
+<li><p><strong>RNN Decoder</strong>: Reconstructs sequences using Simple RNN layers</p></li>
+<li><p><strong>Dense Decoder</strong>: Reconstructs data using fully connected layers</p></li>
+</ul>
+<p><strong>Utils module</strong></p>
+<p>The utils module provides a collection of utility functions and tools for preprocessing, normalizing, and visualizing time series data in the context of autoencoder models.</p>
+<p>The utils module is organized into several submodules:</p>
+<ul class="simple">
+<li><p><strong>Processing</strong>: Data preprocessing and transformation functions</p></li>
+<li><p><strong>Plots</strong>: Visualization tools for model evaluation and analysis</p></li>
+<li><p><strong>Sequences</strong>: Time series sequence handling utilities</p></li>
+</ul>
+</section>
+<section id="configuration-and-parameters">
+<h2>Configuration and parameters<a class="headerlink" href="#configuration-and-parameters" title="Link to this heading">¶</a></h2>
+<p>The AutoEncoder class provides extensive configuration options through its parameters. Here’s a detailed explanation of each parameter and its functionality:</p>
+<p><strong>Required parameters</strong></p>
+<p>The following parameters are mandatory when calling <cite>build_model</cite> or <cite>build_and_train</cite>:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>context_window</strong></p></td>
+<td><p>Size of the context window for sequence transformation.</p>
+<p>This is a crucial parameter that determines how the time series data is processed. It defines the number of consecutive time steps that will be grouped together to form a sequence. For example, if context_window=10, each input sequence will contain 10 consecutive time steps.</p>
+<p>The context window transforms your 2D data (samples × features) into 3D data (samples × context_window × features). This transformation is essential for recurrent neural networks (LSTM, GRU, RNN) to process sequential patterns.</p>
+<p>A larger context window allows the model to capture longer-term dependencies but requires more memory and computation. A smaller context window is more efficient but may miss long-term patterns. The optimal context window depends on your specific time series characteristics and the temporal patterns you want to capture.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><strong>data</strong></p></td>
+<td><p>Input data for training. Can be provided in two formats:</p>
+<p><strong>Single dataset format</strong>: A single DataFrame/array containing all your time series data. In this case, the autoencoder will automatically split the data into train, validation, and test sets. The split proportions are controlled by the train_size, val_size, and test_size parameters. This is the simplest approach when you have a single dataset and want automatic splitting.</p>
+<p><strong>Pre-split format</strong>: A tuple of three arrays (train_data, val_data, test_data). In this case, you provide the data already split into training, validation, and test sets. The autoencoder will use these pre-split datasets without performing any additional splitting. This gives you full control over how the data is divided and is useful when you have specific splitting requirements. The train_size, val_size, and test_size parameters are ignored when using this format.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><strong>time_step_to_check</strong></p></td>
+<td><p>Index of time step to check in prediction. This is the index in the context window we are interested in predicting. Note that time_step_to_check must be within context window, possible values are in [0, context_window - 1]. Future implementation will also support multiple indices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>feature_to_check</strong></p></td>
+<td><p>Index or indices of features to check in prediction.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>hidden_dim</strong></p></td>
+<td><p>Hidden layer dimensions (single integer or list for multiple layers).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Optional parameters</strong></p>
+<p><strong>Data configuration</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>train_size</strong></p></td>
+<td><p>Proportion of data to use for training (default: 0.8)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>val_size</strong></p></td>
+<td><p>Proportion of data to use for validation (default: 0.1)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>test_size</strong></p></td>
+<td><p>Proportion of data to use for testing (default: 0.1)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>id_columns</strong></p></td>
+<td><p>Column(s) to process data by groups (default: None)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>feature_names</strong></p></td>
+<td><p>Custom names for features (default: None)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Data preprocessing</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>imputer</strong></p></td>
+<td><p>DataImputer instance for handling missing values (default: None)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>normalize</strong></p></td>
+<td><p>Whether to normalize the data (default: False)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>normalization_method</strong></p></td>
+<td><p>Method for normalization (default: “minmax”)</p>
+<ul class="simple">
+<li><p>“minmax”: Min-Max scaling</p></li>
+<li><p>“zscore”: Standard scaling</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Model architecture</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>form</strong></p></td>
+<td><p>Neural network architecture type (default: “lstm”)</p>
+<ul class="simple">
+<li><p>“lstm”: Long Short-Term Memory</p></li>
+<li><p>“gru”: Gated Recurrent Unit</p></li>
+<li><p>“rnn”: Simple RNN</p></li>
+<li><p>“dense”: Fully Connected</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The Dense architecture is available for individual encoders and decoders, but <strong>not implemented for time series autoencoders</strong>.
+If you select “dense” as the form parameter, the autoencoder will raise an error.</p>
+</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>bidirectional_encoder</strong></p></td>
+<td><p>Whether to use bidirectional layers in encoder (default: False)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>bidirectional_decoder</strong></p></td>
+<td><p>Whether to use bidirectional layers in decoder (default: False)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>activation_encoder</strong></p></td>
+<td><p>Activation function for encoder layers (default: None). Available options:</p>
+<ul class="simple">
+<li><p>“sigmoid”: Sigmoid activation function (outputs between 0 and 1)</p></li>
+<li><p>“tanh”: Hyperbolic tangent activation function (outputs between -1 and 1)</p></li>
+<li><p>“relu”: Rectified Linear Unit (outputs 0 for negative inputs, linear for positive)</p></li>
+<li><p>“elu”: Exponential Linear Unit (smoother than ReLU)</p></li>
+<li><p>“selu”: Scaled Exponential Linear Unit (self-normalizing)</p></li>
+<li><p>“softmax”: Softmax activation (outputs sum to 1)</p></li>
+<li><p>“softplus”: Softplus activation (smooth approximation of ReLU)</p></li>
+<li><p>“softsign”: Softsign activation (smooth approximation of tanh)</p></li>
+<li><p>“hard_sigmoid”: Hard sigmoid (piecewise linear approximation)</p></li>
+<li><p>“exponential”: Exponential activation</p></li>
+<li><p>“linear”: Linear activation (no transformation)</p></li>
+<li><p>None: No activation function</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p><strong>activation_decoder</strong></p></td>
+<td><p>Activation function for decoder layers (default: None)</p>
+<p>Same options as activation_encoder</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><strong>use_post_decoder_dense</strong></p></td>
+<td><p>Whether to add a dense layer after the decoder (default: False)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Training configuration</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>batch_size</strong></p></td>
+<td><p>Batch size for training (default: 32)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>epochs</strong></p></td>
+<td><p>Number of training epochs (default: 100)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>optimizer</strong></p></td>
+<td><p>Optimizer to use (default: “adam”). Available options:</p>
+<ul class="simple">
+<li><p>“adam”: Adaptive Moment Estimation</p></li>
+<li><p>“sgd”: Stochastic Gradient Descent</p></li>
+<li><p>“rmsprop”: Root Mean Square Propagation</p></li>
+<li><p>“adagrad”: Adaptive Gradient Algorithm</p></li>
+<li><p>“adadelta”: Adaptive Delta</p></li>
+<li><p>“adamax”: Adam with infinity norm</p></li>
+<li><p>“nadam”: Nesterov Adam</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p><strong>use_mask</strong></p></td>
+<td><p>Whether to use masking for missing values (default: False)</p>
+<p>If True and no custom_mask is provided, a mask will be automatically created:</p>
+<ul class="simple">
+<li><p>0 for null/missing values</p></li>
+<li><p>1 for non-null values</p></li>
+</ul>
+<p>If True and custom_mask is provided, the provided mask will be used instead</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><strong>custom_mask</strong></p></td>
+<td><p>Custom mask array for missing values. Must match the exact format of the training data:</p>
+<ul class="simple">
+<li><p>If data is a single DataFrame/array: mask should be a numpy array with same shape</p></li>
+<li><p>If data is a tuple of (train, val, test): mask should be a tuple of three arrays with matching shapes</p></li>
+<li><p>If data includes ID columns: mask should preserve the same ID structure</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p><strong>shuffle</strong></p></td>
+<td><p>Whether to shuffle the data during training (default: False)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>shuffle_buffer_size</strong></p></td>
+<td><p>Buffer size for shuffling (default: None, set to dataset size if shuffle=True)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Early stopping and checkpointing</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>patience</strong></p></td>
+<td><p>Number of epochs to wait before early stopping (default: 10)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>use_early_stopping</strong></p></td>
+<td><p>Whether to use early stopping (default: True)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>checkpoint</strong></p></td>
+<td><p>Save model checkpoint every N epochs (default: 10)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Logging and visualization</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>verbose</strong></p></td>
+<td><p>Whether to print detailed information during training (default: False)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>save_path</strong></p></td>
+<td><p>Directory path to save model checkpoints and plots (default: “autoencoder” in current directory)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Feature configuration</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>feature_names</strong></p></td>
+<td><p>Custom names for features (default: None)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>feature_weights</strong></p></td>
+<td><p>Weights for each feature in loss calculation (default: None)</p>
+<p>Can be a list of weights with length equal to the number of features. Higher weights will increase the importance of those features in the loss function.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="loss-function-calculation">
+<h2>Loss function calculation<a class="headerlink" href="#loss-function-calculation" title="Link to this heading">¶</a></h2>
+<p>The autoencoder uses Mean Squared Error (MSE) as its default loss function, which is calculated as follows:</p>
+<ol class="arabic simple">
+<li><p><strong>Basic MSE calculation</strong>:
+- For each time step and feature, the loss is calculated as: MSE = (x - x̂)²
+- Where x is the original value and x̂ is the reconstructed value
+- The final loss is the mean of all squared differences</p></li>
+<li><p><strong>Feature weighting</strong>:
+- If feature_weights is provided, each feature’s contribution to the loss is weighted
+- Weighted MSE = Σ(wᵢ * (xᵢ - x̂ᵢ)²) / Σ(wᵢ)
+- Where wᵢ is the weight for feature i</p></li>
+<li><p><strong>Masked loss</strong>:
+- When use_mask=True, the loss is only calculated for non-masked positions
+- Masked MSE = Σ(mᵢ * (xᵢ - x̂ᵢ)²) / Σ(mᵢ)
+- Where mᵢ is 1 for non-masked positions and 0 for masked positions</p></li>
+<li><p><strong>Time step selection</strong>:
+- The loss can be focused on specific time steps using time_step_to_check
+- This is useful when certain time steps are more important for reconstruction</p></li>
+</ol>
+<p>Example of loss calculation with different configurations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Basic MSE without weights or masks</span>
+</span><span data-line="2"><span class="n">loss</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">reconstructed_data</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Weighted MSE with feature weights</span>
+</span><span data-line="5"><span class="n">loss</span> <span class="o">=</span> <span class="n">weighted_mean_squared_error</span><span class="p">(</span>
+</span><span data-line="6">    <span class="n">original_data</span><span class="p">,</span>
+</span><span data-line="7">    <span class="n">reconstructed_data</span><span class="p">,</span>
+</span><span data-line="8">    <span class="n">feature_weights</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>  <span class="c1"># Higher weight for second feature</span>
+</span><span data-line="9"><span class="p">)</span>
+</span><span data-line="10">
+</span><span data-line="11"><span class="c1"># Masked MSE for handling missing values</span>
+</span><span data-line="12"><span class="n">loss</span> <span class="o">=</span> <span class="n">masked_mean_squared_error</span><span class="p">(</span>
+</span><span data-line="13">    <span class="n">original_data</span><span class="p">,</span>
+</span><span data-line="14">    <span class="n">reconstructed_data</span><span class="p">,</span>
+</span><span data-line="15">    <span class="n">mask</span><span class="o">=</span><span class="n">mask</span>  <span class="c1"># 1 for valid values, 0 for missing values</span>
+</span><span data-line="16"><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="input-data-examples">
+<h2>Input data examples<a class="headerlink" href="#input-data-examples" title="Link to this heading">¶</a></h2>
+<p><strong>Basic configuration with automatic splitting</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Import required libraries</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span data-line="3"><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="c1"># Create a sample time series DataFrame with 100 time steps and 3 features</span>
+</span><span data-line="6"><span class="n">time_steps</span> <span class="o">=</span> <span class="mi">100</span>
+</span><span data-line="7"><span class="n">features</span> <span class="o">=</span> <span class="mi">3</span>
+</span><span data-line="8"><span class="n">time_series_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+</span><span data-line="9">    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span> <span class="n">features</span><span class="p">),</span>
+</span><span data-line="10">    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;humidity&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]</span>
+</span><span data-line="11"><span class="p">)</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1"># Initialize and train the autoencoder</span>
+</span><span data-line="14"><span class="n">autoencoder</span> <span class="o">=</span> <span class="n">AutoEncoder</span><span class="p">()</span>
+</span><span data-line="15"><span class="n">autoencoder</span><span class="o">.</span><span class="n">build_and_train</span><span class="p">(</span>
+</span><span data-line="16">    <span class="n">context_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="17">    <span class="n">data</span><span class="o">=</span><span class="n">time_series_df</span><span class="p">,</span>  <span class="c1"># DataFrame with shape (100, 3)</span>
+</span><span data-line="18">    <span class="n">time_step_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+</span><span data-line="19">    <span class="n">feature_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+</span><span data-line="20">    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+</span><span data-line="21">    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+</span><span data-line="22">    <span class="n">train_size</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+</span><span data-line="23">    <span class="n">val_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+</span><span data-line="24">    <span class="n">test_size</span><span class="o">=</span><span class="mf">0.1</span>
+</span><span data-line="25"><span class="p">)</span>
+</span></pre></div>
+</div>
+<p><strong>Manual data splitting</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Import required libraries</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span data-line="3"><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="4"><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="c1"># Create a sample time series DataFrame</span>
+</span><span data-line="7"><span class="n">time_steps</span> <span class="o">=</span> <span class="mi">100</span>
+</span><span data-line="8"><span class="n">features</span> <span class="o">=</span> <span class="mi">3</span>
+</span><span data-line="9"><span class="n">time_series_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+</span><span data-line="10">    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span> <span class="n">features</span><span class="p">),</span>
+</span><span data-line="11">    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;humidity&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]</span>
+</span><span data-line="12"><span class="p">)</span>
+</span><span data-line="13">
+</span><span data-line="14"><span class="c1"># Manually split the data</span>
+</span><span data-line="15"><span class="n">train_data</span><span class="p">,</span> <span class="n">temp_data</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">time_series_df</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="16"><span class="n">val_data</span><span class="p">,</span> <span class="n">test_data</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">temp_data</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span data-line="17">
+</span><span data-line="18"><span class="c1"># Initialize and train the autoencoder with pre-split data</span>
+</span><span data-line="19"><span class="n">autoencoder</span> <span class="o">=</span> <span class="n">AutoEncoder</span><span class="p">()</span>
+</span><span data-line="20"><span class="n">autoencoder</span><span class="o">.</span><span class="n">build_and_train</span><span class="p">(</span>
+</span><span data-line="21">    <span class="n">context_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="22">    <span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">val_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">),</span>  <span class="c1"># Tuple of three DataFrames</span>
+</span><span data-line="23">    <span class="n">time_step_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+</span><span data-line="24">    <span class="n">feature_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+</span><span data-line="25">    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+</span><span data-line="26">    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span>
+</span><span data-line="27"><span class="p">)</span>
+</span></pre></div>
+</div>
+<p><strong>Custom preprocessing</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Create custom imputer</span>
+</span><span data-line="2"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;knn&quot;</span><span class="p">,</span> <span class="n">k_neighbors</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Initialize and train the autoencoder with custom preprocessing</span>
+</span><span data-line="5"><span class="n">autoencoder</span> <span class="o">=</span> <span class="n">AutoEncoder</span><span class="p">()</span>
+</span><span data-line="6"><span class="n">autoencoder</span><span class="o">.</span><span class="n">build_and_train</span><span class="p">(</span>
+</span><span data-line="7">    <span class="n">context_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="8">    <span class="n">data</span><span class="o">=</span><span class="n">time_series_df</span><span class="p">,</span>  <span class="c1"># DataFrame with missing values</span>
+</span><span data-line="9">    <span class="n">time_step_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+</span><span data-line="10">    <span class="n">feature_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+</span><span data-line="11">    <span class="n">hidden_dim</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+</span><span data-line="12">    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+</span><span data-line="13">    <span class="n">imputer</span><span class="o">=</span><span class="n">imputer</span><span class="p">,</span>
+</span><span data-line="14">    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="15">    <span class="n">normalization_method</span><span class="o">=</span><span class="s2">&quot;minmax&quot;</span><span class="p">,</span>
+</span><span data-line="16">    <span class="n">bidirectional_encoder</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="17">    <span class="n">bidirectional_decoder</span><span class="o">=</span><span class="kc">True</span>
+</span><span data-line="18"><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>The AutoEncoder can be used in two ways:</p>
+<ol class="arabic simple">
+<li><p>Using the combined <cite>build_and_train</cite> method for a streamlined workflow</p></li>
+<li><p>Using separate <cite>build_model</cite> and <cite>train</cite> methods for more control over the process</p></li>
+</ol>
+<p><strong>Basic usage with build_and_train</strong></p>
+<p>The simplest way to use the autoencoder is with the combined <cite>build_and_train</cite> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">mango_time_series.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoEncoder</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span data-line="3"><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="c1"># Create a sample time series DataFrame</span>
+</span><span data-line="6"><span class="n">time_steps</span> <span class="o">=</span> <span class="mi">100</span>
+</span><span data-line="7"><span class="n">features</span> <span class="o">=</span> <span class="mi">3</span>
+</span><span data-line="8"><span class="n">time_series_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+</span><span data-line="9">    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span> <span class="n">features</span><span class="p">),</span>
+</span><span data-line="10">    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;humidity&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]</span>
+</span><span data-line="11"><span class="p">)</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1"># Initialize the autoencoder</span>
+</span><span data-line="14"><span class="n">autoencoder</span> <span class="o">=</span> <span class="n">AutoEncoder</span><span class="p">()</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="c1"># Build and train the model in one step</span>
+</span><span data-line="17"><span class="n">autoencoder</span><span class="o">.</span><span class="n">build_and_train</span><span class="p">(</span>
+</span><span data-line="18">    <span class="n">context_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="19">    <span class="n">data</span><span class="o">=</span><span class="n">time_series_df</span><span class="p">,</span>  <span class="c1"># DataFrame with shape (100, 3)</span>
+</span><span data-line="20">    <span class="n">time_step_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+</span><span data-line="21">    <span class="n">feature_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+</span><span data-line="22">    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+</span><span data-line="23">    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+</span><span data-line="24">    <span class="n">bidirectional_encoder</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="25">    <span class="n">bidirectional_decoder</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="26">    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="27">    <span class="n">normalization_method</span><span class="o">=</span><span class="s2">&quot;minmax&quot;</span><span class="p">,</span>
+</span><span data-line="28">    <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span>
+</span><span data-line="29"><span class="p">)</span>
+</span><span data-line="30">
+</span><span data-line="31"><span class="c1"># After training, always reconstruct to evaluate the model</span>
+</span><span data-line="32"><span class="n">autoencoder</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p><strong>Separate build and train</strong></p>
+<p>For more control over the process, you can separate the model building and training steps:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">mango_time_series.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoEncoder</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span data-line="3"><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="4">
+</span><span data-line="5"><span class="c1"># Create a sample time series DataFrame</span>
+</span><span data-line="6"><span class="n">time_steps</span> <span class="o">=</span> <span class="mi">100</span>
+</span><span data-line="7"><span class="n">features</span> <span class="o">=</span> <span class="mi">3</span>
+</span><span data-line="8"><span class="n">time_series_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+</span><span data-line="9">    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span> <span class="n">features</span><span class="p">),</span>
+</span><span data-line="10">    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">,</span> <span class="s1">&#39;humidity&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">]</span>
+</span><span data-line="11"><span class="p">)</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1"># Initialize the autoencoder</span>
+</span><span data-line="14"><span class="n">autoencoder</span> <span class="o">=</span> <span class="n">AutoEncoder</span><span class="p">()</span>
+</span><span data-line="15">
+</span><span data-line="16"><span class="c1"># First, build the model</span>
+</span><span data-line="17"><span class="n">autoencoder</span><span class="o">.</span><span class="n">build_model</span><span class="p">(</span>
+</span><span data-line="18">    <span class="n">context_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="19">    <span class="n">data</span><span class="o">=</span><span class="n">time_series_df</span><span class="p">,</span>  <span class="c1"># DataFrame with shape (100, 3)</span>
+</span><span data-line="20">    <span class="n">time_step_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+</span><span data-line="21">    <span class="n">feature_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+</span><span data-line="22">    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+</span><span data-line="23">    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+</span><span data-line="24">    <span class="n">bidirectional_encoder</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="25">    <span class="n">bidirectional_decoder</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="26">    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="27">    <span class="n">normalization_method</span><span class="o">=</span><span class="s2">&quot;minmax&quot;</span>
+</span><span data-line="28"><span class="p">)</span>
+</span><span data-line="29">
+</span><span data-line="30"><span class="c1"># Then train the model with specific training parameters</span>
+</span><span data-line="31"><span class="n">autoencoder</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+</span><span data-line="32">    <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+</span><span data-line="33">    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+</span><span data-line="34">    <span class="n">checkpoint</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="35">    <span class="n">use_early_stopping</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="36">    <span class="n">patience</span><span class="o">=</span><span class="mi">10</span>
+</span><span data-line="37"><span class="p">)</span>
+</span><span data-line="38">
+</span><span data-line="39"><span class="c1"># After training, always reconstruct to evaluate the model</span>
+</span><span data-line="40"><span class="n">autoencoder</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p><strong>Evaluating the model with reconstruct</strong></p>
+<p>The <cite>reconstruct</cite> method generates several visualizations to evaluate the model’s performance on the training data:</p>
+<ol class="arabic simple">
+<li><p><strong>Reconstruction Plot</strong>: Shows the actual vs. reconstructed data for each feature
+- Uses <cite>plot_actual_and_reconstructed</cite> from <cite>mango_time_series.models.utils.plots</cite>
+- Displays time series data with actual values in blue and reconstructed values in red
+- Includes feature names and time step information
+- Saved as “reconstruction.png” in the specified save_path</p></li>
+<li><p><strong>Loss History Plot</strong>: Shows the training and validation loss over epochs
+- Uses <cite>plot_loss_history</cite> from <cite>mango_time_series.models.utils.plots</cite>
+- Displays training loss in blue and validation loss in red
+- Includes epoch information and loss values
+- Saved as “loss_history.png” in the specified save_path</p></li>
+</ol>
+<p><strong>Using the trained model with reconstruct_new_data</strong></p>
+<p>Once you have trained and evaluated your model using <cite>reconstruct</cite>, you can use the <cite>reconstruct_new_data</cite> method to apply the trained autoencoder to new, unseen data.</p>
+<p>The method supports iterative reconstruction in case of missing values, where the model can refine its output over multiple passes, potentially improving the quality of the reconstruction.</p>
+<p>Example of reconstruct_new_data usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Reconstruct new data with multiple iterations</span>
+</span><span data-line="2"><span class="n">results</span> <span class="o">=</span> <span class="n">autoencoder</span><span class="o">.</span><span class="n">reconstruct_new_data</span><span class="p">(</span>
+</span><span data-line="3">    <span class="n">new_data</span><span class="p">,</span>
+</span><span data-line="4">    <span class="n">iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># Number of reconstruction iterations</span>
+</span><span data-line="5">    <span class="n">id_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>  <span class="c1"># Columns to identify different time series</span>
+</span><span data-line="6">    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;path/to/save&quot;</span>  <span class="c1"># Where to save the results and plots</span>
+</span><span data-line="7"><span class="p">)</span>
+</span></pre></div>
+</div>
+<p><strong>Visualizations for reconstruct_new_data</strong></p>
+<p>The <cite>reconstruct_new_data</cite> method generates several visualizations to help analyze the reconstruction of new data:</p>
+<ol class="arabic simple">
+<li><p><strong>Reconstruction Plot</strong>: Similar to the one in <cite>reconstruct</cite>, but for the new data
+- Uses <cite>plot_actual_and_reconstructed</cite> from <cite>mango_time_series.models.utils.plots</cite>
+- Shows actual vs. reconstructed values for each feature
+- Includes feature names and time step information
+- Saved as “reconstruction_new_data.png” in the specified save_path</p></li>
+<li><p><strong>Reconstruction Iterations Plot</strong>: Shows how the reconstruction improves over iterations
+- Uses <cite>plot_reconstruction_iterations</cite> from <cite>mango_time_series.models.utils.plots</cite>
+- Displays the evolution of reconstructed values across iterations
+- Includes feature names and iteration information
+- Saved as “reconstruction_iterations.png” in the specified save_path</p></li>
+<li><p><strong>Error Distribution Plot</strong>: Shows the distribution of reconstruction errors
+- Uses <cite>plot_error_distribution</cite> from <cite>mango_time_series.models.utils.plots</cite>
+- Displays histograms of reconstruction errors for each feature
+- Includes feature names and error statistics
+- Saved as “error_distribution.png” in the specified save_path</p></li>
+</ol>
+</section>
+<section id="model-persistence">
+<h2>Model persistence<a class="headerlink" href="#model-persistence" title="Link to this heading">¶</a></h2>
+<p>During training, the model is automatically saved in two ways:</p>
+<ol class="arabic simple">
+<li><p><strong>Checkpoints</strong>: Every N epochs (specified by the <cite>checkpoint</cite> parameter, default: 10)</p></li>
+<li><p><strong>Best model</strong>: The model with the best validation loss is saved at the end of training</p></li>
+</ol>
+<p>In addition to model weights, the persistence mechanism now stores all necessary metadata for future reconstruction and inference. This includes:</p>
+<ul class="simple">
+<li><p>Normalization parameters (min-max values or z-score statistics)</p></li>
+<li><p>Feature names and order</p></li>
+<li><p>Time steps and features used for reconstruction</p></li>
+<li><p>ID-based normalization structure (if applicable)</p></li>
+<li><p>The normalization method used during training</p></li>
+</ul>
+<p>This ensures that when a model is loaded for inference, it applies the same preprocessing steps as during training, avoiding inconsistencies or the need to reconfigure the environment.</p>
+<p>You can also manually save and load models using the following methods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Manually save model (useful for saving intermediate states)</span>
+</span><span data-line="2"><span class="n">autoencoder</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;models&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;my_model.pkl&quot;</span><span class="p">)</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Load a previously saved model</span>
+</span><span data-line="5"><span class="n">loaded_model</span> <span class="o">=</span> <span class="n">AutoEncoder</span><span class="o">.</span><span class="n">load_from_pickle</span><span class="p">(</span><span class="s2">&quot;models/my_model.pkl&quot;</span><span class="p">)</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Use the loaded model to reconstruct new data</span>
+</span><span data-line="8"><span class="n">results</span> <span class="o">=</span> <span class="n">loaded_model</span><span class="o">.</span><span class="n">reconstruct_new_data</span><span class="p">(</span><span class="n">new_data</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>Once loaded, the model can reconstruct new data without requiring re-specification of preprocessing settings, as all relevant parameters are embedded in the saved object.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="index.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Mango autoencoder code</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="autoencoder_api.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">AutoEncoder API Reference</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

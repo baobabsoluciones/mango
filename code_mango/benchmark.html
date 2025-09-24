@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Benchmarks - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Clients" href="clients.html" /><link rel="prev" title="Mango code" href="index.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Benchmarks"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango code</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#optimization-benchmarks">Optimization benchmarks</a><ul>
+<li><a class="reference internal" href="#ackley-function">Ackley Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.ackley.ackley"><code class="docutils literal notranslate"><span class="pre">ackley()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.ackley.inverted_ackley"><code class="docutils literal notranslate"><span class="pre">inverted_ackley()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bukin-function">Bukin Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.bukin.bukin_function_6"><code class="docutils literal notranslate"><span class="pre">bukin_function_6()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.bukin.inverted_bukin_function_6"><code class="docutils literal notranslate"><span class="pre">inverted_bukin_function_6()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cross-in-tray-function">Cross-in-Tray Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.cross_in_tray.cross_in_tray"><code class="docutils literal notranslate"><span class="pre">cross_in_tray()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.cross_in_tray.inverted_cross_in_tray"><code class="docutils literal notranslate"><span class="pre">inverted_cross_in_tray()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dolan-function">Dolan Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.dolan.dolan_function_no2"><code class="docutils literal notranslate"><span class="pre">dolan_function_no2()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.dolan.inverted_dolan_function_no2"><code class="docutils literal notranslate"><span class="pre">inverted_dolan_function_no2()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#drop-wave-function">Drop-Wave Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.drop_wave.drop_wave"><code class="docutils literal notranslate"><span class="pre">drop_wave()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.drop_wave.inverted_drop_wave"><code class="docutils literal notranslate"><span class="pre">inverted_drop_wave()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#egg-holder-function">Egg-Holder Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.egg_holder.egg_holder"><code class="docutils literal notranslate"><span class="pre">egg_holder()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.egg_holder.inverted_egg_holder"><code class="docutils literal notranslate"><span class="pre">inverted_egg_holder()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gramacy-lee-function">Gramacy &amp; Lee Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.gramacy_lee.gramacy_lee"><code class="docutils literal notranslate"><span class="pre">gramacy_lee()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.gramacy_lee.inverted_gramacy_lee"><code class="docutils literal notranslate"><span class="pre">inverted_gramacy_lee()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#griewank-function">Griewank Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.griewank.griewank"><code class="docutils literal notranslate"><span class="pre">griewank()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.griewank.inverted_griewank"><code class="docutils literal notranslate"><span class="pre">inverted_griewank()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#holder-table-function">Holder Table Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.holder_table.holder_table"><code class="docutils literal notranslate"><span class="pre">holder_table()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.holder_table.inverted_holder_table"><code class="docutils literal notranslate"><span class="pre">inverted_holder_table()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#langermann-function">Langermann Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.langermann.langermann"><code class="docutils literal notranslate"><span class="pre">langermann()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.langermann.inverted_langermann"><code class="docutils literal notranslate"><span class="pre">inverted_langermann()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#levy-function">Levy Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.levy"><code class="docutils literal notranslate"><span class="pre">levy()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.inverted_levy"><code class="docutils literal notranslate"><span class="pre">inverted_levy()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.levy_function_no13"><code class="docutils literal notranslate"><span class="pre">levy_function_no13()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.levy.inverted_levy_no13"><code class="docutils literal notranslate"><span class="pre">inverted_levy_no13()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rastrigin-function">Rastrigin Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rastrigin.rastrigin"><code class="docutils literal notranslate"><span class="pre">rastrigin()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rastrigin.inverted_rastrigin"><code class="docutils literal notranslate"><span class="pre">inverted_rastrigin()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rosenbrock-function">Rosenbrock Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rosenbrock.rosenbrock"><code class="docutils literal notranslate"><span class="pre">rosenbrock()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.rosenbrock.inverted_rosenbrock"><code class="docutils literal notranslate"><span class="pre">inverted_rosenbrock()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#schaffer-function">Schaffer Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.schaffer_function_no2"><code class="docutils literal notranslate"><span class="pre">schaffer_function_no2()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no2"><code class="docutils literal notranslate"><span class="pre">inverted_schaffer_function_no2()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.schaffer_function_no4"><code class="docutils literal notranslate"><span class="pre">schaffer_function_no4()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no4"><code class="docutils literal notranslate"><span class="pre">inverted_schaffer_function_no4()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#schwefel-function">Schwefel Function</a><ul>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schwefel.schwefel"><code class="docutils literal notranslate"><span class="pre">schwefel()</span></code></a></li>
+<li><a class="reference internal" href="#mango.benchmark.optimization.schwefel.inverted_schwefel"><code class="docutils literal notranslate"><span class="pre">inverted_schwefel()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Benchmarks</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="benchmarks">
+<h1>Benchmarks<a class="headerlink" href="#benchmarks" title="Link to this heading">¶</a></h1>
+<p>This module contains a comprehensive collection of benchmark functions for optimization problems. These functions are commonly used to test and evaluate the performance of optimization algorithms, including genetic algorithms, particle swarm optimization, and other metaheuristic methods.</p>
+<p>The benchmark functions include:</p>
+<ul class="simple">
+<li><p><strong>Unimodal functions</strong>: Functions with a single global optimum (e.g., Rosenbrock, Sphere)</p></li>
+<li><p><strong>Multimodal functions</strong>: Functions with multiple local optima (e.g., Rastrigin, Ackley, Griewank)</p></li>
+<li><p><strong>Composition functions</strong>: Complex functions combining multiple sub-functions</p></li>
+<li><p><strong>Real-world inspired functions</strong>: Functions modeling practical optimization problems</p></li>
+</ul>
+<p>Each function is provided in both standard and inverted versions, allowing for both minimization and maximization testing scenarios. These benchmarks serve as a standardized test suite for comparing algorithm performance and establishing baseline metrics before developing new optimization approaches.</p>
+<section id="optimization-benchmarks">
+<h2>Optimization benchmarks<a class="headerlink" href="#optimization-benchmarks" title="Link to this heading">¶</a></h2>
+<section id="ackley-function">
+<h3>Ackley Function<a class="headerlink" href="#ackley-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.ackley.ackley">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.ackley.</span></span><span class="sig-name descname"><span class="pre">ackley</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.ackley.ackley" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Ackley function value for optimization benchmarking.</p>
+<p>The Ackley function is widely used for testing optimization algorithms.
+In its two-dimensional form, it is characterized by a nearly flat outer region,
+and a large hole at the centre. The function poses a risk for optimization
+algorithms, particularly hillclimbing algorithms, to be trapped in one of its
+many local minima.</p>
+<p>The global minimum point of the function is: f(x) = 0, at x = (0, …, 0)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector as numpy array. Values should be in range [-32.768, 32.768]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If input array is empty</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ackley</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.ackley.inverted_ackley">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.ackley.</span></span><span class="sig-name descname"><span class="pre">inverted_ackley</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.ackley.inverted_ackley" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Ackley function value for maximization problems.</p>
+<p>This function returns the negative of the standard Ackley function, effectively
+converting the minimization problem into a maximization problem. The global
+maximum point is: f(x) = 0, at x = (0, …, 0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector as numpy array. Values should be in range [-32.768, 32.768]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If input array is empty</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_ackley</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="bukin-function">
+<h3>Bukin Function<a class="headerlink" href="#bukin-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.bukin.bukin_function_6">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.bukin.</span></span><span class="sig-name descname"><span class="pre">bukin_function_6</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.bukin.bukin_function_6" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Bukin function N. 6 value for optimization benchmarking.</p>
+<p>The sixth Bukin function has many local minima, all of which lie in a ridge.
+This function is particularly challenging for optimization algorithms due to
+its complex landscape with multiple local optima.</p>
+<p>The global minimum is at (-10, 1) with a value of 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. x[0] in range [-15, 5], x[1] in range [-3, 3]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">bukin_function_6</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.bukin.inverted_bukin_function_6">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.bukin.</span></span><span class="sig-name descname"><span class="pre">inverted_bukin_function_6</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.bukin.inverted_bukin_function_6" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Bukin function N. 6 value for maximization problems.</p>
+<p>This function returns the negative of the standard Bukin function N. 6,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at (-10, 1) with a value of 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. x[0] in range [-15, 5], x[1] in range [-3, 3]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_bukin_function_6</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="cross-in-tray-function">
+<h3>Cross-in-Tray Function<a class="headerlink" href="#cross-in-tray-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.cross_in_tray.cross_in_tray">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.cross_in_tray.</span></span><span class="sig-name descname"><span class="pre">cross_in_tray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.cross_in_tray.cross_in_tray" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Cross-in-tray function value for optimization benchmarking.</p>
+<p>The Cross-in-tray function has many widespread local minima, which are regularly
+distributed. This function is particularly challenging for optimization algorithms
+due to its complex landscape with multiple global minima.</p>
+<p>The function is usually evaluated on the square xi ∈ [-10, 10], for all i = 1, 2.
+The global minima are located at:
+- x = (1.34941, 1.34941)
+- x = (-1.34941, 1.34941)
+- x = (1.34941, -1.34941)
+- x = (-1.34941, -1.34941)
+All with a value of -2.06261.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. Both elements in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.34941</span><span class="p">,</span> <span class="mf">1.34941</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">cross_in_tray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">-2.062612</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.cross_in_tray.inverted_cross_in_tray">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.cross_in_tray.</span></span><span class="sig-name descname"><span class="pre">inverted_cross_in_tray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.cross_in_tray.inverted_cross_in_tray" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Cross-in-tray function value for maximization problems.</p>
+<p>This function returns the negative of the standard Cross-in-tray function,
+effectively converting the minimization problem into a maximization problem.
+The global maxima are located at the same points as the original function’s
+minima, but with positive values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. Both elements in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.34941</span><span class="p">,</span> <span class="mf">1.34941</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_cross_in_tray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">2.062612</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="dolan-function">
+<h3>Dolan Function<a class="headerlink" href="#dolan-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.dolan.dolan_function_no2">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.dolan.</span></span><span class="sig-name descname"><span class="pre">dolan_function_no2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.dolan.dolan_function_no2" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Dolan function No. 2 value for optimization benchmarking.</p>
+<p>The Dolan function No. 2 is a 5-dimensional optimization test function with
+complex interactions between variables. It features trigonometric and polynomial
+terms that create a challenging landscape for optimization algorithms.</p>
+<p>The global minimum is at [8.39045925, 4.81424707, 7.34574133, 68.88246895, 3.85470806]
+with a value of approximately 10^-5.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 5 elements. All elements in range [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 5 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">8.39045925</span><span class="p">,</span> <span class="mf">4.81424707</span><span class="p">,</span> <span class="mf">7.34574133</span><span class="p">,</span> <span class="mf">68.88246895</span><span class="p">,</span> <span class="mf">3.85470806</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">dolan_function_no2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">1.00e-05</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.dolan.inverted_dolan_function_no2">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.dolan.</span></span><span class="sig-name descname"><span class="pre">inverted_dolan_function_no2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.dolan.inverted_dolan_function_no2" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Dolan function No. 2 value for maximization problems.</p>
+<p>This function returns the negative of the standard Dolan function No. 2,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 5 elements. All elements in range [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 5 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">8.39045925</span><span class="p">,</span> <span class="mf">4.81424707</span><span class="p">,</span> <span class="mf">7.34574133</span><span class="p">,</span> <span class="mf">68.88246895</span><span class="p">,</span> <span class="mf">3.85470806</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_dolan_function_no2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">-1.00e-05</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="drop-wave-function">
+<h3>Drop-Wave Function<a class="headerlink" href="#drop-wave-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.drop_wave.drop_wave">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.drop_wave.</span></span><span class="sig-name descname"><span class="pre">drop_wave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.drop_wave.drop_wave" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Drop-Wave function value for optimization benchmarking.</p>
+<p>The Drop-Wave function has a unique global minimum. It is multimodal, but the
+minima are regularly distributed. This function features a distinctive
+“drop” shape with oscillatory behavior that creates multiple local minima.</p>
+<p>The global minimum is located at x = (0, 0) with a value of -1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. Values usually in range [-5.12, 5.12]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">drop_wave</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">-1.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.drop_wave.inverted_drop_wave">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.drop_wave.</span></span><span class="sig-name descname"><span class="pre">inverted_drop_wave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.drop_wave.inverted_drop_wave" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Drop-Wave function value for maximization problems.</p>
+<p>This function returns the negative of the standard Drop-Wave function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. Values usually in range [-5.12, 5.12]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_drop_wave</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">1.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="egg-holder-function">
+<h3>Egg-Holder Function<a class="headerlink" href="#egg-holder-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.egg_holder.egg_holder">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.egg_holder.</span></span><span class="sig-name descname"><span class="pre">egg_holder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.egg_holder.egg_holder" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Egg-holder function value for optimization benchmarking.</p>
+<p>The Egg-holder function has many widespread local minima, which are regularly
+distributed. This function is particularly challenging for optimization algorithms
+due to its complex landscape with numerous local optima and steep gradients.</p>
+<p>The function is usually evaluated on the square xi ∈ [-512, 512], for all i = 1, 2.
+The global minimum is located at x = (512, 404.2319) with a value of -959.6407.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. Both elements in range [-512, 512]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">512.0</span><span class="p">,</span> <span class="mf">404.2319</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">egg_holder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">-959.6407</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.egg_holder.inverted_egg_holder">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.egg_holder.</span></span><span class="sig-name descname"><span class="pre">inverted_egg_holder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.egg_holder.inverted_egg_holder" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Egg-holder function value for maximization problems.</p>
+<p>This function returns the negative of the standard Egg-holder function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with 2 elements. Both elements in range [-512, 512]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">512.0</span><span class="p">,</span> <span class="mf">404.2319</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_egg_holder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">959.6407</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="gramacy-lee-function">
+<h3>Gramacy &amp; Lee Function<a class="headerlink" href="#gramacy-lee-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.gramacy_lee.gramacy_lee">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.gramacy_lee.</span></span><span class="sig-name descname"><span class="pre">gramacy_lee</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.gramacy_lee.gramacy_lee" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Gramacy &amp; Lee function value for optimization benchmarking.</p>
+<p>This function is multimodal, with a number of local minima. It features
+oscillatory behavior combined with polynomial terms, creating a challenging
+landscape for optimization algorithms. The function is typically used for
+one-dimensional optimization problems.</p>
+<p>The global minimum is at x = 0.54.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>, </em><em>float</em><em>]</em>) – Input value as numpy array, list, or float. Value usually in range [-0.5, 2.5]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input is empty or invalid</p></li>
+<li><p><strong>IndexError</strong> – If input array/list is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">gramacy_lee</span><span class="p">(</span><span class="mf">0.54</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">-0.869011</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">gramacy_lee</span><span class="p">([</span><span class="mf">0.54</span><span class="p">])</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="go">-0.869011</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.gramacy_lee.inverted_gramacy_lee">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.gramacy_lee.</span></span><span class="sig-name descname"><span class="pre">inverted_gramacy_lee</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.gramacy_lee.inverted_gramacy_lee" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Gramacy &amp; Lee function value for maximization problems.</p>
+<p>This function returns the negative of the standard Gramacy &amp; Lee function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>, </em><em>float</em><em>]</em>) – Input value as numpy array, list, or float. Value usually in range [-0.5, 2.5]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input is empty or invalid</p></li>
+<li><p><strong>IndexError</strong> – If input array/list is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_gramacy_lee</span><span class="p">(</span><span class="mf">0.54</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">0.869011</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_gramacy_lee</span><span class="p">([</span><span class="mf">0.54</span><span class="p">])</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="go">0.869011</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="griewank-function">
+<h3>Griewank Function<a class="headerlink" href="#griewank-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.griewank.griewank">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.griewank.</span></span><span class="sig-name descname"><span class="pre">griewank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.griewank.griewank" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Griewank function value for optimization benchmarking.</p>
+<p>The Griewank function has many widespread local minima, which are regularly
+distributed. This function combines a quadratic term with a product of cosine
+terms, creating a complex landscape with numerous local optima. The function
+becomes more challenging as the dimensionality increases.</p>
+<p>The global minimum is located at [0, 0, …, 0] with a value of 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-600, 600]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">griewank</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.griewank.inverted_griewank">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.griewank.</span></span><span class="sig-name descname"><span class="pre">inverted_griewank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.griewank.inverted_griewank" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Griewank function value for maximization problems.</p>
+<p>This function returns the negative of the standard Griewank function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-600, 600]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_griewank</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="holder-table-function">
+<h3>Holder Table Function<a class="headerlink" href="#holder-table-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.holder_table.holder_table">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.holder_table.</span></span><span class="sig-name descname"><span class="pre">holder_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.holder_table.holder_table" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Holder Table function value for optimization benchmarking.</p>
+<p>This function is multimodal, with a number of local minima. It features
+trigonometric and exponential terms that create a complex landscape with
+multiple global minima. The function is particularly challenging due to
+its oscillatory behavior and multiple optimal solutions.</p>
+<p>The global minima are located at:
+- (8.05502, 9.66459)
+- (-8.05502, 9.66459)
+- (8.05502, -9.66459)
+- (-8.05502, -9.66459)
+All with a value of -19.2085.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Both elements usually in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">8.05502</span><span class="p">,</span> <span class="mf">9.66459</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">holder_table</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">-19.2085</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.holder_table.inverted_holder_table">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.holder_table.</span></span><span class="sig-name descname"><span class="pre">inverted_holder_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.holder_table.inverted_holder_table" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Holder Table function value for maximization problems.</p>
+<p>This function returns the negative of the standard Holder Table function,
+effectively converting the minimization problem into a maximization problem.
+The global maxima are at the same points as the original function’s minima,
+but with positive values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Both elements usually in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">8.05502</span><span class="p">,</span> <span class="mf">9.66459</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_holder_table</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">19.2085</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="langermann-function">
+<h3>Langermann Function<a class="headerlink" href="#langermann-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.langermann.langermann">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.langermann.</span></span><span class="sig-name descname"><span class="pre">langermann</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.langermann.langermann" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Langermann function value for optimization benchmarking.</p>
+<p>The Langermann function is a multimodal problem. It has a fairly large number of local minima,
+widely separated and regularly distributed. This function combines exponential and cosine terms
+to create a complex landscape with multiple local optima.</p>
+<p>This implementation is only for the two dimension version of the function using the values for a, c and m
+proposed by Molga &amp; Smutnicki (2005).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Both elements usually in range [0, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">langermann</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">1.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.langermann.inverted_langermann">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.langermann.</span></span><span class="sig-name descname"><span class="pre">inverted_langermann</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.langermann.inverted_langermann" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Langermann function value for maximization problems.</p>
+<p>This function returns the negative of the standard Langermann function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Both elements usually in range [0, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_langermann</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">-1.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="levy-function">
+<h3>Levy Function<a class="headerlink" href="#levy-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.levy">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">levy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.levy" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Levy function value for optimization benchmarking.</p>
+<p>The Levy function is a multimodal optimization test function with complex
+oscillatory behavior. It features trigonometric terms that create numerous
+local minima, making it challenging for optimization algorithms.</p>
+<p>The global minimum is at x = [1, 1, 1, …, 1] and the function value is 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Each element usually in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">levy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.inverted_levy">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">inverted_levy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.inverted_levy" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Levy function value for maximization problems.</p>
+<p>This function returns the negative of the standard Levy function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Each element usually in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_levy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.levy_function_no13">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">levy_function_no13</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.levy_function_no13" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Levy function N. 13 value for optimization benchmarking.</p>
+<p>This is a 2D variant of the Levy function with specific trigonometric terms.
+It features oscillatory behavior that creates multiple local minima, making
+it challenging for optimization algorithms.</p>
+<p>The global minimum is at x = [1, 1] and the function value is 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Both elements usually in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">levy_function_no13</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.levy.inverted_levy_no13">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.levy.</span></span><span class="sig-name descname"><span class="pre">inverted_levy_no13</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.levy.inverted_levy_no13" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Levy function N. 13 value for maximization problems.</p>
+<p>This function returns the negative of the standard Levy function N. 13,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Both elements usually in range [-10, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_levy_no13</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="rastrigin-function">
+<h3>Rastrigin Function<a class="headerlink" href="#rastrigin-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rastrigin.rastrigin">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rastrigin.</span></span><span class="sig-name descname"><span class="pre">rastrigin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rastrigin.rastrigin" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Rastrigin function value for optimization benchmarking.</p>
+<p>The Rastrigin function has several local minima. It is highly multimodal, but locations of the minima
+are regularly distributed. This function combines a quadratic term with cosine oscillations,
+creating a complex landscape with numerous local optima.</p>
+<p>The global minimum is at [0, 0, …, 0] with a value of 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-5.12, 5.12]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">rastrigin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rastrigin.inverted_rastrigin">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rastrigin.</span></span><span class="sig-name descname"><span class="pre">inverted_rastrigin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rastrigin.inverted_rastrigin" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Rastrigin function value for maximization problems.</p>
+<p>This function returns the negative of the standard Rastrigin function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-5.12, 5.12]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_rastrigin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="rosenbrock-function">
+<h3>Rosenbrock Function<a class="headerlink" href="#rosenbrock-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rosenbrock.rosenbrock">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rosenbrock.</span></span><span class="sig-name descname"><span class="pre">rosenbrock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rosenbrock.rosenbrock" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Rosenbrock function value for optimization benchmarking.</p>
+<p>The Rosenbrock function, also referred to as the Valley or Banana function,
+is a popular test problem for gradient-based optimization algorithms.</p>
+<p>The function is unimodal, and the global minimum lies in a narrow, parabolic valley.
+However, even though this valley is easy to find, convergence to the minimum is difficult (Picheny et al., 2012).</p>
+<p>The global minimum is at [1, 1, …, 1] with a value of 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-5, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.rosenbrock.inverted_rosenbrock">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.rosenbrock.</span></span><span class="sig-name descname"><span class="pre">inverted_rosenbrock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.rosenbrock.inverted_rosenbrock" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Rosenbrock function value for maximization problems.</p>
+<p>This function returns the negative of the standard Rosenbrock function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-5, 10]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_rosenbrock</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="schaffer-function">
+<h3>Schaffer Function<a class="headerlink" href="#schaffer-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.schaffer_function_no2">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">schaffer_function_no2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.schaffer_function_no2" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Schaffer function N. 2 value for optimization benchmarking.</p>
+<p>This function features trigonometric terms that create a complex landscape
+with oscillatory behavior. It is particularly challenging for optimization
+algorithms due to its multimodal nature.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(x) = 0.5 + \frac{\sin^2(x_1^2 - x_2^2) - 0.5}{[1 + 0.001(x_1^2 + x_2^2)]^2}\]</div>
+</div>
+<p>The global minimum is at x = [0, 0] with value 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Values usually in range [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">schaffer_function_no2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.inverted_schaffer_function_no2">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">inverted_schaffer_function_no2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no2" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Schaffer function N. 2 value for maximization problems.</p>
+<p>This function returns the negative of the standard Schaffer function N. 2,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Values usually in range [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_schaffer_function_no2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.schaffer_function_no4">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">schaffer_function_no4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.schaffer_function_no4" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Schaffer function N. 4 value for optimization benchmarking.</p>
+<p>This function features nested trigonometric terms that create a complex landscape
+with oscillatory behavior. It is particularly challenging for optimization
+algorithms due to its multimodal nature and asymmetric global minimum.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[f(x) = 0.5 + \frac{\cos^2(\sin(|x_1^2 - x_2^2|)) - 0.5}{[1 + 0.001(x_1^2 + x_2^2)]^2}\]</div>
+</div>
+<p>The global minimum is at x = [0, 1.253115] with value 0.292579.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Values usually in range [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.253115</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">schaffer_function_no4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.292579</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schaffer.inverted_schaffer_function_no4">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schaffer.</span></span><span class="sig-name descname"><span class="pre">inverted_schaffer_function_no4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schaffer.inverted_schaffer_function_no4" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Schaffer function N. 4 value for maximization problems.</p>
+<p>This function returns the negative of the standard Schaffer function N. 4,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>numpy.ndarray</em><em>, </em><em>list</em><em>]</em>) – Input vector with 2 elements. Values usually in range [-100, 100]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input doesn’t have exactly 2 elements</p></li>
+<li><p><strong>IndexError</strong> – If input is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.253115</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_schaffer_function_no4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">-0.292579</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="schwefel-function">
+<h3>Schwefel Function<a class="headerlink" href="#schwefel-function" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schwefel.schwefel">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schwefel.</span></span><span class="sig-name descname"><span class="pre">schwefel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schwefel.schwefel" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the Schwefel function value for optimization benchmarking.</p>
+<p>The Schwefel function is complex, with many local minima. It features
+trigonometric terms that create a challenging landscape for optimization
+algorithms. The function becomes more difficult as dimensionality increases.</p>
+<p>The global minimum is located at [420.9687, …, 420.9687] with a value of 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-500, 500]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">420.9687</span><span class="p">,</span> <span class="mf">420.9687</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">schwefel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.benchmark.optimization.schwefel.inverted_schwefel">
+<span class="sig-prename descclassname"><span class="pre">mango.benchmark.optimization.schwefel.</span></span><span class="sig-name descname"><span class="pre">inverted_schwefel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.benchmark.optimization.schwefel.inverted_schwefel" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverted Schwefel function value for maximization problems.</p>
+<p>This function returns the negative of the standard Schwefel function,
+effectively converting the minimization problem into a maximization problem.
+The global maximum is at the same point as the original function’s minimum,
+but with a positive value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em>) – Input vector with n elements. Values usually in range [-500, 500]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Negative function value at the given point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If input array is empty</p></li>
+<li><p><strong>IndexError</strong> – If input array is empty</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">420.9687</span><span class="p">,</span> <span class="mf">420.9687</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">inverted_schwefel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">0.000000</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="index.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Mango code</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="clients.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Clients</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></body>
+</html>

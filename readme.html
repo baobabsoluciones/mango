@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-accent-color="violet" data-content_root="">
+<html lang="en" data-accent-color="violet" data-content_root="./">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mango - mango 0.2.3 documentation</title><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Changelog" href="changelog.html" /><link rel="prev" title="Welcome to mango’s documentation!" href="index.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mango - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Changelogs" href="changelog/index.html" /><link rel="prev" title="Welcome to mango’s documentation!" href="index.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=301e5329" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=76b6f612" />
     <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@
       
       <strong>mango</strong>
     </a>
-    <div class="sy-head-nav" id="HeadNav">
+    <div class="sy-head-nav" id="head-nav">
       <nav class="sy-head-links"></nav>
       <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="search.html" method="get">
   <input type="text" name="q" placeholder="Search" />
@@ -40,7 +40,7 @@ data-aria-auto="Switch to light color mode"
 data-aria-light="Switch to dark color mode"
 data-aria-dark="Switch to auto color mode">
 <i class="i-lucide theme-icon"></i>
-</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
         <div class="hamburger">
           <span class="hamburger_1"></span>
           <span class="hamburger_2 -translate-x-2"></span>
@@ -57,43 +57,131 @@ data-aria-dark="Switch to auto color mode">
         <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Mango</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="genetic/index.html">Genetic Algorithms (GA)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="genetic/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/individual.html">Individual</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/population.html">Population</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/selection.html">Selection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/crossover.html">Crossover</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/mutation.html">Mutation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/replacement.html">Replacement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/stop.html">Stop conditions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/config.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#features">Features</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="dev/index.html">Code documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dev/benchmark.html">Benchmarks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/clients.html">Clients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/models.html">Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/processing.html">Processing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/table.html">Table</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/code.html">Genetic</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bib.html">Bibliography</a></li>
 </ul>
 
         </div>
-      </div></div>
+      </div>
+    </div>
   </aside>
   <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
   <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
     <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
       <i class="i-lucide close"></i>
     </button>
-    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#">Mango</a></li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
+<li><a class="reference internal" href="#discussion-and-development">Discussion and Development</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#support">Support</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
   <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
-  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
   <div class="sy-breadcrumbs-inner flex items-center">
     <div class="md:hidden mr-3">
       <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
@@ -119,13 +207,101 @@ data-aria-dark="Switch to auto color mode">
       <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
         <article class="yue" role="main">
           <section id="mango">
-<h1>Mango<a class="headerlink" href="#mango" title="Permalink to this heading">¶</a></h1>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/cornflow-client"><img alt="PyPI" src="https://img.shields.io/pypi/v/mango?label=version&amp;logo=python&amp;logoColor=white&amp;style=for-the-badge&amp;color=E58164" /></a>
-<a class="reference external image-reference" href="https://github.com/baobabsoluciones/cornflow/blob/master/LICENSE"><img alt="PyPI - License" src="https://img.shields.io/pypi/l/mango?color=blue&amp;style=for-the-badge" /></a>
-<a class="reference external image-reference" href="https://github.com/baobabsoluciones/cornflow/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/baobabsoluciones/mango/build_docs.yml?label=docs&amp;logo=github&amp;style=for-the-badge" /></a>
+<h1>Mango<a class="headerlink" href="#mango" title="Link to this heading">¶</a></h1>
+<a class="reference external image-reference" href="https://pypi.org/project/mango/"><img alt="PyPI" src="https://img.shields.io/pypi/v/mango?label=version&amp;logo=python&amp;logoColor=white&amp;style=for-the-badge&amp;color=E58164" /></a>
+<a class="reference external image-reference" href="https://github.com/baobabsoluciones/mango/blob/master/LICENSE"><img alt="PyPI - License" src="https://img.shields.io/pypi/l/mango?color=blue&amp;style=for-the-badge" /></a>
+<a class="reference external image-reference" href="https://github.com/baobabsoluciones/mango/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/baobabsoluciones/mango/build_docs.yml?label=docs&amp;logo=github&amp;style=for-the-badge" /></a>
 <a class="reference external image-reference" href="https://app.codecov.io/gh/baobabsoluciones/mango"><img alt="Codecov" src="https://img.shields.io/codecov/c/gh/baobabsoluciones/mango?flag=unit-tests&amp;label=coverage&amp;logo=codecov&amp;logoColor=white&amp;style=for-the-badge&amp;token=0KKRF3J95L" /></a>
-<p>This a library containing several modules developed by the team at baobab soluciones. These functions, classes and methods are based on their experience, understanding and knowledge of the Python language and its ecosystem.</p>
+<p>This repository contains multiple libraries developed by the team at Baobab Soluciones: <strong>mango</strong>, <strong>mango_autoencoder</strong>, <strong>mango_calendar</strong>, <strong>mango_dashboard</strong>, <strong>mango_genetic</strong>, and <strong>mango_time_series</strong>. These libraries are the result of the team’s experience, understanding, and knowledge of the Python language and its ecosystem.</p>
 <p>The functions are divided in different modules so even though everything is imported the dependencies can be installed only for the modules that are needed.</p>
+</section>
+<section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
+<p>The Mango ecosystem consists of specialized libraries for different domains:</p>
+<ul class="simple">
+<li><p><strong>mango</strong>: Data processing, analysis, machine learning workflows, and imputation of missing values</p></li>
+<li><p><strong>mango_autoencoder</strong>: Neural autoencoders for anomaly detection in time series</p></li>
+<li><p><strong>mango_calendar</strong>: Calendar data, holidays, and date-related features with holiday support</p></li>
+<li><p><strong>mango_dashboard</strong>: Interactive web applications including time series dashboards and a customizable file explorer app</p></li>
+<li><p><strong>mango_genetic</strong>: Genetic algorithms and evolutionary computation methods</p></li>
+<li><p><strong>mango_time_series</strong>: Comprehensive time series analysis, exploratory data analysis, and data processing utilities</p></li>
+</ul>
+<p>Each library is designed to work independently or as part of the integrated Mango ecosystem, providing flexibility in dependency management and usage.</p>
+</section>
+<section id="quick-start">
+<h1>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h1>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Data processing and imputation</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">mango</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Time series anomaly detection</span>
+</span><span data-line="5"><span class="kn">from</span><span class="w"> </span><span class="nn">mango_autoencoder</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoEncoder</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="c1"># Calendar and holiday data</span>
+</span><span data-line="8"><span class="kn">from</span><span class="w"> </span><span class="nn">mango_calendar</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_calendar</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="c1"># Genetic algorithms</span>
+</span><span data-line="11"><span class="kn">from</span><span class="w"> </span><span class="nn">mango_genetic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Population</span><span class="p">,</span> <span class="n">GeneticBaseConfig</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="c1"># Time series analysis</span>
+</span><span data-line="14"><span class="kn">from</span><span class="w"> </span><span class="nn">mango_time_series</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesAnalyzer</span>
+</span></pre></div>
+</div>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p><strong>Using uv:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>add<span class="w"> </span>mango
+</span><span data-line="2">uv<span class="w"> </span>add<span class="w"> </span>mango-autoencoder
+</span><span data-line="3">uv<span class="w"> </span>add<span class="w"> </span>mango-calendar
+</span><span data-line="4">uv<span class="w"> </span>add<span class="w"> </span>mango-dashboard
+</span><span data-line="5">uv<span class="w"> </span>add<span class="w"> </span>mango-genetic
+</span><span data-line="6">uv<span class="w"> </span>add<span class="w"> </span>mango-time-series
+</span></pre></div>
+</div>
+<p><strong>Using pip:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>mango
+</span><span data-line="2">pip<span class="w"> </span>install<span class="w"> </span>mango-autoencoder
+</span><span data-line="3">pip<span class="w"> </span>install<span class="w"> </span>mango-calendar
+</span><span data-line="4">pip<span class="w"> </span>install<span class="w"> </span>mango-dashboard
+</span><span data-line="5">pip<span class="w"> </span>install<span class="w"> </span>mango-genetic
+</span><span data-line="6">pip<span class="w"> </span>install<span class="w"> </span>mango-time-series
+</span></pre></div>
+</div>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
+<p>Full documentation is available at: <a class="reference external" href="https://mango.readthedocs.io/">https://mango.readthedocs.io/</a></p>
+<p>Individual library documentation:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://mango.readthedocs.io/en/latest/code_mango/index.html">Mango</a></p></li>
+<li><p><a class="reference external" href="https://mango.readthedocs.io/en/latest/code_autoencoder/index.html">Mango Autoencoder</a></p></li>
+<li><p><a class="reference external" href="https://mango.readthedocs.io/en/latest/code_mango_calendar/index.html">Mango Calendar</a></p></li>
+<li><p><a class="reference external" href="https://mango.readthedocs.io/en/latest/code_mango_dashboard/index.html">Mango Dashboard</a></p></li>
+<li><p><a class="reference external" href="https://mango.readthedocs.io/en/latest/code_mango_genetic/index.html">Mango Genetic</a></p></li>
+<li><p><a class="reference external" href="https://mango.readthedocs.io/en/latest/code_mango_time_series/index.html">Mango Time Series</a></p></li>
+</ul>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h2>
+<p>We welcome contributions! Please see our <a class="reference external" href="https://github.com/baobabsoluciones/mango/blob/master/CONTRIBUTING.rst">contributing guidelines</a> for more details.</p>
+</section>
+<section id="discussion-and-development">
+<h2>Discussion and Development<a class="headerlink" href="#discussion-and-development" title="Link to this heading">¶</a></h2>
+<p>We encourage open discussion and collaboration on development via GitHub issues. If you have ideas, suggestions, or encounter any issues, please feel free to open an issue on our <a class="reference external" href="https://github.com/baobabsoluciones/mango/issues">GitHub repository</a>.</p>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
+<p>This project is licensed under the MIT License - see the <a class="reference external" href="https://github.com/baobabsoluciones/mango/blob/master/LICENSE">LICENSE</a> file for details.</p>
+</section>
+</section>
+<section id="support">
+<h1>Support<a class="headerlink" href="#support" title="Link to this heading">¶</a></h1>
+<p>For questions, issues, or contributions, please contact:</p>
+<ul class="simple">
+<li><p>Email: <a class="reference external" href="mailto:mango&#37;&#52;&#48;baobabsoluciones&#46;es">mango<span>&#64;</span>baobabsoluciones<span>&#46;</span>es</a></p></li>
+<li><p>Create an issue on the repository</p></li>
+</ul>
+<p>—</p>
+<p>Made with ❤️ by <a class="reference external" href="mailto:mango&#37;&#52;&#48;baobabsoluciones&#46;es">baobab soluciones</a></p>
 </section>
 
         </article><button class="back-to-top" type="button">
@@ -140,10 +316,10 @@ data-aria-dark="Switch to auto color mode">
         <span>Previous</span><div class="title">Home</div></div>
     </a>
   </div><div class="navigation-next">
-    <a href="changelog.html">
+    <a href="changelog/index.html">
       <div class="page-info">
         <span>Next</span>
-        <div class="title">Changelog</div>
+        <div class="title">Changelogs</div>
       </div>
       <i class="i-lucide chevron-right"></i>
     </a>
@@ -168,8 +344,8 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </footer>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=860ec0ee"></script>
+      <script src="_static/documentation_options.js?v=072b7ed8"></script>
       <script src="_static/doctools.js?v=888ff710"></script>
-      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="_static/shibuya.js?v=3cc430e2"></script></body>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/shibuya.js?v=c477d091"></script></body>
 </html>

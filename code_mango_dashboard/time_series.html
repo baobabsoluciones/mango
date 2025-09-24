@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Time Series Dashboard - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Mango genetic" href="../code_mango_genetic/index.html" /><link rel="prev" title="File Explorer Dashboard" href="file_explorer.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Time Series Dashboard"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango dashboard</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#main-application">Main Application</a><ul>
+<li><a class="reference internal" href="#time-series-app">Time Series App</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_app.interface_visualization"><code class="docutils literal notranslate"><span class="pre">interface_visualization()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utility-components">Utility Components</a><ul>
+<li><a class="reference internal" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.data_loader">Data Loading and Processing</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_loader.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.aggregate_to_input_cache"><code class="docutils literal notranslate"><span class="pre">aggregate_to_input_cache()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.convert_df"><code class="docutils literal notranslate"><span class="pre">convert_df()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.calculate_horizon"><code class="docutils literal notranslate"><span class="pre">calculate_horizon()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.process_data"><code class="docutils literal notranslate"><span class="pre">process_data()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.calculate_min_diff_per_window"><code class="docutils literal notranslate"><span class="pre">calculate_min_diff_per_window()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.render_script"><code class="docutils literal notranslate"><span class="pre">render_script()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.file_uploader">File Management</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.preview_data"><code class="docutils literal notranslate"><span class="pre">preview_data()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.upload_files"><code class="docutils literal notranslate"><span class="pre">upload_files()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.manage_files"><code class="docutils literal notranslate"><span class="pre">manage_files()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.ui_components">User Interface Components</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.select_series"><code class="docutils literal notranslate"><span class="pre">select_series()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_time_series"><code class="docutils literal notranslate"><span class="pre">plot_time_series()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.setup_sidebar"><code class="docutils literal notranslate"><span class="pre">setup_sidebar()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_forecast"><code class="docutils literal notranslate"><span class="pre">plot_forecast()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_error_visualization"><code class="docutils literal notranslate"><span class="pre">plot_error_visualization()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.pad_to_end_of_year"><code class="docutils literal notranslate"><span class="pre">pad_to_end_of_year()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.constants">Configuration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango dashboard</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Time Series Dashboard</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="time-series-dashboard">
+<h1>Time Series Dashboard<a class="headerlink" href="#time-series-dashboard" title="Link to this heading">¶</a></h1>
+<p>The Time Series Dashboard provides a comprehensive web-based interface for time series analysis, visualization, and forecasting. It offers advanced analytical capabilities with an intuitive user interface for exploring temporal data patterns and generating predictions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This dashboard is currently under active development. Some features may be experimental or subject to change. If you encounter any issues or have suggestions, please open an issue in the <a class="reference external" href="https://github.com/baobabsoluciones/mango">GitHub repository</a>.</p>
+</div>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Multi-language Support</strong>: Available in English and Spanish</p></li>
+<li><p><strong>Data Upload</strong>: Support for CSV and Excel file formats with custom parsing options</p></li>
+<li><p><strong>Interactive Visualizations</strong>: Multiple plot types including original series, STL decomposition, lag analysis, and seasonality analysis</p></li>
+<li><p><strong>Automated Forecasting</strong>: Integration with StatsForecast for time series predictions</p></li>
+<li><p><strong>Cross-validation</strong>: Built-in model validation and error analysis</p></li>
+<li><p><strong>Model Comparison</strong>: Compare multiple forecasting models with performance metrics</p></li>
+<li><p><strong>Export Capabilities</strong>: Download results and generated code templates</p></li>
+<li><p><strong>Experimental Features</strong>: Advanced analysis tools (toggleable)</p></li>
+</ul>
+</section>
+<section id="main-application">
+<h2>Main Application<a class="headerlink" href="#main-application" title="Link to this heading">¶</a></h2>
+<section id="time-series-app">
+<h3>Time Series App<a class="headerlink" href="#time-series-app" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_app.interface_visualization">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_app.</span></span><span class="sig-name descname"><span class="pre">interface_visualization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logo_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experimental_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_app.interface_visualization" title="Link to this definition">¶</a></dt>
+<dd><p>Main interface for the comprehensive time series visualization and forecasting dashboard.</p>
+<p>This function creates a complete Streamlit-based dashboard for time series analysis,
+including data upload, visualization, and forecasting capabilities. It provides
+a multilingual interface (English/Spanish) with advanced features for time series
+exploration and model training.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Multi-language support (English/Spanish)</p></li>
+<li><p>File upload and management (CSV/Excel)</p></li>
+<li><p>Interactive time series visualization</p></li>
+<li><p>Multiple plot types (original, STL, lag analysis, seasonality, periodogram)</p></li>
+<li><p>Automated forecasting with StatsForecast</p></li>
+<li><p>Cross-validation and error analysis</p></li>
+<li><p>Model comparison and performance metrics</p></li>
+<li><p>Data export capabilities</p></li>
+<li><p>Experimental features toggle</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>project_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the project to display in the dashboard title</p></li>
+<li><p><strong>logo_url</strong> (<em>str</em><em>, </em><em>optional</em>) – URL or file path to the project logo (currently disabled)</p></li>
+<li><p><strong>experimental_features</strong> (<em>bool</em><em>, </em><em>optional</em>) – Flag to enable experimental visualization features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None (creates Streamlit dashboard interface)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">interface_visualization</span><span class="p">(</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">project_name</span><span class="o">=</span><span class="s2">&quot;Sales Analysis&quot;</span><span class="p">,</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">experimental_features</span><span class="o">=</span><span class="kc">True</span>
+</span><span data-line="4"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="5"><span class="go"># Creates interactive time series dashboard</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="utility-components">
+<h2>Utility Components<a class="headerlink" href="#utility-components" title="Link to this heading">¶</a></h2>
+<section id="module-mango_dashboard.time_series.dashboards.time_series_utils.data_loader">
+<span id="data-loading-and-processing"></span><h3>Data Loading and Processing<a class="headerlink" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.data_loader" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.data_loader.load_data">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.data_loader.</span></span><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files_loaded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_loader.load_data" title="Link to this definition">¶</a></dt>
+<dd><p>Load and process data from uploaded files for time series visualization.</p>
+<p>This function processes multiple data files and determines the appropriate
+visualization type based on the data structure. It handles both forecast
+data (with ‘forecast_origin’ and ‘f’ columns) and exploration data.
+For forecast data, it calculates error metrics including absolute error,
+percentage error, and their absolute values.</p>
+<p>The function concatenates all dataframes and ensures consistency in
+visualization types across all loaded files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files_loaded</strong> (<em>Dict</em>) – Dictionary mapping file names to their loaded data</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text and visualization options</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing the concatenated dataframe and visualization type</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[pd.DataFrame, str]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If files have inconsistent visualization types</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;data1.csv&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">df1</span><span class="p">},</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;data2.csv&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">df2</span><span class="p">}</span>
+</span><span data-line="4"><span class="gp">... </span><span class="p">}</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">ui_text</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="s1">&#39;visualization_options&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Exploration&#39;</span><span class="p">,</span> <span class="s1">&#39;Forecast&#39;</span><span class="p">]</span>
+</span><span data-line="7"><span class="gp">... </span><span class="p">}</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">viz_type</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">)</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Visualization type: </span><span class="si">{</span><span class="n">viz_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="10"><span class="go">Visualization type: Exploration</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function" id="module-mango_dashboard.time_series.dashboards.time_series_utils.data_processing">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.data_processing.aggregate_to_input_cache">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.data_processing.</span></span><span class="sig-name descname"><span class="pre">aggregate_to_input_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_conf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.aggregate_to_input_cache" title="Link to this definition">¶</a></dt>
+<dd><p>Cache wrapper for aggregate_to_input function.</p>
+<p>This function provides caching for the aggregate_to_input operation
+to improve performance when processing time series data repeatedly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – Time series data to aggregate</p></li>
+<li><p><strong>freq</strong> (<em>str</em>) – Frequency for aggregation</p></li>
+<li><p><strong>series_conf</strong> (<em>dict</em>) – Configuration for series aggregation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Aggregated time series data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.data_processing.convert_df">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.data_processing.</span></span><span class="sig-name descname"><span class="pre">convert_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.convert_df" title="Link to this definition">¶</a></dt>
+<dd><p>Convert DataFrame to CSV format with UTF-8 encoding.</p>
+<p>This function converts a pandas DataFrame to CSV format and encodes it
+as UTF-8 bytes. The result is cached to prevent repeated computation
+on every Streamlit rerun.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – DataFrame to convert to CSV</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>CSV data encoded as UTF-8 bytes</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.data_processing.calculate_horizon">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.data_processing.</span></span><span class="sig-name descname"><span class="pre">calculate_horizon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.calculate_horizon" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the forecast horizon based on the selected frequency.</p>
+<p>This function calculates the forecast horizon (h) by computing the time
+difference between the forecast datetime and the forecast origin.
+The calculation method depends on the frequency:
+- Hourly (h): Difference in hours
+- Daily (D): Difference in days
+- Weekly (W): Difference in weeks
+- Monthly (MS): Difference in months
+- Quarterly (QE): Difference in quarters
+- Yearly (YE): Difference in years</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – DataFrame with forecast data containing ‘datetime’ and ‘forecast_origin’ columns</p></li>
+<li><p><strong>freq</strong> (<em>str</em>) – Frequency code for horizon calculation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with added ‘h’ column containing horizon values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the frequency is not supported</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;datetime&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;2023-01-02&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-03&#39;</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;forecast_origin&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-01&#39;</span><span class="p">]</span>
+</span><span data-line="4"><span class="gp">... </span><span class="p">})</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">calculate_horizon</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+</span><span data-line="7"><span class="go">[1, 2]</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.data_processing.process_data">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.data_processing.</span></span><span class="sig-name descname"><span class="pre">process_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_agr_tmp_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_agr_tmp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.process_data" title="Link to this definition">¶</a></dt>
+<dd><p>Process input data for time series analysis and visualization.</p>
+<p>This function processes time series data based on the selected visualization
+type (exploration or forecast). It handles data aggregation, datetime conversion,
+and prepares data for both time series analysis and forecast evaluation.</p>
+<p>For exploration mode, it returns aggregated time series data.
+For forecast mode, it additionally processes forecast data with error metrics
+and calculates forecast horizons.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – Input DataFrame containing time series data</p></li>
+<li><p><strong>columns_id</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of column names to use as identifiers</p></li>
+<li><p><strong>select_agr_tmp_dict</strong> (<em>Dict</em>) – Dictionary mapping aggregation options to frequency codes</p></li>
+<li><p><strong>select_agr_tmp</strong> (<em>str</em>) – Selected aggregation option key</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text and visualization options</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing (time_series_data, forecast_data)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[pd.DataFrame, pd.DataFrame | None]</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;datetime&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-02&#39;</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">110</span><span class="p">],</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">,</span> <span class="s1">&#39;model1&#39;</span><span class="p">]</span>
+</span><span data-line="5"><span class="gp">... </span><span class="p">})</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">time_series</span><span class="p">,</span> <span class="n">forecast</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">(</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="p">{</span><span class="s1">&#39;daily&#39;</span><span class="p">:</span> <span class="s1">&#39;D&#39;</span><span class="p">},</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">ui_text</span>
+</span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.data_processing.calculate_min_diff_per_window">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.data_processing.</span></span><span class="sig-name descname"><span class="pre">calculate_min_diff_per_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.calculate_min_diff_per_window" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the minimum time difference between consecutive timestamps.</p>
+<p>This function calculates the minimum time difference between consecutive
+timestamps in a time series. It handles different time scales automatically:
+- For differences &gt;= 28 days, it uses day-based calculation
+- For smaller differences, it uses second-based calculation converted to days</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pd.DataFrame</em>) – DataFrame containing a ‘datetime’ column with timestamps</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Minimum time difference in days (or days for large differences)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;datetime&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-02&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-05&#39;</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">... </span><span class="p">})</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">min_diff</span> <span class="o">=</span> <span class="n">calculate_min_diff_per_window</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">min_diff</span><span class="p">)</span>
+</span><span data-line="6"><span class="go">1.0</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.data_processing.render_script">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.data_processing.</span></span><span class="sig-name descname"><span class="pre">render_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_windows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.data_processing.render_script" title="Link to this definition">¶</a></dt>
+<dd><p>Render a Python script from a Jinja2 template for forecast generation.</p>
+<p>This function generates a Python script by rendering a Jinja2 template
+with the provided parameters. The template is used to create forecast
+generation scripts with the specified models, horizon, and configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>models</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of model names to include in the script</p></li>
+<li><p><strong>horizon</strong> (<em>int</em>) – Forecast horizon (number of periods to forecast)</p></li>
+<li><p><strong>step_size</strong> (<em>int</em>) – Step size for rolling window forecasts</p></li>
+<li><p><strong>n_windows</strong> (<em>int</em>) – Number of forecast windows</p></li>
+<li><p><strong>freq_code</strong> (<em>str</em>) – Frequency code for the time series</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Rendered Python script as a string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">script</span> <span class="o">=</span> <span class="n">render_script</span><span class="p">(</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ARIMA&#39;</span><span class="p">,</span> <span class="s1">&#39;Prophet&#39;</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">horizon</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="n">step_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+</span><span data-line="5"><span class="gp">... </span>    <span class="n">n_windows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">freq_code</span><span class="o">=</span><span class="s1">&#39;D&#39;</span>
+</span><span data-line="7"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">script</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
+</span><span data-line="9"><span class="go"># Generated forecast script...</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango_dashboard.time_series.dashboards.time_series_utils.file_uploader">
+<span id="file-management"></span><h3>File Management<a class="headerlink" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.file_uploader" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.preview_data">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.</span></span><span class="sig-name descname"><span class="pre">preview_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uploaded_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thousands</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.preview_data" title="Link to this definition">¶</a></dt>
+<dd><p>Preview data from an uploaded file with specified parsing parameters.</p>
+<p>This function displays a preview of the uploaded file data using the
+specified parsing parameters. It handles CSV files with custom separators,
+decimal/thousands separators, encoding, and date formats. Automatically
+converts datetime columns if they exist in the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uploaded_file</strong> (<em>UploadedFile</em>) – The uploaded file object from Streamlit</p></li>
+<li><p><strong>separator</strong> (<em>str</em>) – Field separator used in the CSV file</p></li>
+<li><p><strong>decimal</strong> (<em>str</em>) – Decimal separator for numeric values</p></li>
+<li><p><strong>thousands</strong> (<em>str</em>) – Thousands separator for numeric values</p></li>
+<li><p><strong>encoding</strong> (<em>str</em>) – Text encoding of the file</p></li>
+<li><p><strong>date_format</strong> (<em>str</em>) – Date format for datetime parsing</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">preview_data</span><span class="p">(</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">uploaded_file</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ui_text</span>
+</span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="4"><span class="go"># Displays preview of the uploaded data</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.upload_files">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.</span></span><span class="sig-name descname"><span class="pre">upload_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.upload_files" title="Link to this definition">¶</a></dt>
+<dd><p>Upload and configure multiple files for time series analysis.</p>
+<p>This function provides a file upload interface that allows users to upload
+CSV and Excel files with custom parsing parameters. It creates a form-based
+interface for configuring file-specific settings like separators, encoding,
+and date formats. Automatically handles model column detection and creation.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Support for CSV and Excel files</p></li>
+<li><p>Custom parsing parameters per file</p></li>
+<li><p>Automatic datetime column detection and conversion</p></li>
+<li><p>Model column auto-creation if missing</p></li>
+<li><p>Form-based configuration interface</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text labels and messages</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing (files_loaded_dict, no_model_column_flag)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[Dict, bool]</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">files_loaded</span><span class="p">,</span> <span class="n">no_model</span> <span class="o">=</span> <span class="n">upload_files</span><span class="p">(</span><span class="n">ui_text</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files_loaded</span><span class="p">)</span><span class="si">}</span><span class="s2"> files&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">Loaded 3 files</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.manage_files">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.</span></span><span class="sig-name descname"><span class="pre">manage_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files_loaded</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.file_uploader.manage_files" title="Link to this definition">¶</a></dt>
+<dd><p>Manage and update previously uploaded files.</p>
+<p>This function provides a management interface in the sidebar for updating
+or removing previously uploaded files. Users can modify file names, parsing
+parameters, and remove files from the analysis. Changes are applied
+immediately and trigger a Streamlit rerun.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>File name editing</p></li>
+<li><p>Parsing parameter updates (for CSV files)</p></li>
+<li><p>File removal functionality</p></li>
+<li><p>Automatic session state updates</p></li>
+<li><p>Model column synchronization</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files_loaded</strong> (<em>Dict</em>) – Dictionary of currently loaded files with their configurations</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text labels and messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None (updates session state directly)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">manage_files</span><span class="p">(</span><span class="n">files_loaded</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">)</span>
+</span><span data-line="2"><span class="go"># Updates files in sidebar with management options</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango_dashboard.time_series.dashboards.time_series_utils.ui_components">
+<span id="user-interface-components"></span><h3>User Interface Components<a class="headerlink" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.ui_components" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.ui_components.select_series">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.ui_components.</span></span><span class="sig-name descname"><span class="pre">select_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.select_series" title="Link to this definition">¶</a></dt>
+<dd><p>Create a sidebar interface for selecting time series based on specified columns.</p>
+<p>This function creates a cascading selection interface in the sidebar where users
+can filter time series data by selecting values from specified columns. Each
+column creates a selectbox that filters the data progressively, allowing for
+hierarchical selection of specific time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – DataFrame containing the time series data with filtering columns</p></li>
+<li><p><strong>columns</strong> (<em>List</em>) – List of column names to use for filtering the series</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text labels and messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing the selected values for each column</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">selected</span> <span class="o">=</span> <span class="n">select_series</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">],</span> <span class="n">ui_text</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">{&#39;region&#39;: &#39;North&#39;, &#39;product&#39;: &#39;Widget A&#39;}</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_time_series">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.ui_components.</span></span><span class="sig-name descname"><span class="pre">plot_time_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_agr_tmp_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_agr_tmp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns_id_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experimental_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_time_series" title="Link to this definition">¶</a></dt>
+<dd><p>Create interactive time series visualizations with multiple plot types.</p>
+<p>This function provides a comprehensive plotting interface for time series analysis,
+offering six different visualization types:</p>
+<ol class="arabic simple">
+<li><p><strong>Original Series</strong>: Basic line plots with date range selection</p></li>
+<li><p><strong>Series by Year</strong>: Yearly comparisons with multi-year selection</p></li>
+<li><p><strong>STL Decomposition</strong>: Seasonal and Trend decomposition using Loess</p></li>
+<li><p><strong>Lag Analysis</strong>: ACF and PACF plots for autocorrelation analysis</p></li>
+<li><p><strong>Seasonality Boxplots</strong>: Distribution analysis by time periods</p></li>
+<li><p><strong>Periodogram</strong>: Frequency domain analysis for seasonality detection</p></li>
+</ol>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Interactive date range selection</p></li>
+<li><p>Multiple series comparison with scaling options</p></li>
+<li><p>Automatic seasonality detection</p></li>
+<li><p>Experimental features toggle</p></li>
+<li><p>Responsive plot layouts</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_series</strong> (<em>pd.DataFrame</em>) – DataFrame containing time series data with datetime and y columns</p></li>
+<li><p><strong>selected_series</strong> (<em>List</em>) – List of selected series dictionaries for plotting</p></li>
+<li><p><strong>select_agr_tmp_dict</strong> (<em>Dict</em>) – Dictionary mapping temporal grouping to pandas frequency strings</p></li>
+<li><p><strong>select_agr_tmp</strong> (<em>str</em>) – Selected temporal aggregation option</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text labels and messages</p></li>
+<li><p><strong>columns_id_name</strong> (<em>str</em>) – Name of the column containing series identifiers</p></li>
+<li><p><strong>experimental_features</strong> (<em>bool</em>) – Flag to enable experimental visualization features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None (displays plots in Streamlit interface)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_time_series</span><span class="p">(</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">time_series</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">freq_dict</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="kc">True</span>
+</span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="4"><span class="go"># Displays interactive time series plots</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.ui_components.setup_sidebar">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.ui_components.</span></span><span class="sig-name descname"><span class="pre">setup_sidebar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns_id_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.setup_sidebar" title="Link to this definition">¶</a></dt>
+<dd><p>Set up the main sidebar interface for time series analysis dashboard.</p>
+<p>This function creates the primary navigation and configuration interface in the
+sidebar, including visualization mode selection, temporal grouping options,
+and series selection management. It automatically determines available temporal
+aggregations based on data frequency and manages series selection state.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Visualization mode selection (time series vs forecast analysis)</p></li>
+<li><p>Dynamic temporal grouping based on data frequency</p></li>
+<li><p>Series selection and management interface</p></li>
+<li><p>Automatic forecast mode detection</p></li>
+<li><p>Session state management for selections</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_series</strong> (<em>pd.DataFrame</em>) – DataFrame containing time series data with datetime column</p></li>
+<li><p><strong>columns_id</strong> (<em>List</em>) – List of column names to use as series identifiers</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text labels and messages</p></li>
+<li><p><strong>columns_id_name</strong> (<em>str</em>) – Name of the primary identifier column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing (temporal_grouping, visualization_mode, available_options, selected_series)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[str, str, List, List]</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">grouping</span><span class="p">,</span> <span class="n">viz_mode</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">series</span> <span class="o">=</span> <span class="n">setup_sidebar</span><span class="p">(</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">time_series</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">],</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span>
+</span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected grouping: </span><span class="si">{</span><span class="n">grouping</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">Selected grouping: daily</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_forecast">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.ui_components.</span></span><span class="sig-name descname"><span class="pre">plot_forecast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forecast</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns_id_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_forecast" title="Link to this definition">¶</a></dt>
+<dd><p>Create interactive forecast visualization plots with error analysis.</p>
+<p>This function generates comprehensive forecast plots showing both actual and
+predicted values with detailed error metrics. It supports multiple models
+comparison and provides interactive date selection for forecast origin analysis.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Interactive forecast origin date selection</p></li>
+<li><p>Multiple model comparison with color coding</p></li>
+<li><p>Detailed hover information with error metrics</p></li>
+<li><p>Weekday information display</p></li>
+<li><p>Automatic legend and label management</p></li>
+<li><p>Error calculation and display</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forecast</strong> (<em>pd.DataFrame</em>) – DataFrame containing forecast data with y, f, and error columns</p></li>
+<li><p><strong>selected_series</strong> (<em>List</em>) – List of selected series dictionaries for plotting</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em>) – Dictionary containing UI text labels and messages</p></li>
+<li><p><strong>columns_id_name</strong> (<em>str</em>) – Name of the column containing series identifiers</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None (displays forecast plots in Streamlit interface)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_forecast</span><span class="p">(</span><span class="n">forecast_data</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;series_id&#39;</span><span class="p">)</span>
+</span><span data-line="2"><span class="go"># Displays interactive forecast plots with error analysis</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_error_visualization">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.ui_components.</span></span><span class="sig-name descname"><span class="pre">plot_error_visualization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forecast</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns_id_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.plot_error_visualization" title="Link to this definition">¶</a></dt>
+<dd><p>Create comprehensive error analysis visualizations for forecast evaluation.</p>
+<p>This function provides detailed error analysis through multiple visualization
+types and statistical summaries. It includes filtering capabilities, model
+comparison, and various error distribution analyses.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Dual filtering (datetime and forecast origin ranges)</p></li>
+<li><p>Top 10 error identification by model</p></li>
+<li><p>Statistical summaries (mean/median errors and percentiles)</p></li>
+<li><p>Multiple plot types: box plots, scatter plots, horizon analysis</p></li>
+<li><p>Model performance ranking</p></li>
+<li><p>Interactive percentile selection</p></li>
+<li><p>Temporal aggregation options</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>forecast</strong> (<em>pd.DataFrame</em>) – DataFrame containing forecast data with error metrics</p></li>
+<li><p><strong>selected_series</strong> (<em>List</em>) – List of selected series dictionaries for analysis</p></li>
+<li><p><strong>ui_text</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – Dictionary containing UI text labels and messages</p></li>
+<li><p><strong>freq</strong> (<em>str</em><em>, </em><em>optional</em>) – Frequency string for time series (e.g., ‘D’, ‘H’, ‘M’)</p></li>
+<li><p><strong>columns_id_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the column containing series identifiers</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None (displays error analysis in Streamlit interface)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_error_visualization</span><span class="p">(</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">forecast_data</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;series_id&#39;</span>
+</span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="4"><span class="go"># Displays comprehensive error analysis dashboard</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_dashboard.time_series.dashboards.time_series_utils.ui_components.pad_to_end_of_year">
+<span class="sig-prename descclassname"><span class="pre">mango_dashboard.time_series.dashboards.time_series_utils.ui_components.</span></span><span class="sig-name descname"><span class="pre">pad_to_end_of_year</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.time_series.dashboards.time_series_utils.ui_components.pad_to_end_of_year" title="Link to this definition">¶</a></dt>
+<dd><p>Pad DataFrame with null values to extend data until the end of the specified year.</p>
+<p>This utility function extends a time series DataFrame by adding null values
+from the last available date to December 31st of the specified year. This
+is useful for creating consistent yearly visualizations where some series
+may end before the year’s end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – DataFrame with datetime column to be padded</p></li>
+<li><p><strong>year</strong> (<em>int</em>) – Year to pad until (integer)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame extended with null values until end of year</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df_padded</span> <span class="o">=</span> <span class="n">pad_to_end_of_year</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="mi">2023</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df_padded</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</span><span data-line="3"><span class="go">2023-12-31 23:59:59</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango_dashboard.time_series.dashboards.time_series_utils.constants">
+<span id="configuration"></span><h3>Configuration<a class="headerlink" href="#module-mango_dashboard.time_series.dashboards.time_series_utils.constants" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>The Time Series Dashboard can be launched using Streamlit:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">streamlit<span class="w"> </span>run<span class="w"> </span>mango_dashboard/time_series/dashboards/time_series_app.py
+</span></pre></div>
+</div>
+</section>
+<section id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading">¶</a></h2>
+<p>The dashboard can be configured using the following environment variables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TS_DASHBOARD_PROJECT_NAME</span></code>: Set the project name displayed in the dashboard</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TS_DASHBOARD_EXPERIMENTAL_FEATURES</span></code>: Enable experimental features (true/false)</p></li>
+</ul>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="file_explorer.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">File Explorer Dashboard</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../code_mango_genetic/index.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Mango genetic</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

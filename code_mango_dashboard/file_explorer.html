@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>File Explorer Dashboard - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Time Series Dashboard" href="time_series.html" /><link rel="prev" title="Mango dashboard" href="index.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="File Explorer Dashboard"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango dashboard</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#main-components">Main Components</a><ul>
+<li><a class="reference internal" href="#file-explorer-app">File Explorer App</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_app.FileExplorerApp"><code class="docutils literal notranslate"><span class="pre">FileExplorerApp</span></code></a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_app.FileExplorerApp.run"><code class="docutils literal notranslate">run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#file-explorer-handlers">File Explorer Handlers</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler"><code class="docutils literal notranslate"><span class="pre">FileExplorerHandler</span></code></a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.is_dir"><code class="docutils literal notranslate">is_dir()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.path_exists"><code class="docutils literal notranslate">path_exists()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.get_file_or_folder_paths"><code class="docutils literal notranslate">get_file_or_folder_paths()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_img"><code class="docutils literal notranslate">read_img()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_markdown"><code class="docutils literal notranslate">read_markdown()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_json"><code class="docutils literal notranslate">read_json()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.write_json_fe"><code class="docutils literal notranslate">write_json_fe()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_html"><code class="docutils literal notranslate">read_html()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#local-file-system-handler">Local File System Handler</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler"><code class="docutils literal notranslate"><span class="pre">LocalFileExplorerHandler</span></code></a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.is_dir"><code class="docutils literal notranslate">is_dir()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.path_exists"><code class="docutils literal notranslate">path_exists()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.get_file_or_folder_paths"><code class="docutils literal notranslate">get_file_or_folder_paths()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_img"><code class="docutils literal notranslate">read_img()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_markdown"><code class="docutils literal notranslate">read_markdown()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_json"><code class="docutils literal notranslate">read_json()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.write_json_fe"><code class="docutils literal notranslate">write_json_fe()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_html"><code class="docutils literal notranslate">read_html()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#google-cloud-storage-handler">Google Cloud Storage Handler</a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler"><code class="docutils literal notranslate"><span class="pre">GCPFileExplorerHandler</span></code></a><ul>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.is_dir"><code class="docutils literal notranslate">is_dir()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.path_exists"><code class="docutils literal notranslate">path_exists()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.get_file_or_folder_paths"><code class="docutils literal notranslate">get_file_or_folder_paths()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_img"><code class="docutils literal notranslate">read_img()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_markdown"><code class="docutils literal notranslate">read_markdown()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_json"><code class="docutils literal notranslate">read_json()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.write_json_fe"><code class="docutils literal notranslate">write_json_fe()</span></code></a></li>
+<li><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_html"><code class="docutils literal notranslate">read_html()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango dashboard</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">File Explorer Dashboard</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="file-explorer-dashboard">
+<h1>File Explorer Dashboard<a class="headerlink" href="#file-explorer-dashboard" title="Link to this heading">¶</a></h1>
+<p>The File Explorer Dashboard provides an interactive web interface for browsing, managing, and analyzing files from both local file systems and Google Cloud Storage. It offers a comprehensive file management solution with visualization capabilities.</p>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Multi-source Support</strong>: Browse files from local directories and Google Cloud Storage</p></li>
+<li><p><strong>File Type Support</strong>: Handle various file formats including images, markdown, JSON, and HTML</p></li>
+<li><p><strong>Interactive Tree View</strong>: Navigate through directory structures with an intuitive tree interface</p></li>
+<li><p><strong>File Preview</strong>: Preview content of supported file types directly in the browser</p></li>
+<li><p><strong>Configuration Management</strong>: Save and load dashboard configurations</p></li>
+<li><p><strong>Responsive Design</strong>: Optimized for different screen sizes</p></li>
+</ul>
+</section>
+<section id="main-components">
+<h2>Main Components<a class="headerlink" href="#main-components" title="Link to this heading">¶</a></h2>
+<section id="file-explorer-app">
+<h3>File Explorer App<a class="headerlink" href="#file-explorer-app" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_app.FileExplorerApp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_dashboard.file_explorer.dashboards.file_explorer_app.</span></span><span class="sig-name descname"><span class="pre">FileExplorerApp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">editable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler" title="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler"><span class="pre">FileExplorerHandler</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_app.FileExplorerApp" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A Streamlit-based file explorer application.</p>
+<p>This class provides a web-based interface for exploring and managing files
+and directories. It supports various file formats including CSV, Excel, JSON,
+images, HTML plots, and Markdown files. The application can work with both
+local file systems and Google Cloud Storage.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Interactive file browsing with tree view</p></li>
+<li><p>File content preview and editing</p></li>
+<li><p>Support for multiple file formats</p></li>
+<li><p>Configurable layout and display options</p></li>
+<li><p>Integration with GCP storage</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_app.FileExplorerApp.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_app.FileExplorerApp.run" title="Link to this definition">¶</a></dt>
+<dd><p>Run the complete Streamlit file explorer application.</p>
+<p>Main entry point that orchestrates the rendering of all application
+components in the correct order: header, configuration sidebar,
+folder tree, and main content area. Handles error cases gracefully
+with appropriate user feedback.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="file-explorer-handlers">
+<h3>File Explorer Handlers<a class="headerlink" href="#file-explorer-handlers" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_dashboard.file_explorer.dashboards.file_explorer_handlers.</span></span><span class="sig-name descname"><span class="pre">FileExplorerHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for file exploration handlers.</p>
+<p>This class defines the interface that all file handlers must implement.
+It provides abstract methods for common file operations including directory
+checking, path validation, file reading, and JSON writing.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>_path (str): The base path for file operations.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.is_dir">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.is_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the given path is a directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the path is a directory, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.path_exists">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.path_exists" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the given path exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the path exists, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.get_file_or_folder_paths">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_file_or_folder_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.get_file_or_folder_paths" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of file or folder paths within the specified directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The directory path to search in</p></li>
+<li><p><strong>element_type</strong> (<em>str</em>) – Type of elements to return (‘file’ or ‘folder’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of file or folder paths</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If element_type is not ‘file’ or ‘folder’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_img">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_img" title="Link to this definition">¶</a></dt>
+<dd><p>Read an image file from the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the image file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded image object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PIL.Image.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_markdown">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_markdown" title="Link to this definition">¶</a></dt>
+<dd><p>Read a markdown file from the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the markdown file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The content of the markdown file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_json">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_json" title="Link to this definition">¶</a></dt>
+<dd><p>Read a JSON file from the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the JSON file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The parsed JSON data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.write_json_fe">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_json_fe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.write_json_fe" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to a JSON file at the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The path where to write the JSON file</p></li>
+<li><p><strong>data</strong> (<em>dict</em>) – The data to write to the JSON file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_html">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler.read_html" title="Link to this definition">¶</a></dt>
+<dd><p>Read an HTML file from the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The path to the HTML file</p></li>
+<li><p><strong>encoding</strong> (<em>str</em>) – The encoding to use</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The content of the HTML file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="local-file-system-handler">
+<h3>Local File System Handler<a class="headerlink" href="#local-file-system-handler" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_dashboard.file_explorer.dashboards.file_explorer_handlers.</span></span><span class="sig-name descname"><span class="pre">LocalFileExplorerHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler" title="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileExplorerHandler</span></code></a></p>
+<p>File explorer handler for local filesystem operations.</p>
+<p>This class implements the FileExplorerHandler interface for local filesystem
+operations using standard Python libraries like os and pathlib.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.is_dir">
+<span class="sig-name descname"><span class="pre">is_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.is_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the given path is a directory using os.path.isdir.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the path is a directory, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.path_exists">
+<span class="sig-name descname"><span class="pre">path_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.path_exists" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the given path exists using os.path.exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the path exists, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.get_file_or_folder_paths">
+<span class="sig-name descname"><span class="pre">get_file_or_folder_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.get_file_or_folder_paths" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of file or folder paths within the specified directory.</p>
+<p>Uses os.walk to recursively traverse the directory and collect paths
+based on the specified element type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The directory path to search in</p></li>
+<li><p><strong>element_type</strong> (<em>str</em>) – Type of elements to return (‘file’ or ‘folder’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of file or folder paths</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If element_type is not ‘file’ or ‘folder’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_img">
+<span class="sig-name descname"><span class="pre">read_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_img" title="Link to this definition">¶</a></dt>
+<dd><p>Read an image file using PIL.Image.open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the image file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded image object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PIL.Image.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_markdown">
+<span class="sig-name descname"><span class="pre">read_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_markdown" title="Link to this definition">¶</a></dt>
+<dd><p>Read a markdown file using pathlib.Path.read_text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the markdown file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The content of the markdown file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_json">
+<span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_json" title="Link to this definition">¶</a></dt>
+<dd><p>Read a JSON file using json.load.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the JSON file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The parsed JSON data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.write_json_fe">
+<span class="sig-name descname"><span class="pre">write_json_fe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.write_json_fe" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to a JSON file using mango.processing.write_json.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The path where to write the JSON file</p></li>
+<li><p><strong>data</strong> (<em>Union</em><em>[</em><em>dict</em><em>, </em><em>list</em><em>]</em>) – The data to write to the JSON file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_html">
+<span class="sig-name descname"><span class="pre">read_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_html" title="Link to this definition">¶</a></dt>
+<dd><p>Read an HTML file with specified encoding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The path to the HTML file</p></li>
+<li><p><strong>encoding</strong> (<em>str</em>) – The encoding to use</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The content of the HTML file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="google-cloud-storage-handler">
+<h3>Google Cloud Storage Handler<a class="headerlink" href="#google-cloud-storage-handler" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango_dashboard.file_explorer.dashboards.file_explorer_handlers.</span></span><span class="sig-name descname"><span class="pre">GCPFileExplorerHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gcp_credentials_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler" title="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.FileExplorerHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileExplorerHandler</span></code></a></p>
+<p>File explorer handler for Google Cloud Storage operations.</p>
+<p>This class implements the FileExplorerHandler interface for Google Cloud
+Storage operations using the google-cloud-storage library.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>_gcp_client (storage.Client): The Google Cloud Storage client.
+_bucket_name (str): The name of the GCS bucket.
+_bucket (storage.bucket.Bucket): The bucket object for operations.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.is_dir">
+<span class="sig-name descname"><span class="pre">is_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.is_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the given path is a directory in GCS.</p>
+<p>This method is not fully implemented for GCS as directories
+are virtual constructs in cloud storage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Always returns False as this is not implemented</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.path_exists">
+<span class="sig-name descname"><span class="pre">path_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.path_exists" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the given path exists in GCS.</p>
+<p>Lists blobs with the specified prefix and checks if any match
+the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the path exists, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.get_file_or_folder_paths">
+<span class="sig-name descname"><span class="pre">get_file_or_folder_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'file'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.get_file_or_folder_paths" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of file or folder paths within the specified GCS directory.</p>
+<p>Lists blobs in the bucket with the specified prefix and categorizes
+them as files or folders based on whether they end with ‘/’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The directory path to search in</p></li>
+<li><p><strong>element_type</strong> (<em>str</em>) – Type of elements to return</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of file or folder paths with full GCS URLs</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_img">
+<span class="sig-name descname"><span class="pre">read_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_img" title="Link to this definition">¶</a></dt>
+<dd><p>Read an image file from GCS using PIL.Image.open.</p>
+<p>Downloads the blob as bytes and opens it as an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The GCS path to the image file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded image object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PIL.Image.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_markdown">
+<span class="sig-name descname"><span class="pre">read_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_markdown" title="Link to this definition">¶</a></dt>
+<dd><p>Read a markdown file from GCS.</p>
+<p>Downloads the blob as a string and decodes it as UTF-8.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The GCS path to the markdown file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The content of the markdown file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_json">
+<span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_json" title="Link to this definition">¶</a></dt>
+<dd><p>Read a JSON file from GCS.</p>
+<p>Downloads the blob as a string, decodes it, and parses as JSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The GCS path to the JSON file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The parsed JSON data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.write_json_fe">
+<span class="sig-name descname"><span class="pre">write_json_fe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.write_json_fe" title="Link to this definition">¶</a></dt>
+<dd><p>Write data to a JSON file in GCS.</p>
+<p>Converts the data to JSON string and uploads it to the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The GCS path where to write the JSON file</p></li>
+<li><p><strong>data</strong> (<em>Union</em><em>[</em><em>dict</em><em>, </em><em>list</em><em>]</em>) – The data to write to the JSON file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_html">
+<span class="sig-name descname"><span class="pre">read_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_html" title="Link to this definition">¶</a></dt>
+<dd><p>Read an HTML file from GCS.</p>
+<p>Downloads the blob as a string and decodes it with the specified encoding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – The GCS path to the HTML file</p></li>
+<li><p><strong>encoding</strong> (<em>str</em>) – The encoding to use</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The content of the HTML file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>The File Explorer Dashboard can be launched using Streamlit:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">streamlit<span class="w"> </span>run<span class="w"> </span>mango_dashboard/file_explorer/dashboards/file_explorer_app.py
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="index.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Mango dashboard</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="time_series.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Time Series Dashboard</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

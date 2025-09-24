@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Logging - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Models" href="models.html" /><link rel="prev" title="Decodoc" href="decodoc.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Logging"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decodoc.html">Decodoc</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a><ul>
+<li><a class="reference internal" href="#centralized-logger-configuration">Centralized Logger Configuration</a></li>
+<li><a class="reference internal" href="#creating-the-logger-script">Creating the Logger Script</a></li>
+<li><a class="reference internal" href="#using-the-logger-in-scripts">Using the Logger in Scripts</a></li>
+<li><a class="reference internal" href="#logging-guidelines">Logging Guidelines</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li><a class="reference internal" href="#file-logging">File Logging</a></li>
+<li><a class="reference internal" href="#json-logging">JSON Logging</a></li>
+<li><a class="reference internal" href="#api-reference">API Reference</a><ul>
+<li><a class="reference internal" href="#get-configured-logger">get_configured_logger</a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.get_configured_logger"><code class="docutils literal notranslate"><span class="pre">get_configured_logger()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#colorformatter">ColorFormatter</a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.ColorFormatter"><code class="docutils literal notranslate"><span class="pre">ColorFormatter</span></code></a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.ColorFormatter.format"><code class="docutils literal notranslate">format()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#jsonformatter">JSONFormatter</a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.JSONFormatter"><code class="docutils literal notranslate"><span class="pre">JSONFormatter</span></code></a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.JSONFormatter.format"><code class="docutils literal notranslate">format()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#jsonfilehandler">JSONFileHandler</a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.JSONFileHandler"><code class="docutils literal notranslate"><span class="pre">JSONFileHandler</span></code></a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.JSONFileHandler.emit"><code class="docutils literal notranslate">emit()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#deprecated-functions">Deprecated Functions</a><ul>
+<li><a class="reference internal" href="#get-basic-logger">get_basic_logger</a><ul>
+<li><a class="reference internal" href="#mango.logging.logger.get_basic_logger"><code class="docutils literal notranslate"><span class="pre">get_basic_logger()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chrono">Chrono</a><ul>
+<li><a class="reference internal" href="#mango.logging.chrono.Chrono"><code class="docutils literal notranslate"><span class="pre">Chrono</span></code></a><ul>
+<li><a class="reference internal" href="#mango.logging.chrono.Chrono.new"><code class="docutils literal notranslate">new()</span></code></a></li>
+<li><a class="reference internal" href="#mango.logging.chrono.Chrono.start"><code class="docutils literal notranslate">start()</span></code></a></li>
+<li><a class="reference internal" href="#mango.logging.chrono.Chrono.stop"><code class="docutils literal notranslate">stop()</span></code></a></li>
+<li><a class="reference internal" href="#mango.logging.chrono.Chrono.stop_all"><code class="docutils literal notranslate">stop_all()</span></code></a></li>
+<li><a class="reference internal" href="#mango.logging.chrono.Chrono.report"><code class="docutils literal notranslate">report()</span></code></a></li>
+<li><a class="reference internal" href="#mango.logging.chrono.Chrono.report_all"><code class="docutils literal notranslate">report_all()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#time-decorator">Time decorator</a><ul>
+<li><a class="reference internal" href="#mango.logging.decorators.log_time"><code class="docutils literal notranslate"><span class="pre">log_time()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Logging</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="logging">
+<h1>Logging<a class="headerlink" href="#logging" title="Link to this heading">¶</a></h1>
+<p>The logging module provides advanced logging capabilities with support for console, file, and JSON logging formats. It includes color formatting for console output and customizable JSON fields for structured logging.</p>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Console logging with optional color formatting</p></li>
+<li><p>File logging with multiple format options</p></li>
+<li><p>JSON logging with customizable fields</p></li>
+<li><p>Automatic log directory creation</p></li>
+<li><p>Configurable date and message formats</p></li>
+</ul>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
+<section id="centralized-logger-configuration">
+<h3>Centralized Logger Configuration<a class="headerlink" href="#centralized-logger-configuration" title="Link to this heading">¶</a></h3>
+<p>The recommended approach is to create a dedicated script for logger configuration (e.g., <code class="docutils literal notranslate"><span class="pre">logger.py</span></code>) and import it across other modules. This ensures consistent logging behavior throughout your application by having a single source of truth for logger setup.</p>
+</section>
+<section id="creating-the-logger-script">
+<h3>Creating the Logger Script<a class="headerlink" href="#creating-the-logger-script" title="Link to this heading">¶</a></h3>
+<p>Create a script named <code class="docutils literal notranslate"><span class="pre">logger.py</span></code> in your source directory to configure and return the application’s central logger:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Configuration for the application logger</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">mango.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_configured_logger</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Define log paths and create logger instance</span>
+</span><span data-line="5"><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
+</span><span data-line="6">    <span class="n">logger_type</span><span class="o">=</span><span class="s2">&quot;my_app&quot;</span><span class="p">,</span>
+</span><span data-line="7">    <span class="n">log_console_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+</span><span data-line="8">    <span class="n">mango_color</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span data-line="9">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.log&quot;</span><span class="p">,</span>
+</span><span data-line="10">    <span class="n">log_file_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+</span><span data-line="11"><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="using-the-logger-in-scripts">
+<h3>Using the Logger in Scripts<a class="headerlink" href="#using-the-logger-in-scripts" title="Link to this heading">¶</a></h3>
+<p>In any script where you need logging, simply import the logger from <code class="docutils literal notranslate"><span class="pre">logger.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># Import the configured logger from the central configuration</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span data-line="5">    <span class="c1"># Log the start of script execution</span>
+</span><span data-line="6">    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Script started&quot;</span><span class="p">)</span>
+</span><span data-line="7">    <span class="n">value</span> <span class="o">=</span> <span class="mi">42</span>
+</span><span data-line="8">    <span class="c1"># Example using f-string for logging</span>
+</span><span data-line="9">    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing value: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="10">    <span class="c1"># Your code here</span>
+</span><span data-line="11">
+</span><span data-line="12"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span data-line="13">    <span class="n">main</span><span class="p">()</span>
+</span></pre></div>
+</div>
+<p>This approach:
+- Centralizes logger configuration in a single script
+- Ensures consistent logger setup across all modules
+- Simplifies logger usage by importing from <code class="docutils literal notranslate"><span class="pre">logger.py</span></code>
+- Avoids redundant logger configuration code</p>
+</section>
+<section id="logging-guidelines">
+<h3>Logging Guidelines<a class="headerlink" href="#logging-guidelines" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Use appropriate log levels:</dt><dd><ul>
+<li><p>DEBUG (10): Detailed information for debugging</p></li>
+<li><p>INFO (20): General operational events</p></li>
+<li><p>WARNING (30): Unexpected but handled situations</p></li>
+<li><p>ERROR (40): Errors that prevent normal operation</p></li>
+<li><p>CRITICAL (50): Critical issues requiring immediate attention</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Include contextual information in log messages</p></li>
+<li><p>Use structured logging (JSON) for machine parsing</p></li>
+<li><p>Avoid logging sensitive information</p></li>
+</ul>
+</section>
+</section>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h2>
+<p>Here’s a simple example of using the logger:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">mango.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_configured_logger</span>
+</span><span data-line="2"><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="c1"># Basic console logger with colors</span>
+</span><span data-line="5"><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
+</span><span data-line="6">    <span class="n">log_console_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+</span><span data-line="7">    <span class="n">mango_color</span><span class="o">=</span><span class="kc">True</span>
+</span><span data-line="8"><span class="p">)</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Debug message&quot;</span><span class="p">)</span>
+</span><span data-line="11"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Info message&quot;</span><span class="p">)</span>
+</span><span data-line="12"><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning message&quot;</span><span class="p">)</span>
+</span><span data-line="13"><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error message&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="file-logging">
+<h2>File Logging<a class="headerlink" href="#file-logging" title="Link to this heading">¶</a></h2>
+<p>To log to both console and file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
+</span><span data-line="2">    <span class="n">log_console_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+</span><span data-line="3">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.log&quot;</span><span class="p">,</span>
+</span><span data-line="4">    <span class="n">log_file_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+</span><span data-line="5">    <span class="n">log_file_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> || </span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span data-line="6">    <span class="n">log_file_datefmt</span><span class="o">=</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
+</span><span data-line="7"><span class="p">)</span>
+</span><span data-line="8">
+</span><span data-line="9"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This goes to both console and file&quot;</span><span class="p">)</span>
+</span><span data-line="10"><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;This only goes to file&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="json-logging">
+<h2>JSON Logging<a class="headerlink" href="#json-logging" title="Link to this heading">¶</a></h2>
+<p>For structured logging in JSON format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
+</span><span data-line="2">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.json&quot;</span><span class="p">,</span>
+</span><span data-line="3">    <span class="n">json_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;module&quot;</span><span class="p">]</span>
+</span><span data-line="4"><span class="p">)</span>
+</span><span data-line="5">
+</span><span data-line="6"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This will be logged in JSON format&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h2>
+<section id="get-configured-logger">
+<h3>get_configured_logger<a class="headerlink" href="#get-configured-logger" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.logging.logger.get_configured_logger">
+<span class="sig-prename descclassname"><span class="pre">mango.logging.logger.</span></span><span class="sig-name descname"><span class="pre">get_configured_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mango_logging'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_console_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_console_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_console_datefmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mango_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'a'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_datefmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="headerlink" href="#mango.logging.logger.get_configured_logger" title="Link to this definition">¶</a></dt>
+<dd><p>Configure and return a logger with flexible logging settings.</p>
+<p>Provides a comprehensive way to configure logging with support for
+console and file output, including advanced features like JSON formatting
+and colored console logs. Supports both root logger and named loggers
+with extensive customization options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logger_type</strong> (<em>str</em>) – The type of logger to configure (default: “mango_logging”)</p></li>
+<li><p><strong>config_dict</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Custom configuration dictionary for advanced setups</p></li>
+<li><p><strong>log_console_level</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Console logging level (e.g., logging.INFO)</p></li>
+<li><p><strong>log_console_format</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Console log message format string</p></li>
+<li><p><strong>log_console_datefmt</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Console date format string</p></li>
+<li><p><strong>mango_color</strong> (<em>bool</em>) – Enable colored console output</p></li>
+<li><p><strong>log_file_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Path to log file (supports .txt, .json, .log extensions)</p></li>
+<li><p><strong>log_file_mode</strong> (<em>str</em>) – File open mode (‘a’ for append, ‘w’ for overwrite)</p></li>
+<li><p><strong>log_file_level</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – File logging level (e.g., logging.DEBUG)</p></li>
+<li><p><strong>log_file_format</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – File log message format string</p></li>
+<li><p><strong>log_file_datefmt</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – File date format string</p></li>
+<li><p><strong>json_fields</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Fields to include in JSON output. Available options:
+- level: Log level name (e.g., INFO, DEBUG) (default)
+- message: Log message (default)
+- time: Timestamp of the log record (default)
+- name: Name of the logger (default)
+- module: Module name where the log was generated (default)
+- filename: Filename where the log was generated (default)
+- lineno: Line number in the source code where the log was generated (default)
+- funcName: Function name where the log was generated
+- pathname: Full pathname of the source file where the log was generated
+- process: Process ID of the process where the log was generated
+- processName: Process name where the log was generated
+- thread: Thread ID of the thread where the log was generated
+- threadName: Thread name where the log was generated</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured logger instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>logging.Logger</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If log file extension is invalid or logger type not found</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Basic colored console logger</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span><span class="n">mango_color</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Logger with file output</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.log&quot;</span><span class="p">,</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">log_console_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
+</span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># JSON logger</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
+</span><span data-line="12"><span class="gp">... </span>    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.json&quot;</span><span class="p">,</span>
+</span><span data-line="13"><span class="gp">... </span>    <span class="n">json_fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">]</span>
+</span><span data-line="14"><span class="gp">... </span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="colorformatter">
+<h3>ColorFormatter<a class="headerlink" href="#colorformatter" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango.logging.logger.ColorFormatter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.logging.logger.</span></span><span class="sig-name descname"><span class="pre">ColorFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.logger.ColorFormatter" title="Link to this definition">¶</a></dt>
+<dd><p>Enhanced log formatter with color support for console output.</p>
+<p>This formatter applies different colors to log messages based on their
+severity level, making it easier to distinguish between different types
+of log entries in console output. Colors are automatically reset after
+each message to prevent color bleeding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_ESCAPE_CODES</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – Terminal color escape codes for text formatting</p></li>
+<li><p><strong>_LEVEL_COLORS</strong> (<em>Dict</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – Mapping of log levels to their corresponding colors</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span> <span class="o">=</span> <span class="n">ColorFormatter</span><span class="p">()</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.logger.ColorFormatter.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LogRecord</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#mango.logging.logger.ColorFormatter.format" title="Link to this definition">¶</a></dt>
+<dd><p>Format the log record with appropriate color based on log level.</p>
+<p>Applies color formatting to the log message based on the record’s
+log level. The color is automatically reset after the message to
+prevent color bleeding in subsequent output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>record</strong> (<em>logging.LogRecord</em>) – The log record to format</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The formatted log message with color escape codes</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="jsonformatter">
+<h3>JSONFormatter<a class="headerlink" href="#jsonformatter" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango.logging.logger.JSONFormatter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.logging.logger.</span></span><span class="sig-name descname"><span class="pre">JSONFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.logger.JSONFormatter" title="Link to this definition">¶</a></dt>
+<dd><p>Formatter that outputs log records as structured JSON.</p>
+<p>This formatter creates structured log output in JSON format with
+customizable fields. It maintains a list of log entries that can be
+serialized as a JSON array, making it suitable for log aggregation
+systems and structured logging applications.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fields</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of fields to include in JSON output</p></li>
+<li><p><strong>datefmt</strong> (<em>str</em>) – Date format string for timestamp formatting</p></li>
+<li><p><strong>_log_entries</strong> (<em>List</em><em>[</em><em>Dict</em><em>]</em>) – Internal list of formatted log entries</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Available fields:</dt><dd><ul class="simple">
+<li><p>level: Log level name (e.g., INFO, DEBUG) (default)</p></li>
+<li><p>message: Log message (default)</p></li>
+<li><p>time: Timestamp of the log record (default)</p></li>
+<li><p>name: Name of the logger (default)</p></li>
+<li><p>module: Module name where the log was generated (default)</p></li>
+<li><p>filename: Filename where the log was generated (default)</p></li>
+<li><p>lineno: Line number in the source code where the log was generated (default)</p></li>
+<li><p>funcName: Function name where the log was generated</p></li>
+<li><p>pathname: Full pathname of the source file where the log was generated</p></li>
+<li><p>process: Process ID of the process where the log was generated</p></li>
+<li><p>processName: Process name where the log was generated</p></li>
+<li><p>thread: Thread ID of the thread where the log was generated</p></li>
+<li><p>threadName: Thread name where the log was generated</p></li>
+</ul>
+</dd>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span> <span class="o">=</span> <span class="n">JSONFormatter</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">])</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">&#39;app.json&#39;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.logger.JSONFormatter.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LogRecord</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#mango.logging.logger.JSONFormatter.format" title="Link to this definition">¶</a></dt>
+<dd><p>Format the log record as a JSON object and add to entries list.</p>
+<p>Processes the log record and extracts the specified fields into a
+JSON object. The object is added to the internal entries list and
+the complete list is returned as a JSON string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>record</strong> (<em>logging.LogRecord</em>) – The log record to format</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>JSON string containing all formatted log entries</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="jsonfilehandler">
+<h3>JSONFileHandler<a class="headerlink" href="#jsonfilehandler" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango.logging.logger.JSONFileHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.logging.logger.</span></span><span class="sig-name descname"><span class="pre">JSONFileHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'w'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.logger.JSONFileHandler" title="Link to this definition">¶</a></dt>
+<dd><p>File handler that overwrites the file with each log entry for valid JSON.</p>
+<p>This handler is specifically designed for JSON logging, ensuring that
+the output file always contains valid JSON by overwriting it completely
+with each update. This prevents malformed JSON files that could occur
+with standard file handlers when the application terminates unexpectedly.</p>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">JSONFileHandler</span><span class="p">(</span><span class="s1">&#39;logs.json&#39;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span> <span class="o">=</span> <span class="n">JSONFormatter</span><span class="p">()</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.logger.JSONFileHandler.emit">
+<span class="sig-name descname"><span class="pre">emit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LogRecord</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#mango.logging.logger.JSONFileHandler.emit" title="Link to this definition">¶</a></dt>
+<dd><p>Write the formatted log record to file, overwriting previous content.</p>
+<p>Formats the log record and writes the complete JSON array to the
+file, overwriting any previous content to ensure valid JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>record</strong> (<em>logging.LogRecord</em>) – The log record to write</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – If file writing fails, handled by parent class</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="deprecated-functions">
+<h2>Deprecated Functions<a class="headerlink" href="#deprecated-functions" title="Link to this heading">¶</a></h2>
+<section id="get-basic-logger">
+<h3>get_basic_logger<a class="headerlink" href="#get-basic-logger" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.logging.logger.get_basic_logger">
+<span class="sig-prename descclassname"><span class="pre">mango.logging.logger.</span></span><span class="sig-name descname"><span class="pre">get_basic_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">console</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'%(asctime)s</span> <span class="pre">|</span> <span class="pre">%(levelname)s</span> <span class="pre">|</span> <span class="pre">%(name)s:</span> <span class="pre">%(message)s'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'%Y-%m-%d'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="headerlink" href="#mango.logging.logger.get_basic_logger" title="Link to this definition">¶</a></dt>
+<dd><p>Get a basic logger with console and/or file output (Deprecated).</p>
+<p>This function is deprecated and will be removed in a future version.
+Use get_configured_logger instead for more advanced configuration options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_file</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Path to the log file</p></li>
+<li><p><strong>console</strong> (<em>bool</em>) – Enable console output</p></li>
+<li><p><strong>level</strong> (<em>int</em>) – Logging level (e.g., logging.INFO)</p></li>
+<li><p><strong>format_str</strong> (<em>str</em>) – Log message format string</p></li>
+<li><p><strong>datefmt</strong> (<em>str</em>) – Date format string</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured logger instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>logging.Logger</p>
+</dd>
+<dt class="field-even">Deprecated<span class="colon">:</span></dt>
+<dd class="field-even"><p>Version 0.4.0: Use get_configured_logger instead</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DeprecationWarning</strong> – Always raises deprecation warning</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>The get_basic_logger function is deprecated and will be removed in a future version. Use get_configured_logger instead.</p>
+</div>
+</section>
+</section>
+<section id="chrono">
+<h2>Chrono<a class="headerlink" href="#chrono" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango.logging.chrono.Chrono">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.logging.chrono.</span></span><span class="sig-name descname"><span class="pre">Chrono</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'root'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.chrono.Chrono" title="Link to this definition">¶</a></dt>
+<dd><p>High-precision timing utility for measuring operation durations.</p>
+<p>This class provides functionality to measure and track execution times
+for multiple named operations. It supports individual timing, batch
+operations, and can be used as a decorator for automatic function
+timing. All timing information is logged using the configured logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the initial chronometer to create</p></li>
+<li><p><strong>silent</strong> (<em>bool</em>) – Whether to suppress automatic logging of timing events</p></li>
+<li><p><strong>precision</strong> (<em>int</em>) – Number of decimal places for time reporting</p></li>
+<li><p><strong>logger</strong> (<em>str</em>) – Name of the logger to use for output</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;operation1&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;data_processing&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... perform operation ...</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">duration</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">&quot;data_processing&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Operation took </span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.chrono.Chrono.new">
+<span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.chrono.Chrono.new" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new chronometer entry without starting it.</p>
+<p>Initializes a new chronometer with the specified name but does not
+start timing. Use start() to begin timing this chronometer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Name of the new chronometer to create</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;sub_operation&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;sub_operation&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.chrono.Chrono.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.chrono.Chrono.start" title="Link to this definition">¶</a></dt>
+<dd><p>Start timing a chronometer.</p>
+<p>Begins timing the specified chronometer. If the chronometer doesn’t
+exist, it will be created first. Optionally logs the start event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the chronometer to start</p></li>
+<li><p><strong>silent</strong> (<em>bool</em>) – Whether to suppress the start log message</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;data_processing&quot;</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.chrono.Chrono.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.chrono.Chrono.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Stop timing a chronometer and return the elapsed duration.</p>
+<p>Stops the specified chronometer and calculates the elapsed time.
+Optionally logs the completion with the duration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the chronometer to stop</p></li>
+<li><p><strong>report</strong> (<em>bool</em>) – Whether to log the completion message</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Elapsed time in seconds</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If the chronometer name doesn’t exist</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;operation&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... perform operation ...</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">duration</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">&quot;operation&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed in </span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.chrono.Chrono.stop_all">
+<span class="sig-name descname"><span class="pre">stop_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.chrono.Chrono.stop_all" title="Link to this definition">¶</a></dt>
+<dd><p>Stop all running chronometers and return their durations.</p>
+<p>Stops all chronometers that are currently running and returns a
+dictionary mapping chronometer names to their elapsed durations.
+Only chronometers that haven’t been stopped yet are affected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>report</strong> (<em>bool</em>) – Whether to log completion messages for each chronometer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping chronometer names to durations in seconds</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op1&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op2&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">durations</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop_all</span><span class="p">()</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total operations: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.chrono.Chrono.report">
+<span class="sig-name descname"><span class="pre">report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.chrono.Chrono.report" title="Link to this definition">¶</a></dt>
+<dd><p>Report the current status and duration of a chronometer.</p>
+<p>Logs the current timing information for the specified chronometer.
+If the chronometer has been stopped, reports the final duration.
+If still running, reports the current elapsed time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the chronometer to report</p></li>
+<li><p><strong>message</strong> (<em>str</em><em>, </em><em>optional</em>) – Optional additional message to include in the log</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Elapsed time in seconds (final duration if stopped, current if running)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If the chronometer name doesn’t exist</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;long_operation&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... some time later ...</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">elapsed</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;long_operation&quot;</span><span class="p">,</span> <span class="s2">&quot;Still processing...&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.logging.chrono.Chrono.report_all">
+<span class="sig-name descname"><span class="pre">report_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.chrono.Chrono.report_all" title="Link to this definition">¶</a></dt>
+<dd><p>Report the status and durations of all chronometers.</p>
+<p>Logs timing information for all chronometers and returns a dictionary
+with their current durations. For stopped chronometers, reports final
+duration; for running ones, reports current elapsed time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary mapping chronometer names to durations in seconds</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op1&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op2&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">&quot;op1&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">durations</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">report_all</span><span class="p">()</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Reports final duration for op1, current elapsed for op2</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="time-decorator">
+<h2>Time decorator<a class="headerlink" href="#time-decorator" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.logging.decorators.log_time">
+<span class="sig-prename descclassname"><span class="pre">mango.logging.decorators.</span></span><span class="sig-name descname"><span class="pre">log_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'root'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'INFO'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.logging.decorators.log_time" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator to automatically log function execution time.</p>
+<p>Creates a decorator that measures and logs the execution time of the
+decorated function. The timing information is logged using the specified
+logger and log level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logger</strong> (<em>str</em>) – Name of the logger to use for timing messages</p></li>
+<li><p><strong>level</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – Logging level for timing messages (default: “INFO”)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Decorator function that logs execution time</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mango.logging.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_time</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@log_time</span><span class="p">(</span><span class="s2">&quot;my_logger&quot;</span><span class="p">,</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">slow_function</span><span class="p">():</span>
+</span><span data-line="5"><span class="gp">... </span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="k">return</span> <span class="s2">&quot;done&quot;</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">slow_function</span><span class="p">()</span>  <span class="c1"># Logs: &quot;slow_function took 1.00 seconds&quot;</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="decodoc.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Decodoc</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="models.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Models</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

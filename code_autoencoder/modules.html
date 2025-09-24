@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AutoEncoder Modules - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="AutoEncoder Utils" href="utils.html" /><link rel="prev" title="AutoEncoder API Reference" href="autoencoder_api.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="AutoEncoder Modules"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango autoencoder code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="autoencoder_api.html">AutoEncoder API Reference</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#encoder-module">Encoder Module</a><ul>
+<li><a class="reference internal" href="#mango_autoencoder.modules.encoder.encoder"><code class="docutils literal notranslate"><span class="pre">encoder()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#decoder-module">Decoder Module</a><ul>
+<li><a class="reference internal" href="#mango_autoencoder.modules.decoder.decoder"><code class="docutils literal notranslate"><span class="pre">decoder()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#anomaly-detector-module">Anomaly Detector Module</a><ul>
+<li><a class="reference internal" href="#mango_autoencoder.modules.anomaly_detector.calculate_reconstruction_error"><code class="docutils literal notranslate"><span class="pre">calculate_reconstruction_error()</span></code></a></li>
+<li><a class="reference internal" href="#mango_autoencoder.modules.anomaly_detector.analyze_error_by_columns"><code class="docutils literal notranslate"><span class="pre">analyze_error_by_columns()</span></code></a></li>
+<li><a class="reference internal" href="#mango_autoencoder.modules.anomaly_detector.reconstruction_error"><code class="docutils literal notranslate"><span class="pre">reconstruction_error()</span></code></a></li>
+<li><a class="reference internal" href="#mango_autoencoder.modules.anomaly_detector.anova_reconstruction_error"><code class="docutils literal notranslate"><span class="pre">anova_reconstruction_error()</span></code></a></li>
+<li><a class="reference internal" href="#mango_autoencoder.modules.anomaly_detector.reconstruction_error_summary"><code class="docutils literal notranslate"><span class="pre">reconstruction_error_summary()</span></code></a></li>
+<li><a class="reference internal" href="#mango_autoencoder.modules.anomaly_detector.std_error_threshold"><code class="docutils literal notranslate"><span class="pre">std_error_threshold()</span></code></a></li>
+<li><a class="reference internal" href="#mango_autoencoder.modules.anomaly_detector.corrected_data"><code class="docutils literal notranslate"><span class="pre">corrected_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango autoencoder code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="autoencoder_api.html"><span itemprop="name">AutoEncoder API Reference</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">AutoEncoder Modules</strong>
+        <meta itemprop="position" content="4" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="autoencoder-modules">
+<h1>AutoEncoder Modules<a class="headerlink" href="#autoencoder-modules" title="Link to this heading">¶</a></h1>
+<p>The modules package contains the core building blocks for the AutoEncoder architecture.</p>
+<section id="encoder-module">
+<h2>Encoder Module<a class="headerlink" href="#encoder-module" title="Link to this heading">¶</a></h2>
+<p>The encoder module provides functions for creating different types of encoder architectures.</p>
+<dl class="py function" id="module-mango_autoencoder.modules.encoder">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.encoder.encoder">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.encoder.</span></span><span class="sig-name descname"><span class="pre">encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_autoencoder.modules.encoder.encoder" title="Link to this definition">¶</a></dt>
+<dd><p>Create an encoder model for different neural network architectures.</p>
+<p>Factory function that creates encoder models of various types including
+Dense, RNN, GRU and LSTM encoders. The specific parameters depend on
+the encoder type selected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>form</strong> (<em>str</em>) – Type of encoder architecture</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Keyword arguments specific to the encoder type</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured encoder model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>keras.Model</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an invalid encoder form is specified</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create LSTM encoder</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">lstm_enc</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">(</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="n">context_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="5"><span class="gp">... </span>    <span class="n">features</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span>
+</span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create Dense encoder</span>
+</span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="n">dense_enc</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">(</span>
+</span><span data-line="11"><span class="gp">... </span>    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
+</span><span data-line="12"><span class="gp">... </span>    <span class="n">features</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="13"><span class="gp">... </span>    <span class="n">hidden_dim</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span>
+</span><span data-line="14"><span class="gp">... </span>    <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span>
+</span><span data-line="15"><span class="gp">... </span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="decoder-module">
+<h2>Decoder Module<a class="headerlink" href="#decoder-module" title="Link to this heading">¶</a></h2>
+<p>The decoder module provides functions for creating different types of decoder architectures.</p>
+<dl class="py function" id="module-mango_autoencoder.modules.decoder">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.decoder.decoder">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.decoder.</span></span><span class="sig-name descname"><span class="pre">decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_autoencoder.modules.decoder.decoder" title="Link to this definition">¶</a></dt>
+<dd><p>Create a decoder model for different neural network architectures.</p>
+<p>Factory function that creates decoder models of various types including
+Dense, RNN, GRU and LSTM decoders. The decoder reconstructs the original
+input from the encoded representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>form</strong> (<em>str</em>) – Type of decoder architecture</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Keyword arguments specific to the decoder type</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured decoder model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>keras.Model</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If an invalid decoder form is specified</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create LSTM decoder</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">lstm_dec</span> <span class="o">=</span> <span class="n">decoder</span><span class="p">(</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="n">context_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="5"><span class="gp">... </span>    <span class="n">features</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span>
+</span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create Dense decoder</span>
+</span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="n">dense_dec</span> <span class="o">=</span> <span class="n">decoder</span><span class="p">(</span>
+</span><span data-line="11"><span class="gp">... </span>    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
+</span><span data-line="12"><span class="gp">... </span>    <span class="n">features</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span data-line="13"><span class="gp">... </span>    <span class="n">hidden_dim</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span>
+</span><span data-line="14"><span class="gp">... </span>    <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span>
+</span><span data-line="15"><span class="gp">... </span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="anomaly-detector-module">
+<h2>Anomaly Detector Module<a class="headerlink" href="#anomaly-detector-module" title="Link to this heading">¶</a></h2>
+<p>The anomaly detector module provides functions for analyzing reconstruction errors and detecting anomalies.</p>
+<dl class="py function" id="module-mango_autoencoder.modules.anomaly_detector">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.anomaly_detector.calculate_reconstruction_error">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.anomaly_detector.</span></span><span class="sig-name descname"><span class="pre">calculate_reconstruction_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_converted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_hat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#mango_autoencoder.modules.anomaly_detector.calculate_reconstruction_error" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the reconstruction error matrix between original and reconstructed data.</p>
+<p>Computes the absolute difference between original data and autoencoder
+reconstructed data. This is a fundamental metric for evaluating
+autoencoder performance and identifying reconstruction quality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_converted</strong> (<em>np.ndarray</em>) – Original input data array</p></li>
+<li><p><strong>x_hat</strong> (<em>np.ndarray</em>) – Reconstructed data array from autoencoder</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matrix of absolute differences between original and reconstructed data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If input arrays have different shapes</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">original</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">]])</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">reconstructed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.9</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.8</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">]])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">calculate_reconstruction_error</span><span class="p">(</span><span class="n">original</span><span class="p">,</span> <span class="n">reconstructed</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">[[0.1 0.1]</span>
+</span><span data-line="6"><span class="go"> [0.2 0.2]]</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.anomaly_detector.analyze_error_by_columns">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.anomaly_detector.</span></span><span class="sig-name descname"><span class="pre">analyze_error_by_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_autoencoder.modules.anomaly_detector.analyze_error_by_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Analyze reconstruction error distribution by columns with interactive Plotly visualizations.</p>
+<p>Creates comprehensive error analysis dashboards showing error distributions,
+statistics, and visualizations for each feature column. Generates interactive
+Plotly charts for detailed error analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>error_matrix</strong> (<em>np.ndarray</em>) – Matrix of reconstruction errors (samples x features)</p></li>
+<li><p><strong>column_names</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of feature names for columns</p></li>
+<li><p><strong>save_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Directory path to save generated plots</p></li>
+<li><p><strong>show</strong> (<em>bool</em>) – Whether to display plots in browser</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with error data and column names</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If error_matrix is empty or if column_names length doesn’t match error_matrix columns</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">error_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]])</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_1&quot;</span><span class="p">,</span> <span class="s2">&quot;feature_2&quot;</span><span class="p">]</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">error_df</span> <span class="o">=</span> <span class="n">analyze_error_by_columns</span><span class="p">(</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="n">error_matrix</span><span class="p">,</span>
+</span><span data-line="5"><span class="gp">... </span>    <span class="n">column_names</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;./plots&quot;</span>
+</span><span data-line="7"><span class="gp">... </span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.anomaly_detector.reconstruction_error">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.anomaly_detector.</span></span><span class="sig-name descname"><span class="pre">reconstruction_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_data_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoencoder_output_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data_split'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'reconstruction_error.csv'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_autoencoder.modules.anomaly_detector.reconstruction_error" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate and optionally save reconstruction error between actual data and autoencoder output.</p>
+<p>Computes the difference between original data and autoencoder reconstructed data,
+with optional data split handling and high-error feature detection. Provides
+warnings for features with unusually high reconstruction errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_data_df</strong> (<em>pd.DataFrame</em>) – Original input data DataFrame</p></li>
+<li><p><strong>autoencoder_output_df</strong> (<em>pd.DataFrame</em>) – Reconstructed data DataFrame from autoencoder</p></li>
+<li><p><strong>threshold_factor</strong> (<em>int</em>) – Multiplier for median reconstruction error to flag high-error features</p></li>
+<li><p><strong>split_column</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional name of column that defines data split (train/val/test)</p></li>
+<li><p><strong>save_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional directory path to save the output CSV file</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Filename for the saved CSV file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with reconstruction error values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If input DataFrames have different index or columns</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">actual</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">reconstructed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.9</span><span class="p">,</span> <span class="mf">3.1</span><span class="p">],</span> <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.9</span><span class="p">,</span> <span class="mf">5.2</span><span class="p">,</span> <span class="mf">5.8</span><span class="p">]})</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">error_df</span> <span class="o">=</span> <span class="n">reconstruction_error</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">reconstructed</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;./results&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.anomaly_detector.anova_reconstruction_error">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.anomaly_detector.</span></span><span class="sig-name descname"><span class="pre">anova_reconstruction_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reconstruction_error_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_value_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F_stat_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data_split'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_autoencoder.modules.anomaly_detector.anova_reconstruction_error" title="Link to this definition">¶</a></dt>
+<dd><p>Perform one-way ANOVA to test if reconstruction errors vary across split_column for each feature.</p>
+<p>Conducts statistical analysis to determine if reconstruction errors differ
+significantly between data splits (train/validation/test) for each feature.
+Uses F-test to assess variance differences and provides warnings for
+significant differences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reconstruction_error_df</strong> (<em>pd.DataFrame</em>) – DataFrame with reconstruction error and split_column</p></li>
+<li><p><strong>p_value_threshold</strong> (<em>float</em>) – Maximum p-value to trigger logger warning (significance level)</p></li>
+<li><p><strong>F_stat_threshold</strong> (<em>float</em>) – Minimum F-statistic to trigger logger warning</p></li>
+<li><p><strong>split_column</strong> (<em>str</em>) – Name of column that defines data split categories</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with F-statistics and p-values per feature</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If split_column not found or has insufficient categories</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">error_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="s2">&quot;data_split&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]</span>
+</span><span data-line="5"><span class="gp">... </span><span class="p">})</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">anova_results</span> <span class="o">=</span> <span class="n">anova_reconstruction_error</span><span class="p">(</span><span class="n">error_df</span><span class="p">,</span> <span class="n">p_value_threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.anomaly_detector.reconstruction_error_summary">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.anomaly_detector.</span></span><span class="sig-name descname"><span class="pre">reconstruction_error_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reconstruction_error_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data_split'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['train',</span> <span class="pre">'validation',</span> <span class="pre">'test']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'reconstruction_error_summary.csv'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_autoencoder.modules.anomaly_detector.reconstruction_error_summary" title="Link to this definition">¶</a></dt>
+<dd><p>Generate and optionally save summary statistics for reconstruction error
+grouped by split_column (if provided and present in the DataFrame).</p>
+<p>Creates comprehensive summary statistics including absolute mean and standard
+deviation for reconstruction errors, optionally grouped by data splits.
+Provides organized output with consistent column ordering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reconstruction_error_df</strong> (<em>pd.DataFrame</em>) – DataFrame with reconstruction error data</p></li>
+<li><p><strong>split_column</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional name of column that defines data split categories</p></li>
+<li><p><strong>split_order</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Optional order of split categories for consistent output</p></li>
+<li><p><strong>save_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional directory path to save the summary CSV file</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Filename to use for the saved CSV file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Summary statistics DataFrame with mean and std error metrics</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If data is empty or split_order doesn’t match actual splits</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">error_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="s2">&quot;data_split&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">]</span>
+</span><span data-line="5"><span class="gp">... </span><span class="p">})</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">summary</span> <span class="o">=</span> <span class="n">reconstruction_error_summary</span><span class="p">(</span><span class="n">error_df</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;./results&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.anomaly_detector.std_error_threshold">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.anomaly_detector.</span></span><span class="sig-name descname"><span class="pre">std_error_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reconstruction_error_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anomaly_mask_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'std_anomaly_mask.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anomaly_proportions_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'std_anomaly_proportions.csv'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_autoencoder.modules.anomaly_detector.std_error_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>Identify anomalies using a standard deviation threshold over reconstruction error.
+Considers all time series data for a given feature.</p>
+<p>Detects anomalous data points by comparing reconstruction errors to statistical
+thresholds based on standard deviations from the mean. Creates boolean masks
+indicating anomaly locations and provides summary statistics of anomaly rates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reconstruction_error_df</strong> (<em>pd.DataFrame</em>) – DataFrame with autoencoder reconstruction errors and ‘data_split’ column</p></li>
+<li><p><strong>std_threshold</strong> (<em>float</em>) – Threshold in terms of standard deviations from the mean error</p></li>
+<li><p><strong>save_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional directory path to save output files</p></li>
+<li><p><strong>anomaly_mask_filename</strong> (<em>str</em>) – CSV filename for the boolean anomaly mask</p></li>
+<li><p><strong>anomaly_proportions_filename</strong> (<em>str</em>) – CSV filename for anomaly rate summary</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Boolean DataFrame mask (True = anomaly, False = normal)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required columns are missing, if data is empty, or if std_threshold is negative</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">error_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="s2">&quot;data_split&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]</span>
+</span><span data-line="5"><span class="gp">... </span><span class="p">})</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">anomaly_mask</span> <span class="o">=</span> <span class="n">std_error_threshold</span><span class="p">(</span><span class="n">error_df</span><span class="p">,</span> <span class="n">std_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;./results&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_autoencoder.modules.anomaly_detector.corrected_data">
+<span class="sig-prename descclassname"><span class="pre">mango_autoencoder.modules.anomaly_detector.</span></span><span class="sig-name descname"><span class="pre">corrected_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actual_data_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoencoder_output_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anomaly_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'corrected_data.csv'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_autoencoder.modules.anomaly_detector.corrected_data" title="Link to this definition">¶</a></dt>
+<dd><p>Replace anomalous values in the original data with autoencoder reconstructed values.</p>
+<p>Creates a corrected dataset by replacing identified anomalous values with
+their autoencoder reconstructions. Uses a boolean mask to determine which
+values should be replaced and provides logging of correction counts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actual_data_df</strong> (<em>pd.DataFrame</em>) – Original input data DataFrame</p></li>
+<li><p><strong>autoencoder_output_df</strong> (<em>pd.DataFrame</em>) – Reconstructed data DataFrame from autoencoder</p></li>
+<li><p><strong>anomaly_mask</strong> (<em>pd.DataFrame</em>) – Boolean DataFrame indicating where to apply corrections (True = replace)</p></li>
+<li><p><strong>save_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional directory path to save the corrected data as CSV</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Filename to use if saving the corrected data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with corrected data (anomalies replaced with reconstructions)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If input DataFrames have different lengths or columns</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">actual</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">reconstructed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.9</span><span class="p">,</span> <span class="mf">3.1</span><span class="p">],</span> <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.9</span><span class="p">,</span> <span class="mf">5.2</span><span class="p">,</span> <span class="mf">5.8</span><span class="p">]})</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;feature1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="s2">&quot;feature2&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]})</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">corrected</span> <span class="o">=</span> <span class="n">corrected_data</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">reconstructed</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;./results&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="autoencoder_api.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">AutoEncoder API Reference</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="utils.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">AutoEncoder Utils</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

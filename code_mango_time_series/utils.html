@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Utils - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Data" href="data.html" /><link rel="prev" title="Time series" href="time_series.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Utils"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango time series code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="time_series.html">Time series</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#module-mango_time_series.utils.moving_averages">Moving averages</a><ul>
+<li><a class="reference internal" href="#mango_time_series.utils.moving_averages.create_season_unit_previous_date"><code class="docutils literal notranslate"><span class="pre">create_season_unit_previous_date()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.moving_averages.create_recent_variables"><code class="docutils literal notranslate"><span class="pre">create_recent_variables()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.moving_averages.create_seasonal_variables"><code class="docutils literal notranslate"><span class="pre">create_seasonal_variables()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango_time_series.utils.processing_time_series">Processing time series</a><ul>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.aggregate_to_input"><code class="docutils literal notranslate"><span class="pre">aggregate_to_input()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.aggregate_to_input_pl"><code class="docutils literal notranslate"><span class="pre">aggregate_to_input_pl()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.aggregate_to_input_pllazy"><code class="docutils literal notranslate"><span class="pre">aggregate_to_input_pllazy()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.rename_to_common_ts_names"><code class="docutils literal notranslate"><span class="pre">rename_to_common_ts_names()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.rename_to_common_ts_names_pl"><code class="docutils literal notranslate"><span class="pre">rename_to_common_ts_names_pl()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.drop_negative_output"><code class="docutils literal notranslate"><span class="pre">drop_negative_output()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.drop_negative_output_pl"><code class="docutils literal notranslate"><span class="pre">drop_negative_output_pl()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.add_covid_mark"><code class="docutils literal notranslate"><span class="pre">add_covid_mark()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.create_lags_col"><code class="docutils literal notranslate"><span class="pre">create_lags_col()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.series_as_columns"><code class="docutils literal notranslate"><span class="pre">series_as_columns()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.series_as_rows"><code class="docutils literal notranslate"><span class="pre">series_as_rows()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.process_time_series"><code class="docutils literal notranslate"><span class="pre">process_time_series()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.create_dense_data"><code class="docutils literal notranslate"><span class="pre">create_dense_data()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.create_dense_data_pl"><code class="docutils literal notranslate"><span class="pre">create_dense_data_pl()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.create_dense_data_pllazy"><code class="docutils literal notranslate"><span class="pre">create_dense_data_pllazy()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.create_recurrent_dataset"><code class="docutils literal notranslate"><span class="pre">create_recurrent_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.get_corr_matrix"><code class="docutils literal notranslate"><span class="pre">get_corr_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.get_date_col_candidate"><code class="docutils literal notranslate"><span class="pre">get_date_col_candidate()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.raise_if_inconsistency"><code class="docutils literal notranslate"><span class="pre">raise_if_inconsistency()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.processing_time_series.get_corr_matrix_aux"><code class="docutils literal notranslate"><span class="pre">get_corr_matrix_aux()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango_time_series.utils.tabular_structure">Tabular structure</a><ul>
+<li><a class="reference internal" href="#mango_time_series.utils.tabular_structure.create_tabular_structure"><code class="docutils literal notranslate"><span class="pre">create_tabular_structure()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.tabular_structure.create_tabular_structure_pl"><code class="docutils literal notranslate"><span class="pre">create_tabular_structure_pl()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango_time_series.utils.time_features">Time features</a><ul>
+<li><a class="reference internal" href="#mango_time_series.utils.time_features.create_time_features"><code class="docutils literal notranslate"><span class="pre">create_time_features()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.time_features.month_as_bspline"><code class="docutils literal notranslate"><span class="pre">month_as_bspline()</span></code></a></li>
+<li><a class="reference internal" href="#mango_time_series.utils.time_features.custom_weights"><code class="docutils literal notranslate"><span class="pre">custom_weights()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango time series code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Utils</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="utils">
+<h1>Utils<a class="headerlink" href="#utils" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation is still under development. If you find any bug or have any suggestion in utils, please, open an issue in the <a class="reference external" href="https://github.com/baobabsoluciones/mango">GitHub repository</a>.</p>
+</div>
+<section id="module-mango_time_series.utils.moving_averages">
+<span id="moving-averages"></span><h2>Moving averages<a class="headerlink" href="#module-mango_time_series.utils.moving_averages" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.moving_averages.create_season_unit_previous_date">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.moving_averages.</span></span><span class="sig-name descname"><span class="pre">create_season_unit_previous_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.moving_averages.create_season_unit_previous_date" title="Link to this definition">¶</a></dt>
+<dd><p>Create previous date mapping for seasonal unit analysis.</p>
+<p>Calculates the previous occurrence date for each seasonal unit (day of week)
+relative to the forecast origin. This is used for creating seasonal variables
+that reference the same day of week from previous periods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.DataFrame</em>) – DataFrame containing forecast_origin and season_unit columns</p></li>
+<li><p><strong>time_unit</strong> (<em>str</em>) – Time unit string (e.g., ‘d’ for days, ‘w’ for weeks)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with previous_dow_date column added</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Calculates weekday difference between season_unit and forecast_origin</p></li>
+<li><p>Adjusts for week boundaries (handles day-of-week wrapping)</p></li>
+<li><p>Creates offset dates for seasonal variable creation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.moving_averages.create_recent_variables">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.moving_averages.</span></span><span class="sig-name descname"><span class="pre">create_recent_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SERIES_CONF</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">season_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.moving_averages.create_recent_variables" title="Link to this definition">¶</a></dt>
+<dd><p>Create rolling averages and lag variables for time series forecasting.</p>
+<p>Generates rolling average and lag features for time series data, with optional
+seasonal unit grouping. Creates multiple columns for different window sizes
+and lag periods, grouped by the key columns specified in SERIES_CONF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.LazyFrame</em>) – Input LazyFrame containing time series data</p></li>
+<li><p><strong>SERIES_CONF</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and TIME_PERIOD</p></li>
+<li><p><strong>window</strong> (<em>list</em>) – List of window sizes for rolling averages</p></li>
+<li><p><strong>lags</strong> (<em>list</em>) – List of lag periods to create</p></li>
+<li><p><strong>gap</strong> (<em>int</em>) – Number of periods to skip before starting window (default: 0)</p></li>
+<li><p><strong>freq</strong> (<em>int</em>) – Frequency multiplier for lag calculations (default: 1)</p></li>
+<li><p><strong>colname</strong> (<em>str</em>) – Prefix for new column names (default: “”)</p></li>
+<li><p><strong>season_unit</strong> (<em>bool</em>) – Whether to group by seasonal unit (default: False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with new rolling average and lag columns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Rolling averages exclude current row (shifted by gap)</p></li>
+<li><p>Lag variables are shifted by (gap - 1 + lag * freq)</p></li>
+<li><p>Seasonal unit mode uses previous day-of-week dates for alignment</p></li>
+<li><p>Column naming: y_{colname}roll_{window} and y_{colname}lag_{lag*freq}</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.moving_averages.create_seasonal_variables">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.moving_averages.</span></span><span class="sig-name descname"><span class="pre">create_seasonal_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SERIES_CONF</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">season_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.moving_averages.create_seasonal_variables" title="Link to this definition">¶</a></dt>
+<dd><p>Create seasonal rolling averages and lag variables.</p>
+<p>Generates seasonal features by creating rolling averages and lag variables
+grouped by seasonal units (day of week, week, or month). Automatically
+extracts the appropriate seasonal unit from datetime and creates variables
+that capture seasonal patterns in the time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.LazyFrame</em>) – Input LazyFrame containing time series data with datetime column</p></li>
+<li><p><strong>SERIES_CONF</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and TIME_PERIOD</p></li>
+<li><p><strong>window</strong> (<em>list</em>) – List of window sizes for rolling averages</p></li>
+<li><p><strong>lags</strong> (<em>list</em>) – List of lag periods to create</p></li>
+<li><p><strong>season_unit</strong> (<em>str</em>) – Seasonal unit type (‘day’, ‘week’, or ‘month’)</p></li>
+<li><p><strong>freq</strong> (<em>int</em>) – Frequency multiplier for lag calculations</p></li>
+<li><p><strong>gap</strong> (<em>int</em>) – Number of periods to skip before starting window (default: 0)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with seasonal rolling average and lag columns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Extracts seasonal unit from datetime column based on season_unit parameter</p></li>
+<li><p>Uses <code class="docutils literal notranslate"><span class="pre">sea_</span></code> prefix for seasonal variable column names</p></li>
+<li><p>Removes season_unit column after processing</p></li>
+<li><p>Supports day (weekday), week, and month seasonal units</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango_time_series.utils.processing_time_series">
+<span id="processing-time-series"></span><h2>Processing time series<a class="headerlink" href="#module-mango_time_series.utils.processing_time_series" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.aggregate_to_input">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">aggregate_to_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.aggregate_to_input" title="Link to this definition">¶</a></dt>
+<dd><p>Aggregate time series data to specified frequency using pandas.</p>
+<p>Groups the data by key columns and time frequency, then applies
+aggregation operations defined in the series configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing time series data</p></li>
+<li><p><strong>freq</strong> (<em>str</em>) – Frequency string for aggregation (e.g., ‘D’, ‘W’, ‘M’)</p></li>
+<li><p><strong>series_conf</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and AGG_OPERATIONS</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Aggregated DataFrame with specified frequency</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Uses pandas Grouper for time-based grouping</p></li>
+<li><p>Applies aggregation operations from series_conf[“AGG_OPERATIONS”]</p></li>
+<li><p>Groups by both key columns and time frequency</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.aggregate_to_input_pl">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">aggregate_to_input_pl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.aggregate_to_input_pl" title="Link to this definition">¶</a></dt>
+<dd><p>Aggregate time series data to specified frequency using Polars.</p>
+<p>Converts pandas DataFrame to Polars, groups by key columns and time frequency,
+applies aggregation operations, then converts back to pandas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing time series data</p></li>
+<li><p><strong>freq</strong> (<em>str</em>) – Frequency string for aggregation (e.g., ‘D’, ‘W’, ‘M’)</p></li>
+<li><p><strong>series_conf</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and AGG_OPERATIONS</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Aggregated DataFrame with specified frequency</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Converts pandas to Polars for processing, then back to pandas</p></li>
+<li><p>Handles month frequency conversion (‘m’, ‘MS’, ‘ME’ -&gt; ‘mo’)</p></li>
+<li><p>Uses Polars datetime truncate for time-based grouping</p></li>
+<li><p>Supports sum, mean, min, max, median aggregation operations</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.aggregate_to_input_pllazy">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">aggregate_to_input_pllazy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.aggregate_to_input_pllazy" title="Link to this definition">¶</a></dt>
+<dd><p>Aggregate time series data to specified frequency using Polars LazyFrame.</p>
+<p>Groups LazyFrame by key columns and time frequency, applies aggregation
+operations, and returns sorted result as LazyFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.LazyFrame</em>) – LazyFrame containing time series data</p></li>
+<li><p><strong>freq</strong> (<em>str</em>) – Frequency string for aggregation (e.g., ‘D’, ‘W’, ‘M’)</p></li>
+<li><p><strong>series_conf</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and AGG_OPERATIONS</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Aggregated LazyFrame with specified frequency</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Works with Polars LazyFrame for efficient processing</p></li>
+<li><p>Uses Polars datetime truncate for time-based grouping</p></li>
+<li><p>Sorts result by key columns and datetime</p></li>
+<li><p>Supports sum, mean, min, max, median aggregation operations</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.rename_to_common_ts_names">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">rename_to_common_ts_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.rename_to_common_ts_names" title="Link to this definition">¶</a></dt>
+<dd><p>Rename columns to standard time series naming convention.</p>
+<p>Standardizes column names by renaming time and value columns to
+‘datetime’ and ‘y’ respectively, and converts all column names to lowercase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame to rename columns in</p></li>
+<li><p><strong>time_col</strong> (<em>str</em>) – Name of the time/datetime column</p></li>
+<li><p><strong>value_col</strong> (<em>str</em>) – Name of the value/target column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with standardized column names</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Renames time_col to ‘datetime’ and value_col to ‘y’</p></li>
+<li><p>Converts all column names to lowercase</p></li>
+<li><p>Standardizes naming for time series processing pipeline</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.rename_to_common_ts_names_pl">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">rename_to_common_ts_names_pl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.rename_to_common_ts_names_pl" title="Link to this definition">¶</a></dt>
+<dd><p>Rename columns to standard time series naming convention using Polars.</p>
+<p>Standardizes column names by renaming time and value columns to
+‘datetime’ and ‘y’ respectively, and converts all column names to lowercase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.LazyFrame</em>) – LazyFrame to rename columns in</p></li>
+<li><p><strong>time_col</strong> (<em>str</em>) – Name of the time/datetime column</p></li>
+<li><p><strong>value_col</strong> (<em>str</em>) – Name of the value/target column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with standardized column names</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Renames time_col to ‘datetime’ and value_col to ‘y’</p></li>
+<li><p>Converts all column names to lowercase using with_columns</p></li>
+<li><p>Standardizes naming for time series processing pipeline</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.drop_negative_output">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">drop_negative_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.drop_negative_output" title="Link to this definition">¶</a></dt>
+<dd><p>Remove rows with negative values from time series data.</p>
+<p>Filters out rows where the target variable (y) has negative values,
+which are typically not meaningful for sales or demand forecasting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing time series data with ‘y’ column</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with negative value rows removed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Removes rows where y &lt; 0</p></li>
+<li><p>Logs the number of rows being dropped</p></li>
+<li><p>Preserves all other data and columns</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.drop_negative_output_pl">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">drop_negative_output_pl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.drop_negative_output_pl" title="Link to this definition">¶</a></dt>
+<dd><p>Remove rows with negative values from time series data using Polars.</p>
+<p>Filters out rows where the target variable (y) has negative values,
+which are typically not meaningful for sales or demand forecasting.
+Uses lazy evaluation for efficient processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>polars.LazyFrame</em>) – LazyFrame containing time series data with ‘y’ column</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with negative value rows removed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Removes rows where y &lt; 0 using filter operation</p></li>
+<li><p>Logs the number of rows being dropped</p></li>
+<li><p>Uses lazy evaluation for memory efficiency</p></li>
+<li><p>Preserves all other data and columns</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.add_covid_mark">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">add_covid_mark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.add_covid_mark" title="Link to this definition">¶</a></dt>
+<dd><p>Add COVID period indicator column to time series data.</p>
+<p>Creates a boolean column ‘covid’ that marks the COVID-19 pandemic period
+from March 2020 to March 2021, which can be used for analysis or modeling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>polars.LazyFrame</em>) – LazyFrame containing time series data with datetime column</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with added ‘covid’ boolean column</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>COVID period: 2020-03-01 to 2021-03-01</p></li>
+<li><p>Creates boolean column where True indicates COVID period</p></li>
+<li><p>Useful for identifying pandemic impact on time series patterns</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.create_lags_col">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">create_lags_col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.create_lags_col" title="Link to this definition">¶</a></dt>
+<dd><p>Create lagged columns for time series feature engineering.</p>
+<p>Generates lagged versions of a specified column for time series analysis.
+Supports both positive lags (past values) and negative lags (future values/leads).
+Can handle multiple time series by grouping on key columns and optionally
+handle discontinuities by checking for changes in specified columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame to add lagged columns to</p></li>
+<li><p><strong>col</strong> (<em>str</em>) – Name of the column to create lags for</p></li>
+<li><p><strong>lags</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of lag values (positive for past, negative for future)</p></li>
+<li><p><strong>key_cols</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Columns that define each time series (for grouping)</p></li>
+<li><p><strong>check_col</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Columns to check for discontinuities in lagged series</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with lagged columns added</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Positive lags create columns named ‘{col}_lag{lag}’</p></li>
+<li><p>Negative lags create columns named ‘{col}_lead{abs(lag)}’</p></li>
+<li><p>Groups by key_cols if provided, otherwise treats as single series</p></li>
+<li><p>Sets lag values to NaN when discontinuities detected in check_col</p></li>
+<li><p>Requires pandas and numpy to be installed</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.series_as_columns">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">series_as_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.series_as_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Pivot time series data to wide format with series as columns.</p>
+<p>Transforms long-format time series data into wide format where each
+unique combination of key columns becomes a separate column. Uses
+sum aggregation for overlapping values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame in long format with time series data</p></li>
+<li><p><strong>series_conf</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and VALUE_COL</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame in wide format with series as columns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Pivots using datetime as index and key_cols as columns</p></li>
+<li><p>Uses sum aggregation for overlapping values</p></li>
+<li><p>Flattens multi-level column names with underscore separator</p></li>
+<li><p>Renames first column back to ‘datetime’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.series_as_rows">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">series_as_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.series_as_rows" title="Link to this definition">¶</a></dt>
+<dd><p>Pivot time series data to long format with series as rows.</p>
+<p>Transforms wide-format time series data into long format where each
+time series becomes a separate row. Splits column names to reconstruct
+the original key columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame in wide format with series as columns</p></li>
+<li><p><strong>series_conf</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and VALUE_COL</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame in long format with series as rows</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Uses melt to transform wide to long format</p></li>
+<li><p>Splits column names by underscore to reconstruct key columns</p></li>
+<li><p>Arranges columns in order: datetime, key_cols, value_col</p></li>
+<li><p>Removes temporary ‘id’ column after processing</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.process_time_series">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">process_time_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_conf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.process_time_series" title="Link to this definition">¶</a></dt>
+<dd><p>Process time series data through complete preprocessing pipeline.</p>
+<p>Applies a comprehensive preprocessing pipeline including column standardization,
+negative value removal, aggregation, dense data creation, and COVID marking.
+Converts input to Polars LazyFrame for efficient processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>Union</em><em>[</em><em>pandas.DataFrame</em><em>, </em><em>polars.DataFrame</em><em>, </em><em>polars.LazyFrame</em><em>]</em>) – Input DataFrame (pandas, Polars, or LazyFrame)</p></li>
+<li><p><strong>series_conf</strong> (<em>dict</em>) – Configuration dictionary containing processing parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Processed LazyFrame with standardized time series data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Converts input to LazyFrame for processing</p></li>
+<li><p>Standardizes column names (TIME_COL -&gt; datetime, VALUE_COL -&gt; y)</p></li>
+<li><p>Removes negative values from target variable</p></li>
+<li><p>Aggregates to daily frequency, then to specified frequency</p></li>
+<li><p>Creates dense data with complete date ranges</p></li>
+<li><p>Adds COVID period indicator column</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.create_dense_data">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">create_dense_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_by_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'timeslot'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.create_dense_data" title="Link to this definition">¶</a></dt>
+<dd><p>Create dense time series data with complete date ranges.</p>
+<p>Expands sparse time series data to include all dates within the specified
+frequency, filling missing dates with NaN values. Can use global date range
+or individual date ranges per ID group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame to expand with complete date ranges</p></li>
+<li><p><strong>id_cols</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of columns that identify unique time series</p></li>
+<li><p><strong>freq</strong> (<em>str</em>) – Frequency string for date range generation (e.g., ‘D’, ‘W’, ‘M’)</p></li>
+<li><p><strong>min_max_by_id</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use individual min/max dates per ID (default: None)</p></li>
+<li><p><strong>date_init</strong> (<em>str</em><em>, </em><em>optional</em>) – Override start date for all series (default: None)</p></li>
+<li><p><strong>date_end</strong> (<em>str</em><em>, </em><em>optional</em>) – Override end date for all series (default: None)</p></li>
+<li><p><strong>time_col</strong> (<em>str</em>) – Name of the time column (default: “timeslot”)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with complete date ranges and original data merged</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Creates Cartesian product of all dates and ID combinations</p></li>
+<li><p>Fills missing dates with NaN values</p></li>
+<li><p>Requires pandas to be installed</p></li>
+<li><p>Uses cross join to create complete date grid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.create_dense_data_pl">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">create_dense_data_pl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_by_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'timeslot'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.create_dense_data_pl" title="Link to this definition">¶</a></dt>
+<dd><p>Create dense time series data with complete date ranges using Polars.</p>
+<p>Expands sparse time series data to include all dates within the specified
+frequency, filling missing dates with null values. Uses Polars for efficient
+processing with lazy evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.LazyFrame</em>) – LazyFrame to expand with complete date ranges</p></li>
+<li><p><strong>id_cols</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of columns that identify unique time series</p></li>
+<li><p><strong>freq</strong> (<em>str</em>) – Frequency string for date range generation (e.g., ‘D’, ‘W’, ‘M’)</p></li>
+<li><p><strong>min_max_by_id</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use individual min/max dates per ID (default: None)</p></li>
+<li><p><strong>date_init</strong> (<em>str</em><em>, </em><em>optional</em>) – Override start date for all series (default: None)</p></li>
+<li><p><strong>date_end</strong> (<em>str</em><em>, </em><em>optional</em>) – Override end date for all series (default: None)</p></li>
+<li><p><strong>time_col</strong> (<em>str</em>) – Name of the time column (default: “timeslot”)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with complete date ranges and original data merged</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Collects LazyFrame for date range calculations</p></li>
+<li><p>Creates cross join of all dates and ID combinations</p></li>
+<li><p>Converts time column to datetime format</p></li>
+<li><p>Returns LazyFrame for efficient processing</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.create_dense_data_pllazy">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">create_dense_data_pllazy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_cols</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_by_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'timeslot'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.create_dense_data_pllazy" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Create a dense dataframe with a frequency of freq, given range of dates or inherited from the dataframe,</dt><dd><p>using the id_cols as keys.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – dataframe to be expanded</p></li>
+<li><p><strong>id_cols</strong> – list of columns to be used as keys</p></li>
+<li><p><strong>freq</strong> – frequency of the new dataframe</p></li>
+<li><p><strong>min_max_by_id</strong> – boolean to indicate if the range of dates is the min and max of the dataframe by id</p></li>
+<li><p><strong>date_init</strong> – if it has a value, all initial dates will be set to this value</p></li>
+<li><p><strong>date_end</strong> – if it has a value, all final dates will be set to this value</p></li>
+<li><p><strong>time_col</strong> – string with name of the column with the time information</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dataframe with all the dates using the frequency freq</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.create_recurrent_dataset">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">create_recurrent_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">look_back</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_output_lags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.create_recurrent_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Create dataset for recurrent neural networks with time series sequences.</p>
+<p>Transforms 2D time series data into 3D sequences suitable for RNN training.
+Creates sliding windows of historical data as input and corresponding future
+values as targets. Supports optional output lag features and flexible target
+column positioning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>numpy.ndarray</em>) – 2D array with shape (num_samples, num_features)</p></li>
+<li><p><strong>look_back</strong> (<em>int</em>) – Number of previous time steps to use as input</p></li>
+<li><p><strong>include_output_lags</strong> (<em>bool</em>) – Whether to include output lag features (default: False)</p></li>
+<li><p><strong>lags</strong> (<em>list</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – List of lag periods to include as features (default: None)</p></li>
+<li><p><strong>output_last</strong> (<em>bool</em>) – Whether target is last column (True) or first column (False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing (input_sequences, target_values)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[numpy.ndarray, numpy.ndarray]</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Input shape: (num_samples, look_back, num_features)</p></li>
+<li><p>Output shape: (num_samples,)</p></li>
+<li><p>Supports both positive and negative lags</p></li>
+<li><p>Handles output column positioning (first vs last)</p></li>
+<li><p>Creates sequences with proper temporal alignment</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.get_corr_matrix">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">get_corr_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_top</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">years_corr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.get_corr_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate correlation matrix for time series data with filtering options.</p>
+<p>Computes Pearson correlation matrix for time series data with various filtering
+and selection options. Automatically detects date columns and validates data format.
+Returns top correlations or correlations above threshold for each time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing time series data</p></li>
+<li><p><strong>n_top</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of top correlations to return per series (default: None)</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum correlation threshold to filter results (default: None)</p></li>
+<li><p><strong>date_col</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the date column (auto-detected if None)</p></li>
+<li><p><strong>years_corr</strong> (<em>list</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – List of years to filter data for correlation calculation (default: None)</p></li>
+<li><p><strong>subset</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – List of series names to focus correlation analysis on (default: None)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with series names as keys and correlation dictionaries as values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, dict[str, float]]</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Automatically detects datetime columns or uses index</p></li>
+<li><p>Validates data format and raises errors for inconsistencies</p></li>
+<li><p>Sets diagonal correlations to -100 to avoid self-correlation</p></li>
+<li><p>Returns all correlations if both n_top and threshold are None</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.get_date_col_candidate">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">get_date_col_candidate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.get_date_col_candidate" title="Link to this definition">¶</a></dt>
+<dd><p>Identify datetime columns in DataFrame for time series analysis.</p>
+<p>Searches for datetime columns in the DataFrame and determines whether
+the index contains datetime information. Returns the datetime column
+names and a boolean indicating if the index is datetime-based.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame to analyze for datetime columns</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing (datetime_columns, index_is_datetime)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[list[str] or None, bool]</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Returns None for datetime_columns if no datetime columns found</p></li>
+<li><p>Returns True for index_is_datetime if index is DatetimeIndex</p></li>
+<li><p>Searches all columns for datetime64 dtypes</p></li>
+<li><p>Used by correlation functions for automatic date detection</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.raise_if_inconsistency">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">raise_if_inconsistency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.raise_if_inconsistency" title="Link to this definition">¶</a></dt>
+<dd><p>Validate DataFrame format for time series correlation analysis.</p>
+<p>Performs comprehensive validation of DataFrame structure to ensure
+it’s suitable for correlation analysis. Checks for datetime columns,
+duplicate indices, numeric columns, and proper pivoted format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame to validate</p></li>
+<li><p><strong>date_col</strong> (<em>str</em>) – Name of the date column (or None if using index)</p></li>
+<li><p><strong>as_index</strong> (<em>bool</em>) – Whether the DataFrame uses datetime index</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None (raises ValueError if validation fails)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raises:</dt><dd><p>ValueError: If DataFrame format is inconsistent or invalid</p>
+</dd>
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Validates presence of exactly one datetime column</p></li>
+<li><p>Checks for duplicate indices in time series data</p></li>
+<li><p>Ensures all non-datetime columns are numeric</p></li>
+<li><p>Provides example format in error messages</p></li>
+<li><p>Used by correlation functions for data validation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.processing_time_series.get_corr_matrix_aux">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.processing_time_series.</span></span><span class="sig-name descname"><span class="pre">get_corr_matrix_aux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">years_corr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_top</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#mango_time_series.utils.processing_time_series.get_corr_matrix_aux" title="Link to this definition">¶</a></dt>
+<dd><p>Compute correlation matrix with filtering and selection options.</p>
+<p>Calculates Pearson correlation matrix for time series data and returns
+filtered results based on various criteria. Supports year filtering,
+top N correlations, threshold filtering, and subset analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame with datetime index and numeric columns</p></li>
+<li><p><strong>years_corr</strong> (<em>list</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – List of years to filter data for correlation calculation (default: None)</p></li>
+<li><p><strong>n_top</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of top correlations to return per series (default: None)</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum correlation threshold to filter results (default: None)</p></li>
+<li><p><strong>subset</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – List of series names to focus correlation analysis on (default: None)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with series names as keys and correlation dictionaries as values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, dict[str, float]]</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Filters data by specified years before correlation calculation</p></li>
+<li><p>Sets diagonal correlations to -100 to avoid self-correlation</p></li>
+<li><p>Supports subset analysis for focused correlation studies</p></li>
+<li><p>Returns all correlations if both n_top and threshold are None</p></li>
+<li><p>Issues warnings for edge cases (no threshold matches, etc.)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango_time_series.utils.tabular_structure">
+<span id="tabular-structure"></span><h2>Tabular structure<a class="headerlink" href="#module-mango_time_series.utils.tabular_structure" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.tabular_structure.create_tabular_structure">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.tabular_structure.</span></span><span class="sig-name descname"><span class="pre">create_tabular_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SERIES_CONF</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.tabular_structure.create_tabular_structure" title="Link to this definition">¶</a></dt>
+<dd><p>Create tabular structure for time series forecasting with multiple horizons.</p>
+<p>Transforms time series data into a tabular format suitable for machine learning
+by creating all possible combinations of forecast origins and horizons. Each
+row represents a forecast point with its corresponding horizon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing time series data with datetime column</p></li>
+<li><p><strong>horizon</strong> (<em>int</em>) – Maximum forecast horizon to create (e.g., 7 for 7-day ahead forecasts)</p></li>
+<li><p><strong>SERIES_CONF</strong> (<em>dict</em>) – Configuration dictionary containing KEY_COLS and TIME_PERIOD settings</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with tabular structure including horizon and forecast_origin columns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Creates Cartesian product of original data with horizon range (1 to horizon)</p></li>
+<li><p>Calculates forecast_origin by subtracting horizon from datetime</p></li>
+<li><p>Handles different time periods (months vs other units)</p></li>
+<li><p>Sorts result by key columns and datetime</p></li>
+<li><p>Each row represents one forecast point for one horizon</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.tabular_structure.create_tabular_structure_pl">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.tabular_structure.</span></span><span class="sig-name descname"><span class="pre">create_tabular_structure_pl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SERIES_CONF</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.tabular_structure.create_tabular_structure_pl" title="Link to this definition">¶</a></dt>
+<dd><p>Create tabular structure for time series forecasting using Polars.</p>
+<p>Transforms time series data into a tabular format suitable for machine learning
+using Polars LazyFrame for efficient processing. Creates all possible combinations
+of forecast origins and horizons with optimized operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.LazyFrame</em>) – LazyFrame containing time series data with datetime column</p></li>
+<li><p><strong>horizon</strong> (<em>int</em>) – Maximum forecast horizon to create (e.g., 7 for 7-day ahead forecasts)</p></li>
+<li><p><strong>SERIES_CONF</strong> (<em>dict</em>) – Configuration dictionary containing TIME_PERIOD settings</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with tabular structure including horizon and forecast_origin columns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Uses Polars cross join for efficient Cartesian product creation</p></li>
+<li><p>Extracts time unit from TIME_PERIOD configuration</p></li>
+<li><p>Calculates forecast_origin using Polars datetime offset operations</p></li>
+<li><p>Maintains lazy evaluation for memory efficiency</p></li>
+<li><p>Each row represents one forecast point for one horizon</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango_time_series.utils.time_features">
+<span id="time-features"></span><h2>Time features<a class="headerlink" href="#module-mango_time_series.utils.time_features" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.time_features.create_time_features">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.time_features.</span></span><span class="sig-name descname"><span class="pre">create_time_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.LazyFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SERIES_CONF</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.LazyFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.time_features.create_time_features" title="Link to this definition">¶</a></dt>
+<dd><p>Create time-based features from datetime column based on time period description.</p>
+<p>Extracts relevant time features from the datetime column depending on the
+time period description in the series configuration. Creates different
+sets of features for monthly, daily, and weekly time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>polars.LazyFrame</em>) – LazyFrame containing time series data with datetime column</p></li>
+<li><p><strong>SERIES_CONF</strong> (<em>dict</em>) – Configuration dictionary containing TIME_PERIOD_DESCR</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>LazyFrame with additional time feature columns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>polars.LazyFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>For monthly data: adds ‘month’ and ‘year’ columns</p></li>
+<li><p>For daily data: adds ‘day’, ‘month’, ‘year’, and ‘weekday’ columns</p></li>
+<li><p>For weekly data: adds ‘week’ and ‘year’ columns</p></li>
+<li><p>Features are extracted using Polars datetime methods</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.time_features.month_as_bspline">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.time_features.</span></span><span class="sig-name descname"><span class="pre">month_as_bspline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">polars.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas.DataFrame</span></span></span><a class="headerlink" href="#mango_time_series.utils.time_features.month_as_bspline" title="Link to this definition">¶</a></dt>
+<dd><p>Transform monthly seasonality into B-spline features for machine learning.</p>
+<p>Converts monthly seasonal patterns into smooth B-spline features that can
+be used effectively in machine learning models. Creates day-of-year features
+and applies B-spline transformation with periodic extrapolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>polars.DataFrame</em>) – DataFrame containing time series data with datetime column</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with original data plus B-spline features</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Converts Polars DataFrame to pandas for sklearn compatibility</p></li>
+<li><p>Creates day_of_year feature from datetime column</p></li>
+<li><p>Applies B-spline transformation with 12 knots (monthly period)</p></li>
+<li><p>Uses periodic extrapolation for smooth seasonal transitions</p></li>
+<li><p>Removes intermediate day_of_year column after transformation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango_time_series.utils.time_features.custom_weights">
+<span class="sig-prename descclassname"><span class="pre">mango_time_series.utils.time_features.</span></span><span class="sig-name descname"><span class="pre">custom_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DatetimeIndex</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#mango_time_series.utils.time_features.custom_weights" title="Link to this definition">¶</a></dt>
+<dd><p>Create custom weights for time series data with specific period exclusion.</p>
+<p>Generates a weight array where values are set to 0 for a specific date range
+and 1 for all other dates. This is useful for excluding certain periods
+from model training or evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<em>pandas.DatetimeIndex</em>) – DatetimeIndex containing the dates to weight</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of weights (0 or 1) corresponding to each date</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><ul class="simple">
+<li><p>Sets weight to 0 for dates between 2012-06-01 and 2012-10-21</p></li>
+<li><p>Sets weight to 1 for all other dates</p></li>
+<li><p>Useful for excluding specific periods from analysis</p></li>
+<li><p>Returns numpy array for efficient computation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="time_series.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Time series</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="data.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Data</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>

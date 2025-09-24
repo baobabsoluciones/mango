@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-accent-color="violet" data-content_root="">
+<html lang="en" data-accent-color="violet" data-content_root="./">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Bibliography - mango 0.2.3 documentation</title><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Table" href="dev/table.html" /><script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Bibliography - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Genetic" href="code_mango_genetic/code.html" /><script>
     function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
     setColorMode(localStorage._theme||"auto");
   </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
-    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=301e5329" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=76b6f612" />
     <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@
       
       <strong>mango</strong>
     </a>
-    <div class="sy-head-nav" id="HeadNav">
+    <div class="sy-head-nav" id="head-nav">
       <nav class="sy-head-links"></nav>
       <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="search.html" method="get">
   <input type="text" name="q" placeholder="Search" />
@@ -40,7 +40,7 @@ data-aria-auto="Switch to light color mode"
 data-aria-light="Switch to dark color mode"
 data-aria-dark="Switch to auto color mode">
 <i class="i-lucide theme-icon"></i>
-</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
         <div class="hamburger">
           <span class="hamburger_1"></span>
           <span class="hamburger_2 -translate-x-2"></span>
@@ -57,33 +57,107 @@ data-aria-dark="Switch to auto color mode">
         <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Mango</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="genetic/index.html">Genetic Algorithms (GA)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="genetic/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/individual.html">Individual</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/population.html">Population</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/selection.html">Selection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/crossover.html">Crossover</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/mutation.html">Mutation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/replacement.html">Replacement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/stop.html">Stop conditions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/config.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="genetic/usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog/mango_genetic_changelog.html#features">Features</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="dev/index.html">Code documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="dev/benchmark.html">Benchmarks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/clients.html">Clients</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/models.html">Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/processing.html">Processing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/table.html">Table</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango/index.html">Mango code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/shared.html">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango/table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mango_genetic/code.html">Genetic</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Bibliography</a></li>
 </ul>
 
         </div>
-      </div></div>
+      </div>
+    </div>
   </aside>
   <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
   <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
@@ -93,7 +167,8 @@ data-aria-dark="Switch to auto color mode">
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
   <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
-  <main class="sy-main w-full max-sm:max-w-full print:pt-6"><div class="sy-breadcrumbs" role="navigation">
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
   <div class="sy-breadcrumbs-inner flex items-center">
     <div class="md:hidden mr-3">
       <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
@@ -119,31 +194,27 @@ data-aria-dark="Switch to auto color mode">
       <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
         <article class="yue" role="main">
           <section id="bibliography">
-<h1>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this heading">¶</a></h1>
+<h1>Bibliography<a class="headerlink" href="#bibliography" title="Link to this heading">¶</a></h1>
 <div class="docutils container" id="id1">
 <div role="list" class="citation-list">
 <div class="citation" id="id3" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <p>Larry J Eshelman and J David Schaffer. Real-coded genetic algorithms and interval-schemata. In <em>Foundations of genetic algorithms</em>, volume 2, pages 187–202. Elsevier, 1993.</p>
 </div>
-<div class="citation" id="id7" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
-<p>Marcin Molga and Czesław Smutnicki. Test functions for optimization needs. <em>Test functions for optimization needs</em>, 101:48, 2005.</p>
-</div>
 <div class="citation" id="id5" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
 <p>Isao Ono, Hajime Kita, and Shigenobu Kobayashi. A real-coded genetic algorithm using the unimodal normal distribution crossover. <em>Advances in evolutionary computing: theory and applications</em>, pages 213–237, 2003.</p>
 </div>
 <div class="citation" id="id2" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
 <p>Nicholas J Radcliffe and others. Equivalence class analysis of genetic algorithms. <em>Complex systems</em>, 5(2):183–205, 1991.</p>
 </div>
 <div class="citation" id="id6" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
 <p>J David Schaffer, Rich Caruana, Larry J Eshelman, and Rajarshi Das. A study of control parameters affecting online performance of genetic algorithms for function optimization. In <em>Proceedings of the 3rd international conference on genetic algorithms</em>, 51–60. 1989.</p>
 </div>
 <div class="citation" id="id4" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
 <p>Alden H Wright. Genetic algorithms for real parameter optimization. In <em>Foundations of genetic algorithms</em>, volume 1, pages 205–218. Elsevier, 1991.</p>
 </div>
 </div>
@@ -156,10 +227,10 @@ data-aria-dark="Switch to auto color mode">
   </svg>
   <span>Back to top</span>
 </button><div class="navigation flex print:hidden"><div class="navigation-prev">
-    <a href="dev/table.html">
+    <a href="code_mango_genetic/code.html">
       <i class="i-lucide chevron-left"></i>
       <div class="page-info">
-        <span>Previous</span><div class="title">Table</div></div>
+        <span>Previous</span><div class="title">Genetic</div></div>
     </a>
   </div></div></div>
     </div>
@@ -182,8 +253,8 @@ data-aria-dark="Switch to auto color mode">
     </div>
   </div>
 </footer>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=860ec0ee"></script>
+      <script src="_static/documentation_options.js?v=072b7ed8"></script>
       <script src="_static/doctools.js?v=888ff710"></script>
-      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
-      <script src="_static/shibuya.js?v=3cc430e2"></script></body>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/shibuya.js?v=c477d091"></script></body>
 </html>

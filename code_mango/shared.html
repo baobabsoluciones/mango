@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Shared Utilities - mango 0.2.3a1 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Table" href="table.html" /><link rel="prev" title="SHAP Analysis" href="shap_analysis.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=76b6f612" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Shared Utilities"/>
+<meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>mango</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><p class="caption" role="heading" aria-level="3"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Mango</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#overview">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#quick-start">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html#support">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog/index.html">Changelogs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html">mango</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_changelog.html#fixed">Fixed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html">mango-time-series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_time_series_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html">mango-autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_autoencoder_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html">mango-calendar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_calendar_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html">mango-dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_dashboard_changelog.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html">mango-genetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#unreleased">[Unreleased]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#added">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#changed">Changed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#id1">Added</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog/mango_genetic_changelog.html#features">Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Mango code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="benchmark.html">Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clients.html">Clients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decodoc.html">Decodoc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging.html">Logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shap_analysis.html">SHAP Analysis</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Shared Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="table.html">Table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_time_series/index.html">Mango time series code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/time_series.html">Time series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/utils.html">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_time_series/data.html">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_autoencoder/index.html">Mango autoencoder code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder.html">Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/autoencoder_api.html">AutoEncoder API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/modules.html">AutoEncoder Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_autoencoder/utils.html">AutoEncoder Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_calendar/index.html">Mango calendar code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html">Calendar Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_calendar/mango_calendar.html#module-mango_calendar.date_utils">Date Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_dashboard/index.html">Mango dashboard</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/file_explorer.html">File Explorer Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_dashboard/time_series.html">Time Series Dashboard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code_mango_genetic/index.html">Mango genetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/individual.html">Individual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/population.html">Population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/selection.html">Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/crossover.html">Crossover</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/mutation.html">Mutation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/replacement.html">Replacement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/stop.html">Stop conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/config.html">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/usage.html">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code_mango_genetic/code.html">Genetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bib.html">Bibliography</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#module-mango.shared.const">Constants</a></li>
+<li><a class="reference internal" href="#module-mango.shared.decorators">Decorators</a><ul>
+<li><a class="reference internal" href="#mango.shared.decorators.validate_args"><code class="docutils literal notranslate"><span class="pre">validate_args()</span></code></a></li>
+<li><a class="reference internal" href="#mango.shared.decorators.pydantic_validation"><code class="docutils literal notranslate"><span class="pre">pydantic_validation()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango.shared.exceptions">Exceptions</a><ul>
+<li><a class="reference internal" href="#mango.shared.exceptions.InvalidCredentials"><code class="docutils literal notranslate"><span class="pre">InvalidCredentials</span></code></a><ul>
+<li><a class="reference internal" href="#mango.shared.exceptions.InvalidCredentials.add_note"><code class="docutils literal notranslate">add_note()</span></code></a></li>
+<li><a class="reference internal" href="#mango.shared.exceptions.InvalidCredentials.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango.shared.exceptions.ValidationError"><code class="docutils literal notranslate"><span class="pre">ValidationError</span></code></a><ul>
+<li><a class="reference internal" href="#mango.shared.exceptions.ValidationError.add_note"><code class="docutils literal notranslate">add_note()</span></code></a></li>
+<li><a class="reference internal" href="#mango.shared.exceptions.ValidationError.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango.shared.exceptions.JobError"><code class="docutils literal notranslate"><span class="pre">JobError</span></code></a><ul>
+<li><a class="reference internal" href="#mango.shared.exceptions.JobError.add_note"><code class="docutils literal notranslate">add_note()</span></code></a></li>
+<li><a class="reference internal" href="#mango.shared.exceptions.JobError.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango.shared.exceptions.BadResponse"><code class="docutils literal notranslate"><span class="pre">BadResponse</span></code></a><ul>
+<li><a class="reference internal" href="#mango.shared.exceptions.BadResponse.add_note"><code class="docutils literal notranslate">add_note()</span></code></a></li>
+<li><a class="reference internal" href="#mango.shared.exceptions.BadResponse.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mango.shared.exceptions.ApiKeyError"><code class="docutils literal notranslate"><span class="pre">ApiKeyError</span></code></a><ul>
+<li><a class="reference internal" href="#mango.shared.exceptions.ApiKeyError.add_note"><code class="docutils literal notranslate">add_note()</span></code></a></li>
+<li><a class="reference internal" href="#mango.shared.exceptions.ApiKeyError.with_traceback"><code class="docutils literal notranslate">with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango.shared.requirement_check">Requirement Check</a><ul>
+<li><a class="reference internal" href="#mango.shared.requirement_check.check_dependencies"><code class="docutils literal notranslate"><span class="pre">check_dependencies()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-mango.shared.spatial">Spatial Functions</a><ul>
+<li><a class="reference internal" href="#mango.shared.spatial.HaversineArgs"><code class="docutils literal notranslate"><span class="pre">HaversineArgs</span></code></a></li>
+<li><a class="reference internal" href="#mango.shared.spatial.haversine"><code class="docutils literal notranslate"><span class="pre">haversine()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">mango</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="index.html"><span itemprop="name">Mango code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Shared Utilities</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="shared-utilities">
+<h1>Shared Utilities<a class="headerlink" href="#shared-utilities" title="Link to this heading">¶</a></h1>
+<p>This module contains shared utilities and common functionality used across the mango library.</p>
+<section id="module-mango.shared.const">
+<span id="constants"></span><h2>Constants<a class="headerlink" href="#module-mango.shared.const" title="Link to this heading">¶</a></h2>
+<p>ARCGIS CONSTANTS</p>
+</section>
+<section id="module-mango.shared.decorators">
+<span id="decorators"></span><h2>Decorators<a class="headerlink" href="#module-mango.shared.decorators" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.shared.decorators.validate_args">
+<span class="sig-prename descclassname"><span class="pre">mango.shared.decorators.</span></span><span class="sig-name descname"><span class="pre">validate_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">schemas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.decorators.validate_args" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator to validate function arguments against JSON schemas.</p>
+<p>Validates keyword arguments against provided JSON schemas before
+executing the decorated function. Schemas can be provided as
+dictionaries or file paths to JSON schema files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>schemas</strong> (<em>dict</em>) – Dictionary mapping argument names to their validation schemas</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Decorator function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#mango.shared.exceptions.ValidationError" title="mango.shared.exceptions.ValidationError"><strong>ValidationError</strong></a> – If any argument fails validation</p></li>
+<li><p><strong>ValueError</strong> – If schema format is invalid</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span data-line="4"><span class="gp">... </span>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+</span><span data-line="5"><span class="gp">... </span>        <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="s2">&quot;minimum&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="p">},</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+</span><span data-line="8"><span class="gp">... </span><span class="p">}</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@validate_args</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+</span><span data-line="10"><span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">create_user</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+</span><span data-line="11"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Created user: </span><span class="si">{</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">create_user</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+</span><span data-line="13"><span class="go">&#39;Created user: John&#39;</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.shared.decorators.pydantic_validation">
+<span class="sig-prename descclassname"><span class="pre">mango.shared.decorators.</span></span><span class="sig-name descname"><span class="pre">pydantic_validation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">validator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_validation_error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'raise'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'warn'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'ignore'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_validation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">named_validators</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.decorators.pydantic_validation" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator to validate function arguments using Pydantic models.</p>
+<p>Provides comprehensive argument validation using Pydantic models with
+flexible error handling options. Supports both global validation (all
+arguments) and selective validation (specific arguments only).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>validator</strong> (<em>BaseModel</em><em>, </em><em>optional</em>) – Pydantic model to validate all arguments against</p></li>
+<li><p><strong>on_validation_error</strong> (<em>Literal</em><em>[</em><em>&quot;raise&quot;</em><em>, </em><em>&quot;warn&quot;</em><em>, </em><em>&quot;ignore&quot;</em><em>]</em>) – Action to take on validation failure</p></li>
+<li><p><strong>strict_validation</strong> (<em>bool</em>) – Whether to use strict validation (no type coercion)</p></li>
+<li><p><strong>named_validators</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>BaseModel</em><em>]</em>) – Dictionary mapping argument names to Pydantic models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Decorator function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="#mango.shared.exceptions.ValidationError" title="mango.shared.exceptions.ValidationError"><strong>ValidationError</strong></a> – If validation fails and on_validation_error=”raise”</p></li>
+<li><p><strong>ValueError</strong> – If function has positional arguments or invalid error handling option</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">UserModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+</span><span data-line="5"><span class="gp">... </span>    <span class="n">age</span><span class="p">:</span> <span class="nb">int</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@pydantic_validation</span><span class="p">(</span><span class="n">UserModel</span><span class="p">)</span>
+</span><span data-line="9"><span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">create_user</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+</span><span data-line="10"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;User </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> created&quot;</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">create_user</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@example.com&quot;</span><span class="p">)</span>
+</span><span data-line="13"><span class="go">&#39;User John created&#39;</span>
+</span><span data-line="14"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="15"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># With selective validation</span>
+</span><span data-line="16"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@pydantic_validation</span><span class="p">(</span><span class="n">user_data</span><span class="o">=</span><span class="n">UserModel</span><span class="p">)</span>
+</span><span data-line="17"><span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">process_user</span><span class="p">(</span><span class="n">user_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+</span><span data-line="18"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">user_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> with action </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">&quot;</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango.shared.exceptions">
+<span id="exceptions"></span><h2>Exceptions<a class="headerlink" href="#module-mango.shared.exceptions" title="Link to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="mango.shared.exceptions.InvalidCredentials">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.shared.exceptions.</span></span><span class="sig-name descname"><span class="pre">InvalidCredentials</span></span><a class="headerlink" href="#mango.shared.exceptions.InvalidCredentials" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.InvalidCredentials.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.InvalidCredentials.add_note" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.InvalidCredentials.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.InvalidCredentials.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="mango.shared.exceptions.ValidationError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.shared.exceptions.</span></span><span class="sig-name descname"><span class="pre">ValidationError</span></span><a class="headerlink" href="#mango.shared.exceptions.ValidationError" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.ValidationError.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.ValidationError.add_note" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.ValidationError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.ValidationError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="mango.shared.exceptions.JobError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.shared.exceptions.</span></span><span class="sig-name descname"><span class="pre">JobError</span></span><a class="headerlink" href="#mango.shared.exceptions.JobError" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.JobError.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.JobError.add_note" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.JobError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.JobError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="mango.shared.exceptions.BadResponse">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.shared.exceptions.</span></span><span class="sig-name descname"><span class="pre">BadResponse</span></span><a class="headerlink" href="#mango.shared.exceptions.BadResponse" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.BadResponse.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.BadResponse.add_note" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.BadResponse.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.BadResponse.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="mango.shared.exceptions.ApiKeyError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.shared.exceptions.</span></span><span class="sig-name descname"><span class="pre">ApiKeyError</span></span><a class="headerlink" href="#mango.shared.exceptions.ApiKeyError" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.ApiKeyError.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.ApiKeyError.add_note" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mango.shared.exceptions.ApiKeyError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.exceptions.ApiKeyError.with_traceback" title="Link to this definition">¶</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-mango.shared.requirement_check">
+<span id="requirement-check"></span><h2>Requirement Check<a class="headerlink" href="#module-mango.shared.requirement_check" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.shared.requirement_check.check_dependencies">
+<span class="sig-prename descclassname"><span class="pre">mango.shared.requirement_check.</span></span><span class="sig-name descname"><span class="pre">check_dependencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dependencies_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pyproject_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.requirement_check.check_dependencies" title="Link to this definition">¶</a></dt>
+<dd><p>Verify if optional dependencies have been installed for better ImportError handling.</p>
+<p>Checks whether all dependencies specified in a named optional dependency group
+in pyproject.toml are currently installed. This function provides better error
+handling for missing optional dependencies by giving clear installation instructions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dependencies_name</strong> (<em>str</em>) – Name of the optional dependencies group as defined in pyproject.toml</p></li>
+<li><p><strong>pyproject_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to pyproject.toml file. If None, searches in parent directory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if all dependencies are satisfied, False if any are missing</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If pyproject.toml file cannot be found</p></li>
+<li><p><strong>KeyError</strong> – If the specified dependency group name is not found in pyproject.toml</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check if visualization dependencies are installed</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_dependencies</span><span class="p">(</span><span class="s2">&quot;visualization&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">True</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check with custom pyproject.toml path</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_dependencies</span><span class="p">(</span><span class="s2">&quot;ml&quot;</span><span class="p">,</span> <span class="s2">&quot;/path/to/custom/pyproject.toml&quot;</span><span class="p">)</span>
+</span><span data-line="7"><span class="go">False</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-mango.shared.spatial">
+<span id="spatial-functions"></span><h2>Spatial Functions<a class="headerlink" href="#module-mango.shared.spatial" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="mango.shared.spatial.HaversineArgs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mango.shared.spatial.</span></span><span class="sig-name descname"><span class="pre">HaversineArgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.shared.spatial.HaversineArgs" title="Link to this definition">¶</a></dt>
+<dd><p>Pydantic model for validating Haversine distance calculation arguments.</p>
+<p>Validates that the provided coordinates are within valid latitude and
+longitude ranges for geographic calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point1</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – First geographic point as (latitude, longitude) tuple</p></li>
+<li><p><strong>point2</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – Second geographic point as (latitude, longitude) tuple</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#mango.shared.exceptions.ValidationError" title="mango.shared.exceptions.ValidationError"><strong>ValidationError</strong></a> – If coordinates are outside valid ranges</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mango.shared.spatial.haversine">
+<span class="sig-prename descclassname"><span class="pre">mango.shared.spatial.</span></span><span class="sig-name descname"><span class="pre">haversine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#mango.shared.spatial.haversine" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the great circle distance between two points on Earth.</p>
+<p>Computes the shortest distance between two points on the surface of a
+sphere (Earth) using the Haversine formula. The result is returned in
+kilometers. This implementation assumes Earth is a perfect sphere.</p>
+<p>For higher precision calculations, consider using geopy which implements
+geodesic calculations that account for Earth’s ellipsoidal shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point1</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – First geographic point as (latitude, longitude) tuple in decimal degrees</p></li>
+<li><p><strong>point2</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – Second geographic point as (latitude, longitude) tuple in decimal degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Distance between the two points in kilometers</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#mango.shared.exceptions.ValidationError" title="mango.shared.exceptions.ValidationError"><strong>ValidationError</strong></a> – If coordinates are outside valid ranges (-90 to 90 for latitude, -180 to 180 for longitude)</p>
+</dd>
+</dl>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Distance between Madrid and Barcelona</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">madrid</span> <span class="o">=</span> <span class="p">(</span><span class="mf">40.4168</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.7038</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">barcelona</span> <span class="o">=</span> <span class="p">(</span><span class="mf">41.3851</span><span class="p">,</span> <span class="mf">2.1734</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span> <span class="o">=</span> <span class="n">haversine</span><span class="p">(</span><span class="n">madrid</span><span class="p">,</span> <span class="n">barcelona</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance: </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="go">Distance: 504.47 km</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt;</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Distance between New York and London</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="n">nyc</span> <span class="o">=</span> <span class="p">(</span><span class="mf">40.7128</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.0060</span><span class="p">)</span>
+</span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="n">london</span> <span class="o">=</span> <span class="p">(</span><span class="mf">51.5074</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1278</span><span class="p">)</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span> <span class="o">=</span> <span class="n">haversine</span><span class="p">(</span><span class="n">nyc</span><span class="p">,</span> <span class="n">london</span><span class="p">)</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance: </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km&quot;</span><span class="p">)</span>
+</span><span data-line="13"><span class="go">Distance: 5570.25 km</span>
+</span></pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="shap_analysis.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">SHAP Analysis</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="table.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Table</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2023, baobab soluciones</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=072b7ed8"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=c477d091"></script></body>
+</html>
