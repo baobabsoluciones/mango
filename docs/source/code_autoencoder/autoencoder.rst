@@ -2,7 +2,7 @@ Autoencoder
 ===========
 
 .. note::
-    This documentation is still under development. If you find any bug or have any suggestion in the decodoc module, please, open an issue in the `GitHub repository <https://github.com/baobabsoluciones/mango>`_.
+    This documentation is still under development. If you find any bug or have any suggestion in the decodoc module, please, open an issue in the `GitHub repository <https://github.com/baobabsoluciones/mango>`_. Any contribution is welcome!
 
 The autoencoder module provides a powerful implementation of autoencoder neural networks specifically designed for time series data. This implementation supports various architectures and configurations for encoding and decoding time series data, making it suitable for tasks like anomaly detection, data reconstruction, and feature learning.
 
