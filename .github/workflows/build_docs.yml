@@ -41,7 +41,7 @@ jobs:
     # Build documentation
     - name: Build HTML docs
       working-directory: docs
-      run: make html
+      run: uv run make html
     
     # Publish built docs to gh-pages branch
     - name: Commit documentation changes
