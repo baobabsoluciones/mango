@@ -9,7 +9,7 @@ Overview
 Mango is the core library that provides fundamental functionality for data manipulation, processing, and analysis. It serves as the foundation for the broader mango ecosystem of specialized libraries, offering a robust and flexible platform for data science and machine learning applications.
 
 Main Features
-------------
+-------------
 
 **Data Processing**
 - File handling for multiple formats (CSV, Excel, JSON)

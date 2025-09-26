@@ -1,5 +1,9 @@
 Mango Autoencoder
+<<<<<<< HEAD
 ================
+=======
+=================
+>>>>>>> master
 
 A Python library for anomaly detection in time series using neural autoencoders.
 
@@ -166,7 +170,11 @@ Visualization Files
 - **``loss_history.html``**: Interactive plot showing training and validation loss over epochs
 
 Reconstruction Files (if ``reconstruction_diagnostic=True``)
+<<<<<<< HEAD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=======
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>>> master
 
 - **``actual_vs_reconstructed.html``**: Interactive plot comparing original vs reconstructed data
 - **``reconstruction_error.csv``**: Detailed reconstruction error data
@@ -184,7 +192,11 @@ Reconstruction Results
 - **``reconstruct_new_data/{id}_reconstruction_results.csv``**: Reconstructed data for each ID (or "global" if no IDs)
 
 Diagnostic Files (if ``reconstruction_diagnostic=True``)
+<<<<<<< HEAD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=======
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>>>> master
 
 - **``reconstruct_new_data/{id}_reconstruction_error.csv``**: Reconstruction error data for each ID
 - **``reconstruct_new_data/{id}_reconstruction_error_summary.csv``**: Summary statistics for each ID
