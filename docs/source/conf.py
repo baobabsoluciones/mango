@@ -59,7 +59,6 @@ autodoc_mock_imports = [
     "holidays",
     "idna",
     "jinja2",
-    "lightgbm",
     "numpy",
     "openpyxl",
     "pandas",
@@ -77,7 +76,6 @@ autodoc_mock_imports = [
     "requests",
     "sklearn",
     "scipy",
-    "shap",
     "six",
     "statsforecast",
     "statsmodels",
@@ -90,7 +88,6 @@ autodoc_mock_imports = [
     "tqdm",
     "unidecode",
     "urllib3",
-    "xgboost",
     "XlsxWriter",
     "matplotlib",
     "PIL"
