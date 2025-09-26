@@ -13,6 +13,5 @@ Mango code
     logging
     models
     processing
-    shap_analysis
     shared
     table

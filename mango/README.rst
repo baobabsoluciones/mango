@@ -31,7 +31,6 @@ Main Features
 
 **Machine Learning**
 - Neural network implementations
-- SHAP analysis tools
 - Model evaluation and benchmarking
 - Optimization algorithms and benchmarks
 
@@ -83,13 +82,12 @@ Dependencies
 Core dependencies include numpy, pandas, and other essential data science libraries. Optional dependencies are available for specific functionality:
 
 - **models**: Pyomo for optimization
-- **shap**: SHAP analysis with lightgbm and xgboost
 - **dev**: Development and testing tools
 
 Documentation
 -------------
 
-Full documentation is available at: https://mango.readthedocs.io/
+Full documentation is available at: https://baobabsoluciones.github.io/mango/
 
 License
 -------
@@ -106,4 +104,4 @@ For questions, issues, or contributions, please contact:
 
 ---
 
-Made with ❤️ by `baobab soluciones <mailto:mango@baobabsoluciones.es>`_
+Made with ❤️ by `baobab soluciones <https://baobabsoluciones.es/>`_

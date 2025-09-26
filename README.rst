@@ -80,16 +80,16 @@ Installation
 Documentation
 =============
 
-Full documentation is available at: https://mango.readthedocs.io/
+Full documentation is available at: https://baobabsoluciones.github.io/mango/
 
 Individual library documentation:
 
-- `Mango <https://mango.readthedocs.io/en/latest/code_mango/index.html>`_
-- `Mango Autoencoder <https://mango.readthedocs.io/en/latest/code_autoencoder/index.html>`_
-- `Mango Calendar <https://mango.readthedocs.io/en/latest/code_mango_calendar/index.html>`_
-- `Mango Dashboard <https://mango.readthedocs.io/en/latest/code_mango_dashboard/index.html>`_
-- `Mango Genetic <https://mango.readthedocs.io/en/latest/code_mango_genetic/index.html>`_
-- `Mango Time Series <https://mango.readthedocs.io/en/latest/code_mango_time_series/index.html>`_
+- `Mango <https://baobabsoluciones.github.io/mango/code_mango/index.html>`_
+- `Mango Autoencoder <https://baobabsoluciones.github.io/mango/code_autoencoder/index.html>`_
+- `Mango Calendar <https://baobabsoluciones.github.io/mango/code_mango_calendar/index.html>`_
+- `Mango Dashboard <https://baobabsoluciones.github.io/mango/code_mango_dashboard/index.html>`_
+- `Mango Genetic <https://baobabsoluciones.github.io/mango/code_mango_genetic/index.html>`_
+- `Mango Time Series <https://baobabsoluciones.github.io/mango/code_mango_time_series/index.html>`_
 
 Contributing
 ============
@@ -116,4 +116,4 @@ For questions, issues, or contributions, please contact:
 
 ---
 
-Made with ❤️ by `baobab soluciones <mailto:mango@baobabsoluciones.es>`_
+Made with ❤️ by `baobab soluciones <https://baobabsoluciones.es/>`_

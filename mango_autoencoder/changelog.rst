@@ -1,6 +1,3 @@
-Changelog
-=========
-
 All notable changes to the mango_autoencoder project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
@@ -9,16 +6,15 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.1] - 2024-12-26
+--------------------
+
 Added
 -----
-- Enhanced autoencoder functionality and performance
-- Improved anomaly detection capabilities
-- Better integration with the mango ecosystem
+- Correct mango dependency version
 
-Changed
--------
-- Updated dependencies and package configuration
-- Enhanced test coverage and documentation
+[1.0.0] - 2024-12-24
+--------------------
 
 Added
 -----

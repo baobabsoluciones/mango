@@ -30,4 +30,3 @@ jobs:
       - name: Publish to PyPI
         run: uv publish --token ${{ secrets.pypi_mango_time_series_token }} dist/*
         working-directory: mango_time_series
-
