@@ -1,5 +1,5 @@
 Mango Dashboard
-==============
+===============
 
 Mango Dashboard is an interactive web application built with Streamlit that provides tools for exploring and visualizing data files. It includes two main modules: **File Explorer** and **Time Series Dashboard**.
 

@@ -1,5 +1,5 @@
 Mango Genetic
-============
+=============
 
 A Python library for implementing genetic algorithms and evolutionary computation methods.
 
