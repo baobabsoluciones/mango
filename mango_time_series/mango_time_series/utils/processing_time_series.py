@@ -1066,9 +1066,7 @@ def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool) -> N
                     "ventas_loc2": [60, 31, 46, 43, 60, 20],
                 }
                 example = pd.DataFrame(data).set_index("fecha")
-                raise ValueError(
-                    f"Dataframe must be pivot:{print(example.to_markdown())}"
-                )
+                raise ValueError(f"Dataframe must be pivot:\n{example.to_string()}")
         else:
             columns_num = sum(
                 pd.api.types.is_numeric_dtype(df[col]) for col in df.columns
@@ -1095,9 +1093,7 @@ def raise_if_inconsistency(df: pd.DataFrame, date_col: str, as_index: bool) -> N
                     "ventas_loc2": [60, 31, 46, 43, 60, 20],
                 }
                 example = pd.DataFrame(data).set_index("fecha")
-                raise ValueError(
-                    f"Dataframe must be pivot:{print(example.to_markdown())}"
-                )
+                raise ValueError(f"Dataframe must be pivot:\n{example.to_string()}")
         else:
             columns_num = sum(
                 pd.api.types.is_numeric_dtype(df[col]) for col in df.columns
