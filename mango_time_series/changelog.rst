@@ -1,6 +1,3 @@
-Changelog
-=========
-
 All notable changes to the mango_time_series project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
@@ -9,16 +6,15 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.1] - 2024-12-26
+-------------------
+
 Added
 -----
-- Enhanced time series analysis capabilities
-- Improved data processing and validation functions
-- Better integration with the mango ecosystem
+- Updated mango dependency version
 
-Changed
--------
-- Updated dependencies and package configuration
-- Enhanced test coverage and documentation
+[1.0.0] - 2024-12-24
+-------------------
 
 Added
 -----
@@ -30,6 +26,14 @@ Added
 - Heteroscedasticity analysis
 - Custom cross-validation for time series forecasting
 - Comprehensive logging and error handling
+- Enhanced time series analysis capabilities
+- Improved data processing and validation functions
+- Better integration with the mango ecosystem
+
+Changed
+-------
+- Updated dependencies and package configuration
+- Enhanced test coverage and documentation
 
 Features
 --------
