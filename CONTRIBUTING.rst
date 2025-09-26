@@ -29,10 +29,25 @@ Python Code Style
 
 1. All code must be formatted using Black formatter with default settings:
 
+   **Using pip:**
+
    .. code-block:: bash
 
        # Install Black
        pip install black
+
+       # Format a file
+       black file.py
+
+       # Format entire project
+       black .
+
+   **Using uv:**
+
+   .. code-block:: bash
+
+       # Install Black with uv
+       uv tool install black
 
        # Format a file
        black file.py
@@ -227,43 +242,72 @@ Running Tests
 
 1. Run all tests:
 
+   **Using pip:**
+
    .. code-block:: bash
 
-       # Using pytest directly
-       pytest
-       
-       # Using uv
-       uv run pytest
+       # Run tests with unittest
+       python -m unittest discover
+
+   **Using uv:**
+
+   .. code-block:: bash
+
+       # Run tests with uv
+       uv run python -m unittest discover
 
 2. Run tests with coverage:
 
+   **Using pip:**
+
    .. code-block:: bash
 
-       # Using pytest directly
-       pytest --cov=mango
+       # Install coverage
+       pip install coverage
        
-       # Using uv
-       uv run pytest --cov=mango
+       # Run tests with coverage
+       coverage run -m unittest discover
+       coverage report
+
+   **Using uv:**
+
+   .. code-block:: bash
+
+       # Run tests with coverage using uv
+       uv run coverage run -m unittest discover
+       uv run coverage report
 
 3. Run specific test file:
 
+   **Using pip:**
+
    .. code-block:: bash
 
-       # Using pytest directly
-       pytest tests/module/test_feature.py
-       
-       # Using uv
-       uv run pytest tests/module/test_feature.py
+       # Run specific test file
+       python -m unittest tests.module.test_feature
+
+   **Using uv:**
+
+   .. code-block:: bash
+
+       # Run specific test file with uv
+       uv run python -m unittest tests.module.test_feature
 
 4. Run tests matching a pattern:
 
+   **Using pip:**
+
    .. code-block:: bash
 
-       # Using pytest directly
-       pytest -k "test_calculate"
-       
-       # Using uv
-       uv run pytest -k "test_calculate"
+       # Run tests matching pattern
+       python -m unittest discover -p "*test_calculate*"
+
+   **Using uv:**
+
+   .. code-block:: bash
+
+       # Run tests matching pattern with uv
+       uv run python -m unittest discover -p "*test_calculate*"
 
 Test Coverage Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -272,36 +316,23 @@ Test Coverage Requirements
 - Critical paths should have 100% coverage
 - Run coverage reports to verify:
 
+  **Using pip:**
+
   .. code-block:: bash
 
-      # Using pytest directly
-      pytest --cov=mango --cov-report=html
-      
-      # Using uv
-      uv run pytest --cov=mango --cov-report=html
+      # Run coverage report
+      coverage run -m unittest discover
+      coverage report
+      coverage html
 
-Mocking and Patching
-^^^^^^^^^^^^^^^^^
+  **Using uv:**
 
-Use mocking for external dependencies:
+  .. code-block:: bash
 
-.. code-block:: python
-
-    from unittest.mock import patch, MagicMock
-
-    def test_data_processor_with_external_api():
-        """
-        Test data processor with mocked API calls.
-        """
-        mock_response = MagicMock()
-        mock_response.json.return_value = {"data": [1, 2, 3]}
-        
-        with patch("requests.get") as mock_get:
-            mock_get.return_value = mock_response
-            result = process_external_data("example.com/api")
-            
-            mock_get.assert_called_once_with("example.com/api")
-            assert result == [1, 2, 3]
+      # Run coverage report with uv
+      uv run coverage run -m unittest discover
+      uv run coverage report
+      uv run coverage html
 
 Documentation
 ------------
@@ -309,6 +340,129 @@ Documentation
 1. Update docstrings for any modified functions
 2. Update RST files in ``docs/source`` for new features
 3. Add examples to the documentation when appropriate
+4. **Important**: When adding new dependencies, add them to the mock imports in ``docs/source/conf.py`` to ensure autodoc works correctly
+
+   Example: If you add a new library like ``matplotlib``, add it to the ``autodoc_mock_imports`` list:
+
+   .. code-block:: python
+
+       # In docs/source/conf.py
+       autodoc_mock_imports = [
+           "numpy",
+           "pandas", 
+           "matplotlib",  # ← Add new library here
+           # ... other libraries
+       ]
+
+5. **Generate documentation locally** to verify everything is working correctly:
+
+   .. code-block:: bash
+
+       # Navigate to docs directory
+       cd docs
+       
+       # Activate documentation virtual environment and build
+       uv run make html
+       
+       # Open the generated documentation
+       start build/html/index.html  # Windows
+       # or
+       open build/html/index.html   # macOS
+       # or
+       xdg-open build/html/index.html  # Linux
+
+   **Note**: If you want to regenerate the documentation, you may need to clean the build directory first:
+
+   .. code-block:: bash
+
+       # Clean previous build
+       rm -rf build/
+       
+       # Regenerate documentation
+       uv run make html
+
+Publishing to PyPI
+~~~~~~~~~~~~~~~~~
+
+**Important**: Before publishing an official version from master, create beta versions in the develop branch with alpha format (e.g., 0.3.0a1) to test the release process.
+
+When you're ready to publish a new version to PyPI, follow these steps:
+
+1. **Check that README.rst files are properly formatted** to avoid GitHub Action failures:
+
+   .. code-block:: bash
+
+       # Navigate to the library directory
+       cd librería
+       # Example: cd mango_calendar
+
+       # Create the tag
+       git tag mango_calendarVERSION
+       # Example: git tag mango_calendar1.0.0
+
+       # Install twine for validation
+       pip install twine
+       
+       # Build the package
+       uv build --sdist --wheel
+       
+       # Check for formatting errors
+       twine check dist/*
+
+       # If there are errors, fix them and repeat the last two commands
+
+2. **Push tags to master** to trigger the PyPI publishing GitHub Actions:
+
+   .. code-block:: bash
+
+       # Create the tag
+       git tag mango_calendarVERSION
+       # Example: git tag mango_calendar1.0.0
+
+       # Push the tag to trigger the workflow
+       git push origin mango_calendarVERSION
+       # Example: git push origin mango_calendar1.0.0
+
+   The GitHub Action will automatically build and publish the package to PyPI.
+
+**Beta Testing Process:**
+
+Before releasing an official version, follow this beta testing workflow:
+
+1. **Create beta versions in develop branch**:
+
+   .. code-block:: bash
+
+       # Switch to develop branch
+       git checkout develop
+       
+       # Create alpha/beta tags for testing
+       git tag mango_calendar0.3.0a1  # First alpha
+       git tag mango_calendar0.3.0a2  # Second alpha
+       git tag mango_calendar0.3.0b1  # First beta
+       
+       # Push beta tags
+       git push origin mango_calendar0.3.0a1
+       git push origin mango_calendar0.3.0a2
+       git push origin mango_calendar0.3.0b1
+
+2. **Test the beta releases**:
+   - Verify PyPI publishing works correctly
+   - Test installation: ``pip install mango-calendar==0.3.0a1``
+   - Check that all functionality works as expected
+   - Validate documentation generation
+
+3. **Once beta testing is complete**, merge to master and create the official release:
+
+   .. code-block:: bash
+
+       # Merge develop to master
+       git checkout master
+       git merge develop
+       
+       # Create official release tag
+       git tag mango_calendar0.3.0
+       git push origin mango_calendar0.3.0
 
 Example of a well-documented feature:
 
@@ -405,7 +559,7 @@ Package Management
 
 We support both pip and uv for package management:
 
-**Using uv (Recommended):**
+**Using uv:**
 
 .. code-block:: bash
 
@@ -428,77 +582,6 @@ We support both pip and uv for package management:
     uv run black .
 
 
-IDE Setup
-~~~~~~~~
-
-For better development experience, we recommend opening each library separately in your IDE:
-
-1. For Mango library development:
-
-   .. code-block:: bash
-
-       # Clone the repository
-       git clone https://github.com/baobabsoluciones/mango.git
-       cd mango
-
-       # Using uv
-       uv venv
-       uv sync
-       uv run pip install -e .
-
-       # Open mango directory in your IDE
-       code mango/  # For VS Code
-       # or
-       pycharm mango/  # For PyCharm
-
-2. For Mango Time Series development:
-
-   .. code-block:: bash
-
-       # From repository root
-       cd mango_time_series
-
-       # Using uv
-       uv venv
-       uv sync
-
-       # Open mango_time_series directory in your IDE
-       code .  # For VS Code
-       # or
-       pycharm .  # For PyCharm
-
-Development Environment
-~~~~~~~~~~~~~~~~~~~~
-
-1. Configure your IDE:
-
-   - Enable Black formatter on save
-   - Set line length to 88 characters (Black default)
-   - Enable reST docstring format
-   - Configure pytest as test runner
-
-2. Recommended VS Code settings (`.vscode/settings.json`):
-
-   .. code-block:: json
-
-       {
-           "python.formatting.provider": "black",
-           "editor.formatOnSave": true,
-           "editor.rulers": [88],
-           "python.linting.enabled": true,
-           "python.testing.pytestEnabled": true,
-           "autoDocstring.docstringFormat": "sphinx"
-       }
-
-3. Pre-commit hooks:
-
-   Install pre-commit hooks to ensure code quality before committing:
-
-   .. code-block:: bash
-
-       # Using uv
-       uv add --dev pre-commit
-       uv run pre-commit install
 
 Development Workflow
 ~~~~~~~~~~~~~~~~~
