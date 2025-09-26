@@ -41,11 +41,6 @@ html_static_path = ["static"]
 autodoc_member_order = "bysource"
 autodoc_default_options = {"members": True, "inherited-members": True}
 
-from mango import mango
-
-version = mango.__version__
-release = mango.__version__
-
 
 # Options for bibtex
 bibtex_bibfiles = ["./refs.bib"]
