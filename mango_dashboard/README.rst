@@ -248,4 +248,4 @@ For questions, issues, or contributions, please contact:
 
 ---
 
-Made with ❤️ by `baobab soluciones <mailto:mango@baobabsoluciones.es>`_
+Made with ❤️ by `baobab soluciones <https://baobabsoluciones.es/>`_
