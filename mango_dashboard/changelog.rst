@@ -7,14 +7,14 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 ------------
 
 [1.0.1] - 2024-12-26
--------------------
+--------------------
 
 Added
 -----
 - Updated mango dependency version
 
 [1.0.0] - 2024-12-24
--------------------
+--------------------
 
 Added
 -----
