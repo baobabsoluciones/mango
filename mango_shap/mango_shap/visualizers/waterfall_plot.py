@@ -1,5 +1,3 @@
-"""Waterfall plot visualization for SHAP values."""
-
 from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
@@ -13,11 +11,25 @@ class WaterfallPlot:
     """
     Create waterfall plots for SHAP values.
 
-    Shows how each feature contributes to the final prediction.
+    Generates waterfall plots that show the step-by-step contribution of
+    each feature to a specific prediction, starting from the baseline
+    and building up to the final prediction value.
+
+    Example:
+        >>> plotter = WaterfallPlot()
+        >>> plotter.plot(shap_values, data, instance_idx=0, show=True)
     """
 
     def __init__(self) -> None:
-        """Initialize the waterfall plot generator."""
+        """
+        Initialize the waterfall plot generator.
+
+        Sets up logging and prepares the plotter for creating waterfall plots.
+        No parameters are required as the plotter is stateless.
+
+        :return: None
+        :rtype: None
+        """
         self.logger = get_configured_logger()
 
     def plot(
@@ -32,12 +44,27 @@ class WaterfallPlot:
         """
         Create a waterfall plot for a specific instance.
 
-        :param shap_values: SHAP values to plot
-        :param data: Data used to generate SHAP values
-        :param instance_idx: Index of the instance to plot
-        :param feature_names: Names of features
-        :param show: Whether to display the plot
-        :param save_path: Path to save the plot
+        Generates a waterfall plot that shows the step-by-step contribution
+        of each feature to the prediction for a specific instance, starting
+        from the baseline and building up to the final prediction value.
+
+        :param shap_values: SHAP values array to plot
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param instance_idx: Index of the instance to visualize
+        :type instance_idx: int
+        :param feature_names: Optional list of feature names for labels
+        :type feature_names: Optional[List[str]]
+        :param show: Whether to display the plot immediately
+        :type show: bool
+        :param save_path: Optional path to save the plot as image file
+        :type save_path: Optional[str]
+        :return: None
+        :rtype: None
+
+        Example:
+            >>> plotter.plot(shap_values, data, instance_idx=0, show=True)
         """
         self.logger.info(f"Creating waterfall plot for instance {instance_idx}")
 

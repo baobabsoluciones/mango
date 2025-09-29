@@ -1,5 +1,3 @@
-"""Dependence plot visualization for SHAP values."""
-
 from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
@@ -13,11 +11,25 @@ class DependencePlot:
     """
     Create dependence plots for SHAP values.
 
-    Shows how a feature's value affects its SHAP value.
+    Generates dependence plots that visualize the relationship between feature
+    values and their corresponding SHAP values. Supports interaction effects
+    and provides options for display and saving.
+
+    Example:
+        >>> plotter = DependencePlot()
+        >>> plotter.plot(shap_values, data, feature_idx=0, show=True)
     """
 
     def __init__(self) -> None:
-        """Initialize the dependence plot generator."""
+        """
+        Initialize the dependence plot generator.
+
+        Sets up logging and prepares the plotter for creating dependence plots.
+        No parameters are required as the plotter is stateless.
+
+        :return: None
+        :rtype: None
+        """
         self.logger = get_configured_logger()
         self.logger.info("DependencePlot initialized")
 
@@ -34,13 +46,29 @@ class DependencePlot:
         """
         Create a dependence plot for a specific feature.
 
-        :param shap_values: SHAP values to plot
-        :param data: Data used to generate SHAP values
-        :param feature_idx: Index of the feature to plot
-        :param interaction_feature: Index of interaction feature
-        :param feature_names: Names of features
-        :param show: Whether to display the plot
-        :param save_path: Path to save the plot
+        Generates a scatter plot showing the relationship between a feature's
+        values and its corresponding SHAP values. Optionally includes interaction
+        effects with another feature through color coding.
+
+        :param shap_values: SHAP values array to plot
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param feature_idx: Index of the feature to analyze
+        :type feature_idx: int
+        :param interaction_feature: Optional index of feature for interaction effects
+        :type interaction_feature: Optional[int]
+        :param feature_names: Optional list of feature names for labels
+        :type feature_names: Optional[List[str]]
+        :param show: Whether to display the plot immediately
+        :type show: bool
+        :param save_path: Optional path to save the plot as image file
+        :type save_path: Optional[str]
+        :return: None
+        :rtype: None
+
+        Example:
+            >>> plotter.plot(shap_values, data, feature_idx=0, interaction_feature=1)
         """
         self.logger.info(f"Creating dependence plot for feature {feature_idx}")
 

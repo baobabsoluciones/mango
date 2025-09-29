@@ -1,5 +1,3 @@
-"""Export utilities for SHAP explanations."""
-
 import json
 from pathlib import Path
 from typing import Union, List, Optional
@@ -11,13 +9,27 @@ from mango_shap.logging import get_configured_logger
 
 class ExportUtils:
     """
-    Utility class for exporting SHAP explanations.
+    Utility class for exporting SHAP explanations to various formats.
 
-    Supports various export formats including CSV, JSON, and HTML.
+    Provides methods to export SHAP values and associated data to CSV, JSON,
+    and HTML formats. Supports both structured data export for further analysis
+    and human-readable formats for reporting and visualization.
+
+    Example:
+        >>> exporter = ExportUtils()
+        >>> exporter.export(shap_values, data, feature_names, 'results', 'csv')
     """
 
     def __init__(self) -> None:
-        """Initialize the export utilities."""
+        """
+        Initialize the export utilities.
+
+        Sets up logging and prepares the exporter for SHAP explanation
+        export operations. No parameters are required as the exporter is stateless.
+
+        :return: None
+        :rtype: None
+        """
         self.logger = get_configured_logger()
         self.logger.info("ExportUtils initialized")
 
@@ -30,13 +42,27 @@ class ExportUtils:
         format: str = "csv",
     ) -> None:
         """
-        Export SHAP explanations to file.
+        Export SHAP explanations to file in specified format.
 
-        :param shap_values: SHAP values to export
-        :param data: Data used to generate SHAP values
-        :param feature_names: Names of features
-        :param output_path: Path to save the explanations
+        Exports SHAP values and associated data to the specified output path
+        in the chosen format. Supports CSV for tabular data, JSON for structured
+        data, and HTML for human-readable reports.
+
+        :param shap_values: SHAP values array to export
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param feature_names: Optional list of feature names
+        :type feature_names: Optional[List[str]]
+        :param output_path: Path where to save the exported file
+        :type output_path: str
         :param format: Export format ('csv', 'json', 'html')
+        :type format: str
+        :return: None
+        :rtype: None
+
+        Example:
+            >>> exporter.export(shap_values, data, feature_names, 'results', 'csv')
         """
         self.logger.info(
             f"Exporting SHAP explanations to {output_path} in {format} format"
@@ -65,12 +91,22 @@ class ExportUtils:
         output_path: Path,
     ) -> None:
         """
-        Export SHAP values to CSV format.
+        Export SHAP values to CSV format with combined data.
 
-        :param shap_values: SHAP values to export
-        :param data: Data used to generate SHAP values
-        :param feature_names: Names of features
-        :param output_path: Path to save the file
+        Creates a CSV file containing both the original data and SHAP values
+        in a combined format. The original data columns are prefixed with 'data_'
+        and SHAP values use the provided feature names.
+
+        :param shap_values: SHAP values array to export
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param feature_names: Optional list of feature names for SHAP values
+        :type feature_names: Optional[List[str]]
+        :param output_path: Path object where to save the CSV file
+        :type output_path: Path
+        :return: None
+        :rtype: None
         """
         if feature_names is None:
             feature_names = [f"feature_{i}" for i in range(shap_values.shape[1])]
@@ -103,12 +139,22 @@ class ExportUtils:
         output_path: Path,
     ) -> None:
         """
-        Export SHAP values to JSON format.
+        Export SHAP values to JSON format with metadata.
 
-        :param shap_values: SHAP values to export
-        :param data: Data used to generate SHAP values
-        :param feature_names: Names of features
-        :param output_path: Path to save the file
+        Creates a JSON file containing SHAP values, original data, feature names,
+        and metadata about the dataset. The JSON format is structured for easy
+        programmatic access and analysis.
+
+        :param shap_values: SHAP values array to export
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param feature_names: Optional list of feature names for SHAP values
+        :type feature_names: Optional[List[str]]
+        :param output_path: Path object where to save the JSON file
+        :type output_path: Path
+        :return: None
+        :rtype: None
         """
         if feature_names is None:
             feature_names = [f"feature_{i}" for i in range(shap_values.shape[1])]
@@ -143,12 +189,23 @@ class ExportUtils:
         output_path: Path,
     ) -> None:
         """
-        Export SHAP values to HTML format.
+        Export SHAP values to HTML format for human-readable reports.
 
-        :param shap_values: SHAP values to export
-        :param data: Data used to generate SHAP values
-        :param feature_names: Names of features
-        :param output_path: Path to save the file
+        Creates an HTML file with a formatted table displaying SHAP values
+        with color coding for positive (red) and negative (blue) values.
+        Includes summary statistics and limits display to first 100 instances
+        for readability.
+
+        :param shap_values: SHAP values array to export
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param feature_names: Optional list of feature names for SHAP values
+        :type feature_names: Optional[List[str]]
+        :param output_path: Path object where to save the HTML file
+        :type output_path: Path
+        :return: None
+        :rtype: None
         """
         if feature_names is None:
             feature_names = [f"feature_{i}" for i in range(shap_values.shape[1])]
@@ -168,11 +225,18 @@ class ExportUtils:
         feature_names: List[str],
     ) -> str:
         """
-        Generate HTML content for SHAP explanations.
+        Generate HTML content for SHAP explanations with styling.
 
-        :param shap_values: SHAP values to export
-        :param feature_names: Names of features
-        :return: HTML content string
+        Creates a complete HTML document with embedded CSS styling for displaying
+        SHAP values in a formatted table. Includes color coding for positive and
+        negative values and limits the display to the first 100 instances.
+
+        :param shap_values: SHAP values array to display
+        :type shap_values: np.ndarray
+        :param feature_names: List of feature names for table headers
+        :type feature_names: List[str]
+        :return: Complete HTML document as string
+        :rtype: str
         """
         html_template = """
         <!DOCTYPE html>

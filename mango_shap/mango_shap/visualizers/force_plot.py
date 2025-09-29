@@ -1,5 +1,3 @@
-"""Force plot visualization for SHAP values."""
-
 from typing import List, Optional, Union
 
 import numpy as np
@@ -12,11 +10,25 @@ class ForcePlot:
     """
     Create force plots for SHAP values.
 
-    Shows the force of each feature on the prediction.
+    Generates force plots that visualize the contribution of each feature
+    to a specific prediction instance, showing how features push the
+    prediction higher or lower from the baseline value.
+
+    Example:
+        >>> plotter = ForcePlot()
+        >>> plotter.plot(shap_values, data, instance_idx=0, show=True)
     """
 
     def __init__(self) -> None:
-        """Initialize the force plot generator."""
+        """
+        Initialize the force plot generator.
+
+        Sets up logging and prepares the plotter for creating force plots.
+        No parameters are required as the plotter is stateless.
+
+        :return: None
+        :rtype: None
+        """
         self.logger = get_configured_logger()
 
     def plot(
@@ -31,12 +43,27 @@ class ForcePlot:
         """
         Create a force plot for a specific instance.
 
-        :param shap_values: SHAP values to plot
-        :param data: Data used to generate SHAP values
-        :param instance_idx: Index of the instance to plot
-        :param feature_names: Names of features
-        :param show: Whether to display the plot
-        :param save_path: Path to save the plot
+        Generates a force plot that shows how each feature contributes to
+        the prediction for a specific instance, with features pushing the
+        prediction higher (positive) or lower (negative) from the baseline.
+
+        :param shap_values: SHAP values array to plot
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param instance_idx: Index of the instance to visualize
+        :type instance_idx: int
+        :param feature_names: Optional list of feature names for labels
+        :type feature_names: Optional[List[str]]
+        :param show: Whether to display the plot immediately
+        :type show: bool
+        :param save_path: Optional path to save the plot as image file
+        :type save_path: Optional[str]
+        :return: None
+        :rtype: None
+
+        Example:
+            >>> plotter.plot(shap_values, data, instance_idx=0, show=True)
         """
         self.logger.info(f"Creating force plot for instance {instance_idx}")
 

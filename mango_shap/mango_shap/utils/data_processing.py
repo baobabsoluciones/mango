@@ -1,5 +1,3 @@
-"""Data processing utilities for SHAP analysis."""
-
 from typing import Union, Optional
 
 import numpy as np
@@ -11,11 +9,27 @@ class DataProcessor:
     """
     Utility class for processing data for SHAP analysis.
 
-    Handles data validation, conversion, and preprocessing.
+    Handles data validation, conversion, and preprocessing to ensure
+    compatibility with SHAP explainers. Supports both pandas DataFrames
+    and numpy arrays with automatic handling of missing values and
+    categorical encoding.
+
+    Example:
+        >>> processor = DataProcessor()
+        >>> processed_data = processor.process_data(raw_data, handle_missing='fill')
+        >>> feature_names = DataProcessor.get_feature_names(processed_data)
     """
 
     def __init__(self) -> None:
-        """Initialize the data processor."""
+        """
+        Initialize the data processor.
+
+        Sets up logging and prepares the processor for data preprocessing
+        operations. No parameters are required as the processor is stateless.
+
+        :return: None
+        :rtype: None
+        """
         self.logger = get_configured_logger()
         self.logger.info("DataProcessor initialized")
 
@@ -23,11 +37,22 @@ class DataProcessor:
         self, data: Union[np.ndarray, pd.DataFrame], handle_missing: str = "drop"
     ) -> Union[np.ndarray, pd.DataFrame]:
         """
-        Process data for SHAP analysis.
+        Process data for SHAP analysis with missing value handling and encoding.
 
-        :param data: Input data
-        :param handle_missing: How to handle missing values ('drop', 'fill', 'error')
-        :return: Processed data
+        Preprocesses input data to ensure compatibility with SHAP explainers.
+        Handles missing values according to the specified strategy and converts
+        categorical variables to numeric format.
+
+        :param data: Input data to process (DataFrame or numpy array)
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param handle_missing: Strategy for handling missing values
+        :type handle_missing: str
+        :return: Processed data ready for SHAP analysis
+        :rtype: Union[np.ndarray, pd.DataFrame]
+
+        Example:
+            >>> processor = DataProcessor()
+            >>> processed_data = processor.process_data(raw_data, handle_missing='fill')
         """
         self.logger.info("Processing data for SHAP analysis")
 
@@ -45,11 +70,18 @@ class DataProcessor:
         self, data: pd.DataFrame, handle_missing: str
     ) -> pd.DataFrame:
         """
-        Process pandas DataFrame.
+        Process pandas DataFrame for SHAP analysis.
 
-        :param data: Input DataFrame
-        :param handle_missing: How to handle missing values
-        :return: Processed DataFrame
+        Handles missing values and encodes categorical variables in pandas
+        DataFrames. Creates a copy of the input data to avoid modifying
+        the original dataset.
+
+        :param data: Input pandas DataFrame to process
+        :type data: pd.DataFrame
+        :param handle_missing: Strategy for handling missing values
+        :type handle_missing: str
+        :return: Processed DataFrame with numeric data types
+        :rtype: pd.DataFrame
         """
         processed_data = data.copy()
 
@@ -71,11 +103,18 @@ class DataProcessor:
 
     def _process_array(self, data: np.ndarray, handle_missing: str) -> np.ndarray:
         """
-        Process numpy array.
+        Process numpy array for SHAP analysis.
 
-        :param data: Input array
-        :param handle_missing: How to handle missing values
-        :return: Processed array
+        Handles missing values in numpy arrays by filling them with mean values
+        or raising an error based on the specified strategy. Creates a copy
+        of the input array to avoid modifying the original data.
+
+        :param data: Input numpy array to process
+        :type data: np.ndarray
+        :param handle_missing: Strategy for handling missing values
+        :type handle_missing: str
+        :return: Processed array with no missing values
+        :rtype: np.ndarray
         """
         processed_data = data.copy()
 
@@ -99,10 +138,16 @@ class DataProcessor:
 
     def _encode_categorical(self, data: pd.DataFrame) -> pd.DataFrame:
         """
-        Encode categorical variables to numeric.
+        Encode categorical variables to numeric format.
 
-        :param data: Input DataFrame
-        :return: DataFrame with encoded categorical variables
+        Converts object and category data types to numeric codes for
+        compatibility with SHAP explainers. Handles both pandas categorical
+        columns and object columns by converting them to numeric codes.
+
+        :param data: Input DataFrame with potential categorical columns
+        :type data: pd.DataFrame
+        :return: DataFrame with all categorical variables encoded as numeric
+        :rtype: pd.DataFrame
         """
         processed_data = data.copy()
 
@@ -127,11 +172,22 @@ class DataProcessor:
         data: Union[np.ndarray, pd.DataFrame], custom_names: Optional[list] = None
     ) -> list:
         """
-        Get feature names for the data.
+        Get feature names for the input data.
 
-        :param data: Input data
-        :param custom_names: Custom feature names
+        Extracts feature names from the data structure or uses custom names
+        if provided. For DataFrames, uses column names; for arrays, generates
+        generic feature names based on the number of features.
+
+        :param data: Input data (DataFrame or numpy array)
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :param custom_names: Optional custom feature names to use
+        :type custom_names: Optional[list]
         :return: List of feature names
+        :rtype: list
+
+        Example:
+            >>> feature_names = DataProcessor.get_feature_names(data)
+            >>> custom_names = DataProcessor.get_feature_names(data, ['feat1', 'feat2'])
         """
         if custom_names is not None:
             return custom_names

@@ -1,5 +1,3 @@
-"""Input validation utilities for SHAP analysis."""
-
 from typing import Union, Any
 
 import numpy as np
@@ -11,20 +9,40 @@ class InputValidator:
     """
     Utility class for validating inputs for SHAP analysis.
 
-    Ensures data quality and compatibility with SHAP explainers.
+    Ensures data quality and compatibility with SHAP explainers by validating
+    models, data structures, feature names, and SHAP values before analysis.
+
+    Example:
+        >>> validator = InputValidator()
+        >>> validator.validate_model(trained_model)
+        >>> validator.validate_data(X_test)
     """
 
     def __init__(self) -> None:
-        """Initialize the input validator."""
+        """
+        Initialize the input validator.
+
+        Sets up logging and prepares the validator for input validation
+        operations. No parameters are required as the validator is stateless.
+
+        :return: None
+        :rtype: None
+        """
         self.logger = get_configured_logger()
         self.logger.info("InputValidator initialized")
 
     def validate_model(self, model: Any) -> None:
         """
-        Validate that the model is compatible with SHAP.
+        Validate that the model is compatible with SHAP analysis.
 
-        :param model: Model to validate
-        :raises ValueError: If model is not compatible
+        Checks if the model has the required methods and can make predictions
+        on test data. Ensures the model is ready for SHAP explainer initialization.
+
+        :param model: Model object to validate
+        :type model: Any
+        :return: None
+        :rtype: None
+        :raises ValueError: If model is None, missing required methods, or prediction fails
         """
         self.logger.info("Validating model compatibility")
 
@@ -50,11 +68,18 @@ class InputValidator:
         self, data: Union[np.ndarray, pd.DataFrame], name: str = "data"
     ) -> None:
         """
-        Validate data for SHAP analysis.
+        Validate data structure and content for SHAP analysis.
 
-        :param data: Data to validate
+        Checks data type, dimensions, emptiness, and presence of infinite values.
+        Ensures data is compatible with SHAP explainers and analysis requirements.
+
+        :param data: Data to validate (numpy array or pandas DataFrame)
+        :type data: Union[np.ndarray, pd.DataFrame]
         :param name: Name of the data for error messages
-        :raises ValueError: If data is invalid
+        :type name: str
+        :return: None
+        :rtype: None
+        :raises ValueError: If data is None, wrong type, empty, or contains infinite values
         """
         self.logger.info(f"Validating {name}")
 
@@ -93,8 +118,14 @@ class InputValidator:
         """
         Validate background data for SHAP analysis.
 
+        Performs standard data validation plus additional checks specific to
+        background data requirements, ensuring sufficient samples for SHAP calculations.
+
         :param background_data: Background data to validate
-        :raises ValueError: If background data is invalid
+        :type background_data: Union[np.ndarray, pd.DataFrame]
+        :return: None
+        :rtype: None
+        :raises ValueError: If background data is invalid or has insufficient samples
         """
         self.validate_data(background_data, "background_data")
 
@@ -106,11 +137,18 @@ class InputValidator:
     @staticmethod
     def validate_feature_names(feature_names: list, data_shape: tuple) -> None:
         """
-        Validate feature names.
+        Validate feature names for consistency with data shape.
 
-        :param feature_names: Feature names to validate
-        :param data_shape: Shape of the data
-        :raises ValueError: If feature names are invalid
+        Checks that feature names are provided as a list, match the number of
+        features in the data, and are unique. Allows None values to pass validation.
+
+        :param feature_names: List of feature names to validate
+        :type feature_names: list
+        :param data_shape: Shape tuple of the data (n_samples, n_features)
+        :type data_shape: tuple
+        :return: None
+        :rtype: None
+        :raises ValueError: If feature names are invalid, wrong length, or contain duplicates
         """
         if feature_names is None:
             return
@@ -132,11 +170,18 @@ class InputValidator:
         self, shap_values: np.ndarray, data: Union[np.ndarray, pd.DataFrame]
     ) -> None:
         """
-        Validate SHAP values.
+        Validate SHAP values for consistency with input data.
 
-        :param shap_values: SHAP values to validate
-        :param data: Data used to generate SHAP values
-        :raises ValueError: If SHAP values are invalid
+        Checks that SHAP values are properly formatted numpy arrays with correct
+        dimensions matching the input data, and verifies absence of infinite values.
+
+        :param shap_values: SHAP values array to validate
+        :type shap_values: np.ndarray
+        :param data: Original data used to generate SHAP values
+        :type data: Union[np.ndarray, pd.DataFrame]
+        :return: None
+        :rtype: None
+        :raises ValueError: If SHAP values are None, wrong type, wrong dimensions, or contain infinite values
         """
         self.logger.info("Validating SHAP values")
 
