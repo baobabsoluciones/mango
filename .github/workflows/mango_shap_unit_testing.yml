@@ -1,0 +1,105 @@
+name: mango shap full unit testing
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'mango_shap/**'
+      - '.github/workflows/**shap**'
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  unit-testing:
+    name: Run all unit test suites
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./mango_shap
+    strategy:
+      max-parallel: 21
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: |
+          uv sync --extra dev
+      - name: Run unit testing
+        run: |
+          uv run coverage run -m unittest discover -s mango_shap/tests -p "test_*.py" -v
+          uv run coverage report -m
+          uv run coverage xml
+      - name: Upload coverage to artifact
+        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./mango_shap/coverage.xml
+          if-no-files-found: error
+
+  upload-coverage:
+    name: Upload coverage to Codecov
+    needs: unit-testing
+    defaults:
+      run:
+        working-directory: ./mango_shap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get artifact with the coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: ./
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          flags: code_mango_shap-tests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  setup-testing:
+    name: Build the library to test that it gets correctly built
+    needs: unit-testing
+    defaults:
+      run:
+        working-directory: ./mango_shap
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Build binary wheel and source tarball
+        run: |
+          uv build
+  formatting:
+    needs: unit-testing
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Black Code Format
+        uses: baobabsoluciones/check-formatting-python@v1.0.0
+        with:
+          black_version: '24.10.0'
+          python_version: '3.13'
+          fail-on-error: false
+          paths: mango_shap
+          comment-mode: append
