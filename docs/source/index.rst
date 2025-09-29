@@ -18,4 +18,5 @@ Welcome to mango's documentation!
    code_mango_calendar/index
    code_mango_dashboard/index
    code_mango_genetic/index
+   code_mango_shap/index
    bib

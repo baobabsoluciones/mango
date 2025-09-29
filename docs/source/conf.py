@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.abspath("../../mango_autoencoder/"))
 sys.path.insert(0, os.path.abspath("../../mango_calendar/"))
 sys.path.insert(0, os.path.abspath("../../mango_dashboard/"))
 sys.path.insert(0, os.path.abspath("../../mango_genetic/"))
+sys.path.insert(0, os.path.abspath("../../mango_shap/"))
 
 
 project = "mango"
@@ -59,6 +60,7 @@ autodoc_mock_imports = [
     "holidays",
     "idna",
     "jinja2",
+    "lightgbm",
     "numpy",
     "openpyxl",
     "pandas",
@@ -76,6 +78,8 @@ autodoc_mock_imports = [
     "requests",
     "sklearn",
     "scipy",
+    "shap",
+    "seaborn",
     "six",
     "statsforecast",
     "statsmodels",
@@ -88,7 +92,9 @@ autodoc_mock_imports = [
     "tqdm",
     "unidecode",
     "urllib3",
+    "xgboost",
     "XlsxWriter",
     "matplotlib",
-    "PIL"
+    "PIL",
+    "catboost",
 ]
