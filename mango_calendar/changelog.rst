@@ -1,6 +1,3 @@
-Changelog
-=========
-
 All notable changes to the mango_calendar project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
@@ -9,16 +6,8 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-Added
------
-- Enhanced calendar functionality and date utilities
-- Improved holiday and working day calculations
-- Better integration with the mango ecosystem
-
-Changed
--------
-- Updated dependencies and package configuration
-- Enhanced test coverage and documentation
+[1.0.0] - 2024-12-24
+--------------------
 
 Added
 -----
@@ -30,6 +19,14 @@ Added
 - Calendar data validation and processing
 - Support for multiple calendar systems
 - Comprehensive logging and error handling
+- Enhanced calendar functionality and date utilities
+- Improved holiday and working day calculations
+- Better integration with the mango ecosystem
+
+Changed
+-------
+- Updated dependencies and package configuration
+- Enhanced test coverage and documentation
 
 Features
 --------

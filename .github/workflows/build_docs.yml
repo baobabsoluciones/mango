@@ -25,24 +25,24 @@ jobs:
       with:
         python-version: '3.11'
         architecture: 'x64'
-    
+
     # Install uv
     - name: Install uv
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
         echo "$HOME/.local/share/uv/bin" >> $GITHUB_PATH
-    
+
     # Install dependencies from docs/pyproject.toml
     - name: Install documentation dependencies
       working-directory: docs
       run: uv sync
-    
+
     # Build documentation
     - name: Build HTML docs
       working-directory: docs
       run: uv run make html
-    
+
     # Publish built docs to gh-pages branch
     - name: Commit documentation changes
       run: |
@@ -55,7 +55,7 @@ jobs:
         git config --local user.name "GitHub Action"
         git add .
         git commit -m "Update documentation" -a || true
-    
+
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:

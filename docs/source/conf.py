@@ -41,11 +41,6 @@ html_static_path = ["static"]
 autodoc_member_order = "bysource"
 autodoc_default_options = {"members": True, "inherited-members": True}
 
-from mango import mango
-
-version = mango.__version__
-release = mango.__version__
-
 
 # Options for bibtex
 bibtex_bibfiles = ["./refs.bib"]
@@ -64,7 +59,6 @@ autodoc_mock_imports = [
     "holidays",
     "idna",
     "jinja2",
-    "lightgbm",
     "numpy",
     "openpyxl",
     "pandas",
@@ -82,7 +76,6 @@ autodoc_mock_imports = [
     "requests",
     "sklearn",
     "scipy",
-    "shap",
     "six",
     "statsforecast",
     "statsmodels",
@@ -95,7 +88,6 @@ autodoc_mock_imports = [
     "tqdm",
     "unidecode",
     "urllib3",
-    "xgboost",
     "XlsxWriter",
     "matplotlib",
     "PIL"

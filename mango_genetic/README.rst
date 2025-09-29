@@ -73,7 +73,7 @@ Quick Start
 Documentation
 -------------
 
-For detailed documentation, visit the `Mango Documentation <https://mango.readthedocs.io/>`_.
+For detailed documentation, visit the `Mango Documentation <https://baobabsoluciones.github.io/mango/>`_.
 
 License
 -------
@@ -91,4 +91,4 @@ For questions, issues, or contributions, please contact:
 
 ---
 
-Made with ❤️ by `baobab soluciones <mailto:mango@baobabsoluciones.es>`_
+Made with ❤️ by `baobab soluciones <https://baobabsoluciones.es/>`_
