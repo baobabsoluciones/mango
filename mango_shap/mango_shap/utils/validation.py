@@ -1,9 +1,10 @@
 """Input validation utilities for SHAP analysis."""
 
+from typing import Union, Any
+
 import numpy as np
 import pandas as pd
-from typing import Union, Any
-from ..logging.logger import get_logger
+from mango_shap.logging import get_configured_logger
 
 
 class InputValidator:
@@ -15,7 +16,8 @@ class InputValidator:
 
     def __init__(self) -> None:
         """Initialize the input validator."""
-        self.logger = get_logger(__name__)
+        self.logger = get_configured_logger()
+        self.logger.info("InputValidator initialized")
 
     def validate_model(self, model: Any) -> None:
         """
@@ -101,7 +103,8 @@ class InputValidator:
             if background_data.shape[0] < 2:
                 raise ValueError("Background data must have at least 2 samples")
 
-    def validate_feature_names(self, feature_names: list, data_shape: tuple) -> None:
+    @staticmethod
+    def validate_feature_names(feature_names: list, data_shape: tuple) -> None:
         """
         Validate feature names.
 

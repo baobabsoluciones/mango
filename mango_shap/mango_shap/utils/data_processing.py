@@ -1,9 +1,10 @@
 """Data processing utilities for SHAP analysis."""
 
+from typing import Union, Optional
+
 import numpy as np
 import pandas as pd
-from typing import Union, Optional
-from ..logging.logger import get_logger
+from mango_shap.logging import get_configured_logger
 
 
 class DataProcessor:
@@ -15,7 +16,8 @@ class DataProcessor:
 
     def __init__(self) -> None:
         """Initialize the data processor."""
-        self.logger = get_logger(__name__)
+        self.logger = get_configured_logger()
+        self.logger.info("DataProcessor initialized")
 
     def process_data(
         self, data: Union[np.ndarray, pd.DataFrame], handle_missing: str = "drop"
@@ -120,8 +122,9 @@ class DataProcessor:
 
         return processed_data
 
+    @staticmethod
     def get_feature_names(
-        self, data: Union[np.ndarray, pd.DataFrame], custom_names: Optional[list] = None
+        data: Union[np.ndarray, pd.DataFrame], custom_names: Optional[list] = None
     ) -> list:
         """
         Get feature names for the data.

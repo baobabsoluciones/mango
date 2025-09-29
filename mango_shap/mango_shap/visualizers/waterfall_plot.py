@@ -1,11 +1,12 @@
 """Waterfall plot visualization for SHAP values."""
 
+from typing import List, Optional, Union
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from typing import List, Optional, Union
-import matplotlib.pyplot as plt
 import shap
-from ..logging.logger import get_logger
+from mango_shap.logging import get_configured_logger
 
 
 class WaterfallPlot:
@@ -17,7 +18,7 @@ class WaterfallPlot:
 
     def __init__(self) -> None:
         """Initialize the waterfall plot generator."""
-        self.logger = get_logger(__name__)
+        self.logger = get_configured_logger()
 
     def plot(
         self,

@@ -1,11 +1,12 @@
 """Export utilities for SHAP explanations."""
 
+import json
+from pathlib import Path
+from typing import Union, List, Optional
+
 import numpy as np
 import pandas as pd
-import json
-from typing import Union, List, Optional, Dict, Any
-from pathlib import Path
-from ..logging.logger import get_logger
+from mango_shap.logging import get_configured_logger
 
 
 class ExportUtils:
@@ -17,7 +18,8 @@ class ExportUtils:
 
     def __init__(self) -> None:
         """Initialize the export utilities."""
-        self.logger = get_logger(__name__)
+        self.logger = get_configured_logger()
+        self.logger.info("ExportUtils initialized")
 
     def export(
         self,
@@ -115,9 +117,11 @@ class ExportUtils:
         export_data = {
             "shap_values": shap_values.tolist(),
             "feature_names": feature_names,
-            "data": data.tolist()
-            if isinstance(data, np.ndarray)
-            else data.to_dict("records"),
+            "data": (
+                data.tolist()
+                if isinstance(data, np.ndarray)
+                else data.to_dict("records")
+            ),
             "metadata": {
                 "num_instances": shap_values.shape[0],
                 "num_features": shap_values.shape[1],
@@ -158,17 +162,15 @@ class ExportUtils:
             f.write(html_content)
         self.logger.info(f"HTML export saved to {html_path}")
 
+    @staticmethod
     def _generate_html_content(
-        self,
         shap_values: np.ndarray,
-        data: Union[np.ndarray, pd.DataFrame],
         feature_names: List[str],
     ) -> str:
         """
         Generate HTML content for SHAP explanations.
 
         :param shap_values: SHAP values to export
-        :param data: Data used to generate SHAP values
         :param feature_names: Names of features
         :return: HTML content string
         """

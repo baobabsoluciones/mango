@@ -1,15 +1,16 @@
 """Main SHAP explainer class for model interpretability."""
 
 import os
+from typing import Any, List, Optional, Union
+
 import numpy as np
 import pandas as pd
-from typing import Any, Dict, List, Optional, Union
 import shap
+from mango_shap.logging import get_configured_logger
 from sklearn.pipeline import Pipeline
+
 from .explainers import TreeExplainer, DeepExplainer, LinearExplainer, KernelExplainer
-from .visualizers import SummaryPlot, WaterfallPlot, ForcePlot, DependencePlot
 from .utils import DataProcessor, ExportUtils, InputValidator
-from .logging.logger import get_logger
 
 
 class SHAPExplainer:
@@ -39,10 +40,9 @@ class SHAPExplainer:
         metadata: Optional[Union[str, List[str]]] = None,
         shap_folder: Optional[str] = None,
         model_type: Optional[str] = None,
-        feature_names: Optional[List[str]] = None,
     ) -> None:
         """Initialize the SHAP explainer."""
-        self.logger = get_logger(__name__)
+        self.logger = get_configured_logger()
 
         # Set attributes
         self.problem_type = problem_type
@@ -210,7 +210,8 @@ class SHAPExplainer:
                 )
         return feature_names
 
-    def _detect_model_type(self, model: Any) -> str:
+    @staticmethod
+    def _detect_model_type(model: Any) -> str:
         """Automatically detect the type of model."""
         model_class = model.__class__.__name__.lower()
 

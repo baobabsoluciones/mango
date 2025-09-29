@@ -1,10 +1,11 @@
 """Deep learning model SHAP explainer."""
 
+from typing import Any, Union, Optional
+
 import numpy as np
 import pandas as pd
-from typing import Any, Union
 import shap
-from ..logging.logger import get_logger
+from mango_shap.logging import get_configured_logger
 
 
 class DeepExplainer:
@@ -23,7 +24,7 @@ class DeepExplainer:
         :param model: Trained deep learning model
         :param background_data: Background data for SHAP calculations
         """
-        self.logger = get_logger(__name__)
+        self.logger = get_configured_logger()
         self.model = model
         self.background_data = background_data
 

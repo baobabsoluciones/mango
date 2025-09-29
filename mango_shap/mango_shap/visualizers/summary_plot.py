@@ -1,11 +1,12 @@
 """Summary plot visualization for SHAP values."""
 
+from typing import List, Optional, Union
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from typing import List, Optional, Union
-import matplotlib.pyplot as plt
 import shap
-from ..logging.logger import get_logger
+from mango_shap.logging import get_configured_logger
 
 
 class SummaryPlot:
@@ -17,7 +18,7 @@ class SummaryPlot:
 
     def __init__(self) -> None:
         """Initialize the summary plot generator."""
-        self.logger = get_logger(__name__)
+        self.logger = get_configured_logger()
 
     def plot(
         self,
@@ -42,7 +43,7 @@ class SummaryPlot:
 
         # Handle multi-class case
         if len(shap_values.shape) > 2:
-            shap_values = shap_values[0]  # Use first class for multi-class
+            shap_values = shap_values[0]
 
         # Create the plot
         plt.figure(figsize=(10, 8))
