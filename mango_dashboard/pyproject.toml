@@ -29,8 +29,8 @@ dependencies = [
     "scikit-learn>=1.6.1, <2.0.0",
     "click>8.1.7, <8.2.0",
     "plotly>=6.2.0",
-    "mango[data]==0.3.0a8",
-    "mango-time-series==0.3.0a12",
+    "mango>=1.0.0,<2.0.0",
+    "mango-time-series>=1.0.0,<2.0.0",
     "google-cloud>=0.34.0",
     "google-cloud-storage>=3.3.0",
 ]
