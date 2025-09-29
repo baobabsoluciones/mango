@@ -120,8 +120,8 @@ Example Usage
    # Perform reconstruction on new data
    reconstructed_results = model.reconstruct_new_data(
        id_columns="source_file",
-       data=data, 
-       iterations=3, 
+       data=data,
+       iterations=3,
        save_path=str(reconstruct_output_dir),
        reconstruction_diagnostic=True
    )
@@ -144,7 +144,7 @@ How It Works
 
 1. **Data Validation**: Checks that the new data has the same features as the training data
 2. **ID Processing**: Separates data by ID columns if specified
-3. **Iterative Reconstruction**: 
+3. **Iterative Reconstruction**:
    - For each iteration, the model reconstructs the data
    - Missing values (NaN) are filled with reconstructed values
    - The process repeats to improve reconstruction quality
