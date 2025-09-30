@@ -459,6 +459,240 @@ class TestSHAPExplainer(unittest.TestCase):
                 model_name="TestModel",
             )
 
+    def test_visualization_methods(self):
+        """Test visualization methods."""
+        # Test summary plot
+        explainer = SHAPExplainer(
+            self._classification_models[1], self.X_train, problem_type="classification"
+        )
+
+        # Test that visualization methods don't raise errors
+        try:
+            explainer.summary_plot(show=False)
+            explainer.bar_summary_plot(show=False)
+            explainer.waterfall_plot(instance_idx=0, show=False)
+            explainer.partial_dependence_plot(feature_idx=0, show=False)
+        except Exception as e:
+            self.fail(f"Visualization methods failed: {e}")
+
+    def test_analysis_and_export_methods(self):
+        """Test analysis and export methods."""
+        explainer = SHAPExplainer(
+            self._classification_models[1], self.X_train, problem_type="classification"
+        )
+
+        # Test make_shap_analysis
+        try:
+            analysis_results = explainer.make_shap_analysis()
+            self.assertIsInstance(analysis_results, dict)
+            self.assertIn("summary_stats", analysis_results)
+            self.assertIn("feature_importance", analysis_results)
+        except Exception as e:
+            self.fail(f"make_shap_analysis failed: {e}")
+
+        # Test export_explanations
+        try:
+            explainer.export_explanations("test_export", format="csv")
+            # Check if file was created
+            self.assertTrue(Path("test_export.csv").exists())
+            # Clean up
+            Path("test_export.csv").unlink()
+        except Exception as e:
+            self.fail(f"export_explanations failed: {e}")
+
+    def test_get_sample_by_shap_value(self):
+        """Test get_sample_by_shap_value method."""
+        explainer = SHAPExplainer(
+            self._classification_models[1], self.X_train, problem_type="classification"
+        )
+
+        # Test getting sample with highest SHAP value for first feature
+        try:
+            sample = explainer.get_sample_by_shap_value(feature_idx=0, highest=True)
+            self.assertIsInstance(sample, dict)
+            self.assertIn("instance_idx", sample)
+            self.assertIn("shap_value", sample)
+            self.assertIn("feature_value", sample)
+        except Exception as e:
+            self.fail(f"get_sample_by_shap_value failed: {e}")
+
+    def test_different_explainer_types(self):
+        """Test different explainer types."""
+        # Test with linear model (should use LinearExplainer)
+        from sklearn.linear_model import LinearRegression
+
+        linear_model = LinearRegression()
+        linear_model.fit(self.X_train, self.y_train)
+
+        explainer = SHAPExplainer(linear_model, self.X_train, problem_type="regression")
+
+        # Should detect as linear model
+        self.assertEqual(explainer._model_type, "linear")
+
+        # Test SHAP values generation
+        shap_values = explainer.explain(self.X_test[:5])
+        self.assertIsInstance(shap_values, np.ndarray)
+        self.assertEqual(shap_values.shape, (5, self.X_train.shape[1]))
+
+    def test_property_setters_and_getters(self):
+        """Test property setters and getters."""
+        explainer = SHAPExplainer(
+            self._classification_models[1], self.X_train, problem_type="classification"
+        )
+
+        # Test problem_type property
+        self.assertEqual(explainer.problem_type, "classification")
+        explainer.problem_type = "regression"
+        self.assertEqual(explainer.problem_type, "regression")
+
+        # Test model_name property
+        explainer.model_name = "test_model"
+        self.assertEqual(explainer.model_name, "test_model")
+
+        # Test shap_folder property
+        explainer.shap_folder = "test_folder"
+        self.assertEqual(explainer.shap_folder, "test_folder")
+
+    def test_data_property_with_metadata(self):
+        """Test data property with metadata columns."""
+        # Create data with metadata
+        data_with_metadata = self.X_train.copy()
+        data_with_metadata["metadata_col"] = np.random.random(len(data_with_metadata))
+
+        explainer = SHAPExplainer(
+            self._classification_models[1],
+            data_with_metadata,
+            problem_type="classification",
+        )
+
+        # Test that metadata is handled correctly
+        self.assertIn("metadata_col", explainer.metadata)
+        self.assertNotIn("metadata_col", explainer._feature_names)
+
+    def test_multi_class_classification(self):
+        """Test multi-class classification."""
+        from sklearn.datasets import make_classification
+        from sklearn.ensemble import RandomForestClassifier
+
+        # Create multi-class dataset
+        X_multi, y_multi = make_classification(
+            n_samples=200, n_features=5, n_classes=3, random_state=42
+        )
+        X_multi = pd.DataFrame(X_multi, columns=[f"feature_{i}" for i in range(5)])
+
+        # Train model
+        model_multi = RandomForestClassifier(random_state=42)
+        model_multi.fit(X_multi, y_multi)
+
+        # Create explainer
+        explainer = SHAPExplainer(model_multi, X_multi, problem_type="classification")
+
+        # Test SHAP values for multi-class
+        shap_values = explainer.explain(X_multi[:10])
+        self.assertEqual(shap_values.shape, (10, 5, 3))  # (samples, features, classes)
+
+    def test_custom_feature_names(self):
+        """Test custom feature names."""
+        custom_names = [f"custom_feature_{i}" for i in range(self.X_train.shape[1])]
+
+        explainer = SHAPExplainer(
+            self._classification_models[1],
+            self.X_train,
+            problem_type="classification",
+            feature_names=custom_names,
+        )
+
+        self.assertEqual(explainer._feature_names, custom_names)
+
+    def test_save_fig_method(self):
+        """Test _save_fig method."""
+        explainer = SHAPExplainer(
+            self._classification_models[1], self.X_train, problem_type="classification"
+        )
+
+        # Create a simple plot
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.plot([1, 2, 3], [1, 4, 2])
+
+        # Test saving
+        try:
+            explainer._save_fig(fig, "test_plot.png")
+            self.assertTrue(Path("test_plot.png").exists())
+            # Clean up
+            Path("test_plot.png").unlink()
+        except Exception as e:
+            self.fail(f"_save_fig failed: {e}")
+        finally:
+            plt.close(fig)
+
+    def test_error_handling_edge_cases(self):
+        """Test error handling for edge cases."""
+
+        # Test with model that has no feature_names_in_
+        class CustomModel:
+            def __init__(self):
+                self.n_features_in_ = 5
+
+            def predict(self, X):
+                return np.random.random(X.shape[0])
+
+        custom_model = CustomModel()
+        custom_model.fit = lambda X, y: None
+
+        # This should not raise an error
+        try:
+            explainer = SHAPExplainer(
+                custom_model, self.X_train, problem_type="regression"
+            )
+            self.assertIsNotNone(explainer._feature_names)
+        except Exception as e:
+            self.fail(f"Custom model handling failed: {e}")
+
+    def test_large_feature_count(self):
+        """Test with large number of features."""
+        # Create dataset with many features
+        X_large, y_large = make_classification(
+            n_samples=100, n_features=100, n_classes=2, random_state=42
+        )
+        X_large = pd.DataFrame(X_large, columns=[f"feature_{i}" for i in range(100)])
+
+        # Train model
+        model_large = RandomForestClassifier(random_state=42, n_estimators=10)
+        model_large.fit(X_large, y_large)
+
+        # Create explainer
+        explainer = SHAPExplainer(model_large, X_large, problem_type="classification")
+
+        # Test SHAP values generation
+        shap_values = explainer.explain(X_large[:5])
+        self.assertEqual(shap_values.shape, (5, 100, 2))  # (samples, features, classes)
+
+    def test_memory_efficiency(self):
+        """Test memory efficiency with large datasets."""
+        # Create large dataset
+        X_large, y_large = make_classification(
+            n_samples=1000, n_features=50, n_classes=2, random_state=42
+        )
+        X_large = pd.DataFrame(X_large, columns=[f"feature_{i}" for i in range(50)])
+
+        # Train model
+        model_large = RandomForestClassifier(random_state=42, n_estimators=10)
+        model_large.fit(X_large, y_large)
+
+        # Create explainer
+        explainer = SHAPExplainer(model_large, X_large, problem_type="classification")
+
+        # Test that we can handle large datasets without memory issues
+        try:
+            shap_values = explainer.explain(X_large[:100])  # Test with subset
+            self.assertEqual(shap_values.shape, (100, 50, 2))
+        except MemoryError:
+            self.fail("Memory error with large dataset")
+        except Exception as e:
+            self.fail(f"Large dataset handling failed: {e}")
+
 
 if __name__ == "__main__":
     unittest.main()
