@@ -84,9 +84,12 @@ class TestDependencePlot(unittest.TestCase):
 
     def test_plot_multi_class(self):
         """Test dependence plot with multi-class SHAP values."""
-        # Create multi-class SHAP values
+        # Create multi-class SHAP values with same number of features as data
         multi_class_shap = np.array(
-            [[[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], [[0.7, 0.8], [0.9, 1.0], [1.1, 1.2]]]
+            [
+                [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+                [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 1.0]],
+            ]
         )
 
         try:
@@ -163,9 +166,12 @@ class TestForcePlot(unittest.TestCase):
 
     def test_plot_multi_class(self):
         """Test force plot with multi-class SHAP values."""
-        # Create multi-class SHAP values
+        # Create multi-class SHAP values with same number of features as data
         multi_class_shap = np.array(
-            [[[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], [[0.7, 0.8], [0.9, 1.0], [1.1, 1.2]]]
+            [
+                [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+                [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 1.0]],
+            ]
         )
 
         try:
@@ -237,9 +243,12 @@ class TestSummaryPlot(unittest.TestCase):
 
     def test_plot_multi_class(self):
         """Test summary plot with multi-class SHAP values."""
-        # Create multi-class SHAP values
+        # Create multi-class SHAP values with same number of features as data
         multi_class_shap = np.array(
-            [[[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], [[0.7, 0.8], [0.9, 1.0], [1.1, 1.2]]]
+            [
+                [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+                [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 1.0]],
+            ]
         )
 
         try:
@@ -316,9 +325,12 @@ class TestWaterfallPlot(unittest.TestCase):
 
     def test_plot_multi_class(self):
         """Test waterfall plot with multi-class SHAP values."""
-        # Create multi-class SHAP values
+        # Create multi-class SHAP values with same number of features as data
         multi_class_shap = np.array(
-            [[[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]], [[0.7, 0.8], [0.9, 1.0], [1.1, 1.2]]]
+            [
+                [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+                [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 1.0]],
+            ]
         )
 
         try:

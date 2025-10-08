@@ -36,7 +36,7 @@ class TestDataProcessor(unittest.TestCase):
         )
 
         # Should drop rows with missing values
-        self.assertEqual(len(processed), 4)  # One row dropped
+        self.assertEqual(len(processed), 4)
         self.assertFalse(processed.isnull().any().any())
 
     def test_process_dataframe_fill_missing(self):
@@ -46,7 +46,8 @@ class TestDataProcessor(unittest.TestCase):
         )
 
         # Should fill missing values
-        self.assertEqual(len(processed), 5)  # No rows dropped
+        # No rows dropped
+        self.assertEqual(len(processed), 5)
         self.assertFalse(processed.isnull().any().any())
 
     def test_process_dataframe_error_missing(self):
@@ -129,7 +130,8 @@ class TestExportUtils(unittest.TestCase):
 
         # Check file content
         df = pd.read_csv(csv_file)
-        self.assertEqual(len(df), 3)  # 3 instances
+        # 3 instances
+        self.assertEqual(len(df), 3)
 
     def test_export_json(self):
         """Test JSON export."""
@@ -168,7 +170,8 @@ class TestExportUtils(unittest.TestCase):
 
         self.exporter.export(
             self.shap_values,
-            self.data.values,  # Convert to numpy array
+            # Convert to numpy array
+            self.data.values,
             self.feature_names,
             str(output_path),
             "csv",
@@ -184,7 +187,8 @@ class TestExportUtils(unittest.TestCase):
         self.exporter.export(
             self.shap_values,
             self.data,
-            None,  # No feature names
+            # No feature names
+            None,
             str(output_path),
             "csv",
         )
@@ -303,15 +307,18 @@ class TestInputValidator(unittest.TestCase):
 
     def test_validate_feature_names_wrong_length(self):
         """Test feature names validation with wrong length."""
-        feature_names = ["feature_1", "feature_2", "feature_3"]  # 3 names
-        data_shape = (10, 2)  # 2 features
+        # 3 names
+        feature_names = ["feature_1", "feature_2", "feature_3"]
+        # 2 features
+        data_shape = (10, 2)
 
         with self.assertRaises(ValueError):
             InputValidator.validate_feature_names(feature_names, data_shape)
 
     def test_validate_feature_names_duplicates(self):
         """Test feature names validation with duplicates."""
-        feature_names = ["feature_1", "feature_1"]  # Duplicates
+        # Duplicates
+        feature_names = ["feature_1", "feature_1"]
         data_shape = (10, 2)
 
         with self.assertRaises(ValueError):
@@ -336,7 +343,8 @@ class TestInputValidator(unittest.TestCase):
 
     def test_validate_shap_values_wrong_dimensions(self):
         """Test SHAP values validation with wrong dimensions."""
-        shap_values = np.array([0.1, 0.2, 0.3])  # 1D instead of 2D
+        # 1D instead of 2D
+        shap_values = np.array([0.1, 0.2, 0.3])
 
         with self.assertRaises(ValueError):
             self.validator.validate_shap_values(shap_values, self.valid_data)
@@ -344,7 +352,8 @@ class TestInputValidator(unittest.TestCase):
     def test_validate_shap_values_wrong_shape(self):
         """Test SHAP values validation with wrong shape."""
         shap_values = np.array(
-            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]  # 3 features instead of 2
+            # 3 features instead of 2
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
         )
 
         with self.assertRaises(ValueError):
@@ -353,7 +362,8 @@ class TestInputValidator(unittest.TestCase):
     def test_validate_shap_values_infinite_values(self):
         """Test SHAP values validation with infinite values."""
         shap_values = np.array(
-            [[0.1, 0.2], [np.inf, 0.4], [0.5, 0.6]]  # Infinite value
+            # Infinite value
+            [[0.1, 0.2], [np.inf, 0.4], [0.5, 0.6]]
         )
 
         with self.assertRaises(ValueError):

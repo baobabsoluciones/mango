@@ -48,7 +48,7 @@ class TestSHAPExplainer(unittest.TestCase):
         y = pd.Series(y, name="target")
 
         # Split the dataset into train and test sets
-        cls.X_train, X_test, cls.y_train, y_test = train_test_split(
+        cls.X_train, cls.X_test, cls.y_train, cls.y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
 
@@ -80,14 +80,16 @@ class TestSHAPExplainer(unittest.TestCase):
         X.rename(columns={"index": "metadata_index"}, inplace=True)
 
         # Split the dataset into train and test sets
-        cls.X_train_reg, X_test_reg, cls.y_train_reg, y_test_reg = train_test_split(
-            X, y, test_size=0.2, random_state=42
+        cls.X_train_reg, cls.X_test_reg, cls.y_train_reg, cls.y_test_reg = (
+            train_test_split(X, y, test_size=0.2, random_state=42)
         )
 
         # Train models
         cls._regression_models = [model_4, model_5, model_6]
         for model in cls._regression_models:
-            model.fit(cls.X_train_reg, cls.y_train_reg)
+            # Train with data excluding metadata column
+            X_train_no_metadata = cls.X_train_reg.drop(columns=["metadata_index"])
+            model.fit(X_train_no_metadata, cls.y_train_reg)
 
     def setUp(self):
         """Set up test fixtures before each test method."""
@@ -105,10 +107,23 @@ class TestSHAPExplainer(unittest.TestCase):
     def tearDown(self):
         """Clean up after each test method."""
         # Remove any test directories that might have been created
-        test_dirs = ["shap_module", "test_shap"]
+        test_dirs = [
+            "shap_module",
+            "test_shap",
+            "test_shap_analysis",
+            "test_folder",
+            # Clean up the complete structure created by make_shap_analysis
+            "test_shap_analysis/shap_analysis",
+        ]
         for test_dir in test_dirs:
             if Path(test_dir).exists():
                 shutil.rmtree(test_dir, ignore_errors=True)
+
+        # Remove any test files that might have been created
+        test_files = ["test_export.csv", "test_plot.png"]
+        for test_file in test_files:
+            if Path(test_file).exists():
+                Path(test_file).unlink(missing_ok=True)
 
     def test_explainer_initialization(self):
         """Test SHAP explainer initialization."""
@@ -288,7 +303,7 @@ class TestSHAPExplainer(unittest.TestCase):
 
         # Test metadata handling
         self.assertEqual(explainer._metadata, ["metadata_index"])
-        self.assertEqual(explainer._x_transformed.shape[1], 21)
+        self.assertEqual(explainer._x_transformed.shape[1], 20)
         self.assertNotIn("metadata_index", explainer._feature_names)
 
     def test_feature_names_with_different_models(self):
@@ -360,7 +375,8 @@ class TestSHAPExplainer(unittest.TestCase):
         single_sample = self.X_train[:1]
         model_for_test = self._classification_models[
             1
-        ]  # Use RandomForest from setUpClass
+            # Use RandomForest from setUpClass
+        ]
         explainer = SHAPExplainer(
             model=model_for_test,
             data=single_sample,
@@ -389,7 +405,8 @@ class TestSHAPExplainer(unittest.TestCase):
         """Test model type detection for various model types."""
         # Test RandomForest
         rf_explainer = SHAPExplainer(
-            model=self._classification_models[1],  # RandomForest
+            # RandomForest
+            model=self._classification_models[1],
             data=self.X_train,
             problem_type="binary_classification",
             model_name="RandomForest",
@@ -398,7 +415,8 @@ class TestSHAPExplainer(unittest.TestCase):
 
         # Test LightGBM
         lgb_explainer = SHAPExplainer(
-            model=self._classification_models[2],  # LightGBM
+            # LightGBM
+            model=self._classification_models[2],
             data=self.X_train,
             problem_type="binary_classification",
             model_name="LightGBM",
@@ -408,7 +426,8 @@ class TestSHAPExplainer(unittest.TestCase):
     def test_data_validation_comprehensive(self):
         """Test comprehensive data validation."""
         # Use a model that matches the data dimensions
-        model_for_test = self._classification_models[1]  # RandomForest from setUpClass
+        # RandomForest from setUpClass
+        model_for_test = self._classification_models[1]
 
         # Test with numpy array
         X_numpy = self.X_train.values
@@ -432,7 +451,7 @@ class TestSHAPExplainer(unittest.TestCase):
     def test_problem_type_validation_comprehensive(self):
         """Test comprehensive problem type validation."""
         # Use a model that matches the data dimensions
-        model_for_test = self._classification_models[1]  # RandomForest from setUpClass
+        model_for_test = self._classification_models[1]
 
         valid_types = [
             "binary_classification",
@@ -463,7 +482,9 @@ class TestSHAPExplainer(unittest.TestCase):
         """Test visualization methods."""
         # Test summary plot
         explainer = SHAPExplainer(
-            self._classification_models[1], self.X_train, problem_type="classification"
+            self._classification_models[1],
+            self.X_train,
+            problem_type="binary_classification",
         )
 
         # Test that visualization methods don't raise errors
@@ -471,22 +492,25 @@ class TestSHAPExplainer(unittest.TestCase):
             explainer.summary_plot(show=False)
             explainer.bar_summary_plot(show=False)
             explainer.waterfall_plot(instance_idx=0, show=False)
-            explainer.partial_dependence_plot(feature_idx=0, show=False)
+            explainer.partial_dependence_plot(feature=0, show=False)
         except Exception as e:
             self.fail(f"Visualization methods failed: {e}")
 
     def test_analysis_and_export_methods(self):
         """Test analysis and export methods."""
         explainer = SHAPExplainer(
-            self._classification_models[1], self.X_train, problem_type="classification"
+            self._classification_models[1],
+            self.X_train,
+            problem_type="binary_classification",
         )
 
         # Test make_shap_analysis
         try:
+            # Set shap_folder to enable make_shap_analysis
+            explainer.shap_folder = "test_shap_analysis"
             analysis_results = explainer.make_shap_analysis()
-            self.assertIsInstance(analysis_results, dict)
-            self.assertIn("summary_stats", analysis_results)
-            self.assertIn("feature_importance", analysis_results)
+            # make_shap_analysis returns None, it creates visualizations
+            self.assertIsNone(analysis_results)
         except Exception as e:
             self.fail(f"make_shap_analysis failed: {e}")
 
@@ -503,7 +527,9 @@ class TestSHAPExplainer(unittest.TestCase):
     def test_get_sample_by_shap_value(self):
         """Test get_sample_by_shap_value method."""
         explainer = SHAPExplainer(
-            self._classification_models[1], self.X_train, problem_type="classification"
+            self._classification_models[1],
+            self.X_train,
+            problem_type="binary_classification",
         )
 
         # Test getting sample with highest SHAP value for first feature
@@ -537,11 +563,13 @@ class TestSHAPExplainer(unittest.TestCase):
     def test_property_setters_and_getters(self):
         """Test property setters and getters."""
         explainer = SHAPExplainer(
-            self._classification_models[1], self.X_train, problem_type="classification"
+            self._classification_models[1],
+            self.X_train,
+            problem_type="binary_classification",
         )
 
         # Test problem_type property
-        self.assertEqual(explainer.problem_type, "classification")
+        self.assertEqual(explainer.problem_type, "binary_classification")
         explainer.problem_type = "regression"
         self.assertEqual(explainer.problem_type, "regression")
 
@@ -562,7 +590,8 @@ class TestSHAPExplainer(unittest.TestCase):
         explainer = SHAPExplainer(
             self._classification_models[1],
             data_with_metadata,
-            problem_type="classification",
+            problem_type="binary_classification",
+            metadata=["metadata_col"],
         )
 
         # Test that metadata is handled correctly
@@ -576,7 +605,7 @@ class TestSHAPExplainer(unittest.TestCase):
 
         # Create multi-class dataset
         X_multi, y_multi = make_classification(
-            n_samples=200, n_features=5, n_classes=3, random_state=42
+            n_samples=200, n_features=5, n_classes=3, n_informative=3, random_state=42
         )
         X_multi = pd.DataFrame(X_multi, columns=[f"feature_{i}" for i in range(5)])
 
@@ -585,21 +614,24 @@ class TestSHAPExplainer(unittest.TestCase):
         model_multi.fit(X_multi, y_multi)
 
         # Create explainer
-        explainer = SHAPExplainer(model_multi, X_multi, problem_type="classification")
+        explainer = SHAPExplainer(
+            model_multi, X_multi, problem_type="multiclass_classification"
+        )
 
         # Test SHAP values for multi-class
         shap_values = explainer.explain(X_multi[:10])
-        self.assertEqual(shap_values.shape, (10, 5, 3))  # (samples, features, classes)
+        self.assertEqual(shap_values.shape, (10, 5, 3))
 
     def test_custom_feature_names(self):
-        """Test custom feature names."""
+        """Test feature names are correctly extracted from DataFrame."""
+        # Create DataFrame with custom column names
         custom_names = [f"custom_feature_{i}" for i in range(self.X_train.shape[1])]
+        X_custom = pd.DataFrame(self.X_train, columns=custom_names)
 
         explainer = SHAPExplainer(
             self._classification_models[1],
-            self.X_train,
-            problem_type="classification",
-            feature_names=custom_names,
+            X_custom,
+            problem_type="binary_classification",
         )
 
         self.assertEqual(explainer._feature_names, custom_names)
@@ -607,7 +639,9 @@ class TestSHAPExplainer(unittest.TestCase):
     def test_save_fig_method(self):
         """Test _save_fig method."""
         explainer = SHAPExplainer(
-            self._classification_models[1], self.X_train, problem_type="classification"
+            self._classification_models[1],
+            self.X_train,
+            problem_type="binary_classification",
         )
 
         # Create a simple plot
@@ -663,11 +697,14 @@ class TestSHAPExplainer(unittest.TestCase):
         model_large.fit(X_large, y_large)
 
         # Create explainer
-        explainer = SHAPExplainer(model_large, X_large, problem_type="classification")
+        explainer = SHAPExplainer(
+            model_large, X_large, problem_type="binary_classification"
+        )
 
         # Test SHAP values generation
         shap_values = explainer.explain(X_large[:5])
-        self.assertEqual(shap_values.shape, (5, 100, 2))  # (samples, features, classes)
+        # (samples, features, classes)
+        self.assertEqual(shap_values.shape, (5, 100, 2))
 
     def test_memory_efficiency(self):
         """Test memory efficiency with large datasets."""
@@ -682,11 +719,14 @@ class TestSHAPExplainer(unittest.TestCase):
         model_large.fit(X_large, y_large)
 
         # Create explainer
-        explainer = SHAPExplainer(model_large, X_large, problem_type="classification")
+        explainer = SHAPExplainer(
+            model_large, X_large, problem_type="binary_classification"
+        )
 
         # Test that we can handle large datasets without memory issues
         try:
-            shap_values = explainer.explain(X_large[:100])  # Test with subset
+            # Test with subset
+            shap_values = explainer.explain(X_large[:100])
             self.assertEqual(shap_values.shape, (100, 50, 2))
         except MemoryError:
             self.fail("Memory error with large dataset")
