@@ -467,7 +467,8 @@ def get_configured_logger(
 
         # Special handling for root logger
         if logger_type == "root":
-            logger.handlers = []  # Clear existing handlers
+            # Clear existing handlers
+            logger.handlers = []
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(
                 ColorFormatter(
