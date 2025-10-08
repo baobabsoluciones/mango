@@ -55,12 +55,11 @@ class InputValidator:
             if not hasattr(model, method):
                 raise ValueError(f"Model must have {method} method")
 
-        # Test model prediction
-        try:
-            test_data = np.random.random((1, 10))
-            model.predict(test_data)
-        except Exception as e:
-            raise ValueError(f"Model prediction failed: {str(e)}")
+        # Test model prediction with minimal data
+        # Note: We can't test with arbitrary data since we don't know the expected input shape
+        # Instead, we'll just verify the predict method exists and is callable
+        if not callable(getattr(model, "predict", None)):
+            raise ValueError("Model predict method is not callable")
 
         self.logger.info("Model validation passed")
 
@@ -195,12 +194,15 @@ class InputValidator:
             raise ValueError("SHAP values must be at least 2-dimensional")
 
         # Check shape compatibility
-        if shap_values.shape[0] != data.shape[0]:
+        # SHAP values can be calculated for a subset of data, so first dimension can be different
+        # Only check that SHAP values don't have more samples than the original data
+        if shap_values.shape[0] > data.shape[0]:
             raise ValueError(
                 f"SHAP values first dimension ({shap_values.shape[0]}) "
-                f"must match data first dimension ({data.shape[0]})"
+                f"cannot be greater than data first dimension ({data.shape[0]})"
             )
 
+        # Check that the number of features matches
         if shap_values.shape[-1] != data.shape[1]:
             raise ValueError(
                 f"SHAP values last dimension ({shap_values.shape[-1]}) "

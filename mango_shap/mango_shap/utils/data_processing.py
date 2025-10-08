@@ -2,6 +2,7 @@ from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
+
 from mango_shap.logging import get_configured_logger
 
 
@@ -85,19 +86,30 @@ class DataProcessor:
         """
         processed_data = data.copy()
 
-        # Handle missing values
+        # Convert categorical variables to numeric first
+        processed_data = self._encode_categorical(processed_data)
+
+        # Handle missing values after encoding
         if processed_data.isnull().any().any():
             if handle_missing == "drop":
                 processed_data = processed_data.dropna()
                 self.logger.info("Dropped rows with missing values")
             elif handle_missing == "fill":
-                processed_data = processed_data.fillna(processed_data.mean())
-                self.logger.info("Filled missing values with mean")
+                # Fill numeric columns with mean, categorical with mode
+                for col in processed_data.columns:
+                    if processed_data[col].dtype in ["int64", "float64"]:
+                        processed_data[col] = processed_data[col].fillna(
+                            processed_data[col].mean()
+                        )
+                    else:
+                        processed_data[col] = processed_data[col].fillna(
+                            processed_data[col].mode()[0]
+                            if not processed_data[col].mode().empty
+                            else 0
+                        )
+                self.logger.info("Filled missing values with mean/mode")
             elif handle_missing == "error":
                 raise ValueError("Data contains missing values")
-
-        # Convert categorical variables to numeric
-        processed_data = self._encode_categorical(processed_data)
 
         return processed_data
 
@@ -121,7 +133,6 @@ class DataProcessor:
         # Handle missing values
         if np.isnan(processed_data).any():
             if handle_missing == "drop":
-                # For arrays, we can't easily drop rows, so we'll fill
                 processed_data = np.nan_to_num(
                     processed_data, nan=np.nanmean(processed_data)
                 )

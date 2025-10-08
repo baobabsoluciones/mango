@@ -73,25 +73,32 @@ class ForcePlot:
 
         # Get SHAP values and data for the specific instance
         instance_shap = shap_values[instance_idx]
-        instance_data = (
-            data[instance_idx]
-            if hasattr(data, "__getitem__")
-            else data.iloc[instance_idx]
-        )
+        if isinstance(data, pd.DataFrame):
+            instance_data = data.iloc[instance_idx]
+        else:
+            instance_data = data[instance_idx]
 
         # Create the plot
         force_plot = shap.force_plot(
+            base_value=0.0,
             shap_values=instance_shap,
             features=instance_data,
             feature_names=feature_names,
-            matplotlib=True,
+            matplotlib=False,
         )
 
         if save_path:
-            force_plot.savefig(save_path, bbox_inches="tight", dpi=300)
+            # Save the plot to HTML file
+            # The AdditiveForceVisualizer object doesn't have save methods
+            # We'll save the HTML representation manually
+            html_content = force_plot.html()
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write(html_content)
             self.logger.info(f"Force plot saved to {save_path}")
 
         if show:
             force_plot.show()
         else:
-            force_plot.close()
+            # Close the plot if it has a close method
+            if hasattr(force_plot, "close"):
+                force_plot.close()

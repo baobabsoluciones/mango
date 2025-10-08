@@ -70,21 +70,24 @@ class WaterfallPlot:
 
         # Handle multi-class case
         if len(shap_values.shape) > 2:
-            shap_values = shap_values[0]  # Use first class for multi-class
+            # Use first class for multi-class
+            shap_values = shap_values[0]
 
         # Get SHAP values and data for the specific instance
         instance_shap = shap_values[instance_idx]
-        instance_data = (
-            data[instance_idx]
-            if hasattr(data, "__getitem__")
-            else data.iloc[instance_idx]
-        )
+        if isinstance(data, pd.DataFrame):
+            instance_data = data.iloc[instance_idx]
+        else:
+            instance_data = data[instance_idx]
 
         # Create the plot
         plt.figure(figsize=(12, 8))
         shap.waterfall_plot(
             shap.Explanation(
-                values=instance_shap, data=instance_data, feature_names=feature_names
+                values=instance_shap,
+                base_values=0.0,
+                data=instance_data,
+                feature_names=feature_names,
             ),
             show=False,
         )

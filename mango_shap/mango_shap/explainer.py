@@ -104,9 +104,13 @@ class SHAPExplainer:
 
         # Process model and data
         self._set_estimator(model)
+
+        # Filter metadata BEFORE setting explainer and calculating SHAP values
+        self._filter_metadata()
+
         self._set_explainer(model_type)
 
-        # Get SHAP values
+        # Get SHAP values (after data processing is complete)
         self.shap_values = self._explainer.shap_values(self._x_transformed)
 
         self.logger.info(
@@ -357,7 +361,11 @@ class SHAPExplainer:
                         f"Feature {i}" for i in range(self._data.shape[1])
                     ]
                 else:
-                    self._feature_names = self._get_feature_names(self._model)
+                    # Use DataFrame column names if available, otherwise get from model
+                    if isinstance(self._data, pd.DataFrame):
+                        self._feature_names = list(self._data.columns)
+                    else:
+                        self._feature_names = self._get_feature_names(self._model)
         else:
             self._model = estimator
             self._x_transformed = self._data
@@ -366,16 +374,29 @@ class SHAPExplainer:
                     f"Feature {i}" for i in range(self._data.shape[1])
                 ]
             else:
-                self._feature_names = self._get_feature_names(self._model)
+                # Use DataFrame column names if available, otherwise get from model
+                if isinstance(self._data, pd.DataFrame):
+                    self._feature_names = list(self._data.columns)
+                else:
+                    self._feature_names = self._get_feature_names(self._model)
 
-        # Filter out metadata columns from feature names if they exist
+    def _filter_metadata(self):
+        """Filter out metadata columns from feature names and data if they exist."""
         if self._metadata and isinstance(self._data, pd.DataFrame):
             # Get all column names
             all_columns = list(self._data.columns)
-            # Filter out metadata columns
+            # Filter out metadata columns from feature names
             self._feature_names = [
                 col for col in all_columns if col not in self._metadata
             ]
+            # Filter out metadata columns from transformed data
+            self._x_transformed = self._x_transformed.drop(columns=self._metadata)
+
+    def _clean_kwargs_for_plot(self, kwargs):
+        """Remove 'show' parameter from kwargs to avoid duplicate parameter error."""
+        plot_kwargs = kwargs.copy()
+        plot_kwargs.pop("show", None)
+        return plot_kwargs
 
     @staticmethod
     def _get_feature_names(estimator: Any) -> List[str]:
@@ -418,9 +439,8 @@ class SHAPExplainer:
                         ]
                     else:
                         # Last resort: try to infer from the model
-                        feature_names = [
-                            f"feature_{i}" for i in range(5)
-                        ]  # Default fallback
+                        # Default fallback
+                        feature_names = [f"feature_{i}" for i in range(5)]
         return feature_names
 
     @staticmethod
@@ -582,16 +602,36 @@ class SHAPExplainer:
                     f"Path {os.path.dirname(file_path_save)} does not exist"
                 )
 
+        # Generate SHAP values for the background data used in the explainer
+        shap_values_for_plot = self._explainer.shap_values(self._x_transformed)
+
+        # Handle different SHAP values shapes
+        if self._problem_type != "regression":
+            # For classification, handle different shapes
+            if len(shap_values_for_plot.shape) == 3:
+                if shap_values_for_plot.shape[0] == len(self._model.classes_):
+                    # Shape: (n_classes, n_samples, n_features)
+                    selected_shap_values = shap_values_for_plot[
+                        self._get_class_index(class_name)
+                    ]
+                else:
+                    # Shape: (n_samples, n_features, n_classes)
+                    selected_shap_values = shap_values_for_plot[
+                        :, :, self._get_class_index(class_name)
+                    ]
+            else:
+                # Fallback for unexpected shapes
+                selected_shap_values = shap_values_for_plot
+        else:
+            # For regression, use values directly
+            selected_shap_values = shap_values_for_plot
+
         shap.summary_plot(
-            (
-                self.shap_values[self._get_class_index(class_name)]
-                if self._problem_type != "regression"
-                else self.shap_values
-            ),
+            selected_shap_values,
             self._x_transformed,
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
-            **kwargs,
+            **self._clean_kwargs_for_plot(kwargs),
         )
 
         if file_path_save is not None:
@@ -629,15 +669,32 @@ class SHAPExplainer:
                     f"Path: {os.path.dirname(file_path_save)} does not exist"
                 )
 
+        # Generate SHAP values for the background data used in the explainer
+        shap_values_for_plot = self._explainer.shap_values(self._x_transformed)
+
+        # For bar plot, we need to handle classification vs regression differently
+        if self._problem_type != "regression":
+            # For classification, handle different shapes
+            if len(shap_values_for_plot.shape) == 3:
+                if shap_values_for_plot.shape[0] == len(self._model.classes_):
+                    # Shape: (n_classes, n_samples, n_features) - use first class
+                    shap_values_for_bar = shap_values_for_plot[0]
+                else:
+                    # Shape: (n_samples, n_features, n_classes) - use first class
+                    shap_values_for_bar = shap_values_for_plot[:, :, 0]
+            else:
+                # Fallback for unexpected shapes
+                shap_values_for_bar = shap_values_for_plot
+        else:
+            # For regression, use the values directly
+            shap_values_for_bar = shap_values_for_plot
+
         shap.summary_plot(
-            self.shap_values,
+            shap_values_for_bar,
             plot_type="bar",
-            class_names=(
-                self._model.classes_ if self._problem_type != "regression" else None
-            ),
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
-            **kwargs,
+            **self._clean_kwargs_for_plot(kwargs),
         )
 
         if file_path_save is not None:
@@ -651,77 +708,110 @@ class SHAPExplainer:
             )
 
     def waterfall_plot(
-        self, query: str, path_save: Optional[str] = None, **kwargs
+        self, instance_idx: int = 0, path_save: Optional[str] = None, **kwargs
     ) -> None:
         """
-        Create waterfall plots for samples matching a query.
+        Create waterfall plot for a specific instance.
 
-        Generates waterfall plots for all samples that match the specified query.
-        For classification problems, creates separate plots for each class. Waterfall
+        Generates a waterfall plot for the specified instance index.
+        For classification problems, creates plots for each class. Waterfall
         plots show how each feature contributes to the final prediction, starting from
         the expected value and adding/subtracting feature contributions.
 
-        :param query: Pandas query string to filter the data
-        :type query: str
+        :param instance_idx: Index of the instance to plot
+        :type instance_idx: int
         :param path_save: Directory path to save the plots (optional)
         :type path_save: Optional[str]
         :param kwargs: Additional arguments passed to shap.waterfall_plot
         :return: None
         :rtype: None
-        :raises ValueError: If path_save is not a directory or no data matches the query
+        :raises ValueError: If path_save is not a directory or instance_idx is out of bounds
         """
         if path_save is not None and not os.path.isdir(path_save):
             raise ValueError("path_save must be a directory")
 
-        filter_data = self._data_with_metadata.query(query).copy()
-        if filter_data.shape[0] == 0:
-            raise ValueError(f"No data found for query: {query}")
-        else:
-            list_idx = filter_data.index.to_list()
-            for i, idx in enumerate(list_idx):
-                if self._problem_type in [
-                    "binary_classification",
-                    "multiclass_classification",
-                ]:
-                    for j, class_name in enumerate(self._model.classes_):
-                        shap.waterfall_plot(
-                            shap.Explanation(
-                                values=self.shap_values[j][idx],
-                                base_values=self._explainer.expected_value[j],
-                                data=self._data.iloc[idx],
-                                feature_names=self._feature_names,
-                            ),
-                            show=kwargs.get("show", False),
-                            **kwargs,
-                        )
+        # Validate instance_idx
+        if instance_idx < 0 or instance_idx >= len(self._data):
+            raise ValueError(
+                f"instance_idx {instance_idx} is out of bounds. Data has {len(self._data)} instances."
+            )
 
-                        if path_save is not None:
-                            self._save_fig(
-                                title=f"Waterfall plot query: {query} (Sample {i})",
-                                file_path_save=os.path.join(
-                                    path_save,
-                                    f"waterfall_class_{class_name}_sample_{i}.png",
-                                ),
-                            )
+        # Generate SHAP values for the background data used in the explainer
+        shap_values_for_plot = self._explainer.shap_values(self._x_transformed)
+
+        if self._problem_type in [
+            "binary_classification",
+            "multiclass_classification",
+        ]:
+            for j, class_name in enumerate(self._model.classes_):
+                # Get expected value for this class
+                if hasattr(self._explainer, "expected_value"):
+                    if isinstance(self._explainer.expected_value, (list, np.ndarray)):
+                        expected_val = self._explainer.expected_value[j]
+                    else:
+                        expected_val = self._explainer.expected_value
                 else:
-                    shap.waterfall_plot(
-                        shap.Explanation(
-                            values=self.shap_values[idx],
-                            base_values=self._explainer.expected_value,
-                            data=self._data.iloc[idx],
-                            feature_names=self._feature_names,
-                        ),
-                        show=kwargs.get("show", False),
-                        **kwargs,
-                    )
+                    # Fallback: use mean of predictions
+                    expected_val = 0.0
 
-                    if path_save is not None:
-                        self._save_fig(
-                            title=f"Waterfall plot query: {query} (Sample {i})",
-                            file_path_save=os.path.join(
-                                path_save, f"waterfall_sample_{i}.png"
-                            ),
-                        )
+                # Handle different SHAP values shapes
+                if len(shap_values_for_plot.shape) == 3:
+                    if shap_values_for_plot.shape[0] == len(self._model.classes_):
+                        # Shape: (n_classes, n_samples, n_features)
+                        values = shap_values_for_plot[j][instance_idx]
+                    else:
+                        # Shape: (n_samples, n_features, n_classes)
+                        values = shap_values_for_plot[instance_idx][:, j]
+                else:
+                    # Fallback for unexpected shapes
+                    values = shap_values_for_plot[instance_idx]
+
+                shap.waterfall_plot(
+                    shap.Explanation(
+                        values=values,
+                        base_values=expected_val,
+                        data=self._data.iloc[instance_idx],
+                        feature_names=self._feature_names,
+                    ),
+                    show=kwargs.get("show", False),
+                    **self._clean_kwargs_for_plot(kwargs),
+                )
+
+                if path_save is not None:
+                    self._save_fig(
+                        title=f"Waterfall plot instance {instance_idx} class {class_name}",
+                        file_path_save=os.path.join(
+                            path_save,
+                            f"waterfall_plot_instance_{instance_idx}_class_{class_name}.png",
+                        ),
+                    )
+        else:
+            # Get expected value for regression
+            if hasattr(self._explainer, "expected_value"):
+                expected_val = self._explainer.expected_value
+            else:
+                # Fallback: use mean of predictions
+                expected_val = 0.0
+
+            shap.waterfall_plot(
+                shap.Explanation(
+                    values=shap_values_for_plot[instance_idx],
+                    base_values=expected_val,
+                    data=self._data.iloc[instance_idx],
+                    feature_names=self._feature_names,
+                ),
+                show=kwargs.get("show", False),
+                **self._clean_kwargs_for_plot(kwargs),
+            )
+
+            if path_save is not None:
+                self._save_fig(
+                    title=f"Waterfall plot instance {instance_idx}",
+                    file_path_save=os.path.join(
+                        path_save,
+                        f"waterfall_plot_instance_{instance_idx}.png",
+                    ),
+                )
 
     def partial_dependence_plot(
         self,
@@ -751,18 +841,43 @@ class SHAPExplainer:
         :return: None
         :rtype: None
         """
+        # Generate SHAP values for the background data used in the explainer
+        shap_values_for_plot = self._explainer.shap_values(self._x_transformed)
+
+        # Set default class_name for classification problems
+        if self._problem_type != "regression" and class_name is None:
+            # Default to class 1 for binary classification
+            class_name = 1
+
+        # Handle different SHAP values shapes
+        if self._problem_type != "regression":
+            # For classification, handle different shapes
+            if len(shap_values_for_plot.shape) == 3:
+                if shap_values_for_plot.shape[0] == len(self._model.classes_):
+                    # Shape: (n_classes, n_samples, n_features)
+                    selected_shap_values = shap_values_for_plot[
+                        self._get_class_index(class_name)
+                    ]
+                else:
+                    # Shape: (n_samples, n_features, n_classes)
+                    selected_shap_values = shap_values_for_plot[
+                        :, :, self._get_class_index(class_name)
+                    ]
+            else:
+                # Fallback for unexpected shapes
+                selected_shap_values = shap_values_for_plot
+        else:
+            # For regression, use values directly
+            selected_shap_values = shap_values_for_plot
+
         shap.dependence_plot(
             feature,
-            (
-                self.shap_values[self._get_class_index(class_name)]
-                if self._problem_type != "regression"
-                else self.shap_values
-            ),
+            selected_shap_values,
             self._x_transformed,
             interaction_index=interaction_feature,
             feature_names=self._feature_names,
             show=kwargs.get("show", False),
-            **kwargs,
+            **self._clean_kwargs_for_plot(kwargs),
         )
         if file_path_save is not None:
             self._save_fig(
@@ -776,68 +891,85 @@ class SHAPExplainer:
 
     def get_sample_by_shap_value(
         self,
-        shap_value: float,
-        feature_name: Union[str, int],
+        feature_idx: int,
+        highest: bool = True,
         class_name: Optional[Union[str, int]] = None,
-        operator: str = ">=",
-    ) -> pd.DataFrame:
+    ) -> dict:
         """
-        Retrieve samples from the dataset based on SHAP values for a specific feature.
+        Get the sample with the highest or lowest SHAP value for a specific feature.
 
-        Filters the original dataset to return samples where the SHAP value for the
-        specified feature meets the given threshold condition. This is useful for
-        analyzing which data points have high or low feature importance.
+        Returns information about the instance with the most extreme (highest or lowest)
+        SHAP value for the specified feature. Useful for understanding which data points
+        have the most significant feature contributions.
 
-        :param shap_value: Threshold SHAP value for filtering
-        :type shap_value: float
-        :param feature_name: Name or index of the feature to filter by
-        :type feature_name: Union[str, int]
+        :param feature_idx: Index of the feature to analyze
+        :type feature_idx: int
+        :param highest: If True, return sample with highest SHAP value; if False, lowest
+        :type highest: bool
         :param class_name: Class name or index for classification problems (optional)
         :type class_name: Optional[Union[str, int]]
-        :param operator: Comparison operator for filtering ('>=' or '<=')
-        :type operator: str
-        :return: DataFrame containing filtered samples that meet the SHAP value criteria
-        :rtype: pd.DataFrame
+        :return: Dictionary containing instance_idx, shap_value, and feature_value
+        :rtype: dict
 
         Example:
-            >>> # Get samples where feature_0 has SHAP value >= 0.5
-            >>> high_importance_samples = explainer.get_sample_by_shap_value(
-            ...     shap_value=0.5,
-            ...     feature_name="feature_0",
-            ...     operator=">="
+            >>> # Get sample with highest SHAP value for first feature
+            >>> result = explainer.get_sample_by_shap_value(
+            ...     feature_idx=0,
+            ...     highest=True
             ... )
-            >>> print(f"Found {len(high_importance_samples)} samples")
+            >>> print(f"Instance {result['instance_idx']} has SHAP value {result['shap_value']}")
         """
-        operator_dict = {
-            ">=": lambda x, y: x >= y,
-            "<=": lambda x, y: x <= y,
-        }
-        if operator not in operator_dict.keys():
+        if feature_idx >= len(self._feature_names):
             raise ValueError(
-                f"Operator {operator} not valid. Valid operators are: {operator_dict.keys()}"
+                f"Feature index {feature_idx} out of range. Max index: {len(self._feature_names) - 1}"
             )
 
-        if feature_name not in self._feature_names:
-            raise ValueError(
-                f"Feature {feature_name} is not in model. Must be one of: {self._feature_names}"
-            )
-        index_feature = list(self._feature_names).index(feature_name)
+        # Handle 3D SHAP values for classification problems
+        shap_values_for_analysis = self.shap_values
 
-        if self._problem_type in ["binary_classification", "multiclass_classification"]:
-            return self._data_with_metadata[
-                operator_dict[operator](
-                    self.shap_values[
-                        list(self._model.classes_).index(
-                            self._get_class_index(class_name)
-                        )
-                    ][:, index_feature],
-                    shap_value,
-                )
-            ].copy()
+        if (
+            self._problem_type != "regression"
+            and len(shap_values_for_analysis.shape) == 3
+        ):
+            # For classification, select the appropriate class
+            if class_name is None:
+                # Default to first class for binary classification
+                if self._problem_type == "binary_classification":
+                    class_name = 1
+                else:
+                    class_name = 0
+
+            class_index = self._get_class_index(class_name)
+
+            # Handle different SHAP values shapes
+            if shap_values_for_analysis.shape[0] == len(self._model.classes_):
+                # Shape: (n_classes, n_samples, n_features)
+                shap_values_for_analysis = shap_values_for_analysis[class_index]
+            else:
+                # Shape: (n_samples, n_features, n_classes)
+                shap_values_for_analysis = shap_values_for_analysis[:, :, class_index]
+
+        # Get SHAP values for the specified feature
+        feature_shap_values = shap_values_for_analysis[:, feature_idx]
+
+        # Find the extreme value
+        if highest:
+            instance_idx = np.argmax(feature_shap_values)
         else:
-            return self._data_with_metadata[
-                operator_dict[operator](self.shap_values[:, index_feature], shap_value)
-            ].copy()
+            instance_idx = np.argmin(feature_shap_values)
+
+        shap_value = feature_shap_values[instance_idx]
+        feature_value = (
+            self._x_transformed.iloc[instance_idx, feature_idx]
+            if hasattr(self._x_transformed, "iloc")
+            else self._x_transformed[instance_idx, feature_idx]
+        )
+
+        return {
+            "instance_idx": int(instance_idx),
+            "shap_value": float(shap_value),
+            "feature_value": float(feature_value),
+        }
 
     def make_shap_analysis(
         self,
@@ -964,6 +1096,7 @@ class SHAPExplainer:
         self,
         output_path: str,
         format: str = "csv",
+        class_name: Optional[Union[str, int]] = None,
     ) -> None:
         """
         Export SHAP explanations to file in various formats.
@@ -976,11 +1109,38 @@ class SHAPExplainer:
         :type output_path: str
         :param format: Export format ('csv', 'json', 'html')
         :type format: str
+        :param class_name: Class name or index for classification problems (default: first class)
+        :type class_name: Optional[Union[str, int]]
         :return: None
         :rtype: None
         """
+        # Handle 3D SHAP values for classification problems
+        shap_values_for_export = self.shap_values
+
+        if (
+            self._problem_type != "regression"
+            and len(shap_values_for_export.shape) == 3
+        ):
+            # For classification, select the appropriate class
+            if class_name is None:
+                # Default to first class for binary classification
+                if self._problem_type == "binary_classification":
+                    class_name = 1
+                else:
+                    class_name = 0
+
+            class_index = self._get_class_index(class_name)
+
+            # Handle different SHAP values shapes
+            if shap_values_for_export.shape[0] == len(self._model.classes_):
+                # Shape: (n_classes, n_samples, n_features)
+                shap_values_for_export = shap_values_for_export[class_index]
+            else:
+                # Shape: (n_samples, n_features, n_classes)
+                shap_values_for_export = shap_values_for_export[:, :, class_index]
+
         self.export_utils.export(
-            shap_values=self.shap_values,
+            shap_values=shap_values_for_export,
             data=self._x_transformed,
             feature_names=self._feature_names,
             output_path=output_path,

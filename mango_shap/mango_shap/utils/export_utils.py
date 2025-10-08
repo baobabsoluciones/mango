@@ -4,6 +4,7 @@ from typing import Union, List, Optional
 
 import numpy as np
 import pandas as pd
+
 from mango_shap.logging import get_configured_logger
 
 
@@ -211,7 +212,7 @@ class ExportUtils:
             feature_names = [f"feature_{i}" for i in range(shap_values.shape[1])]
 
         # Create HTML content
-        html_content = self._generate_html_content(shap_values, data, feature_names)
+        html_content = self._generate_html_content(shap_values, feature_names)
 
         # Save to HTML
         html_path = output_path.with_suffix(".html")
@@ -238,18 +239,17 @@ class ExportUtils:
         :return: Complete HTML document as string
         :rtype: str
         """
-        html_template = """
-        <!DOCTYPE html>
+        html_template = """<!DOCTYPE html>
         <html>
         <head>
             <title>SHAP Explanations</title>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                table { border-collapse: collapse; width: 100%; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
-                .positive { color: red; }
-                .negative { color: blue; }
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                table {{ border-collapse: collapse; width: 100%; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #f2f2f2; }}
+                .positive {{ color: red; }}
+                .negative {{ color: blue; }}
             </style>
         </head>
         <body>
@@ -267,15 +267,15 @@ class ExportUtils:
                 {shap_rows}
             </table>
         </body>
-        </html>
-        """
+        </html>"""
 
         # Generate feature headers
         feature_headers = "".join([f"<th>{name}</th>" for name in feature_names])
 
         # Generate SHAP value rows
         shap_rows = ""
-        for i in range(min(100, shap_values.shape[0])):  # Limit to first 100 instances
+        # Limit to first 100 instances
+        for i in range(min(100, shap_values.shape[0])):
             row = f"<tr><td>{i}</td>"
             for j, value in enumerate(shap_values[i]):
                 color_class = "positive" if value > 0 else "negative"
