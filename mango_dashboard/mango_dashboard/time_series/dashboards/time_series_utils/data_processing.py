@@ -1,4 +1,4 @@
-import importlib.resources as pkg_resources
+import importlib.resources
 from typing import List, Dict
 
 import jinja2
@@ -237,7 +237,7 @@ def render_script(
         >>> print(script[:100])
         # Generated forecast script...
     """
-    with pkg_resources.path(
+    with importlib.resources.path(
         "mango_time_series.dashboards.time_series_utils", "forecast_template.py.j2"
     ) as template_path:
         templateLoader = jinja2.FileSystemLoader(searchpath=template_path.parent)

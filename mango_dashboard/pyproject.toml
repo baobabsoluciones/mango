@@ -98,3 +98,7 @@ exclude_lines = [
     "raise NotImplementedError",
 ]
 
+
+[project.scripts]
+mango-dashboard-file-explorer = "mango_dashboard.file_explorer.cli:cli"
+mango-dashboard-time-series   = "mango_dashboard.time_series.cli:cli"
