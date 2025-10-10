@@ -512,18 +512,6 @@ wheels = [
 ]
 
 [[package]]
-name = "holidays"
-version = "0.78"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "python-dateutil" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/11/fa/f76b06623266ce008dfc2c334b80b3c8001fc93ac1462bae3775356ecacb/holidays-0.78.tar.gz", hash = "sha256:7f21d09a475f42d79344498363586d5dadce07bb74f361c80c2658d59c513348", size = 729772, upload-time = "2025-08-04T19:25:41.301Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/73/f2/640890fb230515f350302b7172620fd54d89ec37469053c6f76e3c3244f7/holidays-0.78-py3-none-any.whl", hash = "sha256:d652a807f1cca89f0f9f0824f81979b2c4b99af6ac3aa2e54b8409fc0cda4e88", size = 1195146, upload-time = "2025-08-04T19:25:39.389Z" },
-]
-
-[[package]]
 name = "idna"
 version = "3.10"
 source = { registry = "https://pypi.org/simple" }
@@ -610,7 +598,7 @@ wheels = [
 
 [[package]]
 name = "mango"
-version = "0.3.0a8"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -620,30 +608,24 @@ dependencies = [
     { name = "idna" },
     { name = "numpy" },
     { name = "openpyxl" },
+    { name = "pandas" },
+    { name = "polars" },
     { name = "pydantic" },
+    { name = "pyomo" },
     { name = "python-dateutil" },
     { name = "pytups" },
     { name = "pytz" },
     { name = "requests" },
+    { name = "scikit-learn" },
     { name = "six" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "tqdm" },
     { name = "urllib3" },
     { name = "xlsxwriter" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/73/c3e4a5ff8fb5175acef727621b94b3f28c7f6a03ba4d22c02ca740622a90/mango-0.3.0a8.tar.gz", hash = "sha256:691c98b183afca24c002dd79efd777987834a98c6c74be66b6694ed51e426c01", size = 538925, upload-time = "2025-04-16T07:18:35.209Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e1/45/ac86ce2a33526345d4f0b6f1892b878aedbd9b54105cd779f85f04d6afa2/mango-1.0.1.tar.gz", hash = "sha256:0bc529348ce66fc11afab96ff4803b6b4f75a90f6d072c4428d6d7df708fc74d", size = 191161, upload-time = "2025-09-29T11:46:52.879Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e9/29/dbc56bc2861589c3154921dd396f94f38b3a0cd5cffc6bd1efd04d1fb47c/mango-0.3.0a8-py3-none-any.whl", hash = "sha256:b6633b7c4e9edd02285e4ca5d198d5c9c3ff8b358efe4d5c9ea9c57221e94beb", size = 569137, upload-time = "2025-04-16T07:18:33.656Z" },
-]
-
-[package.optional-dependencies]
-data = [
-    { name = "holidays" },
-    { name = "pandas" },
-    { name = "polars" },
-    { name = "pycountry" },
-    { name = "scikit-learn" },
-    { name = "tabulate" },
-    { name = "unidecode" },
+    { url = "https://files.pythonhosted.org/packages/fc/78/603efa650fa2332ab5a26e62c899920befbd637e587206f6d8c294d84d25/mango-1.0.1-py3-none-any.whl", hash = "sha256:f0690a88e42d147a7659e267eed4767e397612a98761dd80454b958e02e87583", size = 165417, upload-time = "2025-09-29T11:46:51.232Z" },
 ]
 
 [[package]]
@@ -654,7 +636,7 @@ dependencies = [
     { name = "google-cloud" },
     { name = "google-cloud-storage" },
     { name = "jinja2" },
-    { name = "mango", extra = ["data"] },
+    { name = "mango" },
     { name = "mango-time-series" },
     { name = "pandas" },
     { name = "plotly" },
@@ -675,8 +657,8 @@ requires-dist = [
     { name = "google-cloud", specifier = ">=0.34.0" },
     { name = "google-cloud-storage", specifier = ">=3.3.0" },
     { name = "jinja2", specifier = ">=3.1.4,<4.0.0" },
-    { name = "mango", extras = ["data"], specifier = "==0.3.0a8" },
-    { name = "mango-time-series", specifier = "==0.3.0a12" },
+    { name = "mango", specifier = ">=1.0.0,<2.0.0" },
+    { name = "mango-time-series", specifier = ">=1.0.0,<2.0.0" },
     { name = "pandas", specifier = ">=2.0.3,<3.0.0" },
     { name = "plotly", specifier = ">=6.2.0" },
     { name = "scikit-learn", specifier = ">=1.6.1,<2.0.0" },
@@ -687,10 +669,10 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "mango-time-series"
-version = "0.3.0a12"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "mango", extra = ["data"] },
+    { name = "mango" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "polars" },
@@ -699,9 +681,9 @@ dependencies = [
     { name = "scipy" },
     { name = "statsmodels" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/66/44/66c5e26035c1a2aa1cb6f2d437d9bfd762bff7c0990bdae4990b20fbb5d4/mango_time_series-0.3.0a12.tar.gz", hash = "sha256:94e7f7ae20cba358e0ba84c6eeba3d2c9bb354172373027f8f2303813ab4d312", size = 374982, upload-time = "2025-08-14T13:36:33.454Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/83/ac/89f9bdaee5f3b92070028eb9deb0d1b868cfdd8f6eac1a8dee7023afc8dd/mango_time_series-1.0.1.tar.gz", hash = "sha256:3519c8d3dcedc01d81b4405c2ef4977cd612039f82c19099d8137372fa6256b4", size = 382694, upload-time = "2025-09-29T11:50:39.519Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/46/3a/ff3777a852c36b3c817c8e9c54851711d906e9197fdfb64dbddc25e7de5f/mango_time_series-0.3.0a12-py3-none-any.whl", hash = "sha256:fa6a8960e6c1afa6e55299cea5288e7d07a4110a5ef802a189ba542b722d52f1", size = 326946, upload-time = "2025-08-14T13:36:31.896Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/0e/144820707d33da7e8ebaae5844e4e6c28ca2a5ff77c02c2f14e081e9078d/mango_time_series-1.0.1-py3-none-any.whl", hash = "sha256:3435c8510e8c880ed394ae03ab38bc4f9f2df74afd4f669cf67fe641af3d6c9a", size = 333263, upload-time = "2025-09-29T11:50:35.454Z" },
 ]
 
 [[package]]
@@ -1032,6 +1014,15 @@ wheels = [
 ]
 
 [[package]]
+name = "ply"
+version = "3.11"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e5/69/882ee5c9d017149285cab114ebeab373308ef0f874fcdac9beb90e0ac4da/ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3", size = 159130, upload-time = "2018-02-15T19:01:31.097Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/58/35da89ee790598a0700ea49b2a66594140f44dec458c07e8e3d4979137fc/ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce", size = 49567, upload-time = "2018-02-15T19:01:27.172Z" },
+]
+
+[[package]]
 name = "polars"
 version = "1.32.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1134,15 +1125,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/e9/e6/78ebbb10a8c8e4b61
 wheels = [
     { url = "https://files.pythonhosted.org/packages/47/8d/d529b5d697919ba8c11ad626e835d4039be708a35b0d22de83a269a6682c/pyasn1_modules-0.4.2-py3-none-any.whl", hash = "sha256:29253a9207ce32b64c3ac6600edc75368f98473906e8fd1043bd6b5b1de2c14a", size = 181259, upload-time = "2025-03-28T02:41:19.028Z" },
 ]
-
-[[package]]
-name = "pycountry"
-version = "22.3.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "setuptools" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/33/24/033604d30f6cf82d661c0f9dfc2c71d52cafc2de516616f80d3b0600cb7c/pycountry-22.3.5.tar.gz", hash = "sha256:b2163a246c585894d808f18783e19137cb70a0c18fb36748dc01fc6f109c1646", size = 10141551, upload-time = "2022-03-05T10:27:01.153Z" }
 
 [[package]]
 name = "pydantic"
@@ -1257,6 +1239,36 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a1/ca/40e14e196864a0f61a92abb14d09b3d3da98f94ccb03b49cf51688140dab/pydeck-0.9.1.tar.gz", hash = "sha256:f74475ae637951d63f2ee58326757f8d4f9cd9f2a457cf42950715003e2cb605", size = 3832240, upload-time = "2024-05-10T15:36:21.153Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ab/4c/b888e6cf58bd9db9c93f40d1c6be8283ff49d88919231afe93a6bcf61626/pydeck-0.9.1-py2.py3-none-any.whl", hash = "sha256:b3f75ba0d273fc917094fa61224f3f6076ca8752b93d46faf3bcfd9f9d59b038", size = 6900403, upload-time = "2024-05-10T15:36:17.36Z" },
+]
+
+[[package]]
+name = "pyomo"
+version = "6.9.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ply" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/91/d4/bbb4ab79bb3015e3bdd488435ef71f7806144cc6ae4146ee6c5f64ac53f2/pyomo-6.9.4.tar.gz", hash = "sha256:34ad22cd6bf9956de9c0d3842d01c1f92dee0515b25aa3e8f113b326549b1231", size = 3033231, upload-time = "2025-08-28T02:11:24.976Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/c1/290c6d11fff8067742c1905f7d2ef776e6add75f0380e84b16e5417f3b90/pyomo-6.9.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7de575b80e17edf59f393e7fb4dd7b33eda071f1ced65b464b156ceaf076d738", size = 7321631, upload-time = "2025-08-28T02:08:40.886Z" },
+    { url = "https://files.pythonhosted.org/packages/06/bd/1b830c9c01d05d726e9aaf0a0fd093f0816de39cac18d72e09b4ef245cf8/pyomo-6.9.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:3986f6bc445c187255df1f50895cfb2c733cd62a03cd6d8dfde427d6b113c79d", size = 7126106, upload-time = "2025-08-28T02:08:47.295Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/65/a18a02ae5b61d460584335ea983b6ed8b42330db1c618f3439e63e4b0af6/pyomo-6.9.4-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:b32eb679410ce65614e22a95f63c587286537ecb03b0c786ba1044fe56c5d83b", size = 15121798, upload-time = "2025-08-28T02:08:58.264Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/42/9877b0924f2e90c86134d30ab2865ac6cc134b146383b5134144e67855b8/pyomo-6.9.4-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:87fb4034e8345f6a7733fd8510855f37ec7c0cf0f0f8fe185bfd0107a0780d73", size = 15455647, upload-time = "2025-08-28T02:09:10.448Z" },
+    { url = "https://files.pythonhosted.org/packages/23/41/0e333cc9d85817f763d324efebb1e1c73bc9122e7045417ef24ab9034a73/pyomo-6.9.4-cp310-cp310-win_amd64.whl", hash = "sha256:396c4c569af906abce57b73d6acc3f9bf2e0f6902c030a82f12247e17f125590", size = 6843193, upload-time = "2025-08-28T02:09:17.322Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/ed/98db6902e3d92c5d4611953969d518e59d76cedcfc371305892399b2c719/pyomo-6.9.4-cp310-cp310-win_arm64.whl", hash = "sha256:4615404d46d3ffbd5eefa20e7c6069c34a568697b94ddd7a5b9a72a531f3dd7e", size = 6605235, upload-time = "2025-08-28T02:09:23.23Z" },
+    { url = "https://files.pythonhosted.org/packages/47/85/25b9b1fbed3742c10daa7bd28638d43b85fdad2b6817ea6272064cb9bf4e/pyomo-6.9.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:81387bd2dcbc734c2bfeb3de1fc15e90d2ecf76f4985c77dc5aa7f608c9bcc34", size = 4263873, upload-time = "2025-08-28T02:09:27.401Z" },
+    { url = "https://files.pythonhosted.org/packages/59/cd/bfd9e71b2276083baecda50d144f485f4d1354caf67eda0986fd672bb1dc/pyomo-6.9.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:dbe6c5c86b1f3eea9da632121df473608b56d48c97191c046c1eb6b48762abd4", size = 4253833, upload-time = "2025-08-28T02:09:32.137Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/41/48eab3c4739faf7026bd019986562d7e4f057c6d75db143080aa843cd864/pyomo-6.9.4-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:66752c5653e77179bc0c980cf10f6ecea03ee03e158c3b72cf33d1f947970ae0", size = 4308653, upload-time = "2025-08-28T02:09:36.633Z" },
+    { url = "https://files.pythonhosted.org/packages/56/5f/63da0c03a0e2947eef4062058f0eeca4ae333a93073e075b8c18af60d595/pyomo-6.9.4-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3d47465a05f936b51df5d8fd872f766f0b7379ca4d9d43a8fb2b555aecbcb262", size = 4334884, upload-time = "2025-08-28T02:09:40.778Z" },
+    { url = "https://files.pythonhosted.org/packages/18/6b/80f40b4b72a3c6a207130ce431765f897c76133a15e7e38e66f9f40d36f3/pyomo-6.9.4-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:cc3cd52c143991071821bbb9943d2a59512481b5d15adb7add32f92def4172ce", size = 4266926, upload-time = "2025-08-28T02:09:44.833Z" },
+    { url = "https://files.pythonhosted.org/packages/48/30/f7ef1be3deb445694b63800de6a36dff31670014d5aa67d42e1716c04970/pyomo-6.9.4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:3a5e1dc79e1a2ec1f6247f0df59ac3572781e40218093a624f9213dd3ae6913f", size = 4255513, upload-time = "2025-08-28T02:09:49.197Z" },
+    { url = "https://files.pythonhosted.org/packages/76/f4/9493daae82595d7d776ba6cd0d5d167951700670e363dec443415e753808/pyomo-6.9.4-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:abea6ca55295b179c1c91184db4eece7589cfd6099869eff8e3e6aa8a06463d1", size = 4311852, upload-time = "2025-08-28T02:09:53.415Z" },
+    { url = "https://files.pythonhosted.org/packages/83/d7/e39e605ab33c2729afb043bed94ce7ee382bd5b4bc708f6c90a1d2600456/pyomo-6.9.4-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ddd48dec34b270ca2621863a216c4f3a6fcc409db86a7dc34c31eb788a44b8c6", size = 4343130, upload-time = "2025-08-28T02:09:57.397Z" },
+    { url = "https://files.pythonhosted.org/packages/65/04/dc4d3d9369c4cb1b6e68ce18bbba066ea83284942322836e791dbf693bb2/pyomo-6.9.4-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:e1a768a178ae3f0391c66e2334da3d1618c9c85c9d879bc86de441efd143f491", size = 4267029, upload-time = "2025-08-28T02:10:02.066Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/52/824e9cea51ed0a25636b66e8c122dce5fcd22a197bf4646dd6c5f138fe36/pyomo-6.9.4-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:09cde10e5fe8414f453d1ed3bccef1b42fc048fc2da0a9c936e40b2f877201bf", size = 4255606, upload-time = "2025-08-28T02:10:06.383Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/dc/97005d683ca57e231a8f613921adaf480d3a82f40d280c6d0185855a92c6/pyomo-6.9.4-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:df3e173d330666f881258deefa79f37373b941d4a5b00edc6aa5b10680720dc1", size = 4312670, upload-time = "2025-08-28T02:10:11.563Z" },
+    { url = "https://files.pythonhosted.org/packages/64/73/47525078660eced084abb9a79e1e4c74098c992316c93ab6ead2dc7f8bda/pyomo-6.9.4-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:8a13baebcdb05deadeb0ec4b04ecedffa65f1e86179418fa67e603a4f8f1bf17", size = 4344540, upload-time = "2025-08-28T02:10:15.731Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/e3/56c20c3358e58206e7270a42ff666a267a6c01492213c8c47aad8676b487/pyomo-6.9.4-py3-none-any.whl", hash = "sha256:a274d74616c0b793279931f3b2175a31f9c63213f2d7b86c14d168c6c264f782", size = 3892640, upload-time = "2025-08-28T02:11:13.845Z" },
 ]
 
 [[package]]
@@ -1704,15 +1716,6 @@ wheels = [
 ]
 
 [[package]]
-name = "tabulate"
-version = "0.9.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ec/fe/802052aecb21e3797b8f7902564ab6ea0d60ff8ca23952079064155d1ae1/tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c", size = 81090, upload-time = "2022-10-06T17:21:48.54Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f", size = 35252, upload-time = "2022-10-06T17:21:44.262Z" },
-]
-
-[[package]]
 name = "tenacity"
 version = "9.1.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1854,15 +1857,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380, upload-time = "2025-03-23T13:54:43.652Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839, upload-time = "2025-03-23T13:54:41.845Z" },
-]
-
-[[package]]
-name = "unidecode"
-version = "1.4.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/94/7d/a8a765761bbc0c836e397a2e48d498305a865b70a8600fd7a942e85dcf63/Unidecode-1.4.0.tar.gz", hash = "sha256:ce35985008338b676573023acc382d62c264f307c8f7963733405add37ea2b23", size = 200149, upload-time = "2025-04-24T08:45:03.798Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8f/b7/559f59d57d18b44c6d1250d2eeaa676e028b9c527431f5d0736478a73ba1/Unidecode-1.4.0-py3-none-any.whl", hash = "sha256:c3c7606c27503ad8d501270406e345ddb480a7b5f38827eafe4fa82a137f0021", size = 235837, upload-time = "2025-04-24T08:45:01.609Z" },
 ]
 
 [[package]]
