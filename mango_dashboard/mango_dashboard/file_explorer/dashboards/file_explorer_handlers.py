@@ -412,15 +412,15 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         """
         blob_md = self._bucket.blob(path.replace(f"gs://{self._bucket_name}/", ""))
         content_bytes = blob_md.download_as_string()
-        
+
         encodings_to_try = ["utf-8", "latin-1", "cp1252", "iso-8859-1"]
-        
+
         for encoding in encodings_to_try:
             try:
                 return content_bytes.decode(encoding)
             except UnicodeDecodeError:
                 continue
-        
+
         # If all encodings fail, try with errors='replace' to avoid crashes
         return content_bytes.decode("utf-8", errors="replace")
 
