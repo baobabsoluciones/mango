@@ -45,18 +45,20 @@ Usage
 File Explorer
 ~~~~~~~~~~~~~
 
-Basic command:
+Launch the File Explorer dashboard using the CLI:
+
+**Using uv (development)**
 
 .. code-block:: bash
 
-   # From the mango project root
-   cd C:\Users\NataliaGorrin\Desktop\Proyectos_baobab\mango
+   uv run mango-dashboard-file-explorer dashboard file_explorer --path "path/to/your/folder"
 
-   # Using the CLI
-   python -m mango_dashboard.file_explorer.cli.dashboard file_explorer --path "path/to/your/folder"
+**After installation**
 
-   # Or running directly
-   streamlit run mango_dashboard/mango_dashboard/file_explorer/dashboards/file_explorer_app.py -- --path "path/to/your/folder"
+.. code-block:: bash
+
+   mango-dashboard-file-explorer dashboard file_explorer --path "path/to/your/folder"
+
 
 Available parameters:
 
@@ -67,31 +69,47 @@ Available parameters:
 
 Usage examples:
 
-**Explore a local folder:**
+**Local folder**
 
 .. code-block:: bash
 
-   python -m mango_dashboard.file_explorer.cli.dashboard file_explorer --path "path/to/your/folder"
+   mango-dashboard-file-explorer dashboard file_explorer --path "./data"
 
-**Explore with custom configuration:**
-
-.. code-block:: bash
-
-   python -m mango_dashboard.file_explorer.cli.dashboard file_explorer --path "./data" --config_path "./my_config.json" --editable 1
-
-**Explore files in Google Cloud Storage:**
+**Existing configuration**
 
 .. code-block:: bash
 
-   python -m mango_dashboard.file_explorer.cli.dashboard file_explorer --path "gs://my-bucket/data" --gcp_credentials_path "./credentials.json"
+   mango-dashboard-file-explorer dashboard file_explorer --path "./data" --config_path "./config.json" --editable 0
+
+**Google Cloud Storage**
+
+.. code-block:: bash
+
+   mango-dashboard-file-explorer dashboard file_explorer --path "gs://my-bucket/data" --gcp_credentials_path "./credentials.json"
+
 
 Time Series Dashboard
 ~~~~~~~~~~~~~~~~~~~~~
 
+Launch the time series dashboard:
+
+**Using uv (development)**
+
 .. code-block:: bash
 
-   # Run the time series dashboard
-   python -m mango_dashboard.time_series.cli.dashboard time_series
+   uv run mango-dashboard-time-series dashboard time_series
+
+**After installation**
+
+.. code-block:: bash
+   
+   mango-dashboard-time-series dashboard time_series
+
+Optional parameters:
+
+- ``--project_name``: Dashboard project name (or env `TS_DASHBOARD_PROJECT_NAME`)
+- ``--logo_url``: Logo URL (https:// or file:///)
+- ``--experimental_features``: Enable experimental features (0 or 1)
 
 Configuration
 -------------

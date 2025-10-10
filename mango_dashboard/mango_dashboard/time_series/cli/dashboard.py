@@ -1,5 +1,8 @@
 import os
+import subprocess
 import sys
+from pathlib import Path
+
 import click
 
 from mango_dashboard.time_series.cli import cli
@@ -48,6 +51,18 @@ def time_series(project_name, logo_url, experimental_features):
     os.environ["TS_DASHBOARD_LOGO_URL"] = logo_url
     os.environ["TS_DASHBOARD_EXPERIMENTAL_FEATURES"] = experimental_features
 
-    os.system(
-        f"{sys.executable} -m streamlit run -m mango_time_series.dashboards.time_series_app --theme.primaryColor=#3d9df3"
+    path_to_app = (
+        Path(__file__).resolve().parent.parent / "dashboards" / "time_series_app.py"
+    )
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "streamlit",
+            "run",
+            str(path_to_app),
+            "--theme.primaryColor=#3d9df3",
+        ],
+        check=False,
     )
