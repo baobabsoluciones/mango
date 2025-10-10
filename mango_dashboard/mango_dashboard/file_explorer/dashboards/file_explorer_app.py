@@ -646,7 +646,11 @@ class FileExplorerApp:
         ):
             image = self.file_handler.read_img(path=path_selected)
             with st.spinner("Wait for it..."):
-                st.image(image, width=self.config.get(f"width_{key}", None))
+                width_value = self.config.get(f"width_{key}", "content")
+                if width_value is None:
+                    width_value = "content"
+                st.image(image, width=width_value)
+
 
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
