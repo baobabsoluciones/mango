@@ -12,6 +12,8 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 Fixed
 -----
 - Resolved deprecated pkg_resources warning in time series data processing
+- Fixed editable parameter defaulting to 0 in file_explorer
+- Fixed Spanish character rendering and alphabet support
 - Updated importlib.resources usage to eliminate deprecation warnings
 - Fixed confusing import alias that caused false positive warnings
 
@@ -19,6 +21,9 @@ Changed
 -------
 - Migrated from deprecated pkg_resources API to modern importlib.resources
 - Updated data_processing.py to use proper importlib.resources syntax
+- Enhanced CLI functionality for both file_explorer and time_series modules
+- Improved README documentation with accurate configuration information
+
 
 [1.0.1] - 2024-12-26
 --------------------
