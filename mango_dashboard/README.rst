@@ -215,31 +215,6 @@ Project Structure
    ├── README.rst
    └── pyproject.toml
 
-Troubleshooting
----------------
-
-Error: "File does not exist"
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Make sure to run the command from the ``mango`` project root:
-
-.. code-block:: bash
-
-   cd C:\Users\NataliaGorrin\Desktop\Proyectos_baobab\mango
-
-Error: "TypeError: stat: path should be string, bytes, os.PathLike or integer, not NoneType"
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This error has been fixed in the current version. If it persists, make sure you're using the latest version of the code.
-
-Windows path issues
-~~~~~~~~~~~~~~~~~~~
-
-For Windows paths, use double quotes:
-
-.. code-block:: bash
-
-   python -m mango_dashboard.file_explorer.cli.dashboard file_explorer --path "G:\Mi unidad\data"
 
 Contributing
 ------------
