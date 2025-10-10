@@ -6,7 +6,7 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-[1.0.2] - 2024-12-27
+[1.0.2] - 2025-10-13
 --------------------
 
 Fixed
@@ -25,18 +25,12 @@ Changed
 - Improved README documentation with accurate configuration information
 
 
-[1.0.1] - 2024-12-26
+[1.0.1] - 2025-09-30
 --------------------
 
 Added
 -----
 - Updated mango dependency version
-
-[1.0.0] - 2024-12-24
---------------------
-
-Added
------
 - Interactive web-based dashboards using Streamlit
 - File explorer with hierarchical navigation
 - Time series data visualization and analysis
