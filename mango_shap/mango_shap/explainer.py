@@ -1146,3 +1146,171 @@ class SHAPExplainer:
             output_path=output_path,
             format=format,
         )
+
+    def bar_plot(
+        self,
+        class_name: Union[str, int] = 1,
+        file_path_save: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        """
+        Create a bar plot of SHAP values.
+
+        Generates a bar plot showing feature importance based on mean absolute
+        SHAP values. Features are ordered by importance, providing a clear ranking
+        of their contributions to model predictions.
+
+        :param class_name: Class name or index to plot for classification problems
+        :type class_name: Union[str, int]
+        :param file_path_save: File path to save the plot (optional)
+        :type file_path_save: Optional[str]
+        :param kwargs: Additional arguments passed to the bar plot
+        :return: None
+        :rtype: None
+        """
+        from .visualizers import BarPlot
+
+        if file_path_save is not None:
+            if not os.path.exists(os.path.dirname(file_path_save)):
+                raise ValueError(
+                    f"Path {os.path.dirname(file_path_save)} does not exist"
+                )
+
+        # Generate SHAP values for the background data used in the explainer
+        shap_values_for_plot = self._explainer.shap_values(self._x_transformed)
+
+        # Handle different SHAP values shapes
+        if len(shap_values_for_plot.shape) > 2:
+            # Multi-class case
+            class_index = self._get_class_index(class_name)
+            shap_values_plot = shap_values_for_plot[class_index]
+        else:
+            shap_values_plot = shap_values_for_plot
+
+        # Create bar plot
+        bar_plotter = BarPlot()
+        bar_plotter.plot(
+            shap_values=shap_values_plot,
+            data=self._x_transformed,
+            feature_names=self._feature_names,
+            show=kwargs.get("show", False),
+            save_path=file_path_save,
+            **self._clean_kwargs_for_plot(kwargs),
+        )
+
+    def beeswarm_plot(
+        self,
+        class_name: Union[str, int] = 1,
+        file_path_save: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        """
+        Create a beeswarm plot of SHAP values.
+
+        Generates a beeswarm plot that displays the distribution of SHAP values
+        for each feature, showing both the magnitude and direction of feature
+        impacts across all samples.
+
+        :param class_name: Class name or index to plot for classification problems
+        :type class_name: Union[str, int]
+        :param file_path_save: File path to save the plot (optional)
+        :type file_path_save: Optional[str]
+        :param kwargs: Additional arguments passed to the beeswarm plot
+        :return: None
+        :rtype: None
+        """
+        from .visualizers import BeeswarmPlot
+
+        if file_path_save is not None:
+            if not os.path.exists(os.path.dirname(file_path_save)):
+                raise ValueError(
+                    f"Path {os.path.dirname(file_path_save)} does not exist"
+                )
+
+        # Generate SHAP values for the background data used in the explainer
+        shap_values_for_plot = self._explainer.shap_values(self._x_transformed)
+
+        # Handle different SHAP values shapes
+        if len(shap_values_for_plot.shape) > 2:
+            # Multi-class case
+            class_index = self._get_class_index(class_name)
+            shap_values_plot = shap_values_for_plot[class_index]
+        else:
+            shap_values_plot = shap_values_for_plot
+
+        # Create beeswarm plot
+        beeswarm_plotter = BeeswarmPlot()
+        beeswarm_plotter.plot(
+            shap_values=shap_values_plot,
+            data=self._x_transformed,
+            feature_names=self._feature_names,
+            show=kwargs.get("show", False),
+            save_path=file_path_save,
+            **self._clean_kwargs_for_plot(kwargs),
+        )
+
+    def decision_plot(
+        self,
+        class_name: Union[str, int] = 1,
+        file_path_save: Optional[str] = None,
+        sample_indices: Optional[List[int]] = None,
+        **kwargs,
+    ) -> None:
+        """
+        Create a decision plot of SHAP values.
+
+        Generates a decision plot that shows how features contribute to individual
+        predictions, displaying the cumulative effect of features on the final
+        model output.
+
+        :param class_name: Class name or index to plot for classification problems
+        :type class_name: Union[str, int]
+        :param file_path_save: File path to save the plot (optional)
+        :type file_path_save: Optional[str]
+        :param sample_indices: Optional list of sample indices to highlight
+        :type sample_indices: Optional[List[int]]
+        :param kwargs: Additional arguments passed to the decision plot
+        :return: None
+        :rtype: None
+        """
+        from .visualizers import DecisionPlot
+
+        if file_path_save is not None:
+            if not os.path.exists(os.path.dirname(file_path_save)):
+                raise ValueError(
+                    f"Path {os.path.dirname(file_path_save)} does not exist"
+                )
+
+        # Generate SHAP values for the background data used in the explainer
+        shap_values_for_plot = self._explainer.shap_values(self._x_transformed)
+
+        # Handle different SHAP values shapes
+        if len(shap_values_for_plot.shape) > 2:
+            # Multi-class case
+            class_index = self._get_class_index(class_name)
+            shap_values_plot = shap_values_for_plot[class_index]
+        else:
+            shap_values_plot = shap_values_for_plot
+
+        # Create decision plot
+        decision_plotter = DecisionPlot()
+
+        if sample_indices is not None:
+            decision_plotter.plot_highlighted_samples(
+                shap_values=shap_values_plot,
+                data=self._x_transformed,
+                highlight_indices=sample_indices,
+                feature_names=self._feature_names,
+                show=kwargs.get("show", False),
+                save_path=file_path_save,
+                **self._clean_kwargs_for_plot(kwargs),
+            )
+        else:
+            decision_plotter.plot(
+                shap_values=shap_values_plot,
+                data=self._x_transformed,
+                feature_names=self._feature_names,
+                show=kwargs.get("show", False),
+                save_path=file_path_save,
+                **self._clean_kwargs_for_plot(kwargs),
+            )

@@ -49,8 +49,10 @@ class TreeExplainer:
         self.model = model
         self.background_data = background_data
 
-        # Create SHAP TreeExplainer
-        self.explainer = shap.TreeExplainer(model, background_data)
+        # Create SHAP TreeExplainer with interventional feature perturbation
+        self.explainer = shap.TreeExplainer(
+            model, background_data, feature_perturbation="interventional"
+        )
 
         self.logger.info("Tree explainer initialized")
 
@@ -78,7 +80,7 @@ class TreeExplainer:
         """
         self.logger.info("Calculating SHAP values using TreeExplainer")
 
-        shap_values = self.explainer.shap_values(data)
+        shap_values = self.explainer.shap_values(data, check_additivity=False)
 
         # Handle multi-class case
         if isinstance(shap_values, list):
