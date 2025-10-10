@@ -6,6 +6,20 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.2] - 2024-12-27
+--------------------
+
+Fixed
+-----
+- Resolved deprecated pkg_resources warning in time series data processing
+- Updated importlib.resources usage to eliminate deprecation warnings
+- Fixed confusing import alias that caused false positive warnings
+
+Changed
+-------
+- Migrated from deprecated pkg_resources API to modern importlib.resources
+- Updated data_processing.py to use proper importlib.resources syntax
+
 [1.0.1] - 2024-12-26
 --------------------
 
