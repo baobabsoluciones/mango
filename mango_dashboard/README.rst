@@ -51,13 +51,13 @@ Launch the File Explorer dashboard using the CLI:
 
 .. code-block:: bash
 
-   uv run mango-dashboard-file-explorer dashboard file_explorer --path "path/to/your/folder"
+   uv run mango-dashboard-fe dashboard file_explorer --path "path/to/your/folder"
 
 **After installation**
 
 .. code-block:: bash
 
-   mango-dashboard-file-explorer dashboard file_explorer --path "path/to/your/folder"
+   mango-dashboard-fe dashboard file_explorer --path "path/to/your/folder"
 
 
 Available parameters:
@@ -73,19 +73,19 @@ Usage examples:
 
 .. code-block:: bash
 
-   mango-dashboard-file-explorer dashboard file_explorer --path "./data"
+   mango-dashboard-fe dashboard file_explorer --path "./data"
 
 **Existing configuration**
 
 .. code-block:: bash
 
-   mango-dashboard-file-explorer dashboard file_explorer --path "./data" --config_path "./config.json" --editable 0
+   mango-dashboard-fe dashboard file_explorer --path "./data" --config_path "./config.json" --editable 0
 
 **Google Cloud Storage**
 
 .. code-block:: bash
 
-   mango-dashboard-file-explorer dashboard file_explorer --path "gs://my-bucket/data" --gcp_credentials_path "./credentials.json"
+   mango-dashboard-fe dashboard file_explorer --path "gs://my-bucket/data" --gcp_credentials_path "./credentials.json"
 
 
 Time Series Dashboard
@@ -97,13 +97,13 @@ Launch the time series dashboard:
 
 .. code-block:: bash
 
-   uv run mango-dashboard-time-series dashboard time_series
+   uv run mango-dashboard-ts dashboard time_series
 
 **After installation**
 
 .. code-block:: bash
    
-   mango-dashboard-time-series dashboard time_series
+   mango-dashboard-ts dashboard time_series
 
 Optional parameters:
 
