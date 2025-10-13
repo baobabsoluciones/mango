@@ -209,14 +209,27 @@ class LocalFileExplorerHandler(FileExplorerHandler):
         return Image.open(path)
 
     def read_markdown(self, path: str):
-        """Read a markdown file using pathlib.Path.read_text.
+        """Read a markdown file using pathlib.Path.read_text with proper encoding.
+
+        Attempts to read the file with UTF-8 encoding first, then falls back to
+        other common encodings if UTF-8 fails. This ensures proper handling of
+        Spanish characters and other special characters.
 
         :param path: The path to the markdown file
         :type path: str
         :return: The content of the markdown file
         :rtype: str
         """
-        return Path(path).read_text()
+        encodings_to_try = ["utf-8", "latin-1", "cp1252", "iso-8859-1"]
+
+        for encoding in encodings_to_try:
+            try:
+                return Path(path).read_text(encoding=encoding)
+            except UnicodeDecodeError:
+                continue
+
+        # If all encodings fail, try with errors='replace' to avoid crashes
+        return Path(path).read_text(encoding="utf-8", errors="replace")
 
     def read_json(self, path: str):
         """Read a JSON file using json.load.
@@ -386,9 +399,11 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         return Image.open(BytesIO(blob_image.download_as_bytes()))
 
     def read_markdown(self, path: str):
-        """Read a markdown file from GCS.
+        """Read a markdown file from GCS with proper encoding handling.
 
-        Downloads the blob as a string and decodes it as UTF-8.
+        Downloads the blob as a string and attempts to decode it with UTF-8 first,
+        then falls back to other common encodings if UTF-8 fails. This ensures
+        proper handling of Spanish characters and other special characters.
 
         :param path: The GCS path to the markdown file
         :type path: str
@@ -396,7 +411,18 @@ class GCPFileExplorerHandler(FileExplorerHandler):
         :rtype: str
         """
         blob_md = self._bucket.blob(path.replace(f"gs://{self._bucket_name}/", ""))
-        return blob_md.download_as_string().decode("utf-8")
+        content_bytes = blob_md.download_as_string()
+
+        encodings_to_try = ["utf-8", "latin-1", "cp1252", "iso-8859-1"]
+
+        for encoding in encodings_to_try:
+            try:
+                return content_bytes.decode(encoding)
+            except UnicodeDecodeError:
+                continue
+
+        # If all encodings fail, try with errors='replace' to avoid crashes
+        return content_bytes.decode("utf-8", errors="replace")
 
     def read_json(self, path: str):
         """Read a JSON file from GCS.

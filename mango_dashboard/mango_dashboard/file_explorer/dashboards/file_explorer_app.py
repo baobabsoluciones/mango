@@ -265,7 +265,7 @@ class FileExplorerApp:
             else:
                 self.editable = True
         else:
-            self.editable = True
+            self.editable = bool(editable)
 
         # Set Streamlit config
         st.set_page_config(
@@ -311,7 +311,14 @@ class FileExplorerApp:
                 """<style>.st-emotion-cache-15zrgzn {display: none;}</style>""",
                 unsafe_allow_html=True,
             )
-        if self.editable:
+        # Only show header when in editable mode
+        # Check if editable state has been changed in session state
+        if hasattr(st.session_state, "editable_checkbox"):
+            current_editable = st.session_state.editable_checkbox
+        else:
+            current_editable = self.editable
+
+        if current_editable:
             st.header(self.config.get("header", self._APP_CONFIG["header"]))
 
     def _render_configuration(self):
@@ -433,6 +440,8 @@ class FileExplorerApp:
                 key="editable_checkbox",
                 value=bool(self.editable),
             )
+            # Update the instance variable to reflect the checkbox state
+            self.editable = self.config["editable"]
             # Save config
             if os.path.isdir(self.config["dir_path"]) and (
                 os.path.basename(self.config_path).endswith(".json")
@@ -477,7 +486,13 @@ class FileExplorerApp:
         :return: None
         :rtype: None
         """
-        if self.editable:
+        # Check current editable state from session
+        if hasattr(st.session_state, "editable_checkbox"):
+            current_editable = st.session_state.editable_checkbox
+        else:
+            current_editable = self.editable
+
+        if current_editable:
             # Select folder
             self._element_selector(
                 folder_path=self.config["dir_path"],
@@ -646,7 +661,10 @@ class FileExplorerApp:
         ):
             image = self.file_handler.read_img(path=path_selected)
             with st.spinner("Wait for it..."):
-                st.image(image, width=self.config.get(f"width_{key}", None))
+                width_value = self.config.get(f"width_{key}", "content")
+                if width_value is None:
+                    width_value = "content"
+                st.image(image, width=width_value)
 
         elif path_selected.endswith(".html"):
             with st.spinner("Wait for it..."):
@@ -846,11 +864,17 @@ class FileExplorerApp:
         # Render header
         self._render_header()
 
-        if self.editable:
+        # Check current editable state from session
+        if hasattr(st.session_state, "editable_checkbox"):
+            current_editable = st.session_state.editable_checkbox
+        else:
+            current_editable = self.editable
+
+        if current_editable:
             # Render configuration
             self._render_configuration()
 
-        if self.editable:
+        if current_editable:
             with st.spinner("Wait for it..."):
                 try:
                     # Render folder tree
