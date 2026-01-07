@@ -12,8 +12,12 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 2000
     labels:
       - "dependabot"
       - "uv-deps"
       - "python"
+    groups:
+      python-dependencies: # Nombre que tú elijas para el grupo
+        patterns:
+          - "*" # Esto agrupa CUALQUIER paquete que se repita en las carpetas
