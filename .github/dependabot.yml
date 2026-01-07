@@ -1,6 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "pip" # Motor para detectar uv.lock
+    target-branch: "feature/dependabot_uv"
     directories:
       - "/mango"
       - "/mango_autoencoder"
