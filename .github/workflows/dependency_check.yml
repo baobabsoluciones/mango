@@ -156,7 +156,7 @@ jobs:
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "🛡️ Alerta Seguridad Monorepo: Reporte Completo"
-          to: alejandra.galan@baobabsoluciones.es
+          to: juan.cobo@baobabsoluciones.es
           from: "GitHub Audit"
           body: "Se adjunta el reporte con el análisis de Mínimos y Real Tree para cada módulo."
           attachments: "reporte_final.txt"
