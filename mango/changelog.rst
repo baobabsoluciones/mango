@@ -6,11 +6,12 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-[1.0.0] - 2024-12-24
+[1.0.1] - 2025-09-29
 --------------------
 
 Added
 -----
+- Updated mango dependency version
 - Multi-module project structure with standalone packages
 - Integration with uv package manager alongside pip
 - Enhanced dependency management with optional dependency groups

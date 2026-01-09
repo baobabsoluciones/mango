@@ -6,18 +6,12 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-[1.0.1] - 2024-12-26
+[1.0.1] - 2025-09-29
 --------------------
 
 Added
 -----
 - Updated mango dependency version
-
-[1.0.0] - 2024-12-24
---------------------
-
-Added
------
 - Core genetic algorithm framework
 - Individual and population management classes
 - Selection, crossover, mutation, and replacement algorithms
