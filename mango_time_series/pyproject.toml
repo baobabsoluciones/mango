@@ -29,7 +29,7 @@ dependencies = [
     "statsmodels>=0.14.1,<1.0.0",
     "mango>=1.0.0,<2.0.0",
     "scikit-learn>=1.6.1,<2.0.0",
-    "pyarrow>=21.0.0,<22.0.0",
+    "pyarrow==22.0.0",
 ]
 
 [project.optional-dependencies]
