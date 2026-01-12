@@ -3,7 +3,7 @@ name: Dependency Audit Privado Baobab (Monorepo OSV Engine - Fixed)
 on:
   push:
     branches:
-      - feature/update_dependencies
+      - feature/update_genetic_timeseries_dependencies
 
 jobs:
   # 1. Detección dinámica de carpetas
