@@ -27,9 +27,11 @@ dependencies = [
     "polars>=1.8.2,<2.0.0",
     "scipy>=1.10.1,<2.0.0",
     "statsmodels>=0.14.1,<1.0.0",
-    "mango>=1.0.0,<2.0.0",
+    "mango==1.0.0a1",
     "scikit-learn>=1.6.1,<2.0.0",
     "pyarrow==22.0.0",
+    "certifi>=2024.7.4",
+    "urllib3>=2.6.3,<3.0.0",
 ]
 
 [project.optional-dependencies]
