@@ -46,6 +46,7 @@ root = ".."
 version_scheme = "post-release"
 local_scheme = "node-and-date"
 tag_regex = "^dashboard(?P<version>\\d+\\.\\d+\\.\\d+(?:[abc]\\d+|rc\\d+)?)$"
+git_describe_command = "git describe --dirty --tags --long --match 'dashboard*'"
 
 [tool.setuptools.packages.find]
 where = ["."]
