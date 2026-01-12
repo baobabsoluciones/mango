@@ -27,7 +27,7 @@ dependencies = [
     "polars>=1.31.0",
     "scikit-learn>=1.6.1",
     "tensorflow==2.20.0",
-    "tensorflow-io-gcs-filesystem==0.37.1",
+    "tensorflow-io-gcs-filesystem==0.31.0",
 ]
 
 [project.optional-dependencies]
