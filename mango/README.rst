@@ -79,10 +79,10 @@ Installation
 Dependencies
 ------------
 
-Core dependencies include numpy, pandas, and other essential data science libraries. Optional dependencies are available for specific functionality:
+Core dependencies include numpy and other essentials. Optional dependencies are available for specific functionality:
 
-- **models**: Pyomo for optimization
-- **dev**: Development and testing tools
+- **data**: Pandas/Polars, scikit-learn, Pyomo and related tooling for data processing and ML features
+- **dev**: Development and testing tools (combine with ``data`` to run the full test suite)
 
 Documentation
 -------------
