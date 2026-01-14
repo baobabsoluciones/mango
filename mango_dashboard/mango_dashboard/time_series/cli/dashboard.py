@@ -1,5 +1,7 @@
 import os
+import subprocess
 import sys
+from pathlib import Path
 
 import click
 
@@ -32,13 +34,6 @@ def dashboard():
     default=None,
 )
 def time_series(project_name, logo_url, experimental_features):
-    # Python Run os command
-    path_to_app = os.path.join(
-        os.path.dirname(__file__),
-        "../../../../mango_time_series/mango_time_series",
-        "dashboards",
-        "time_series_app.py",
-    )
     if project_name is None:
         project_name = os.getenv("TS_DASHBOARD_PROJECT_NAME", "Project")
 
@@ -52,12 +47,22 @@ def time_series(project_name, logo_url, experimental_features):
         "1",
     ], "TS_DASHBOARD_EXPERIMENTAL_FEATURES must be set to 0 or 1"
 
-    # Setup env variables
     os.environ["TS_DASHBOARD_PROJECT_NAME"] = project_name
     os.environ["TS_DASHBOARD_LOGO_URL"] = logo_url
     os.environ["TS_DASHBOARD_EXPERIMENTAL_FEATURES"] = experimental_features
 
-    # Make sure we use the correct python with dependencies installed
-    python_path = sys.executable
-    streamlit_path = os.path.join(os.path.dirname(python_path), "streamlit")
-    os.system(f'{streamlit_path} run "{path_to_app}" --theme.primaryColor=#3d9df3')
+    path_to_app = (
+        Path(__file__).resolve().parent.parent / "dashboards" / "time_series_app.py"
+    )
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "streamlit",
+            "run",
+            str(path_to_app),
+            "--theme.primaryColor=#3d9df3",
+        ],
+        check=False,
+    )

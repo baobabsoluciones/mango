@@ -31,29 +31,30 @@ class TestCli(TestCase):
                 self.ts_dashboard_experimental_features
             )
 
-    @mock.patch("os.system")
-    def test_cli_default(self, mock_system):
+    @mock.patch("subprocess.run")
+    def test_cli_default(self, mock_run):
         runner = CliRunner()
         result = runner.invoke(cli, ["dashboard", "time_series"])
 
         # Assert the command executed successfully
         assert result.exit_code == 0
 
-        # Assert that os.system was called
-        mock_system.assert_called_once()
+        # Assert that subprocess.run was called
+        mock_run.assert_called_once()
 
         # Assert that the command contains streamlit and the correct file
-        command = mock_system.call_args[0][0]
-        self.assertIn("streamlit run", command)
-        self.assertIn("time_series_app.py", command)
+        command_args = mock_run.call_args[0][0]
+        self.assertIn("streamlit", command_args)
+        self.assertIn("run", command_args)
+        self.assertTrue(any("time_series_app.py" in str(arg) for arg in command_args))
 
         # Assert that the environment variable were set to defaults
         self.assertEqual(os.getenv("TS_DASHBOARD_PROJECT_NAME"), "Project")
         self.assertEqual(os.getenv("TS_DASHBOARD_LOGO_URL"), "")
         self.assertEqual(os.getenv("TS_DASHBOARD_EXPERIMENTAL_FEATURES"), "0")
 
-    @mock.patch("os.system")
-    def test_cli_with_args(self, mock_system):
+    @mock.patch("subprocess.run")
+    def test_cli_with_args(self, mock_run):
         runner = CliRunner()
         result = runner.invoke(
             cli,
@@ -72,8 +73,8 @@ class TestCli(TestCase):
         # Assert the command executed successfully
         assert result.exit_code == 0
 
-        # Assert that os.system was called
-        mock_system.assert_called_once()
+        # Assert that subprocess.run was called
+        mock_run.assert_called_once()
 
         # Assert that the environment variable was set
         # Assert that the environment variable were set to defaults
