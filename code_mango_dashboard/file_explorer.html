@@ -528,7 +528,10 @@ based on the specified element type.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_markdown">
 <span class="sig-name descname"><span class="pre">read_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.LocalFileExplorerHandler.read_markdown" title="Link to this definition">¶</a></dt>
-<dd><p>Read a markdown file using pathlib.Path.read_text.</p>
+<dd><p>Read a markdown file using pathlib.Path.read_text with proper encoding.</p>
+<p>Attempts to read the file with UTF-8 encoding first, then falls back to
+other common encodings if UTF-8 fails. This ensures proper handling of
+Spanish characters and other special characters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the markdown file</p>
@@ -692,8 +695,10 @@ them as files or folders based on whether they end with ‘/’.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_markdown">
 <span class="sig-name descname"><span class="pre">read_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango_dashboard.file_explorer.dashboards.file_explorer_handlers.GCPFileExplorerHandler.read_markdown" title="Link to this definition">¶</a></dt>
-<dd><p>Read a markdown file from GCS.</p>
-<p>Downloads the blob as a string and decodes it as UTF-8.</p>
+<dd><p>Read a markdown file from GCS with proper encoding handling.</p>
+<p>Downloads the blob as a string and attempts to decode it with UTF-8 first,
+then falls back to other common encodings if UTF-8 fails. This ensures
+proper handling of Spanish characters and other special characters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The GCS path to the markdown file</p>
