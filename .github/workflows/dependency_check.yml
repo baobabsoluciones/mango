@@ -3,8 +3,7 @@ name: Dependency Audit Privado Baobab (Monorepo OSV Engine - Fixed)
 on:
   push:
     branches:
-      - feature/update_dependencies
-
+      - feature/small_change_in_action
 jobs:
   # 1. Detección dinámica de carpetas
   setup-matrix:
