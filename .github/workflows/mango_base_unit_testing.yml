@@ -45,7 +45,7 @@ jobs:
           echo "CPPFLAGS=-I$(brew --prefix libomp)/include" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
-          uv sync --extra dev
+          uv sync --extra dev --extra data
       - name: Run unit testing
         run: |
           uv run coverage run -m unittest discover -s mango/tests -p "test_*.py" -v
