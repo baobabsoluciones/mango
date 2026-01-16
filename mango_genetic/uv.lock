@@ -20,9 +20,9 @@ wheels = [
 name = "certifi"
 version = "2024.12.14"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/0f/bd/1d41ee578ce09523c81a15426705dd20969f5abf006d1afe8aeff0dd776a/certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db", size = 166010 }
+sdist = { url = "https://files.pythonhosted.org/packages/d4/91/c89518dd4fe1f3a4e3f6ab7ff23cb00ef2e8c9adf99dacc618ad5e068e28/certifi-2023.11.17.tar.gz", hash = "sha256:9b469f3a900bf28dc19b8cfbf8019bf47f7fdd1a65a1d4ffb98fc14166beb4d1", size = 163637 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a5/32/8f6669fc4798494966bf446c8c4a162e0b5d893dff088afddf76414f70e1/certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56", size = 164927 },
+    { url = "https://files.pythonhosted.org/packages/64/62/428ef076be88fa93716b576e4a01f919d25968913e817077a386fcbe4f42/certifi-2023.11.17-py3-none-any.whl", hash = "sha256:e036ab49d5b79556f99cfc2d9320b34cfbe5be05c5871b51de9329f0603b0474", size = 162530 },
 ]
 
 [[package]]
@@ -226,7 +226,7 @@ wheels = [
 
 [[package]]
 name = "mango"
-version = "1.0.0a1"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -251,16 +251,15 @@ dependencies = [
     { name = "urllib3" },
     { name = "xlsxwriter" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/95/f2403f27150a9cce9d9cdbc0a13076d4999dbd91a2b542dc23b39b01f191/mango-1.0.0a1.tar.gz", hash = "sha256:e4fd76049dc7935a517971d1d670de03dca8c6cc116b9649dfd2ecf8693ed3e0", size = 187615 }
+sdist = { url = "https://files.pythonhosted.org/packages/e1/45/ac86ce2a33526345d4f0b6f1892b878aedbd9b54105cd779f85f04d6afa2/mango-1.0.1.tar.gz", hash = "sha256:0bc529348ce66fc11afab96ff4803b6b4f75a90f6d072c4428d6d7df708fc74d", size = 191161 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/12/fec6dda0abe1f5123a089e403b5b6100ab78bfe703130fc9063d9ba52eaa/mango-1.0.0a1-py3-none-any.whl", hash = "sha256:c90ea2b2333fbac6fe11ffb08d6e0d8d9a747f78cde32237faab0b88fc756f6d", size = 165440 },
+    { url = "https://files.pythonhosted.org/packages/fc/78/603efa650fa2332ab5a26e62c899920befbd637e587206f6d8c294d84d25/mango-1.0.1-py3-none-any.whl", hash = "sha256:f0690a88e42d147a7659e267eed4767e397612a98761dd80454b958e02e87583", size = 165417 },
 ]
 
 [[package]]
 name = "mango-genetic"
 source = { editable = "." }
 dependencies = [
-    { name = "certifi" },
     { name = "mango" },
     { name = "numpy" },
     { name = "urllib3" },
@@ -275,7 +274,7 @@ dev = [
 requires-dist = [
     { name = "certifi", specifier = ">=2024.7.4" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.0" },
-    { name = "mango", specifier = "==1.0.0a1" },
+    { name = "mango", specifier = ">=1.0.0,<2.0.0" },
     { name = "numpy", specifier = ">=1.24.4,<2.0.0" },
     { name = "urllib3", specifier = ">=2.6.3,<3.0.0" },
 ]
@@ -850,9 +849,9 @@ wheels = [
 name = "urllib3"
 version = "2.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556 }
+sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599c47dd506532914ce044817c7752a79b6a51286319bc/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760", size = 393185 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584 },
+    { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795 },
 ]
 
 [[package]]
