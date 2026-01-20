@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/dependabot_test
+jobs:
   # 1. Detección dinámica de carpetas
   setup-matrix:
     runs-on: ubuntu-latest
