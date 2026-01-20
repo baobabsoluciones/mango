@@ -15,6 +15,7 @@ on:
         run: |
           FOLDERS=$(find . -name "pyproject.toml" -not -path "*/.*" -exec dirname {} + | sed 's|./||' | jq -R -s -c 'split("\n")[:-1]')
           echo "folders=$FOLDERS" >> $GITHUB_OUTPUT
+
   # 2. Análisis paralelo
   analyze:
     needs: setup-matrix
@@ -33,6 +34,7 @@ on:
           pipx install pip-audit > /dev/null
           curl -LsSf https://astral.sh/uv/install.sh | sh > /dev/null
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
       - name: Run Audit for ${{ matrix.service }}
         id: audit
         continue-on-error: true
@@ -55,6 +57,7 @@ on:
               res = subprocess.run(args, capture_output=True, text=True)
               if os.path.exists(fname): os.remove(fname)
               return res.stdout if '---' in res.stdout else ''
+
           try:
               with open('pyproject.toml', 'rb') as f: data = tomllib.load(f)
               deps = data.get('project', {}).get('dependencies', [])
@@ -76,10 +79,12 @@ on:
           except Exception as e:
               sys.exit(0)
           EOF
+
           cd "$DIR_NAME"
           cp ../audit_script.py .
           
           VULNS_FOUND=false
+
           # --- PARTE 1: MÍNIMOS ---
           # Ejecutamos y verificamos si existe temp_res.txt dentro de la carpeta
           python3 audit_script.py || {
@@ -98,11 +103,13 @@ on:
               VULNS_FOUND=true
             fi
           fi
+
           # Cifrado con la contraseña del secreto
           if [ "$VULNS_FOUND" = true ]; then
              echo "${{ secrets.AUDIT_PASSWORD }}" | gpg --quiet --batch --yes --symmetric --passphrase-fd 0 --pinentry-mode loopback "$REPORT_PATH"
              echo "found=true" >> $GITHUB_OUTPUT
           fi
+
       - name: Upload Encrypted Results
         if: steps.audit.outputs.found == 'true'
         uses: actions/upload-artifact@v4
@@ -137,6 +144,7 @@ on:
             done
             echo "SEND_MAIL=true" >> $GITHUB_ENV
           fi
+
       - name: Send mail
         if: env.SEND_MAIL == 'true'
         uses: dawidd6/action-send-mail@v3
