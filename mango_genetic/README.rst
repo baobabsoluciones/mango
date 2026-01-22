@@ -52,7 +52,7 @@ Dependencies
 
 - Python >= 3.10
 - numpy >= 1.24.4
-- mango[data] == 0.3.0a8
+- mango[data] == 1.0.2
 
 Quick Start
 -----------

@@ -52,7 +52,7 @@ Dependencies
 - Python >= 3.10
 - pandas >= 2.0.0
 - numpy >= 1.24.0
-- mango[data] >= 0.3.0
+- mango[data] >= 1.0.2
 
 Quick Start
 -----------
