@@ -631,7 +631,7 @@ requires-dist = [
     { name = "certifi", specifier = ">=2024.7.4" },
     { name = "click", specifier = "==8.3.1" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.0" },
-    { name = "fugue", specifier = ">0.9.1" },
+    { name = "fugue", specifier = ">=0.9.4" },
     { name = "google-cloud", specifier = ">=0.34.0" },
     { name = "google-cloud-storage", specifier = ">=3.3.0" },
     { name = "jinja2", specifier = ">=3.1.6,<4.0.0" },
