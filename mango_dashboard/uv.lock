@@ -46,15 +46,6 @@ wheels = [
 ]
 
 [[package]]
-name = "appdirs"
-version = "1.4.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d7/d8/05696357e0311f5b5c316d7b95f46c669dd9c15aaeecbb48c7d0aeb88c40/appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41", size = 13470 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128", size = 9566 },
-]
-
-[[package]]
 name = "attrs"
 version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -324,20 +315,6 @@ wheels = [
 ]
 
 [[package]]
-name = "fs"
-version = "2.4.16"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "appdirs" },
-    { name = "setuptools" },
-    { name = "six" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/a9/af5bfd5a92592c16cdae5c04f68187a309be8a146b528eac3c6e30edbad2/fs-2.4.16.tar.gz", hash = "sha256:ae97c7d51213f4b70b6a958292530289090de3a7e15841e108fbe144f069d313", size = 187441 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b9/5c/a3d95dc1ec6cdeb032d789b552ecc76effa3557ea9186e1566df6aac18df/fs-2.4.16-py2.py3-none-any.whl", hash = "sha256:660064febbccda264ae0b6bace80a8d1be9e089e0a5eb2427b7d517f9a91545c", size = 135261 },
-]
-
-[[package]]
 name = "fsspec"
 version = "2025.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -348,15 +325,15 @@ wheels = [
 
 [[package]]
 name = "fugue"
-version = "0.9.1"
+version = "0.9.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adagio" },
     { name = "triad" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/91/a1/eca331442c758f8a6f23792dd10a51fb827fad1204805d6c70f02a35ee00/fugue-0.9.1.tar.gz", hash = "sha256:fb0f9a4780147ac8438be96efc50593e2d771d1cbf528ac56d3bcecd39915b50", size = 224340 }
+sdist = { url = "https://files.pythonhosted.org/packages/7b/49/c4226843a434d6650bf9911648802fb91285b47a5f507ec8a052ce36671f/fugue-0.9.4.tar.gz", hash = "sha256:3725eeb3f06301d7e2812940a099e9bc2db9b863987b80124e39a6399024503f", size = 226792 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ec/38/46a0ef179f7279207a3263afeb8da4dd73f44d00b6cc999c96a39112d284/fugue-0.9.1-py3-none-any.whl", hash = "sha256:5b91e55e6f243af6e2b901dc37914d954d8f0231627b68007850879f8848a3a3", size = 278186 },
+    { url = "https://files.pythonhosted.org/packages/a7/40/0934fb680f280f14062e0be552abdc150d676a92e6cba4ca7d00b27fcad8/fugue-0.9.4-py3-none-any.whl", hash = "sha256:299729a2fd523097673174244a7bef9b89732870977665d6f09906f578403331", size = 280666 },
 ]
 
 [[package]]
@@ -629,6 +606,7 @@ source = { editable = "." }
 dependencies = [
     { name = "certifi" },
     { name = "click" },
+    { name = "fugue" },
     { name = "google-cloud" },
     { name = "google-cloud-storage" },
     { name = "jinja2" },
@@ -653,6 +631,7 @@ requires-dist = [
     { name = "certifi", specifier = ">=2024.7.4" },
     { name = "click", specifier = "==8.3.1" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.0" },
+    { name = "fugue", specifier = ">0.9.1" },
     { name = "google-cloud", specifier = ">=0.34.0" },
     { name = "google-cloud-storage", specifier = ">=3.3.0" },
     { name = "jinja2", specifier = ">=3.1.6,<4.0.0" },
@@ -1549,15 +1528,6 @@ wheels = [
 ]
 
 [[package]]
-name = "setuptools"
-version = "80.9.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/18/5d/3bf57dcd21979b887f014ea83c24ae194cfcd12b9e0fda66b957c69d1fca/setuptools-80.9.0.tar.gz", hash = "sha256:f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c", size = 1319958 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/dc/17031897dae0efacfea57dfd3a82fdd2a2aeb58e0ff71b77b87e44edc772/setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922", size = 1201486 },
-]
-
-[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1796,19 +1766,18 @@ wheels = [
 
 [[package]]
 name = "triad"
-version = "0.9.8"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "fs" },
     { name = "fsspec" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pyarrow" },
     { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/88/28/fca2981080bfb44e317b3fc6cc4119a0abf14f18e707a612764fcad28790/triad-0.9.8.tar.gz", hash = "sha256:5b67673124891981daf8afbab44b2e6358932ca35ef3ff38a25bc3e0f6f03f17", size = 56086 }
+sdist = { url = "https://files.pythonhosted.org/packages/71/28/33e3ffaa73264460e2b0ffae3f897e42e3b1b9245578851d714b44d088fc/triad-1.0.0.tar.gz", hash = "sha256:0bbaf627dfdee8fa05bafe02d87da03460892abd666944da048de8a467e1519d", size = 54185 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/c6/4aedce0522bb3c72f2d770e7e4c18b0e1f7716d2c70a865e94c89ebcf7e6/triad-0.9.8-py3-none-any.whl", hash = "sha256:2c0ba7d83977c6d4e7b59e3cc70727f858014ef7676c62d184aa8e63f7bef5de", size = 62340 },
+    { url = "https://files.pythonhosted.org/packages/1f/a0/8dd7b5b45b96f30a29382b8d7bcd473cfe5573716ad1f3be760963d8f874/triad-1.0.0-py3-none-any.whl", hash = "sha256:0d9b638541e26c24ef6ad8c8f29b5df92eaa436f54cfd02ae1c48b4b0acd6e92", size = 59955 },
 ]
 
 [[package]]
