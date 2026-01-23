@@ -90,5 +90,5 @@ autodoc_mock_imports = [
     "urllib3",
     "XlsxWriter",
     "matplotlib",
-    "PIL"
+    "PIL",
 ]
