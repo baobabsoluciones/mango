@@ -34,9 +34,10 @@ dependencies = [
     "google-cloud>=0.34.0",
     "google-cloud-storage>=3.3.0",
     "urllib3>=2.6.3,<3.0.0",
-    "certifi>=2024.7.4",  
-    "pyasn1>=0.6.2",  
-    "fugue>=0.9.4",  
+    "certifi>=2024.7.4",
+    "pyasn1>=0.6.2",
+    "fugue>=0.9.4",
+    "tornado>=6.5.5",
 ]
 
 [project.optional-dependencies]
