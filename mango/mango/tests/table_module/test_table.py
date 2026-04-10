@@ -230,6 +230,50 @@ class TestTable(TestCase):
         )
         self.assertEqual(df, expected, msg=msg)
 
+    def test_mutate_where(self):
+        msg = "mutate_where updates only rows matching the predicate"
+        table = Table(
+            [
+                {"a": 2, "b": 3, "c": 0},
+                {"a": 2, "b": 6, "c": 0},
+                {"a": 2, "b": 8, "c": 0},
+            ]
+        )
+        result = table.mutate_where(
+            lambda v: v["b"] <= 4,
+            a=3,
+            b=[4, 5, 6],
+            c=lambda v: v["a"] + v["b"],
+        )
+        expected = [
+            {"a": 3, "b": 4, "c": 7},
+            {"a": 2, "b": 6, "c": 0},
+            {"a": 2, "b": 8, "c": 0},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_mutate_where_boolean_list(self):
+        msg = "mutate_where accepts a per-row boolean mask"
+        table = Table(self.default_data)
+        result = table.mutate_where(
+            [True, False, True, False],
+            Name=lambda v: v["Name"].upper(),
+            Age=0,
+        )
+        expected = [
+            {"Name": "ALBERT", "Age": 0},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "CHARLIE", "Age": 0},
+            {"Name": "Daniel", "Age": 35},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_mutate_where_safe(self):
+        msg = "mutate_where does not change the original table"
+        original_table = Table(self.default_data).copy_deep()
+        Table(self.default_data).mutate_where(lambda v: v["Age"] < 30, Age=0)
+        self.assertEqual(original_table, self.default_data, msg=msg)
+
     def test_mutate_safe(self):
         msg = "mutate do not change the original table."
         original_table = Table(self.default_data).copy_deep()
@@ -787,6 +831,45 @@ class TestTable(TestCase):
             {"Name": "Charlie", "Age": 30},
             {"Name": "Daniel", "Age": 35},
             {"Name": "Elisa", "Age": None},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_replace_missing_scalar(self):
+        msg = "replace_missing adds absent keys using a scalar default"
+        table = Table(self.default_data) + [{"Name": "Elisa"}]
+        result = table.replace_missing(0)
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "Elisa", "Age": 0},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_replace_missing_dict(self):
+        msg = "replace_missing dict fills only keys missing from each row"
+        table = Table(self.default_data) + [{}]
+        result = table.replace_missing({"Name": "Elisa", "Age": 5})
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": "Elisa", "Age": 5},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_replace_missing_keeps_existing_none(self):
+        msg = "replace_missing does not overwrite keys that exist with value None"
+        table = Table(self.default_data) + [{"Name": None, "Age": None}]
+        result = table.replace_missing({"Name": "Elisa"})
+        expected = [
+            {"Name": "Albert", "Age": 20},
+            {"Name": "Bernard", "Age": 25},
+            {"Name": "Charlie", "Age": 30},
+            {"Name": "Daniel", "Age": 35},
+            {"Name": None, "Age": None},
         ]
         self.assertEqual(result, expected, msg=msg)
 

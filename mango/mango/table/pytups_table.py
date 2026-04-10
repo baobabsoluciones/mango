@@ -14,6 +14,7 @@ from pytups import TupList, SuperDict
 
 from .pytups_tools import (
     mutate,
+    mutate_where,
     sum_all,
     join,
     left_join,
@@ -28,6 +29,7 @@ from .pytups_tools import (
     str_key_tl,
     replace,
     replace_empty,
+    replace_missing,
     pivot_longer,
     pivot_wider,
     drop_empty,
@@ -453,6 +455,43 @@ class Table(TupList):
              {'x': 3, 'y': 4, 'z': 10, 'sum': 7, 'product': 12}]
         """
         return Table(mutate(self, **kwargs))
+
+    def mutate_where(self, _where, **kwargs) -> "Table":
+        """
+        Add or modify columns in rows that satisfy a condition.
+
+        The condition may be a boolean, a list of booleans with one entry per
+        row, or a callable that is evaluated on each row.
+
+        Column values follow the same rules as :meth:`mutate`: constants,
+        per-row lists, or callables.
+
+        :param _where: Predicate controlling which rows are updated
+        :type _where: bool, list[bool], or Callable
+        :param kwargs: Column names and values to assign where the condition holds
+        :type kwargs: dict
+        :return: New table with selective updates applied
+        :rtype: Table
+        :raises TypeError: If a ``kwargs`` value has an unexpected shape
+
+        Example:
+            >>> table = Table(
+            ...     [
+            ...         {"a": 2, "b": 3, "c": 0},
+            ...         {"a": 2, "b": 6, "c": 0},
+            ...         {"a": 2, "b": 8, "c": 0},
+            ...     ]
+            ... )
+            >>> result = table.mutate_where(
+            ...     lambda v: v["b"] <= 4,
+            ...     a=3,
+            ...     b=[4, 5, 6],
+            ...     c=lambda v: v["a"] + v["b"],
+            ... )
+            >>> print(result)
+            [{'a': 3, 'b': 4, 'c': 7}, {'a': 2, 'b': 6, 'c': 0}, {'a': 2, 'b': 8, 'c': 0}]
+        """
+        return Table(mutate_where(self, _where, **kwargs))
 
     def group_by(self, col) -> SuperDict:
         """
@@ -1067,6 +1106,32 @@ class Table(TupList):
             [{'name': 'Alice', 'age': 0}, {'name': 'Unknown', 'age': 25}]
         """
         return Table(replace_empty(self, replacement, fast))
+
+    def replace_missing(self, replacement=None, fast=False) -> "Table":
+        """
+        Add missing keys to each row.
+
+        For each target column, sets the replacement only when the key is not
+        present in that row. Existing values are unchanged. Target columns are
+        all columns in the table when ``replacement`` is a single value, or the
+        keys of ``replacement`` when it is a dictionary.
+
+        :param replacement: Values to use for keys that are not in a row
+        :type replacement: any or dict[str, any]
+        :param fast: If True, assume the first row lists all columns (scalar replacement only)
+        :type fast: bool
+        :return: New table with absent keys filled from ``replacement``
+        :rtype: Table
+
+        Example:
+            >>> table = Table([{"name": "Alice"}, {"age": 30}])
+            >>> result = table.replace_missing(
+            ...     replacement={"name": "Unknown", "age": 0}
+            ... )
+            >>> print(result)
+            [{'name': 'Alice', 'age': 0}, {'name': 'Unknown', 'age': 30}]
+        """
+        return Table(replace_missing(self, replacement, fast))
 
     def replace_nan(self, replacement=None) -> "Table":
         """

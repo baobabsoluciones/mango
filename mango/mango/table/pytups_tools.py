@@ -1,6 +1,7 @@
 from typing import Callable
 
 import numpy as np
+
 from mango.processing import as_list, flatten, reverse_dict
 from mango.table.table_tools import str_key, to_len, invert_dict_list
 from pytups import TupList
@@ -56,6 +57,81 @@ def mutate(table, **kwargs):
             raise TypeError(f"Unexpected argument to mutate {v}")
 
     return TupList(table2)
+
+
+def mutate_where(table, _where, **kwargs):
+    """
+    Add or modify columns in a table on a condition.
+
+    Condition can be:
+    - A single boolean or value interpreted as boolean
+    - A lists of booleans
+    - A function that evaluate each row
+
+    Creates new columns or modifies existing ones using various methods:
+    - Single values applied to all rows
+    - Lists of values for each row
+    - Functions that operate on row data
+
+    Note: All changes are applied in the order of the arguments.
+
+    :param table: Table to modify
+    :type table: TupList
+    :param _where: Where to modify columns
+    :type _where: function, list or boolean
+    :param kwargs: Named arguments with column names and their values
+    :type kwargs: dict
+    :return: New table with modified columns
+    :rtype: TupList
+    :raises TypeError: If argument format is unexpected
+
+    Example:
+        >>> table = TupList([{'a':2, 'b':3, 'c':0}, {'a':2, 'b':6, 'c':0}, {'a':2, 'b':8, 'c':0}])
+        >>> result = mutate_where(table, lambda v: v['b']<=4, a=3, b=[4,5,6], c=lambda v: v["a"]+v["b"])
+        >>> print(result)
+        [{'a': 3, 'b': 4, 'c': 7}, {'a': 2, 'b': 6, 'c': 0}, {'a': 2, 'b': 8, 'c': 0}]
+    """
+    assert isinstance(table, TupList)
+
+    if len(table) == 0:
+        return table
+
+    # Transform TupList in list of dict
+    if isinstance(table[0], tuple):
+        table = table.to_dictlist([i for i in range(len(table[0]))])
+
+    nrow = table.len()
+
+    if isinstance(_where, Callable):
+        condition = [_where(row) for row in table]
+    elif _where is None or len(as_list(_where)) == 1:
+        condition = [_where for i in range(nrow)]
+    elif len(as_list(_where)) == nrow:
+        condition = _where
+    else:
+        raise TypeError(f"Unexpected argument to _where {_where}")
+
+    # Update table
+    for k, v in kwargs.items():
+        if isinstance(v, Callable):
+            table2 = [
+                {**row, **{k: v(row)}} if cond else {**row}
+                for row, cond in zip(table, condition)
+            ]
+        elif v is None or len(as_list(v)) == 1:
+            table2 = [
+                {**row, **{k: v}} if cond else {**row}
+                for row, cond in zip(table, condition)
+            ]
+        elif len(as_list(v)) == nrow:
+            table2 = [
+                {**row, **{k: v[i]}} if condition[i] else {**row}
+                for i, row in enumerate(table)
+            ]
+        else:
+            raise TypeError(f"Unexpected argument to mutate {v}")
+
+    return TupList(table)
 
 
 def sum_all(table, group_by=None):
@@ -923,6 +999,45 @@ def replace_empty(tl, replacement=0, fast=False):
         [{'name': 'Alice', 'age': 0}, {'name': 'Unknown', 'age': 25}]
     """
     return replace(tl, replacement=replacement, to_replace=None, fast=fast)
+
+
+def replace_missing(tl, replacement=None, fast=False):
+    """
+    Add missing keys to each row of a TupList.
+
+    For each target column, sets the replacement only when the key is absent
+    from the row (existing values, including None, are left unchanged). Target
+    columns are all columns in the table when ``replacement`` is a single
+    value, or the keys of ``replacement`` when it is a dictionary.
+
+    :param tl: TupList to process
+    :type tl: TupList
+    :param replacement: Values to use for keys that are not present in a row
+    :type replacement: any or dict[str, any]
+    :param fast: If True, assume first row contains all columns (scalar replacement only)
+    :type fast: bool
+    :return: New TupList with missing keys added
+    :rtype: TupList
+
+    Example:
+        >>> tl = TupList([{"name": "Alice"}, {"age": 30}])
+        >>> result = replace_missing(tl, replacement={"name": "Unknown", "age": 0})
+        >>> print(result)
+        [{'name': 'Alice', 'age': 0}, {'name': 'Unknown', 'age': 30}]
+    """
+    if isinstance(replacement, dict):
+        cols = replacement.keys()
+        rep = replacement
+    else:
+        cols = get_col_names(tl, fast)
+        rep = {k: replacement for k in cols}
+
+    return TupList(
+        [
+            {**row, **{k: rep[k] for k in cols if k not in row}}
+            for row in tl
+        ]
+    )
 
 
 def replace_nan(tl, replacement=None):
