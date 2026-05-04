@@ -275,7 +275,6 @@ def to_tz(dt: datetime, tz: str = "Europe/Madrid") -> datetime:
         dt = dt.astimezone(timezone)
         return dt.replace(tzinfo=None)
     except Exception as e:
-        log.error(f"Error converting timezone: {e}")
         raise
 
 
@@ -311,7 +310,6 @@ def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
         except ValueError:
             continue
 
-    log.error(f"Failed to parse datetime string: '{string}'")
     raise ValueError(f"string '{string}' does not match any datetime format")
 
 
@@ -348,7 +346,6 @@ def str_to_d(string: str, fmt: Union[str, Iterable] = None) -> date:
         except ValueError:
             continue
 
-    log.error(f"Failed to parse date string: '{string}'")
     raise ValueError(f"string '{string}' does not match any datetime format")
 
 
@@ -408,7 +405,6 @@ def as_datetime(
     elif isinstance(x, date):
         return datetime(x.year, x.month, x.day)
     else:
-        log.error(f"Cannot convert object to datetime: {type(x)}")
         raise ValueError(f"x is not a date: {x}")
 
 
@@ -441,13 +437,14 @@ def as_date(x: Union[date, datetime, str], fmt: Union[str, Iterable] = None) -> 
     elif isinstance(x, date):
         return x
     else:
-        log.error(f"Cannot convert object to date: {type(x)}")
         raise ValueError(f"x is not a date: {x}")
 
 
 def as_str(x: Union[date, datetime, str], fmt: str = None) -> str:
     """
     Coerce a date-like object to a string.
+    The main utility of this function is to ensure that dates or date strings from various sources
+     end up in the same format.
 
     Converts date, datetime, or string objects to a formatted string.
     If the input is already a string and a format is specified, attempts
@@ -466,6 +463,10 @@ def as_str(x: Union[date, datetime, str], fmt: str = None) -> str:
         '2024-01-15 14:30:00'
         >>> as_str("2024-01-15", "%Y-%m-%d")
         '2024-01-15'
+        >>> as_str("2024-01-15 14:30", "%Y-%m-%d")
+        '2024-01-15'
+        >>> as_str("15-01-2024", "%Y-%m-%d")
+        '2024-01-15'
     """
     if isinstance(x, str):
         try:
@@ -476,7 +477,6 @@ def as_str(x: Union[date, datetime, str], fmt: str = None) -> str:
     elif isinstance(x, date):
         return dt_to_str(x, fmt)
     else:
-        log.error(f"Cannot convert object to string: {type(x)}")
         raise ValueError(f"x is not a date: {x}")
 
 
@@ -517,5 +517,4 @@ def add_to_str_dt(
         new_date = as_datetime(x, fmt=fmt_in) + timedelta(**kwargs)
         return as_str(new_date, fmt_out)
     except Exception as e:
-        log.error(f"Error adding time to datetime string: {e}")
         raise
