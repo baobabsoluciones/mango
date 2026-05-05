@@ -30,12 +30,10 @@ except ImportError:
         """
 
         def __init__(self, *args, **kwargs):
-            raise ImportError(
-                f"""
+            raise ImportError(f"""
                 DataImputer requires 'sklearn' and 'polars'.
                 Install them with `pip install mango[data]` to use this module.
-                """
-            )
+                """)
 
 
 from .object_functions import (
