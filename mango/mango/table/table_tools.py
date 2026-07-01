@@ -1,5 +1,4 @@
 import warnings
-from itertools import accumulate
 
 from mango.processing import as_list, flatten
 from pytups import TupList
@@ -141,29 +140,6 @@ def mean(*args):
         return sum(i for i in args) / len(args)
     else:
         return None
-
-
-def cumsum(x):
-    """
-    Calculate the cumulative sum of a list.
-
-    Returns a new list where each element is the sum of all
-    previous elements plus the current element.
-
-    :param x: List of numbers to compute cumulative sum for
-    :type x: list[number]
-    :return: List of cumulative sums with same length as input
-    :rtype: list[number]
-
-    Example:
-        >>> result = cumsum([1, 2, 3, 4, 5])
-        >>> print(result)
-        [1, 3, 6, 10, 15]
-        >>> result = cumsum([10, -5, 3])
-        >>> print(result)
-        [10, 5, 8]
-    """
-    return list(accumulate(x))
 
 
 def invert_dict_list(dictlist, unique=True):

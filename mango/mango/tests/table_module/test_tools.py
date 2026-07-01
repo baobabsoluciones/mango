@@ -6,7 +6,6 @@ from mango.table.table_tools import (
     str_key,
     to_len,
     join_lists,
-    cumsum,
     invert_dict_list,
     simplify,
 )
@@ -63,9 +62,6 @@ class TestTools(TestCase):
         result = join_lists([1, 2], 3, 4, [5, 6])
         expected = [1, 2, 3, 4, 5, 6]
         self.assertEqual(result, expected)
-
-    def test_cumsum(self):
-        self.assertEqual(cumsum([1, 2, 3]), [1, 3, 6])
 
     def test_invert_dict_list(self):
         dl = TupList([{"a": 1, "b": 2}, {"a": 2, "b": 3}])

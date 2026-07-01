@@ -1328,12 +1328,13 @@ def distinct(table, columns):
         >>> print(result)
         [{'name': 'Alice', 'city': 'Madrid'}, {'name': 'Bob', 'city': 'Barcelona'}]
     """
-    return (
-        TupList(table)
-        .to_dict(indices=columns, result_col=None, is_list=True)
-        .vapply(lambda v: v[0])
-        .values_tl()
-    )
+    cols = as_list(columns)
+    first_by_signature = {}
+    for row in table:
+        signature = tuple(row[c] for c in cols)
+        if signature not in first_by_signature:
+            first_by_signature[signature] = row
+    return TupList(first_by_signature.values())
 
 
 def order_by(table, columns, reverse=False):

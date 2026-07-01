@@ -269,13 +269,10 @@ def to_tz(dt: datetime, tz: str = "Europe/Madrid") -> datetime:
         >>> to_tz(utc_dt, "Europe/Madrid")
         datetime.datetime(2024, 1, 15, 13, 0)
     """
-    try:
-        dt = pytz.utc.localize(dt)
-        timezone = pytz.timezone(tz)
-        dt = dt.astimezone(timezone)
-        return dt.replace(tzinfo=None)
-    except Exception as e:
-        raise
+    dt = pytz.utc.localize(dt)
+    timezone = pytz.timezone(tz)
+    dt = dt.astimezone(timezone)
+    return dt.replace(tzinfo=None)
 
 
 def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
@@ -509,12 +506,9 @@ def add_to_str_dt(
         >>> add_to_str_dt("2024-01-01", days=7, fmt_out="%Y-%m-%d")
         '2024-01-08'
     """
-    try:
-        if fmt_in:
-            fmt_in = as_list(fmt_in) + DATE_FORMATS
-        else:
-            fmt_in = DATE_FORMATS
-        new_date = as_datetime(x, fmt=fmt_in) + timedelta(**kwargs)
-        return as_str(new_date, fmt_out)
-    except Exception as e:
-        raise
+    if fmt_in:
+        fmt_in = as_list(fmt_in) + DATE_FORMATS
+    else:
+        fmt_in = DATE_FORMATS
+    new_date = as_datetime(x, fmt=fmt_in) + timedelta(**kwargs)
+    return as_str(new_date, fmt_out)

@@ -1,5 +1,6 @@
 import pickle
 from collections.abc import Iterable
+from itertools import accumulate
 
 try:
     import pandas as pd
@@ -99,7 +100,7 @@ def cumsum(lst: list) -> list:
         >>> cumsum([2, 4, 6])
         [2, 6, 12]
     """
-    return [sum(lst[: i + 1]) for i in range(len(lst))]
+    return list(accumulate(lst))
 
 
 def lag_list(lst: list, lag: int = 1) -> list:
@@ -197,7 +198,7 @@ def flatten(lst: Iterable) -> list:
     return [item for sublist in lst for item in as_list(sublist)]
 
 
-def df_to_list(df: pd.DataFrame) -> list:
+def df_to_list(df: "pd.DataFrame") -> list:
     """
     Convert a pandas DataFrame to a list of dictionaries.
 
@@ -220,7 +221,7 @@ def df_to_list(df: pd.DataFrame) -> list:
     return df.to_dict(orient="records")
 
 
-def df_to_dict(df: pd.DataFrame) -> dict:
+def df_to_dict(df: "pd.DataFrame") -> dict:
     """
     Convert a dictionary of DataFrames to a dictionary of record lists.
 
