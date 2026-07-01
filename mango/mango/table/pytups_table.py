@@ -40,7 +40,7 @@ from .pytups_tools import (
     group_by,
     auto_join,
 )
-from .table_tools import is_subset
+from .table_tools import is_subset, invert_dict_list
 
 
 class Table(TupList):
@@ -228,9 +228,10 @@ class Table(TupList):
         try:
             columns = self.get_col_names()
             return self.distinct(columns)
-        except:
+        except Exception:
             raise NotImplementedError(
-                "Cannot apply unique to a list of dict. Use distinct instead"
+                "Cannot apply unique to this table; its rows are not a consistent "
+                "list of dicts. Use distinct with explicit columns instead."
             )
 
     def unique2(self) -> "Table":
@@ -255,13 +256,7 @@ class Table(TupList):
             >>> print(result)
             [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
         """
-        try:
-            columns = self.get_col_names()
-            return self.distinct(columns)
-        except:
-            raise NotImplementedError(
-                "Cannot apply unique2 to a list of dict. Use distinct instead"
-            )
+        return self.unique()
 
     def sorted(self, **kwargs) -> "Table":
         """
@@ -966,7 +961,7 @@ class Table(TupList):
         if self.len() == 0:
             return SuperDict()
         table = self.replace_empty(None)
-        return SuperDict({col: table.take(col) for col in self.get_col_names()})
+        return SuperDict(invert_dict_list(table, unique=False))
 
     @classmethod
     def from_columns(cls, dct) -> "Table":
@@ -1286,7 +1281,6 @@ class Table(TupList):
 
         def drop_nested_temp(df):
             for col in df[0]:
-                print(type(df[0][col]))
                 if (
                     isinstance(df[0][col], list)
                     or isinstance(df[0][col], dict)
@@ -1442,8 +1436,8 @@ class Table(TupList):
             >>> print(table.is_unique("name"))
             True
         """
-        len_unique = self.distinct(columns).len()
-        return len_unique == self.len()
+        keys = self.take(columns)
+        return len(set(keys)) == len(keys)
 
     def add_row(self, **kwargs) -> "Table":
         """

@@ -1,4 +1,5 @@
 import warnings
+from itertools import accumulate
 
 from mango.processing import as_list, flatten
 from pytups import TupList
@@ -162,7 +163,7 @@ def cumsum(x):
         >>> print(result)
         [10, 5, 8]
     """
-    return [sum(x[: (i + 1)]) for i in range(len(x))]
+    return list(accumulate(x))
 
 
 def invert_dict_list(dictlist, unique=True):
@@ -229,7 +230,7 @@ def simplify(x):
         not a list
     """
     if isinstance(x, list):
-        x1 = list(set(x))
+        x1 = list(dict.fromkeys(x))
         if len(x1) == 1:
             return x1[0]
         else:
