@@ -47,11 +47,11 @@ def mutate(table, **kwargs):
     nrow = table2.len()
     for k, v in kwargs.items():
         if isinstance(v, Callable):
-            table2 = [{**row, **{k: v(row)}} for row in table2]
+            table2 = [{**row, k: v(row)} for row in table2]
         elif v is None or len(as_list(v)) == 1:
-            table2 = [{**row, **{k: v}} for row in table2]
+            table2 = [{**row, k: v} for row in table2]
         elif len(as_list(v)) == nrow:
-            table2 = [{**row, **{k: v[i]}} for i, row in enumerate(table2)]
+            table2 = [{**row, k: v[i]} for i, row in enumerate(table2)]
         else:
             raise TypeError(f"Unexpected argument to mutate {v}")
 
@@ -306,6 +306,8 @@ def rename(table, **kwargs):
     """
     assert isinstance(table, TupList)
 
+    if not kwargs:
+        return table
     new_names = dict(**kwargs)
     return table.vapply(
         lambda v: {new_names[k] if k in new_names else k: v[k] for k in v}
@@ -341,10 +343,7 @@ def get_col_names(table, fast=False):
     if fast:
         return [k for k in table[0].keys()]
     else:
-        columns = []
-        for row in table:
-            columns += [k for k in row.keys() if k not in columns]
-        return columns
+        return list(dict.fromkeys(k for row in table for k in row))
 
 
 def left_join(
@@ -881,6 +880,7 @@ def replace(tl, replacement=None, to_replace=None, fast=False):
         to_replace_dict = {k: to_replace for k in get_col_names(tl, fast)}
     if not len(apply_to_col):
         apply_to_col = get_col_names(tl, fast)
+    apply_to_col = set(apply_to_col)
 
     return TupList(
         [
