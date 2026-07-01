@@ -209,6 +209,27 @@ class DateTests(TestCase):
         string_1 = "not a date"
         self.assertRaises(ValueError, str_to_dt, string_1)
 
+    def test_str_to_dt_iso_fastpath_and_priority(self):
+        # ISO strings parse (via the fromisoformat fast-path) with no fmt.
+        self.assertEqual(str_to_dt("2024-01-15T14:30:00"), datetime(2024, 1, 15, 14, 30))
+        self.assertEqual(str_to_dt("2024-01-15 14:30:00"), datetime(2024, 1, 15, 14, 30))
+        self.assertEqual(str_to_dt("2024-01-15"), datetime(2024, 1, 15, 0, 0))
+        # Non-ISO formats still handled by the default format loop.
+        self.assertEqual(str_to_dt("15/01/2024"), datetime(2024, 1, 15, 0, 0))
+        self.assertEqual(str_to_dt("24-01-15"), datetime(2024, 1, 15, 0, 0))
+        # A caller-supplied format keeps priority over the ISO fast-path,
+        # even for an ISO-shaped string with a different field order.
+        self.assertEqual(str_to_dt("2024-05-03", fmt="%Y-%d-%m"), datetime(2024, 3, 5))
+
+    def test_str_to_d_iso_fastpath_and_priority(self):
+        self.assertEqual(str_to_d("2024-01-15"), date(2024, 1, 15))
+        # date-scoped fast-path rejects a time part, but fmt=None still parses it
+        # via the DATETIME fallback and returns the date.
+        self.assertEqual(str_to_d("2024-01-15T14:30:00"), date(2024, 1, 15))
+        self.assertEqual(str_to_d("15/01/2024"), date(2024, 1, 15))
+        # Caller format keeps priority.
+        self.assertEqual(str_to_d("2024-05-03", fmt="%Y-%d-%m"), date(2024, 3, 5))
+
     def test_dt_to_str(self):
         dt = datetime(2022, 9, 27, 8, 0, 0)
         default_string = dt_to_str(dt)

@@ -296,14 +296,24 @@ def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
         >>> str_to_dt("15/01/2024", ["%d/%m/%Y"])
         datetime.datetime(2024, 1, 15)
     """
+    # Caller-supplied candidate formats keep priority.
     if fmt is not None:
-        formats = as_list(fmt) + DATETIME_FORMATS + DATE_FORMATS
-    else:
-        formats = DATETIME_FORMATS + DATE_FORMATS
+        for f in as_list(fmt):
+            try:
+                return datetime.strptime(string, f)
+            except ValueError:
+                continue
 
-    for fmt in formats:
+    # Fast C parser for the common ISO formats.
+    try:
+        return datetime.fromisoformat(string)
+    except ValueError:
+        pass
+
+    # Default formats (also the correctness fallback where fromisoformat is stricter, e.g. Python 3.10).
+    for f in DATETIME_FORMATS + DATE_FORMATS:
         try:
-            return datetime.strptime(string, fmt)
+            return datetime.strptime(string, f)
         except ValueError:
             continue
 
@@ -331,14 +341,27 @@ def str_to_d(string: str, fmt: Union[str, Iterable] = None) -> date:
         >>> str_to_d("15/01/2024", ["%d/%m/%Y"])
         datetime.date(2024, 1, 15)
     """
+    # Caller-supplied candidate formats keep priority.
     if fmt is not None:
-        formats = as_list(fmt) + DATE_FORMATS
+        for f in as_list(fmt):
+            try:
+                dt = datetime.strptime(string, f)
+                return date(dt.year, dt.month, dt.day)
+            except ValueError:
+                continue
+        defaults = DATE_FORMATS
     else:
-        formats = DATE_FORMATS + DATETIME_FORMATS
+        defaults = DATE_FORMATS + DATETIME_FORMATS
 
-    for fmt in formats:
+    # Fast C parser for ISO date strings (date-scoped: rejects strings with a time part).
+    try:
+        return date.fromisoformat(string)
+    except ValueError:
+        pass
+
+    for f in defaults:
         try:
-            dt = datetime.strptime(string, fmt)
+            dt = datetime.strptime(string, f)
             return date(dt.year, dt.month, dt.day)
         except ValueError:
             continue
