@@ -211,8 +211,12 @@ class DateTests(TestCase):
 
     def test_str_to_dt_iso_fastpath_and_priority(self):
         # ISO strings parse (via the fromisoformat fast-path) with no fmt.
-        self.assertEqual(str_to_dt("2024-01-15T14:30:00"), datetime(2024, 1, 15, 14, 30))
-        self.assertEqual(str_to_dt("2024-01-15 14:30:00"), datetime(2024, 1, 15, 14, 30))
+        self.assertEqual(
+            str_to_dt("2024-01-15T14:30:00"), datetime(2024, 1, 15, 14, 30)
+        )
+        self.assertEqual(
+            str_to_dt("2024-01-15 14:30:00"), datetime(2024, 1, 15, 14, 30)
+        )
         self.assertEqual(str_to_dt("2024-01-15"), datetime(2024, 1, 15, 0, 0))
         # Non-ISO formats still handled by the default format loop.
         self.assertEqual(str_to_dt("15/01/2024"), datetime(2024, 1, 15, 0, 0))

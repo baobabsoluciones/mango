@@ -1366,6 +1366,4 @@ def order_by(table, columns, reverse=False):
          {'name': 'Charlie', 'age': 35}]
     """
     cols = as_list(columns)
-    return TupList(table).sorted(
-        key=lambda v: [v[c] for c in cols], reverse=reverse
-    )
+    return TupList(table).sorted(key=lambda v: [v[c] for c in cols], reverse=reverse)
