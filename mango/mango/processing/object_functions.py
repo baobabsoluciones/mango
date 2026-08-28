@@ -1,5 +1,6 @@
 import pickle
 from collections.abc import Iterable
+from itertools import accumulate
 
 try:
     import pandas as pd
@@ -40,22 +41,21 @@ def unique(lst: list):
     """
     Extract unique elements from a list.
 
-    Returns a list containing only the unique elements from the input list.
-    The order of elements in the result is not guaranteed as it uses set
-    operations internally.
+    Returns a list containing only the unique elements from the input list,
+    preserving the order in which each element first appears.
 
     :param lst: List from which to extract unique values
     :type lst: list
-    :return: List of unique values from the input list
+    :return: List of unique values from the input list, in first-seen order
     :rtype: list
 
     Example:
         >>> unique([2, 2, 3, 1, 3, 1])
-        [1, 2, 3]
+        [2, 3, 1]
         >>> unique(['a', 'b', 'a', 'c'])
         ['a', 'b', 'c']
     """
-    return list(set(lst))
+    return list(dict.fromkeys(lst))
 
 
 def reverse_dict(data):
@@ -100,7 +100,7 @@ def cumsum(lst: list) -> list:
         >>> cumsum([2, 4, 6])
         [2, 6, 12]
     """
-    return [sum(lst[: i + 1]) for i in range(len(lst))]
+    return list(accumulate(lst))
 
 
 def lag_list(lst: list, lag: int = 1) -> list:
@@ -198,7 +198,7 @@ def flatten(lst: Iterable) -> list:
     return [item for sublist in lst for item in as_list(sublist)]
 
 
-def df_to_list(df: pd.DataFrame) -> list:
+def df_to_list(df: "pd.DataFrame") -> list:
     """
     Convert a pandas DataFrame to a list of dictionaries.
 
@@ -221,7 +221,7 @@ def df_to_list(df: pd.DataFrame) -> list:
     return df.to_dict(orient="records")
 
 
-def df_to_dict(df: pd.DataFrame) -> dict:
+def df_to_dict(df: "pd.DataFrame") -> dict:
     """
     Convert a dictionary of DataFrames to a dictionary of record lists.
 

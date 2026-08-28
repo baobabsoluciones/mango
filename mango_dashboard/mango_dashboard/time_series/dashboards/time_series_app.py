@@ -199,7 +199,9 @@ def interface_visualization(
                border: 1px solid #3d9df3; 
             }
         </style>
-        """.replace("BUTTON_TEXT", UI_TEXT["upload_button_text"])
+        """.replace(
+            "BUTTON_TEXT", UI_TEXT["upload_button_text"]
+        )
         .replace("INSTRUCTIONS_TEXT", UI_TEXT["upload_instructions"])
         .replace(
             "FILE_LIMITS",

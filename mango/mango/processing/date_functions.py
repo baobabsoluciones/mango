@@ -269,13 +269,10 @@ def to_tz(dt: datetime, tz: str = "Europe/Madrid") -> datetime:
         >>> to_tz(utc_dt, "Europe/Madrid")
         datetime.datetime(2024, 1, 15, 13, 0)
     """
-    try:
-        dt = pytz.utc.localize(dt)
-        timezone = pytz.timezone(tz)
-        dt = dt.astimezone(timezone)
-        return dt.replace(tzinfo=None)
-    except Exception as e:
-        raise
+    dt = pytz.utc.localize(dt)
+    timezone = pytz.timezone(tz)
+    dt = dt.astimezone(timezone)
+    return dt.replace(tzinfo=None)
 
 
 def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
@@ -299,14 +296,24 @@ def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
         >>> str_to_dt("15/01/2024", ["%d/%m/%Y"])
         datetime.datetime(2024, 1, 15)
     """
+    # Caller-supplied candidate formats keep priority.
     if fmt is not None:
-        formats = as_list(fmt) + DATETIME_FORMATS + DATE_FORMATS
-    else:
-        formats = DATETIME_FORMATS + DATE_FORMATS
+        for f in as_list(fmt):
+            try:
+                return datetime.strptime(string, f)
+            except ValueError:
+                continue
 
-    for fmt in formats:
+    # Fast C parser for the common ISO formats.
+    try:
+        return datetime.fromisoformat(string)
+    except ValueError:
+        pass
+
+    # Default formats (also the correctness fallback where fromisoformat is stricter, e.g. Python 3.10).
+    for f in DATETIME_FORMATS + DATE_FORMATS:
         try:
-            return datetime.strptime(string, fmt)
+            return datetime.strptime(string, f)
         except ValueError:
             continue
 
@@ -334,14 +341,27 @@ def str_to_d(string: str, fmt: Union[str, Iterable] = None) -> date:
         >>> str_to_d("15/01/2024", ["%d/%m/%Y"])
         datetime.date(2024, 1, 15)
     """
+    # Caller-supplied candidate formats keep priority.
     if fmt is not None:
-        formats = as_list(fmt) + DATE_FORMATS
+        for f in as_list(fmt):
+            try:
+                dt = datetime.strptime(string, f)
+                return date(dt.year, dt.month, dt.day)
+            except ValueError:
+                continue
+        defaults = DATE_FORMATS
     else:
-        formats = DATE_FORMATS + DATETIME_FORMATS
+        defaults = DATE_FORMATS + DATETIME_FORMATS
 
-    for fmt in formats:
+    # Fast C parser for ISO date strings (date-scoped: rejects strings with a time part).
+    try:
+        return date.fromisoformat(string)
+    except ValueError:
+        pass
+
+    for f in defaults:
         try:
-            dt = datetime.strptime(string, fmt)
+            dt = datetime.strptime(string, f)
             return date(dt.year, dt.month, dt.day)
         except ValueError:
             continue
@@ -509,12 +529,9 @@ def add_to_str_dt(
         >>> add_to_str_dt("2024-01-01", days=7, fmt_out="%Y-%m-%d")
         '2024-01-08'
     """
-    try:
-        if fmt_in:
-            fmt_in = as_list(fmt_in) + DATE_FORMATS
-        else:
-            fmt_in = DATE_FORMATS
-        new_date = as_datetime(x, fmt=fmt_in) + timedelta(**kwargs)
-        return as_str(new_date, fmt_out)
-    except Exception as e:
-        raise
+    if fmt_in:
+        fmt_in = as_list(fmt_in) + DATE_FORMATS
+    else:
+        fmt_in = DATE_FORMATS
+    new_date = as_datetime(x, fmt=fmt_in) + timedelta(**kwargs)
+    return as_str(new_date, fmt_out)

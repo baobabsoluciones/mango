@@ -263,6 +263,17 @@ class TestTable(TestCase):
         expected = Table([{"Points": 23}])
         self.assertEqual(df, expected, msg=msg)
 
+    def test_summarise_substrings(self):
+        msg = "summarise with columns which are substrings of others"
+        df = Table(self.default_data2).mutate(_25=False).summarise(
+            group_by="Under_25", Points=sum, default=None
+        )
+        expected = Table(
+            [{"Points": 13, "Under_25": True}, {"Points": 10, "Under_25": False}]
+        )
+        print(df)
+        self.assertEqual(df, expected, msg=msg)
+
     def test_select(self):
         msg = "select 2 columns"
         df = Table(self.default_data2).select("Name", "Points")
@@ -1382,6 +1393,15 @@ class TestTable(TestCase):
         expected = [
             {"Age": 45, "Male": 2, "Points": 13, "Under_25": True},
             {"Age": 65, "Male": 2, "Points": 10, "Under_25": False},
+        ]
+        self.assertEqual(result, expected, msg=msg)
+
+    def test_sum_all_substrings(self):
+        msg = "sum_all with columns which are substrings of others"
+        result = Table(self.default_data2).drop("Name").mutate(_25=1).sum_all("Under_25")
+        expected = [
+            {"Age": 45, "Male": 2, "Points": 13, "Under_25": True, "_25": 2},
+            {"Age": 65, "Male": 2, "Points": 10, "Under_25": False, "_25": 2},
         ]
         self.assertEqual(result, expected, msg=msg)
 

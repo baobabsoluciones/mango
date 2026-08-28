@@ -142,29 +142,6 @@ def mean(*args):
         return None
 
 
-def cumsum(x):
-    """
-    Calculate the cumulative sum of a list.
-
-    Returns a new list where each element is the sum of all
-    previous elements plus the current element.
-
-    :param x: List of numbers to compute cumulative sum for
-    :type x: list[number]
-    :return: List of cumulative sums with same length as input
-    :rtype: list[number]
-
-    Example:
-        >>> result = cumsum([1, 2, 3, 4, 5])
-        >>> print(result)
-        [1, 3, 6, 10, 15]
-        >>> result = cumsum([10, -5, 3])
-        >>> print(result)
-        [10, 5, 8]
-    """
-    return [sum(x[: (i + 1)]) for i in range(len(x))]
-
-
 def invert_dict_list(dictlist, unique=True):
     """
     Transform a list of dictionaries into a dictionary of lists.
@@ -229,7 +206,7 @@ def simplify(x):
         not a list
     """
     if isinstance(x, list):
-        x1 = list(set(x))
+        x1 = list(dict.fromkeys(x))
         if len(x1) == 1:
             return x1[0]
         else:
