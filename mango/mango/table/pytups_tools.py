@@ -87,6 +87,8 @@ def sum_all(table, group_by=None):
         return table
     if group_by is None:
         group_by = []
+    else:
+        group_by = as_list(group_by)
 
     return (
         table.to_dict(indices=group_by, result_col=None, is_list=True)
@@ -161,6 +163,8 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
         return table
     if group_by is None:
         group_by = []
+    else:
+        group_by = as_list(group_by)
     if default is not None:
         apply_func = {k: default for k in table[0] if k not in group_by}
     else:
