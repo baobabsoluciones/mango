@@ -773,7 +773,11 @@ For strings and datetime objects, extracts only the date portion.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="mango.processing.date_functions.as_str">
 <span class="sig-prename descclassname"><span class="pre">mango.processing.date_functions.</span></span><span class="sig-name descname"><span class="pre">as_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">date</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#mango.processing.date_functions.as_str" title="Link to this definition">¶</a></dt>
-<dd><p>Coerce a date-like object to a string.</p>
+<dd><p>Coerce a date-like object to a string.
+The main utility of this function is to ensure that dates or date strings from various sources</p>
+<blockquote>
+<div><p>end up in the same format.</p>
+</div></blockquote>
 <p>Converts date, datetime, or string objects to a formatted string.
 If the input is already a string and a format is specified, attempts
 to parse and reformat it.</p>
@@ -799,6 +803,10 @@ to parse and reformat it.</p>
 </span><span data-line="2"><span class="go">&#39;2024-01-15 14:30:00&#39;</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span data-line="4"><span class="go">&#39;2024-01-15&#39;</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">&quot;2024-01-15 14:30&quot;</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="go">&#39;2024-01-15&#39;</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">&quot;15-01-2024&quot;</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="go">&#39;2024-01-15&#39;</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1607,15 +1615,14 @@ object and preserves the exact state of the original.</p>
 <dt class="sig sig-object py" id="mango.processing.object_functions.unique">
 <span class="sig-prename descclassname"><span class="pre">mango.processing.object_functions.</span></span><span class="sig-name descname"><span class="pre">unique</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mango.processing.object_functions.unique" title="Link to this definition">¶</a></dt>
 <dd><p>Extract unique elements from a list.</p>
-<p>Returns a list containing only the unique elements from the input list.
-The order of elements in the result is not guaranteed as it uses set
-operations internally.</p>
+<p>Returns a list containing only the unique elements from the input list,
+preserving the order in which each element first appears.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>lst</strong> (<em>list</em>) – List from which to extract unique values</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of unique values from the input list</p>
+<dd class="field-even"><p>List of unique values from the input list, in first-seen order</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
@@ -1623,7 +1630,7 @@ operations internally.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">unique</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-</span><span data-line="2"><span class="go">[1, 2, 3]</span>
+</span><span data-line="2"><span class="go">[2, 3, 1]</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">unique</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
 </span><span data-line="4"><span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
 </span></pre></div>
