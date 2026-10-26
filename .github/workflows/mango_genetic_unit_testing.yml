@@ -21,7 +21,7 @@ jobs:
     strategy:
       max-parallel: 21
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.11', '3.12', '3.13', '3.14']
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
@@ -98,8 +98,8 @@ jobs:
       - name: Black Code Format
         uses: baobabsoluciones/check-formatting-python@v1.0.0
         with:
-          black_version: '24.10.0'
-          python_version: '3.13'
+          black-version: '24.10.0'
+          python-version: '3.13'
           fail-on-error: false
           paths: mango_genetic
           comment-mode: append

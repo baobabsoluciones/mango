@@ -265,8 +265,10 @@ class TestTable(TestCase):
 
     def test_summarise_substrings(self):
         msg = "summarise with columns which are substrings of others"
-        df = Table(self.default_data2).mutate(_25=False).summarise(
-            group_by="Under_25", Points=sum, default=None
+        df = (
+            Table(self.default_data2)
+            .mutate(_25=False)
+            .summarise(group_by="Under_25", Points=sum, default=None)
         )
         expected = Table(
             [{"Points": 13, "Under_25": True}, {"Points": 10, "Under_25": False}]
@@ -1398,7 +1400,9 @@ class TestTable(TestCase):
 
     def test_sum_all_substrings(self):
         msg = "sum_all with columns which are substrings of others"
-        result = Table(self.default_data2).drop("Name").mutate(_25=1).sum_all("Under_25")
+        result = (
+            Table(self.default_data2).drop("Name").mutate(_25=1).sum_all("Under_25")
+        )
         expected = [
             {"Age": 45, "Male": 2, "Points": 13, "Under_25": True, "_25": 2},
             {"Age": 65, "Male": 2, "Points": 10, "Under_25": False, "_25": 2},

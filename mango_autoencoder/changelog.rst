@@ -6,6 +6,11 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+Security
+--------
+- Require ``mango>=1.0.3``
+- Refreshed ``uv.lock`` to patched versions of vulnerable dependencies (Pillow, keras, protobuf, werkzeug, setuptools, wheel)
+
 [1.0.1] - 2025-09-30
 --------------------
 
