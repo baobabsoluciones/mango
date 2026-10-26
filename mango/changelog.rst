@@ -6,6 +6,19 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.3] - 2026-10-26
+--------------------
+
+Changed
+-------
+- Allow ``numpy>=1.24.4,<3.0.0`` and align dependency constraints with the rest of the Mango packages
+- Reduced duplicate calls in table methods to improve performance on large tables
+- Removed error logs from ``date_functions``, which already raise exceptions (avoids misleading logs in ``as_str``)
+
+Fixed
+-----
+- ``summarise`` and ``sum_all`` returning unexpected results when a column name is a substring of another
+
 Security
 --------
 - Removed the ``certifi<2025.0.0`` upper bound and raised the minimum to ``certifi>=2026.10.19`` (compromised emSign intermediate CA keys)
