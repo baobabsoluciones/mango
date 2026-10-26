@@ -1496,7 +1496,7 @@ class AutoEncoder:
             ]
         )
 
-        (self.data, self.id_data, self.id_data_dict, self.id_columns_indices) = (
+        self.data, self.id_data, self.id_data_dict, self.id_columns_indices = (
             processing.handle_id_columns(
                 data=self._data,
                 id_columns=id_columns,

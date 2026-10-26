@@ -23,9 +23,9 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "mango>=1.0.0,<2.0.0",
     "pandas>=2.0.3,<3.0.0",
-    "plotly>=6.2.0",
-    "polars>=1.31.0",
-    "scikit-learn>=1.6.1",
+    "plotly>=6.2.0,<7.0.0",
+    "polars>=1.31.0,<2.0.0",
+    "scikit-learn>=1.6.1,<2.0.0",
     "tensorflow==2.20.0",
     "tensorflow-io-gcs-filesystem==0.31.0",
 ]

@@ -47,11 +47,11 @@ def mutate(table, **kwargs):
     nrow = table2.len()
     for k, v in kwargs.items():
         if isinstance(v, Callable):
-            table2 = [{**row, **{k: v(row)}} for row in table2]
+            table2 = [{**row, k: v(row)} for row in table2]
         elif v is None or len(as_list(v)) == 1:
-            table2 = [{**row, **{k: v}} for row in table2]
+            table2 = [{**row, k: v} for row in table2]
         elif len(as_list(v)) == nrow:
-            table2 = [{**row, **{k: v[i]}} for i, row in enumerate(table2)]
+            table2 = [{**row, k: v[i]} for i, row in enumerate(table2)]
         else:
             raise TypeError(f"Unexpected argument to mutate {v}")
 
@@ -87,6 +87,8 @@ def sum_all(table, group_by=None):
         return table
     if group_by is None:
         group_by = []
+    else:
+        group_by = as_list(group_by)
 
     return (
         table.to_dict(indices=group_by, result_col=None, is_list=True)
@@ -161,6 +163,8 @@ def summarise(table, group_by, default: [None, Callable] = None, **func):
         return table
     if group_by is None:
         group_by = []
+    else:
+        group_by = as_list(group_by)
     if default is not None:
         apply_func = {k: default for k in table[0] if k not in group_by}
     else:
@@ -248,7 +252,8 @@ def select(table, *args):
         return TupList()
 
     keep = as_list(args)
-    missing = [k for k in keep if k not in get_col_names(table)]
+    cols = get_col_names(table)
+    missing = [k for k in keep if k not in cols]
     if len(missing):
         raise ValueError("Column %s not found" % missing)
     return table.vapply(lambda v: {k: v[k] for k in keep})
@@ -306,6 +311,8 @@ def rename(table, **kwargs):
     """
     assert isinstance(table, TupList)
 
+    if not kwargs:
+        return table
     new_names = dict(**kwargs)
     return table.vapply(
         lambda v: {new_names[k] if k in new_names else k: v[k] for k in v}
@@ -341,10 +348,7 @@ def get_col_names(table, fast=False):
     if fast:
         return [k for k in table[0].keys()]
     else:
-        columns = []
-        for row in table:
-            columns += [k for k in row.keys() if k not in columns]
-        return columns
+        return list(dict.fromkeys(k for row in table for k in row))
 
 
 def left_join(
@@ -869,18 +873,22 @@ def replace(tl, replacement=None, to_replace=None, fast=False):
         >>> print(result)
         [{'age': 35, 'city': 'Paris'}, {'age': 30, 'city': 'Barcelona'}]
     """
+    need_cols = not isinstance(replacement, dict) or not isinstance(to_replace, dict)
+    col_names = get_col_names(tl, fast) if need_cols else None
+
     apply_to_col = []
     if isinstance(replacement, dict):
-        apply_to_col += [i for i in replacement.keys()]
+        apply_to_col += list(replacement.keys())
     else:
-        replacement = {k: replacement for k in get_col_names(tl, fast)}
+        replacement = {k: replacement for k in col_names}
     if isinstance(to_replace, dict):
-        apply_to_col += [i for i in to_replace.keys()]
+        apply_to_col += list(to_replace.keys())
         to_replace_dict = to_replace
     else:
-        to_replace_dict = {k: to_replace for k in get_col_names(tl, fast)}
-    if not len(apply_to_col):
-        apply_to_col = get_col_names(tl, fast)
+        to_replace_dict = {k: to_replace for k in col_names}
+    if not apply_to_col:
+        apply_to_col = col_names
+    apply_to_col = set(apply_to_col)
 
     return TupList(
         [
@@ -1324,12 +1332,13 @@ def distinct(table, columns):
         >>> print(result)
         [{'name': 'Alice', 'city': 'Madrid'}, {'name': 'Bob', 'city': 'Barcelona'}]
     """
-    return (
-        TupList(table)
-        .to_dict(indices=columns, result_col=None, is_list=True)
-        .vapply(lambda v: v[0])
-        .values_tl()
-    )
+    cols = as_list(columns)
+    first_by_signature = {}
+    for row in table:
+        signature = tuple(row[c] for c in cols)
+        if signature not in first_by_signature:
+            first_by_signature[signature] = row
+    return TupList(first_by_signature.values())
 
 
 def order_by(table, columns, reverse=False):
@@ -1360,6 +1369,5 @@ def order_by(table, columns, reverse=False):
          {'name': 'Alice', 'age': 30},
          {'name': 'Charlie', 'age': 35}]
     """
-    return TupList(table).sorted(
-        key=lambda v: [v[c] for c in as_list(columns)], reverse=reverse
-    )
+    cols = as_list(columns)
+    return TupList(table).sorted(key=lambda v: [v[c] for c in cols], reverse=reverse)

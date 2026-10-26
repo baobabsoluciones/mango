@@ -269,14 +269,10 @@ def to_tz(dt: datetime, tz: str = "Europe/Madrid") -> datetime:
         >>> to_tz(utc_dt, "Europe/Madrid")
         datetime.datetime(2024, 1, 15, 13, 0)
     """
-    try:
-        dt = pytz.utc.localize(dt)
-        timezone = pytz.timezone(tz)
-        dt = dt.astimezone(timezone)
-        return dt.replace(tzinfo=None)
-    except Exception as e:
-        log.error(f"Error converting timezone: {e}")
-        raise
+    dt = pytz.utc.localize(dt)
+    timezone = pytz.timezone(tz)
+    dt = dt.astimezone(timezone)
+    return dt.replace(tzinfo=None)
 
 
 def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
@@ -300,18 +296,27 @@ def str_to_dt(string: str, fmt: Union[str, Iterable] = None) -> datetime:
         >>> str_to_dt("15/01/2024", ["%d/%m/%Y"])
         datetime.datetime(2024, 1, 15)
     """
+    # Caller-supplied candidate formats keep priority.
     if fmt is not None:
-        formats = as_list(fmt) + DATETIME_FORMATS + DATE_FORMATS
-    else:
-        formats = DATETIME_FORMATS + DATE_FORMATS
+        for f in as_list(fmt):
+            try:
+                return datetime.strptime(string, f)
+            except ValueError:
+                continue
 
-    for fmt in formats:
+    # Fast C parser for the common ISO formats.
+    try:
+        return datetime.fromisoformat(string)
+    except ValueError:
+        pass
+
+    # Default formats (also the correctness fallback where fromisoformat is stricter, e.g. Python 3.10).
+    for f in DATETIME_FORMATS + DATE_FORMATS:
         try:
-            return datetime.strptime(string, fmt)
+            return datetime.strptime(string, f)
         except ValueError:
             continue
 
-    log.error(f"Failed to parse datetime string: '{string}'")
     raise ValueError(f"string '{string}' does not match any datetime format")
 
 
@@ -336,19 +341,31 @@ def str_to_d(string: str, fmt: Union[str, Iterable] = None) -> date:
         >>> str_to_d("15/01/2024", ["%d/%m/%Y"])
         datetime.date(2024, 1, 15)
     """
+    # Caller-supplied candidate formats keep priority.
     if fmt is not None:
-        formats = as_list(fmt) + DATE_FORMATS
+        for f in as_list(fmt):
+            try:
+                dt = datetime.strptime(string, f)
+                return date(dt.year, dt.month, dt.day)
+            except ValueError:
+                continue
+        defaults = DATE_FORMATS
     else:
-        formats = DATE_FORMATS + DATETIME_FORMATS
+        defaults = DATE_FORMATS + DATETIME_FORMATS
 
-    for fmt in formats:
+    # Fast C parser for ISO date strings (date-scoped: rejects strings with a time part).
+    try:
+        return date.fromisoformat(string)
+    except ValueError:
+        pass
+
+    for f in defaults:
         try:
-            dt = datetime.strptime(string, fmt)
+            dt = datetime.strptime(string, f)
             return date(dt.year, dt.month, dt.day)
         except ValueError:
             continue
 
-    log.error(f"Failed to parse date string: '{string}'")
     raise ValueError(f"string '{string}' does not match any datetime format")
 
 
@@ -408,7 +425,6 @@ def as_datetime(
     elif isinstance(x, date):
         return datetime(x.year, x.month, x.day)
     else:
-        log.error(f"Cannot convert object to datetime: {type(x)}")
         raise ValueError(f"x is not a date: {x}")
 
 
@@ -441,13 +457,14 @@ def as_date(x: Union[date, datetime, str], fmt: Union[str, Iterable] = None) -> 
     elif isinstance(x, date):
         return x
     else:
-        log.error(f"Cannot convert object to date: {type(x)}")
         raise ValueError(f"x is not a date: {x}")
 
 
 def as_str(x: Union[date, datetime, str], fmt: str = None) -> str:
     """
     Coerce a date-like object to a string.
+    The main utility of this function is to ensure that dates or date strings from various sources
+     end up in the same format.
 
     Converts date, datetime, or string objects to a formatted string.
     If the input is already a string and a format is specified, attempts
@@ -466,6 +483,10 @@ def as_str(x: Union[date, datetime, str], fmt: str = None) -> str:
         '2024-01-15 14:30:00'
         >>> as_str("2024-01-15", "%Y-%m-%d")
         '2024-01-15'
+        >>> as_str("2024-01-15 14:30", "%Y-%m-%d")
+        '2024-01-15'
+        >>> as_str("15-01-2024", "%Y-%m-%d")
+        '2024-01-15'
     """
     if isinstance(x, str):
         try:
@@ -476,7 +497,6 @@ def as_str(x: Union[date, datetime, str], fmt: str = None) -> str:
     elif isinstance(x, date):
         return dt_to_str(x, fmt)
     else:
-        log.error(f"Cannot convert object to string: {type(x)}")
         raise ValueError(f"x is not a date: {x}")
 
 
@@ -509,13 +529,9 @@ def add_to_str_dt(
         >>> add_to_str_dt("2024-01-01", days=7, fmt_out="%Y-%m-%d")
         '2024-01-08'
     """
-    try:
-        if fmt_in:
-            fmt_in = as_list(fmt_in) + DATE_FORMATS
-        else:
-            fmt_in = DATE_FORMATS
-        new_date = as_datetime(x, fmt=fmt_in) + timedelta(**kwargs)
-        return as_str(new_date, fmt_out)
-    except Exception as e:
-        log.error(f"Error adding time to datetime string: {e}")
-        raise
+    if fmt_in:
+        fmt_in = as_list(fmt_in) + DATE_FORMATS
+    else:
+        fmt_in = DATE_FORMATS
+    new_date = as_datetime(x, fmt=fmt_in) + timedelta(**kwargs)
+    return as_str(new_date, fmt_out)
