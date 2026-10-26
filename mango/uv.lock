@@ -260,7 +260,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "certifi", specifier = ">=2026.10.19" },
+    { name = "certifi", specifier = ">=2026.10.19,<2027.0.0" },
     { name = "charset-normalizer", specifier = ">=3.3.0,<4.0.0" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "et-xmlfile", specifier = ">=1.1.0,<2.0.0" },

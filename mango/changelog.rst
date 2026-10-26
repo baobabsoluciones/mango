@@ -21,7 +21,7 @@ Fixed
 
 Security
 --------
-- Removed the ``certifi<2025.0.0`` upper bound and raised the minimum to ``certifi>=2026.10.19`` (compromised emSign intermediate CA keys)
+- Raised ``certifi`` to ``>=2026.10.19,<2027.0.0`` (was ``<2025.0.0``) (compromised emSign intermediate CA keys)
 - Raised ``requests`` minimum to 2.33.0 (CVE-2026-25645)
 - Raised ``urllib3`` minimum to 2.8.0 (CVE-2026-97687, CVE-2026-97688, CVE-2026-97689)
 
