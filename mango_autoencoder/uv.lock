@@ -35,11 +35,11 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2023.11.17"
+version = "2026.10.23"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d4/91/c89518dd4fe1f3a4e3f6ab7ff23cb00ef2e8c9adf99dacc618ad5e068e28/certifi-2023.11.17.tar.gz", hash = "sha256:9b469f3a900bf28dc19b8cfbf8019bf47f7fdd1a65a1d4ffb98fc14166beb4d1", size = 163637, upload-time = "2023-11-18T02:54:02.397Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/11/b524cbd9bbdaca58608e4cf4053fd463417549e1959fa8d3aa18319f9555/certifi-2026.10.23.tar.gz", hash = "sha256:a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd", size = 136225, upload-time = "2026-10-23T11:36:16.478Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/62/428ef076be88fa93716b576e4a01f919d25968913e817077a386fcbe4f42/certifi-2023.11.17-py3-none-any.whl", hash = "sha256:e036ab49d5b79556f99cfc2d9320b34cfbe5be05c5871b51de9329f0603b0474", size = 162530, upload-time = "2023-11-18T02:54:00.083Z" },
+    { url = "https://files.pythonhosted.org/packages/32/d1/a3652fe2c19134d0d15922177821d863cbd7e842d53a21bbe7e8e3a1b5ac/certifi-2026.10.23-py3-none-any.whl", hash = "sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1", size = 135082, upload-time = "2026-10-23T11:36:14.763Z" },
 ]
 
 [[package]]
@@ -234,7 +234,7 @@ wheels = [
 
 [[package]]
 name = "mango"
-version = "1.0.1"
+version = "1.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -244,23 +244,19 @@ dependencies = [
     { name = "idna" },
     { name = "numpy" },
     { name = "openpyxl" },
-    { name = "pandas" },
-    { name = "polars" },
     { name = "pydantic" },
-    { name = "pyomo" },
     { name = "python-dateutil" },
     { name = "pytups" },
     { name = "pytz" },
     { name = "requests" },
-    { name = "scikit-learn" },
     { name = "six" },
     { name = "tqdm" },
     { name = "urllib3" },
     { name = "xlsxwriter" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/45/ac86ce2a33526345d4f0b6f1892b878aedbd9b54105cd779f85f04d6afa2/mango-1.0.1.tar.gz", hash = "sha256:0bc529348ce66fc11afab96ff4803b6b4f75a90f6d072c4428d6d7df708fc74d", size = 191161, upload-time = "2025-09-29T11:46:52.879Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/49/c3ca82ebb8d4f7f29f02c3aa9373dbcf3bdfb8ce8496e13321b49ce40382/mango-1.0.3.tar.gz", hash = "sha256:15f7487b9072fea13878290b7f6c559fdb709cb52bff9da9c5fcb530a9b83282", size = 194478, upload-time = "2026-10-26T16:03:31.728Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fc/78/603efa650fa2332ab5a26e62c899920befbd637e587206f6d8c294d84d25/mango-1.0.1-py3-none-any.whl", hash = "sha256:f0690a88e42d147a7659e267eed4767e397612a98761dd80454b958e02e87583", size = 165417, upload-time = "2025-09-29T11:46:51.232Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/aa/459189a3838b94cb8e9cb3cee27bf2a6f35f398f1dc1f21e6133f93fc668/mango-1.0.3-py3-none-any.whl", hash = "sha256:0b4d7e8b21417dcdbfe54c19f56921af0d440484fc3b5c9dffa4c192825712ef", size = 167173, upload-time = "2026-10-26T16:03:30.621Z" },
 ]
 
 [[package]]
@@ -284,7 +280,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.0" },
-    { name = "mango", specifier = ">=1.0.0,<2.0.0" },
+    { name = "mango", specifier = ">=1.0.3,<2.0.0" },
     { name = "pandas", specifier = ">=2.0.3,<3.0.0" },
     { name = "plotly", specifier = ">=6.2.0,<7.0.0" },
     { name = "polars", specifier = ">=1.31.0,<2.0.0" },
@@ -508,15 +504,6 @@ wheels = [
 ]
 
 [[package]]
-name = "ply"
-version = "3.11"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e5/69/882ee5c9d017149285cab114ebeab373308ef0f874fcdac9beb90e0ac4da/ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3", size = 159130, upload-time = "2018-02-15T19:01:31.097Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/58/35da89ee790598a0700ea49b2a66594140f44dec458c07e8e3d4979137fc/ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce", size = 49567, upload-time = "2018-02-15T19:01:27.172Z" },
-]
-
-[[package]]
 name = "polars"
 version = "1.32.2"
 source = { registry = "https://pypi.org/simple" }
@@ -603,22 +590,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyomo"
-version = "6.9.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "ply" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/87/d8/f32e0dcacc8219694709200d4402c86a6e28d3af50380a5ccf7f7e15ffae/pyomo-6.9.5.tar.gz", hash = "sha256:0734020fcd5cc03ee200fd3f79d143fbfc14e6be116e0d16bab79f3f89609879", size = 3067399, upload-time = "2025-10-17T20:21:56.877Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/00/e1208b34caf3dda410716bb3309bf2b079c0e3274c137e76911f10e8e521/pyomo-6.9.5-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:13639af9a9a469283673fca25c0dba5517b675a2c070d68cd217824e73f0db9d", size = 4306498, upload-time = "2025-10-17T20:25:14.748Z" },
-    { url = "https://files.pythonhosted.org/packages/8d/7a/78752378b887ce6edcabec870137383eaff312993f3ad23f8e03a9429481/pyomo-6.9.5-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:731f0d25899830ac0fe7b24274fcb7e3eb1e074a66a1bcfb8b359af5bb433826", size = 4295554, upload-time = "2025-10-17T20:25:19.215Z" },
-    { url = "https://files.pythonhosted.org/packages/ed/2b/77ec1aed0e5808c6802bf282a4369423c9424ac2a9d6d25eb3d0438d065c/pyomo-6.9.5-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:4e1b00b4f926a34b20f4afd449092161d3a4fda88c3ca198730a16540aeebb63", size = 4355072, upload-time = "2025-10-17T21:06:31.984Z" },
-    { url = "https://files.pythonhosted.org/packages/bf/5c/93f4215fdcaf0bf581974801956d9c0880cb061401f766fe7f35efc3ed47/pyomo-6.9.5-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ebf78130de5d3c9972d042533ebcf10e5e0ce69a51c6576ee3b3e75e22641865", size = 4381298, upload-time = "2025-10-17T20:25:23.941Z" },
-    { url = "https://files.pythonhosted.org/packages/68/29/394967f7df51788cbdf1b4aedfb7c5a3a62e11b85b4c9d806b86cc576be4/pyomo-6.9.5-py3-none-any.whl", hash = "sha256:60326f7d3143ee7d0f5c5c4a3cbf871b53e08cc6c2b0c9e6d25568880233472f", size = 3938900, upload-time = "2025-10-17T20:22:07.473Z" },
-]
-
-[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -650,7 +621,7 @@ wheels = [
 
 [[package]]
 name = "requests"
-version = "2.32.4"
+version = "2.34.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -658,9 +629,9 @@ dependencies = [
     { name = "idna" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/0a/929373653770d8a0d7ea76c37de6e41f11eb07559b103b1c02cafb3f7cf8/requests-2.32.4.tar.gz", hash = "sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422", size = 135258, upload-time = "2025-06-09T16:43:07.34Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/c3/e2a2b89f2d3e2179abd6d00ebd70bff6273f37fb3e0cc209f48b39d00cbf/requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed", size = 142856, upload-time = "2026-05-14T19:25:27.735Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7c/e4/56027c4a6b4ae70ca9de302488c5ca95ad4a39e190093d6c1a8ace08341b/requests-2.32.4-py3-none-any.whl", hash = "sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c", size = 64847, upload-time = "2025-06-09T16:43:05.728Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0", size = 73075, upload-time = "2026-05-14T19:25:26.443Z" },
 ]
 
 [[package]]
@@ -889,11 +860,11 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.5.0"
+version = "2.8.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599c47dd506532914ce044817c7752a79b6a51286319bc/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760", size = 393185, upload-time = "2025-06-18T14:07:41.644Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/05/b17359e1cefb4f909b5e40b1b90a496d987258916dbbf88e842c729f510e/urllib3-2.8.0.tar.gz", hash = "sha256:63bf2ead4c879426ebf22ef2a781eeb4aa3b4ae798a0435506f8687fd5bb9b63", size = 458972, upload-time = "2026-09-15T19:29:36.253Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795, upload-time = "2025-06-18T14:07:40.39Z" },
+    { url = "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl", hash = "sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3", size = 135717, upload-time = "2026-09-15T19:29:34.577Z" },
 ]
 
 [[package]]
