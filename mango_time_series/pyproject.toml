@@ -20,16 +20,16 @@ classifiers = [
     "Development Status :: 4 - Beta",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "pandas>=2.0.3,<3.0.0",
     "numpy>=1.24.4,<3.0.0",
     "polars>=1.8.2,<2.0.0",
     "scipy>=1.10.1,<2.0.0",
     "statsmodels>=0.14.1,<1.0.0",
-    "mango>=1.0.2,<2.0.0",
+    "mango>=1.0.3,<2.0.0",
     "scikit-learn>=1.6.1,<2.0.0",
-    "pyarrow==22.0.0",
+    "pyarrow>=23.0.1,<26.0.0",
 ]
 
 [project.optional-dependencies]

@@ -50,7 +50,7 @@ Installation
 Dependencies
 ------------
 
-- Python >= 3.10
+- Python >= 3.11
 - numpy >= 1.24.4
 - mango[data] == 1.0.2
 

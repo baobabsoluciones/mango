@@ -1,16 +1,9 @@
 import os
 import pathlib
+import tomllib as toml
 from importlib.metadata import version, PackageNotFoundError
 
 from mango.logging import get_configured_logger
-
-try:
-    import tomllib as toml
-except ModuleNotFoundError:
-    try:
-        import tomli as toml
-    except ModuleNotFoundError:
-        import toml
 
 log = get_configured_logger(__name__)
 

@@ -20,12 +20,12 @@ classifiers = [
     "Development Status :: 4 - Beta",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.24.4,<3.0.0",
-    "mango>=1.0.2,<2.0.0",
-    "certifi>=2024.7.4,<2025.0.0",
-    "urllib3>=2.6.3,<3.0.0",
+    "mango>=1.0.3,<2.0.0",
+    "certifi>=2026.10.19,<2027.0.0",
+    "urllib3>=2.8.0,<3.0.0",
 ]
 
 [project.optional-dependencies]

@@ -6,6 +6,15 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+Removed
+-------
+- Dropped Python 3.10 support (end of life since 2026-10); ``requires-python`` is now ``>=3.11`` (Pillow fixes require 3.11+)
+
+Security
+--------
+- ``urllib3>=2.8.0``
+- Refreshed ``uv.lock`` to patched versions of vulnerable dependencies (Pillow, GitPython, tornado, pyasn1, protobuf, fsspec, streamlit)
+
 [1.0.2] - 2025-10-13
 --------------------
 

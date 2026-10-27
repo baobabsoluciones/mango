@@ -6,6 +6,19 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.2] - 2026-10-27
+--------------------
+
+Changed
+-------
+- Upgraded ``tensorflow`` to 2.20.0
+- Added upper bounds to ``plotly``, ``polars`` and ``scikit-learn``
+
+Security
+--------
+- Require ``mango>=1.0.3``
+- Refreshed ``uv.lock`` to patched versions of vulnerable dependencies (Pillow, keras, protobuf, werkzeug, setuptools, wheel)
+
 [1.0.1] - 2025-09-30
 --------------------
 

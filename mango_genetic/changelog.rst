@@ -6,6 +6,23 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.3] - 2026-10-27
+--------------------
+
+Changed
+-------
+- Allow ``numpy>=1.24.4,<3.0.0`` (was ``<2.0.0``)
+- Depend on ``mango>=1.0.3,<2.0.0`` instead of the exact pin ``mango==1.0.2``
+
+Removed
+-------
+- Dropped Python 3.10 support (end of life since 2026-10); ``requires-python`` is now ``>=3.11``
+
+Security
+--------
+- Require ``mango>=1.0.3``, ``certifi>=2026.10.19,<2027.0.0`` and ``urllib3>=2.8.0``
+- Refreshed ``uv.lock`` to patched versions of vulnerable dependencies
+
 [1.0.1] - 2025-09-29
 --------------------
 
