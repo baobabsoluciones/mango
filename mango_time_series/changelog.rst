@@ -6,6 +6,16 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+Removed
+-------
+- Dropped Python 3.10 support (end of life since 2026-10); ``requires-python`` is now ``>=3.11``
+
+Security
+--------
+- Require ``mango>=1.0.3``
+- ``pyarrow>=23.0.1,<26.0.0`` instead of pinned ``pyarrow==22.0.0`` (Arrow IPC use-after-free advisory; pyarrow 26 requires NumPy 2)
+- Refreshed ``uv.lock`` to patched versions of vulnerable dependencies
+
 [1.0.1] - 2025-09-29
 --------------------
 

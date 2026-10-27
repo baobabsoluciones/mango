@@ -49,7 +49,7 @@ Installation
 Dependencies
 ------------
 
-- Python >= 3.10
+- Python >= 3.11
 - pandas >= 2.0.0
 - numpy >= 1.24.0
 - mango[data] >= 1.0.2

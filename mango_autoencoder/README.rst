@@ -57,7 +57,7 @@ Installation
 Dependencies
 ------------
 
-- Python >= 3.10
+- Python >= 3.11
 - TensorFlow >= 2.18.0
 - Pandas >= 2.0.3
 - Polars >= 1.31.0
