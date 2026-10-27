@@ -6,13 +6,23 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.3] - 2026-10-27
+--------------------
+
+Changed
+-------
+- Depend on ``mango>=1.0.3,<2.0.0`` and ``mango-time-series>=1.0.3,<2.0.0``
+- Added upper bounds to all dependencies to prevent breakages from future major releases
+
 Removed
 -------
 - Dropped Python 3.10 support (end of life since 2026-10); ``requires-python`` is now ``>=3.11`` (Pillow fixes require 3.11+)
 
 Security
 --------
-- ``urllib3>=2.8.0``
+- ``certifi>=2026.10.19,<2027.0.0`` (was ``<2025.0.0``; compromised emSign intermediate CA keys)
+- ``pyarrow`` 25.0.1 via ``mango-time-series`` 1.0.3 (was pinned to 22.0.0)
+- ``tornado>=6.5.5`` and ``urllib3>=2.8.0``
 - Refreshed ``uv.lock`` to patched versions of vulnerable dependencies (Pillow, GitPython, tornado, pyasn1, protobuf, fsspec, streamlit)
 
 [1.0.2] - 2025-10-13
