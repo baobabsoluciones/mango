@@ -233,19 +233,19 @@ The function supports various transformations and output formats.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get basic Spanish calendar for 2023</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">country</span><span class="o">=</span><span class="s2">&quot;ES&quot;</span><span class="p">,</span> <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span> <span class="n">end_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">calendar</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span><span class="n">country</span><span class="o">=</span><span class="s2">"ES"</span><span class="p">,</span> <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span> <span class="n">end_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">calendar</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-</span><span data-line="4"><span class="go">[&#39;date&#39;, &#39;name&#39;, &#39;country_code&#39;]</span>
+</span><span data-line="4"><span class="go">['date', 'name', 'country_code']</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get calendar with community holidays and weights</span>
 </span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">calendar_with_communities</span> <span class="o">=</span> <span class="n">get_calendar</span><span class="p">(</span>
-</span><span data-line="8"><span class="gp">... </span>    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;ES&quot;</span><span class="p">,</span>
+</span><span data-line="8"><span class="gp">... </span>    <span class="n">country</span><span class="o">=</span><span class="s2">"ES"</span><span class="p">,</span>
 </span><span data-line="9"><span class="gp">... </span>    <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span>
 </span><span data-line="10"><span class="gp">... </span>    <span class="n">end_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">,</span>
 </span><span data-line="11"><span class="gp">... </span>    <span class="n">communities</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span><span data-line="12"><span class="gp">... </span>    <span class="n">return_weights</span><span class="o">=</span><span class="kc">True</span>
 </span><span data-line="13"><span class="gp">... </span><span class="p">)</span>
-</span><span data-line="14"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span> <span class="ow">in</span> <span class="n">calendar_with_communities</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+</span><span data-line="14"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s1">'weight'</span> <span class="ow">in</span> <span class="n">calendar_with_communities</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 </span><span data-line="15"><span class="go">True</span>
 </span></pre></div>
 </div>
@@ -298,20 +298,20 @@ holiday as a separate column with distance values.</p>
 </span><span data-line="3"><span class="gp">... </span>    <span class="n">steps_back</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
 </span><span data-line="4"><span class="gp">... </span>    <span class="n">steps_forward</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
 </span><span data-line="5"><span class="gp">... </span>    <span class="n">start_year</span><span class="o">=</span><span class="mi">2023</span><span class="p">,</span>
-</span><span data-line="6"><span class="gp">... </span>    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;ES&quot;</span><span class="p">,</span>
-</span><span data-line="7"><span class="gp">... </span>    <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;polars&quot;</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">country</span><span class="o">=</span><span class="s2">"ES"</span><span class="p">,</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">output_format</span><span class="o">=</span><span class="s2">"polars"</span>
 </span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">holidays</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-</span><span data-line="10"><span class="go">[&#39;datetime&#39;, &#39;New Year&#39;, &#39;Epiphany&#39;, &#39;Good Friday&#39;, ...]</span>
+</span><span data-line="10"><span class="go">['datetime', 'New Year', 'Epiphany', 'Good Friday', ...]</span>
 </span><span data-line="11"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get holidays in Pandas format</span>
 </span><span data-line="13"><span class="gp">&gt;&gt;&gt; </span><span class="n">holidays_pd</span> <span class="o">=</span> <span class="n">get_holidays_df</span><span class="p">(</span>
 </span><span data-line="14"><span class="gp">... </span>    <span class="n">steps_back</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 </span><span data-line="15"><span class="gp">... </span>    <span class="n">steps_forward</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-</span><span data-line="16"><span class="gp">... </span>    <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span>
+</span><span data-line="16"><span class="gp">... </span>    <span class="n">output_format</span><span class="o">=</span><span class="s2">"pandas"</span>
 </span><span data-line="17"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="18"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">holidays_pd</span><span class="p">))</span>
-</span><span data-line="19"><span class="go">&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;</span>
+</span><span data-line="19"><span class="go">&lt;class 'pandas.core.frame.DataFrame'&gt;</span>
 </span></pre></div>
 </div>
 </dd>
@@ -347,13 +347,13 @@ with the lockdown name and boundary values set to 0.</p>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </span><span data-line="3"><span class="go">(730, 4)</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-</span><span data-line="5"><span class="go">[&#39;ds&#39;, &#39;name&#39;, &#39;lower_bound&#39;, &#39;upper_bound&#39;]</span>
-</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
-</span><span data-line="7"><span class="go">[&#39;COVID&#39;]</span>
+</span><span data-line="5"><span class="go">['ds', 'name', 'lower_bound', 'upper_bound']</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+</span><span data-line="7"><span class="go">['COVID']</span>
 </span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check date range</span>
-</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">'ds'</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
 </span><span data-line="10"><span class="go">2020-03-01 00:00:00</span>
-</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">covid_data</span><span class="p">[</span><span class="s1">'ds'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </span><span data-line="12"><span class="go">2022-02-28 00:00:00</span>
 </span></pre></div>
 </div>

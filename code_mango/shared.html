@@ -247,18 +247,18 @@ dictionaries or file paths to JSON schema files.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span data-line="4"><span class="gp">... </span>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
-</span><span data-line="5"><span class="gp">... </span>        <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="s2">&quot;minimum&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+</span><span data-line="4"><span class="gp">... </span>        <span class="s2">"name"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
+</span><span data-line="5"><span class="gp">... </span>        <span class="s2">"age"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span> <span class="s2">"minimum"</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
 </span><span data-line="6"><span class="gp">... </span>    <span class="p">},</span>
-</span><span data-line="7"><span class="gp">... </span>    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
 </span><span data-line="8"><span class="gp">... </span><span class="p">}</span>
 </span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@validate_args</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
 </span><span data-line="10"><span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">create_user</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
-</span><span data-line="11"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Created user: </span><span class="si">{</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">create_user</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
-</span><span data-line="13"><span class="go">&#39;Created user: John&#39;</span>
+</span><span data-line="11"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">"Created user: </span><span class="si">{</span><span class="n">user</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">create_user</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"John"</span><span class="p">,</span> <span class="s2">"age"</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+</span><span data-line="13"><span class="go">'Created user: John'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -304,15 +304,15 @@ arguments) and selective validation (specific arguments only).</p>
 </span><span data-line="7"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@pydantic_validation</span><span class="p">(</span><span class="n">UserModel</span><span class="p">)</span>
 </span><span data-line="9"><span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">create_user</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">age</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span data-line="10"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;User </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> created&quot;</span>
+</span><span data-line="10"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">"User </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> created"</span>
 </span><span data-line="11"><span class="gp">&gt;&gt;&gt;</span>
-</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">create_user</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john@example.com&quot;</span><span class="p">)</span>
-</span><span data-line="13"><span class="go">&#39;User John created&#39;</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">create_user</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"John"</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="s2">"john@example.com"</span><span class="p">)</span>
+</span><span data-line="13"><span class="go">'User John created'</span>
 </span><span data-line="14"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="15"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># With selective validation</span>
 </span><span data-line="16"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@pydantic_validation</span><span class="p">(</span><span class="n">user_data</span><span class="o">=</span><span class="n">UserModel</span><span class="p">)</span>
 </span><span data-line="17"><span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">process_user</span><span class="p">(</span><span class="n">user_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-</span><span data-line="18"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">user_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> with action </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span data-line="18"><span class="gp">... </span>    <span class="k">return</span> <span class="sa">f</span><span class="s2">"Processing </span><span class="si">{</span><span class="n">user_data</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2"> with action </span><span class="si">{</span><span class="n">action</span><span class="si">}</span><span class="s2">"</span>
 </span></pre></div>
 </div>
 </dd>
@@ -449,11 +449,11 @@ handling for missing optional dependencies by giving clear installation instruct
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check if visualization dependencies are installed</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_dependencies</span><span class="p">(</span><span class="s2">&quot;visualization&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_dependencies</span><span class="p">(</span><span class="s2">"visualization"</span><span class="p">)</span>
 </span><span data-line="3"><span class="go">True</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check with custom pyproject.toml path</span>
-</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_dependencies</span><span class="p">(</span><span class="s2">&quot;ml&quot;</span><span class="p">,</span> <span class="s2">&quot;/path/to/custom/pyproject.toml&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_dependencies</span><span class="p">(</span><span class="s2">"ml"</span><span class="p">,</span> <span class="s2">"/path/to/custom/pyproject.toml"</span><span class="p">)</span>
 </span><span data-line="7"><span class="go">False</span>
 </span></pre></div>
 </div>
@@ -514,14 +514,14 @@ geodesic calculations that account for Earth’s ellipsoidal shape.</p>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">madrid</span> <span class="o">=</span> <span class="p">(</span><span class="mf">40.4168</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.7038</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">barcelona</span> <span class="o">=</span> <span class="p">(</span><span class="mf">41.3851</span><span class="p">,</span> <span class="mf">2.1734</span><span class="p">)</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span> <span class="o">=</span> <span class="n">haversine</span><span class="p">(</span><span class="n">madrid</span><span class="p">,</span> <span class="n">barcelona</span><span class="p">)</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance: </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Distance: </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km"</span><span class="p">)</span>
 </span><span data-line="6"><span class="go">Distance: 504.47 km</span>
 </span><span data-line="7"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Distance between New York and London</span>
 </span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="n">nyc</span> <span class="o">=</span> <span class="p">(</span><span class="mf">40.7128</span><span class="p">,</span> <span class="o">-</span><span class="mf">74.0060</span><span class="p">)</span>
 </span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="n">london</span> <span class="o">=</span> <span class="p">(</span><span class="mf">51.5074</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1278</span><span class="p">)</span>
 </span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span> <span class="o">=</span> <span class="n">haversine</span><span class="p">(</span><span class="n">nyc</span><span class="p">,</span> <span class="n">london</span><span class="p">)</span>
-</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance: </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km&quot;</span><span class="p">)</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Distance: </span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> km"</span><span class="p">)</span>
 </span><span data-line="13"><span class="go">Distance: 5570.25 km</span>
 </span></pre></div>
 </div>

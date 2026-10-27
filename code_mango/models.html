@@ -220,7 +220,7 @@ termination conditions.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">is_feasible</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">termination_condition</span><span class="p">):</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Solution is feasible&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">"Solution is feasible"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -314,8 +314,8 @@ provided.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">var</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">x</span>  <span class="c1"># Pyomo variable with indices (i, j)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">var_to_table</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">],</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>  <span class="c1"># [{&#39;i&#39;: 1, &#39;j&#39;: 2, &#39;Value&#39;: 1.23}, ...]</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">var_to_table</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">'i'</span><span class="p">,</span> <span class="s1">'j'</span><span class="p">],</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>  <span class="c1"># [{'i': 1, 'j': 2, 'Value': 1.23}, ...]</span>
 </span></pre></div>
 </div>
 </dd>
@@ -342,7 +342,7 @@ and returns it as a string representation.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">status</span> <span class="o">=</span> <span class="n">get_status</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solver status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solver status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -370,7 +370,7 @@ Returns the absolute value of the gap as a percentage.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">gap</span> <span class="o">=</span> <span class="n">get_gap</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimality gap: </span><span class="si">{</span><span class="n">gap</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Optimality gap: </span><span class="si">{</span><span class="n">gap</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -398,8 +398,8 @@ paths on Windows systems.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">SolverFactory</span><span class="p">(</span><span class="s1">&#39;cbc&#39;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_cbc_warmstart_file</span><span class="p">(</span><span class="s1">&#39;warmstart.sol&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">SolverFactory</span><span class="p">(</span><span class="s1">'cbc'</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_cbc_warmstart_file</span><span class="p">(</span><span class="s1">'warmstart.sol'</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -432,7 +432,7 @@ zero values and rounds the results.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">variables_to_excel</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">model</span><span class="p">,</span> <span class="s1">&#39;output/&#39;</span><span class="p">,</span> <span class="s1">&#39;solution.xlsx&#39;</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="mi">4</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">model</span><span class="p">,</span> <span class="s1">'output/'</span><span class="p">,</span> <span class="s1">'solution.xlsx'</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="mi">4</span>
 </span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -463,7 +463,7 @@ with structured data. Optionally filters out zero values.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">variables_to_json</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;output/&#39;</span><span class="p">,</span> <span class="s1">&#39;solution.json&#39;</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">variables_to_json</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">'output/'</span><span class="p">,</span> <span class="s1">'solution.json'</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -496,7 +496,7 @@ with variable data in the format created by variables_to_excel.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">instance_from_excel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;data/&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_values.xlsx&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">instance_from_excel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">'data/'</span><span class="p">,</span> <span class="s1">'initial_values.xlsx'</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -530,7 +530,7 @@ data in the format created by variables_to_json.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">instance_from_json</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;data/&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_values.json&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">instance_from_json</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">'data/'</span><span class="p">,</span> <span class="s1">'initial_values.json'</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -559,7 +559,7 @@ Each table should have index columns and a ‘Value’ column.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;i&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;j&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">}]}</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'i'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'j'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'Value'</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">}]}</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">instance_from_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -590,7 +590,7 @@ the provided value dictionary with index-value pairs.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">values</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="mf">1.5</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="mf">2.0</span><span class="p">}</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_variable</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_variable</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">'x'</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -620,8 +620,8 @@ and scalar data appropriately.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;demand&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="mi">1</span><span class="p">,):</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,):</span> <span class="mi">200</span><span class="p">},</span> <span class="s1">&#39;capacity&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">model_data_to_excel</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;output/&#39;</span><span class="p">,</span> <span class="s1">&#39;model_data.xlsx&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'demand'</span><span class="p">:</span> <span class="p">{(</span><span class="mi">1</span><span class="p">,):</span> <span class="mi">100</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,):</span> <span class="mi">200</span><span class="p">},</span> <span class="s1">'capacity'</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">model_data_to_excel</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">'output/'</span><span class="p">,</span> <span class="s1">'model_data.xlsx'</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -651,7 +651,7 @@ special Pyomo data types and status objects.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">solver_result_to_json</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;output/solution_result.json&#39;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">solver_result_to_json</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">'output/solution_result.json'</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -683,8 +683,8 @@ and data types where possible.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">solver_result_from_json</span><span class="p">(</span><span class="s1">&#39;output/solution_result.json&#39;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solver status: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">termination_condition</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">solver_result_from_json</span><span class="p">(</span><span class="s1">'output/solution_result.json'</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solver status: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">termination_condition</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>

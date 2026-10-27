@@ -213,7 +213,7 @@ and optional secondary type for complex data structures.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">param</span> <span class="o">=</span> <span class="n">ConfigParameter</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;timeout&quot;</span><span class="p">,</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s2">"timeout"</span><span class="p">,</span>
 </span><span data-line="3"><span class="gp">... </span>    <span class="n">value_type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
 </span><span data-line="4"><span class="gp">... </span>    <span class="n">default</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
 </span><span data-line="5"><span class="gp">... </span>    <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -259,15 +259,15 @@ it against the defined constraints.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">read_string</span><span class="p">(</span><span class="s1">&#39;[database]</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">read_string</span><span class="p">(</span><span class="s1">'[database]</span>
 </span></pre></div>
 </div>
 </dd>
 </dl>
 </div></blockquote>
 <dl>
-<dt>port = 5432’)</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">param</span> <span class="o">=</span> <span class="n">ConfigParameter</span><span class="p">(</span><span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3306</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">value</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span>
+<dt>port = 5432’)</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">param</span> <span class="o">=</span> <span class="n">ConfigParameter</span><span class="p">(</span><span class="s2">"port"</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3306</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">value</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">"database"</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>  <span class="c1"># 5432</span>
 </span></pre></div>
 </div>
@@ -299,13 +299,13 @@ include type conversion, validation, and default values.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyConfig</span><span class="p">(</span><span class="n">BaseConfig</span><span class="p">):</span>
 </span><span data-line="2"><span class="gp">... </span>    <span class="n">__params</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="3"><span class="gp">... </span>        <span class="s2">&quot;database&quot;</span><span class="p">:</span> <span class="p">[</span>
-</span><span data-line="4"><span class="gp">... </span>            <span class="n">ConfigParameter</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">),</span>
-</span><span data-line="5"><span class="gp">... </span>            <span class="n">ConfigParameter</span><span class="p">(</span><span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">5432</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">... </span>        <span class="s2">"database"</span><span class="p">:</span> <span class="p">[</span>
+</span><span data-line="4"><span class="gp">... </span>            <span class="n">ConfigParameter</span><span class="p">(</span><span class="s2">"host"</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">),</span>
+</span><span data-line="5"><span class="gp">... </span>            <span class="n">ConfigParameter</span><span class="p">(</span><span class="s2">"port"</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">5432</span><span class="p">)</span>
 </span><span data-line="6"><span class="gp">... </span>        <span class="p">]</span>
 </span><span data-line="7"><span class="gp">... </span>    <span class="p">}</span>
-</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">,</span> <span class="p">{})</span>
-</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">config</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="s2">"config.ini"</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">config</span><span class="p">(</span><span class="s2">"host"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -331,8 +331,8 @@ has been loaded. The parameter must exist in the configuration.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">,</span> <span class="p">{})</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span><span class="o">.</span><span class="n">modify_value</span><span class="p">(</span><span class="s2">&quot;database_port&quot;</span><span class="p">,</span> <span class="mi">3306</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">MyConfig</span><span class="p">(</span><span class="s2">"config.ini"</span><span class="p">,</span> <span class="p">{})</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span><span class="o">.</span><span class="n">modify_value</span><span class="p">(</span><span class="s2">"database_port"</span><span class="p">,</span> <span class="mi">3306</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -358,7 +358,7 @@ while parameters without defaults will be set to empty strings.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">MyConfig</span><span class="o">.</span><span class="n">create_config_template</span><span class="p">(</span><span class="s2">&quot;config_template.ini&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">MyConfig</span><span class="o">.</span><span class="n">create_config_template</span><span class="p">(</span><span class="s2">"config_template.ini"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>

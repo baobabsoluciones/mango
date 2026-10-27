@@ -255,7 +255,7 @@ and various training options including early stopping and checkpointing.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">autoencoder</span> <span class="o">=</span> <span class="n">AutoEncoder</span><span class="p">()</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">autoencoder</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="s2">&quot;LSTM&quot;</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">autoencoder</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="s2">"LSTM"</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">autoencoder</span><span class="o">.</span><span class="n">context_window</span> <span class="o">=</span> <span class="mi">10</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">autoencoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">predictions</span> <span class="o">=</span> <span class="n">autoencoder</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_data</span><span class="p">)</span>
@@ -900,7 +900,7 @@ to a NumPy array of shape (n, 2), where each row contains the
 </span><span data-line="6"><span class="gp">... </span>    <span class="n">time_step_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span>
 </span><span data-line="7"><span class="gp">... </span>    <span class="n">feature_to_check</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
 </span><span data-line="8"><span class="gp">... </span>    <span class="n">hidden_dim</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
-</span><span data-line="9"><span class="gp">... </span>    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+</span><span data-line="9"><span class="gp">... </span>    <span class="n">form</span><span class="o">=</span><span class="s2">"lstm"</span><span class="p">,</span>
 </span><span data-line="10"><span class="gp">... </span>    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span>
 </span><span data-line="11"><span class="gp">... </span><span class="p">)</span>
 </span></pre></div>

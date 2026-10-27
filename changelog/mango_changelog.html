@@ -136,15 +136,17 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#unreleased">[Unreleased]</a></li>
+<li><a class="reference internal" href="#removed">Removed</a></li>
+<li><a class="reference internal" href="#security">Security</a></li>
 <li><a class="reference internal" href="#id1">[1.0.3] - 2026-10-26</a></li>
 <li><a class="reference internal" href="#changed">Changed</a></li>
 <li><a class="reference internal" href="#fixed">Fixed</a></li>
-<li><a class="reference internal" href="#security">Security</a></li>
-<li><a class="reference internal" href="#id2">[1.0.1] - 2025-09-29</a></li>
+<li><a class="reference internal" href="#id2">Security</a></li>
+<li><a class="reference internal" href="#id3">[1.0.1] - 2025-09-29</a></li>
 <li><a class="reference internal" href="#added">Added</a></li>
-<li><a class="reference internal" href="#id3">Changed</a></li>
-<li><a class="reference internal" href="#removed">Removed</a></li>
-<li><a class="reference internal" href="#id4">Fixed</a></li>
+<li><a class="reference internal" href="#id4">Changed</a></li>
+<li><a class="reference internal" href="#id5">Removed</a></li>
+<li><a class="reference internal" href="#id6">Fixed</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
   </aside>
@@ -179,6 +181,19 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <section id="unreleased">
 <h2>[Unreleased]<a class="headerlink" href="#unreleased" title="Link to this heading">¶</a></h2>
 </section>
+<section id="removed">
+<h2>Removed<a class="headerlink" href="#removed" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Dropped Python 3.10 support (end of life since 2026-10); <code class="docutils literal notranslate"><span class="pre">requires-python</span></code> is now <code class="docutils literal notranslate"><span class="pre">&gt;=3.11</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tomli</span></code> optional dependency, no longer needed on Python 3.11+</p></li>
+</ul>
+</section>
+<section id="security">
+<h2>Security<a class="headerlink" href="#security" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Refreshed <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> to patched versions of vulnerable dependencies</p></li>
+</ul>
+</section>
 <section id="id1">
 <h2>[1.0.3] - 2026-10-26<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
 </section>
@@ -196,16 +211,16 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p><code class="docutils literal notranslate"><span class="pre">summarise</span></code> and <code class="docutils literal notranslate"><span class="pre">sum_all</span></code> returning unexpected results when a column name is a substring of another</p></li>
 </ul>
 </section>
-<section id="security">
-<h2>Security<a class="headerlink" href="#security" title="Link to this heading">¶</a></h2>
+<section id="id2">
+<h2>Security<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Raised <code class="docutils literal notranslate"><span class="pre">certifi</span></code> to <code class="docutils literal notranslate"><span class="pre">&gt;=2026.10.19,&lt;2027.0.0</span></code> (was <code class="docutils literal notranslate"><span class="pre">&lt;2025.0.0</span></code>) (compromised emSign intermediate CA keys)</p></li>
 <li><p>Raised <code class="docutils literal notranslate"><span class="pre">requests</span></code> minimum to 2.33.0 (CVE-2026-25645)</p></li>
 <li><p>Raised <code class="docutils literal notranslate"><span class="pre">urllib3</span></code> minimum to 2.8.0 (CVE-2026-97687, CVE-2026-97688, CVE-2026-97689)</p></li>
 </ul>
 </section>
-<section id="id2">
-<h2>[1.0.1] - 2025-09-29<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<section id="id3">
+<h2>[1.0.1] - 2025-09-29<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
 </section>
 <section id="added">
 <h2>Added<a class="headerlink" href="#added" title="Link to this heading">¶</a></h2>
@@ -220,8 +235,8 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p>PyPI publishing automation for all modules</p></li>
 </ul>
 </section>
-<section id="id3">
-<h2>Changed<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<section id="id4">
+<h2>Changed<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Migrated from pkg_resources to importlib.metadata for dependency checking</p></li>
 <li><p>Updated project documentation to reflect multi-module architecture</p></li>
@@ -232,16 +247,16 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p>Updated all documentation to reStructuredText format</p></li>
 </ul>
 </section>
-<section id="removed">
-<h2>Removed<a class="headerlink" href="#removed" title="Link to this heading">¶</a></h2>
+<section id="id5">
+<h2>Removed<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Obsolete functions and deprecated code</p></li>
 <li><p>Outdated documentation formats</p></li>
 <li><p>Unused configuration files</p></li>
 </ul>
 </section>
-<section id="id4">
-<h2>Fixed<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<section id="id6">
+<h2>Fixed<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>TOML parsing errors in pyproject.toml</p></li>
 <li><p>Test failures related to dynamic versioning</p></li>

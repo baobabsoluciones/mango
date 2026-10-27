@@ -271,7 +271,7 @@ exploration and model training.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">interface_visualization</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">project_name</span><span class="o">=</span><span class="s2">&quot;Sales Analysis&quot;</span><span class="p">,</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">project_name</span><span class="o">=</span><span class="s2">"Sales Analysis"</span><span class="p">,</span>
 </span><span data-line="3"><span class="gp">... </span>    <span class="n">experimental_features</span><span class="o">=</span><span class="kc">True</span>
 </span><span data-line="4"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="5"><span class="go"># Creates interactive time series dashboard</span>
@@ -317,14 +317,14 @@ visualization types across all loaded files.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;data1.csv&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">df1</span><span class="p">},</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;data2.csv&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">df2</span><span class="p">}</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">'data1.csv'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'data'</span><span class="p">:</span> <span class="n">df1</span><span class="p">},</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">'data2.csv'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'data'</span><span class="p">:</span> <span class="n">df2</span><span class="p">}</span>
 </span><span data-line="4"><span class="gp">... </span><span class="p">}</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">ui_text</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="6"><span class="gp">... </span>    <span class="s1">&#39;visualization_options&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Exploration&#39;</span><span class="p">,</span> <span class="s1">&#39;Forecast&#39;</span><span class="p">]</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="s1">'visualization_options'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'Exploration'</span><span class="p">,</span> <span class="s1">'Forecast'</span><span class="p">]</span>
 </span><span data-line="7"><span class="gp">... </span><span class="p">}</span>
 </span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">viz_type</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">)</span>
-</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Visualization type: </span><span class="si">{</span><span class="n">viz_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Visualization type: </span><span class="si">{</span><span class="n">viz_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="10"><span class="go">Visualization type: Exploration</span>
 </span></pre></div>
 </div>
@@ -407,11 +407,11 @@ The calculation method depends on the frequency:
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;datetime&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;2023-01-02&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-03&#39;</span><span class="p">],</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;forecast_origin&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-01&#39;</span><span class="p">]</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">'datetime'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'2023-01-02'</span><span class="p">,</span> <span class="s1">'2023-01-03'</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">'forecast_origin'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'2023-01-01'</span><span class="p">,</span> <span class="s1">'2023-01-01'</span><span class="p">]</span>
 </span><span data-line="4"><span class="gp">... </span><span class="p">})</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">calculate_horizon</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
-</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">calculate_horizon</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">'D'</span><span class="p">)</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">'h'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 </span><span data-line="7"><span class="go">[1, 2]</span>
 </span></pre></div>
 </div>
@@ -448,12 +448,12 @@ and calculates forecast horizons.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;datetime&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-02&#39;</span><span class="p">],</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">110</span><span class="p">],</span>
-</span><span data-line="4"><span class="gp">... </span>    <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">,</span> <span class="s1">&#39;model1&#39;</span><span class="p">]</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">'datetime'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'2023-01-01'</span><span class="p">,</span> <span class="s1">'2023-01-02'</span><span class="p">],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">'y'</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">110</span><span class="p">],</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="s1">'model'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'model1'</span><span class="p">,</span> <span class="s1">'model1'</span><span class="p">]</span>
 </span><span data-line="5"><span class="gp">... </span><span class="p">})</span>
 </span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">time_series</span><span class="p">,</span> <span class="n">forecast</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">(</span>
-</span><span data-line="7"><span class="gp">... </span>    <span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="p">{</span><span class="s1">&#39;daily&#39;</span><span class="p">:</span> <span class="s1">&#39;D&#39;</span><span class="p">},</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">ui_text</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s1">'model'</span><span class="p">],</span> <span class="p">{</span><span class="s1">'daily'</span><span class="p">:</span> <span class="s1">'D'</span><span class="p">},</span> <span class="s1">'daily'</span><span class="p">,</span> <span class="n">ui_text</span>
 </span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -482,7 +482,7 @@ timestamps in a time series. It handles different time scales automatically:
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;datetime&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s1">&#39;2023-01-01&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-02&#39;</span><span class="p">,</span> <span class="s1">&#39;2023-01-05&#39;</span><span class="p">])</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">'datetime'</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="s1">'2023-01-01'</span><span class="p">,</span> <span class="s1">'2023-01-02'</span><span class="p">,</span> <span class="s1">'2023-01-05'</span><span class="p">])</span>
 </span><span data-line="3"><span class="gp">... </span><span class="p">})</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">min_diff</span> <span class="o">=</span> <span class="n">calculate_min_diff_per_window</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">min_diff</span><span class="p">)</span>
@@ -519,11 +519,11 @@ generation scripts with the specified models, horizon, and configuration.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">script</span> <span class="o">=</span> <span class="n">render_script</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ARIMA&#39;</span><span class="p">,</span> <span class="s1">&#39;Prophet&#39;</span><span class="p">],</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="s1">'ARIMA'</span><span class="p">,</span> <span class="s1">'Prophet'</span><span class="p">],</span>
 </span><span data-line="3"><span class="gp">... </span>    <span class="n">horizon</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
 </span><span data-line="4"><span class="gp">... </span>    <span class="n">step_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
 </span><span data-line="5"><span class="gp">... </span>    <span class="n">n_windows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-</span><span data-line="6"><span class="gp">... </span>    <span class="n">freq_code</span><span class="o">=</span><span class="s1">&#39;D&#39;</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">freq_code</span><span class="o">=</span><span class="s1">'D'</span>
 </span><span data-line="7"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">script</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
 </span><span data-line="9"><span class="go"># Generated forecast script...</span>
@@ -565,7 +565,7 @@ converts datetime columns if they exist in the data.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">preview_data</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">uploaded_file</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ui_text</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">uploaded_file</span><span class="p">,</span> <span class="s1">','</span><span class="p">,</span> <span class="s1">'.'</span><span class="p">,</span> <span class="s1">','</span><span class="p">,</span> <span class="s1">'utf-8'</span><span class="p">,</span> <span class="s1">'%Y-%m-</span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="n">ui_text</span>
 </span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="4"><span class="go"># Displays preview of the uploaded data</span>
 </span></pre></div>
@@ -605,7 +605,7 @@ and date formats. Automatically handles model column detection and creation.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">files_loaded</span><span class="p">,</span> <span class="n">no_model</span> <span class="o">=</span> <span class="n">upload_files</span><span class="p">(</span><span class="n">ui_text</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files_loaded</span><span class="p">)</span><span class="si">}</span><span class="s2"> files&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files_loaded</span><span class="p">)</span><span class="si">}</span><span class="s2"> files"</span><span class="p">)</span>
 </span><span data-line="3"><span class="go">Loaded 3 files</span>
 </span></pre></div>
 </div>
@@ -681,9 +681,9 @@ hierarchical selection of specific time series.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">selected</span> <span class="o">=</span> <span class="n">select_series</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">],</span> <span class="n">ui_text</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">selected</span> <span class="o">=</span> <span class="n">select_series</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="s1">'region'</span><span class="p">,</span> <span class="s1">'product'</span><span class="p">],</span> <span class="n">ui_text</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span>
-</span><span data-line="3"><span class="go">{&#39;region&#39;: &#39;North&#39;, &#39;product&#39;: &#39;Widget A&#39;}</span>
+</span><span data-line="3"><span class="go">{'region': 'North', 'product': 'Widget A'}</span>
 </span></pre></div>
 </div>
 </dd>
@@ -735,7 +735,7 @@ offering six different visualization types:</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_time_series</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">time_series</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">freq_dict</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="kc">True</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">time_series</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">freq_dict</span><span class="p">,</span> <span class="s1">'daily'</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">'id'</span><span class="p">,</span> <span class="kc">True</span>
 </span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="4"><span class="go"># Displays interactive time series plots</span>
 </span></pre></div>
@@ -780,9 +780,9 @@ aggregations based on data frequency and manages series selection state.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">grouping</span><span class="p">,</span> <span class="n">viz_mode</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">series</span> <span class="o">=</span> <span class="n">setup_sidebar</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">time_series</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;product&#39;</span><span class="p">],</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">time_series</span><span class="p">,</span> <span class="p">[</span><span class="s1">'region'</span><span class="p">,</span> <span class="s1">'product'</span><span class="p">],</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">'id'</span>
 </span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
-</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected grouping: </span><span class="si">{</span><span class="n">grouping</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Selected grouping: </span><span class="si">{</span><span class="n">grouping</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="5"><span class="go">Selected grouping: daily</span>
 </span></pre></div>
 </div>
@@ -825,7 +825,7 @@ comparison and provides interactive date selection for forecast origin analysis.
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_forecast</span><span class="p">(</span><span class="n">forecast_data</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;series_id&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_forecast</span><span class="p">(</span><span class="n">forecast_data</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">'series_id'</span><span class="p">)</span>
 </span><span data-line="2"><span class="go"># Displays interactive forecast plots with error analysis</span>
 </span></pre></div>
 </div>
@@ -871,7 +871,7 @@ comparison, and various error distribution analyses.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">plot_error_visualization</span><span class="p">(</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">forecast_data</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;series_id&#39;</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">forecast_data</span><span class="p">,</span> <span class="n">selected_series</span><span class="p">,</span> <span class="n">ui_text</span><span class="p">,</span> <span class="s1">'D'</span><span class="p">,</span> <span class="s1">'series_id'</span>
 </span><span data-line="3"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="4"><span class="go"># Displays comprehensive error analysis dashboard</span>
 </span></pre></div>
@@ -904,7 +904,7 @@ may end before the year’s end.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df_padded</span> <span class="o">=</span> <span class="n">pad_to_end_of_year</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="mi">2023</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df_padded</span><span class="p">[</span><span class="s1">&#39;datetime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df_padded</span><span class="p">[</span><span class="s1">'datetime'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </span><span data-line="3"><span class="go">2023-12-31 23:59:59</span>
 </span></pre></div>
 </div>

@@ -271,7 +271,7 @@ with the time component set to 00:00:00.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_date_from_string</span><span class="p">(</span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_date_from_string</span><span class="p">(</span><span class="s2">"2024-01-15"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">datetime.datetime(2024, 1, 15, 0, 0)</span>
 </span></pre></div>
 </div>
@@ -300,7 +300,7 @@ with the specified date and time.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_date_time_from_string</span><span class="p">(</span><span class="s2">&quot;2024-01-15T14:30&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_date_time_from_string</span><span class="p">(</span><span class="s2">"2024-01-15T14:30"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">datetime.datetime(2024, 1, 15, 14, 30)</span>
 </span></pre></div>
 </div>
@@ -328,7 +328,7 @@ as a string in YYYY-MM-DD format.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_date_string_from_ts</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
-</span><span data-line="3"><span class="go">&#39;2024-01-15&#39;</span>
+</span><span data-line="3"><span class="go">'2024-01-15'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -353,8 +353,8 @@ in YYYY-MM-DDTHH:MM format.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_date_string_from_ts_string</span><span class="p">(</span><span class="s2">&quot;2024-01-15T14:30&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="go">&#39;2024-01-15&#39;</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_date_string_from_ts_string</span><span class="p">(</span><span class="s2">"2024-01-15T14:30"</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">'2024-01-15'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -412,7 +412,7 @@ to a decimal representation of hours.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_hour_from_string</span><span class="p">(</span><span class="s2">&quot;2024-01-15T14:30&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_hour_from_string</span><span class="p">(</span><span class="s2">"2024-01-15T14:30"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">14.5</span>
 </span></pre></div>
 </div>
@@ -507,7 +507,7 @@ suitable for time slot representations.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_time_slot_string</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
-</span><span data-line="3"><span class="go">&#39;2024-01-15T14:30&#39;</span>
+</span><span data-line="3"><span class="go">'2024-01-15T14:30'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -534,7 +534,7 @@ suitable for time slot representations.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_week_from_string</span><span class="p">(</span><span class="s2">&quot;2024-01-15T14:30&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_week_from_string</span><span class="p">(</span><span class="s2">"2024-01-15T14:30"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">3</span>
 </span></pre></div>
 </div>
@@ -594,7 +594,7 @@ The resulting datetime will have the timezone information removed
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">utc_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">to_tz</span><span class="p">(</span><span class="n">utc_dt</span><span class="p">,</span> <span class="s2">&quot;Europe/Madrid&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">to_tz</span><span class="p">(</span><span class="n">utc_dt</span><span class="p">,</span> <span class="s2">"Europe/Madrid"</span><span class="p">)</span>
 </span><span data-line="3"><span class="go">datetime.datetime(2024, 1, 15, 13, 0)</span>
 </span></pre></div>
 </div>
@@ -626,9 +626,9 @@ standard formats. Additional custom formats can be provided.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_dt</span><span class="p">(</span><span class="s2">&quot;2024-01-15 14:30:00&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_dt</span><span class="p">(</span><span class="s2">"2024-01-15 14:30:00"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">datetime.datetime(2024, 1, 15, 14, 30)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_dt</span><span class="p">(</span><span class="s2">&quot;15/01/2024&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y&quot;</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_dt</span><span class="p">(</span><span class="s2">"15/01/2024"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"</span><span class="si">%d</span><span class="s2">/%m/%Y"</span><span class="p">])</span>
 </span><span data-line="4"><span class="go">datetime.datetime(2024, 1, 15)</span>
 </span></pre></div>
 </div>
@@ -660,9 +660,9 @@ standard formats. Additional custom formats can be provided.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_d</span><span class="p">(</span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_d</span><span class="p">(</span><span class="s2">"2024-01-15"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">datetime.date(2024, 1, 15)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_d</span><span class="p">(</span><span class="s2">&quot;15/01/2024&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">/%m/%Y&quot;</span><span class="p">])</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">str_to_d</span><span class="p">(</span><span class="s2">"15/01/2024"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"</span><span class="si">%d</span><span class="s2">/%m/%Y"</span><span class="p">])</span>
 </span><span data-line="4"><span class="go">datetime.date(2024, 1, 15)</span>
 </span></pre></div>
 </div>
@@ -693,9 +693,9 @@ format. If no format is provided, uses the default datetime format.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">dt_to_str</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
-</span><span data-line="3"><span class="go">&#39;2024-01-15 14:30:00&#39;</span>
-</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">dt_to_str</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="go">&#39;2024-01-15&#39;</span>
+</span><span data-line="3"><span class="go">'2024-01-15 14:30:00'</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">dt_to_str</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="5"><span class="go">'2024-01-15'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -726,7 +726,7 @@ For strings, attempts multiple format parsing. For date objects, sets time to mi
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_datetime</span><span class="p">(</span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_datetime</span><span class="p">(</span><span class="s2">"2024-01-15"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">datetime.datetime(2024, 1, 15, 0, 0)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_datetime</span><span class="p">(</span><span class="n">date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
 </span><span data-line="4"><span class="go">datetime.datetime(2024, 1, 15, 0, 0)</span>
@@ -760,7 +760,7 @@ For strings and datetime objects, extracts only the date portion.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_date</span><span class="p">(</span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_date</span><span class="p">(</span><span class="s2">"2024-01-15"</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">datetime.date(2024, 1, 15)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_date</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
 </span><span data-line="4"><span class="go">datetime.date(2024, 1, 15)</span>
@@ -800,13 +800,13 @@ to parse and reformat it.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
-</span><span data-line="2"><span class="go">&#39;2024-01-15 14:30:00&#39;</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">&quot;2024-01-15&quot;</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">&#39;2024-01-15&#39;</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">&quot;2024-01-15 14:30&quot;</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="6"><span class="go">&#39;2024-01-15&#39;</span>
-</span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">&quot;15-01-2024&quot;</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="8"><span class="go">&#39;2024-01-15&#39;</span>
+</span><span data-line="2"><span class="go">'2024-01-15 14:30:00'</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">"2024-01-15"</span><span class="p">,</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">'2024-01-15'</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">"2024-01-15 14:30"</span><span class="p">,</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="6"><span class="go">'2024-01-15'</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_str</span><span class="p">(</span><span class="s2">"15-01-2024"</span><span class="p">,</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="8"><span class="go">'2024-01-15'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -839,10 +839,10 @@ and returns the result as a formatted string.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">add_to_str_dt</span><span class="p">(</span><span class="s2">&quot;2024-01-01 05:00:00&quot;</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span><span data-line="2"><span class="go">&#39;2024-01-01 07:00:00&#39;</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">add_to_str_dt</span><span class="p">(</span><span class="s2">&quot;2024-01-01&quot;</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">fmt_out</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">&#39;2024-01-08&#39;</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">add_to_str_dt</span><span class="p">(</span><span class="s2">"2024-01-01 05:00:00"</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">'2024-01-01 07:00:00'</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">add_to_str_dt</span><span class="p">(</span><span class="s2">"2024-01-01"</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">fmt_out</span><span class="o">=</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">'2024-01-08'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -877,10 +877,10 @@ in the directory are returned.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">list_files_directory</span><span class="p">(</span><span class="s1">&#39;/path/to/files&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.csv&#39;</span><span class="p">])</span>
-</span><span data-line="2"><span class="go">[&#39;/path/to/files/file1.txt&#39;, &#39;/path/to/files/data.csv&#39;]</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">list_files_directory</span><span class="p">(</span><span class="s1">&#39;/path/to/files&#39;</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">[&#39;/path/to/files/file1.txt&#39;, &#39;/path/to/files/data.csv&#39;, &#39;/path/to/files/image.png&#39;]</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">list_files_directory</span><span class="p">(</span><span class="s1">'/path/to/files'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'.txt'</span><span class="p">,</span> <span class="s1">'.csv'</span><span class="p">])</span>
+</span><span data-line="2"><span class="go">['/path/to/files/file1.txt', '/path/to/files/data.csv']</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">list_files_directory</span><span class="p">(</span><span class="s1">'/path/to/files'</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">['/path/to/files/file1.txt', '/path/to/files/data.csv', '/path/to/files/image.png']</span>
 </span></pre></div>
 </div>
 </dd>
@@ -908,9 +908,9 @@ ends with the specified extension.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_extension</span><span class="p">(</span><span class="s1">&#39;/path/to/file.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_extension</span><span class="p">(</span><span class="s1">'/path/to/file.txt'</span><span class="p">,</span> <span class="s1">'.txt'</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">True</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_extension</span><span class="p">(</span><span class="s1">&#39;/path/to/file.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">check_extension</span><span class="p">(</span><span class="s1">'/path/to/file.csv'</span><span class="p">,</span> <span class="s1">'.txt'</span><span class="p">)</span>
 </span><span data-line="4"><span class="go">False</span>
 </span></pre></div>
 </div>
@@ -936,9 +936,9 @@ one of the common Excel file extensions (.xlsx, .xls, .xlsm).</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_excel_file</span><span class="p">(</span><span class="s1">&#39;/path/to/data.xlsx&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_excel_file</span><span class="p">(</span><span class="s1">'/path/to/data.xlsx'</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">True</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_excel_file</span><span class="p">(</span><span class="s1">&#39;/path/to/data.csv&#39;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_excel_file</span><span class="p">(</span><span class="s1">'/path/to/data.csv'</span><span class="p">)</span>
 </span><span data-line="4"><span class="go">False</span>
 </span></pre></div>
 </div>
@@ -964,9 +964,9 @@ the .json extension.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_json_file</span><span class="p">(</span><span class="s1">&#39;/path/to/config.json&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_json_file</span><span class="p">(</span><span class="s1">'/path/to/config.json'</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">True</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_json_file</span><span class="p">(</span><span class="s1">&#39;/path/to/data.csv&#39;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">is_json_file</span><span class="p">(</span><span class="s1">'/path/to/data.csv'</span><span class="p">)</span>
 </span><span data-line="4"><span class="go">False</span>
 </span></pre></div>
 </div>
@@ -1001,9 +1001,9 @@ a Python dictionary, list, or other JSON-compatible object.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_json</span><span class="p">(</span><span class="s1">&#39;/path/to/config.json&#39;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;setting&#39;</span><span class="p">])</span>
-</span><span data-line="3"><span class="go">&#39;value&#39;</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_json</span><span class="p">(</span><span class="s1">'/path/to/config.json'</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">'setting'</span><span class="p">])</span>
+</span><span data-line="3"><span class="go">'value'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1034,8 +1034,8 @@ writes it to the specified file with indentation for readability.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;John&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">}</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_json</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/path/to/output.json&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'John'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">:</span> <span class="mi">30</span><span class="p">}</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_json</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">'/path/to/output.json'</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1071,7 +1071,7 @@ DataFrame. Requires pandas to be installed.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">load_excel_sheet</span><span class="p">(</span><span class="s1">&#39;/path/to/data.xlsx&#39;</span><span class="p">,</span> <span class="s1">&#39;Sheet1&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">load_excel_sheet</span><span class="p">(</span><span class="s1">'/path/to/data.xlsx'</span><span class="p">,</span> <span class="s1">'Sheet1'</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </span></pre></div>
 </div>
@@ -1111,10 +1111,10 @@ formats (DataFrame, dictionary, list of records, etc.).</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Load all sheets as DataFrames</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_excel</span><span class="p">(</span><span class="s1">&#39;/path/to/data.xlsx&#39;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_excel</span><span class="p">(</span><span class="s1">'/path/to/data.xlsx'</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Load specific sheet as list of records</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_excel</span><span class="p">(</span><span class="s1">&#39;/path/to/data.xlsx&#39;</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_excel</span><span class="p">(</span><span class="s1">'/path/to/data.xlsx'</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">'Sheet1'</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">'records'</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1147,10 +1147,10 @@ with each key becoming a separate sheet. Automatically adjusts column widths.</p
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;Sheet1&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}),</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;Sheet2&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">'Sheet1'</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'A'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">'B'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}),</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">'Sheet2'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'x'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
 </span><span data-line="4"><span class="gp">... </span><span class="p">}</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_excel</span><span class="p">(</span><span class="s1">&#39;/path/to/output.xlsx&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_excel</span><span class="p">(</span><span class="s1">'/path/to/output.xlsx'</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1184,7 +1184,7 @@ the lightweight CSV loader if pandas is not available.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">load_csv</span><span class="p">(</span><span class="s1">&#39;/path/to/data.csv&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">load_csv</span><span class="p">(</span><span class="s1">'/path/to/data.csv'</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </span></pre></div>
 </div>
@@ -1221,9 +1221,9 @@ delimiter if not specified.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_csv_light</span><span class="p">(</span><span class="s1">&#39;/path/to/data.csv&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_csv_light</span><span class="p">(</span><span class="s1">'/path/to/data.csv'</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># First row as dict</span>
-</span><span data-line="3"><span class="go">{&#39;column1&#39;: &#39;value1&#39;, &#39;column2&#39;: &#39;value2&#39;}</span>
+</span><span data-line="3"><span class="go">{'column1': 'value1', 'column2': 'value2'}</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1251,7 +1251,7 @@ style for reading and writing CSV files.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">dialect</span> <span class="o">=</span> <span class="n">get_default_dialect</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_NONNUMERIC</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">dialect</span> <span class="o">=</span> <span class="n">get_default_dialect</span><span class="p">(</span><span class="s1">','</span><span class="p">,</span> <span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_NONNUMERIC</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="n">dialect</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -1284,8 +1284,8 @@ Falls back to the lightweight CSV writer if pandas is not available.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;John&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Jane&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">}]</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_csv</span><span class="p">(</span><span class="s1">&#39;/path/to/output.csv&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'John'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'Jane'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">:</span> <span class="mi">25</span><span class="p">}]</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_csv</span><span class="p">(</span><span class="s1">'/path/to/output.csv'</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1318,8 +1318,8 @@ csv module. The first dictionary’s keys become the column headers.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;John&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Jane&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">}]</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_csv_light</span><span class="p">(</span><span class="s1">&#39;/path/to/output.csv&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'John'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'Jane'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">:</span> <span class="mi">25</span><span class="p">}]</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_csv_light</span><span class="p">(</span><span class="s1">'/path/to/output.csv'</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1346,9 +1346,9 @@ based on the content length, with a minimum width constraint.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">ExcelWriter</span><span class="p">(</span><span class="s1">&#39;output.xlsx&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="n">adjust_excel_col_width</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="s1">&#39;Sheet1&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pd</span><span class="o">.</span><span class="n">ExcelWriter</span><span class="p">(</span><span class="s1">'output.xlsx'</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">'Sheet1'</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">adjust_excel_col_width</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="s1">'Sheet1'</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1383,9 +1383,9 @@ to the pandas-based Excel loader.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_excel_light</span><span class="p">(</span><span class="s1">&#39;/path/to/data.xlsx&#39;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># First row of Sheet1</span>
-</span><span data-line="3"><span class="go">{&#39;column1&#39;: &#39;value1&#39;, &#39;column2&#39;: &#39;value2&#39;}</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">load_excel_light</span><span class="p">(</span><span class="s1">'/path/to/data.xlsx'</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">'Sheet1'</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># First row of Sheet1</span>
+</span><span data-line="3"><span class="go">{'column1': 'value1', 'column2': 'value2'}</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1411,12 +1411,12 @@ Python objects. Other values are returned unchanged.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_str_iterable</span><span class="p">(</span><span class="s1">&#39;[1, 2, 3]&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_str_iterable</span><span class="p">(</span><span class="s1">'[1, 2, 3]'</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">[1, 2, 3]</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_str_iterable</span><span class="p">(</span><span class="s1">&#39;{&quot;key&quot;: &quot;value&quot;}&#39;</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">{&#39;key&#39;: &#39;value&#39;}</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_str_iterable</span><span class="p">(</span><span class="s1">&#39;simple string&#39;</span><span class="p">)</span>
-</span><span data-line="6"><span class="go">&#39;simple string&#39;</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_str_iterable</span><span class="p">(</span><span class="s1">'{"key": "value"}'</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">{'key': 'value'}</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">load_str_iterable</span><span class="p">(</span><span class="s1">'simple string'</span><span class="p">)</span>
+</span><span data-line="6"><span class="go">'simple string'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1449,10 +1449,10 @@ as tables with automatic column width adjustment.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="2"><span class="gp">... </span>    <span class="s1">&#39;Sheet1&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}],</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;Sheet2&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="s1">&#39;b&#39;</span><span class="p">}]</span>
+</span><span data-line="2"><span class="gp">... </span>    <span class="s1">'Sheet1'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'A'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">'A'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">:</span> <span class="mi">4</span><span class="p">}],</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">'Sheet2'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'X'</span><span class="p">:</span> <span class="s1">'a'</span><span class="p">,</span> <span class="s1">'Y'</span><span class="p">:</span> <span class="s1">'b'</span><span class="p">}]</span>
 </span><span data-line="4"><span class="gp">... </span><span class="p">}</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_excel_light</span><span class="p">(</span><span class="s1">&#39;/path/to/output.xlsx&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_excel_light</span><span class="p">(</span><span class="s1">'/path/to/output.xlsx'</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1479,9 +1479,9 @@ are returned unchanged.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_iterables_as_str</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
-</span><span data-line="2"><span class="go">&#39;[1, 2, 3]&#39;</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_iterables_as_str</span><span class="p">(</span><span class="s1">&#39;simple string&#39;</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">&#39;simple string&#39;</span>
+</span><span data-line="2"><span class="go">'[1, 2, 3]'</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">write_iterables_as_str</span><span class="p">(</span><span class="s1">'simple string'</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">'simple string'</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1509,8 +1509,8 @@ with basic formatting options.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">content</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">get_default_table_style</span><span class="p">(</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">content</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">'A'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="s1">'A'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">:</span> <span class="mi">4</span><span class="p">}]</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">get_default_table_style</span><span class="p">(</span><span class="s1">'Sheet1'</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1536,7 +1536,7 @@ minimum and maximum width constraints for better readability.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">]</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s1">'Sheet1'</span><span class="p">]</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">adjust_excel_col_width_2</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">min_width</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -1562,10 +1562,10 @@ the optimal width for each column based on the longest content.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">]</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s1">'Sheet1'</span><span class="p">]</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">widths</span> <span class="o">=</span> <span class="n">get_column_widths</span><span class="p">(</span><span class="n">ws</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">{&#39;A&#39;: 15.0, &#39;B&#39;: 12.0, &#39;C&#39;: 20.0}</span>
+</span><span data-line="4"><span class="go">{'A': 15.0, 'B': 12.0, 'C': 20.0}</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1600,11 +1600,11 @@ object and preserves the exact state of the original.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">original</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;nested&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">original</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"a"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">"b"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"nested"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">copy</span> <span class="o">=</span> <span class="n">pickle_copy</span><span class="p">(</span><span class="n">original</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">copy</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">original</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">])</span>  <span class="c1"># [1, 2, 3] - original unchanged</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">copy</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">])</span>      <span class="c1"># [1, 2, 3, 4] - copy modified</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">copy</span><span class="p">[</span><span class="s2">"a"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">original</span><span class="p">[</span><span class="s2">"a"</span><span class="p">])</span>  <span class="c1"># [1, 2, 3] - original unchanged</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">copy</span><span class="p">[</span><span class="s2">"a"</span><span class="p">])</span>      <span class="c1"># [1, 2, 3, 4] - copy modified</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1631,8 +1631,8 @@ preserving the order in which each element first appears.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">unique</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 </span><span data-line="2"><span class="go">[2, 3, 1]</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">unique</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
-</span><span data-line="4"><span class="go">[&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">unique</span><span class="p">([</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">])</span>
+</span><span data-line="4"><span class="go">['a', 'b', 'c']</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1661,10 +1661,10 @@ has duplicate values, only the last key for each value will be preserved.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">reverse_dict</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
-</span><span data-line="2"><span class="go">{1: &#39;a&#39;, 2: &#39;b&#39;, 3: &#39;c&#39;}</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">reverse_dict</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;John&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
-</span><span data-line="4"><span class="go">{&#39;John&#39;: &#39;name&#39;, 30: &#39;age&#39;}</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">reverse_dict</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
+</span><span data-line="2"><span class="go">{1: 'a', 2: 'b', 3: 'c'}</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">reverse_dict</span><span class="p">({</span><span class="s1">'name'</span><span class="p">:</span> <span class="s1">'John'</span><span class="p">,</span> <span class="s1">'age'</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+</span><span data-line="4"><span class="go">{'John': 'name', 30: 'age'}</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1729,8 +1729,8 @@ where you need to compare current values with previous values.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">lag_list</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">lag</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">[None, 1, 2, 3]</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">lag_list</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="n">lag</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">[None, None, &#39;a&#39;]</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">lag_list</span><span class="p">([</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">],</span> <span class="n">lag</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">[None, None, 'a']</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1764,8 +1764,8 @@ where you need to compare current values with future values.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">lead_list</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">lead</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">[2, 3, 4, None]</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">lead_list</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="n">lead</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">[&#39;c&#39;, None, None]</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">lead_list</span><span class="p">([</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">],</span> <span class="n">lead</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">['c', None, None]</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1793,9 +1793,9 @@ of each element in the input list, starting from the specified value.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">row_number</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">row_number</span><span class="p">([</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">])</span>
 </span><span data-line="2"><span class="go">[0, 1, 2]</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">row_number</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">row_number</span><span class="p">([</span><span class="s1">'x'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="4"><span class="go">[1, 2]</span>
 </span></pre></div>
 </div>
@@ -1855,9 +1855,9 @@ serialization or when working with list-based data structures.</p>
 </dl>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'A'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">'B'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">df_to_list</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">[{&#39;A&#39;: 1, &#39;B&#39;: 3}, {&#39;A&#39;: 2, &#39;B&#39;: 4}]</span>
+</span><span data-line="4"><span class="go">[{'A': 1, 'B': 3}, {'A': 2, 'B': 4}]</span>
 </span></pre></div>
 </div>
 </dd>
@@ -1888,13 +1888,13 @@ of multiple DataFrames or when working with nested data structures.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">dfs</span> <span class="o">=</span> <span class="p">{</span>
-</span><span data-line="3"><span class="gp">... </span>    <span class="s1">&#39;sheet1&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]}),</span>
-</span><span data-line="4"><span class="gp">... </span>    <span class="s1">&#39;sheet2&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="s1">'sheet1'</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'A'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]}),</span>
+</span><span data-line="4"><span class="gp">... </span>    <span class="s1">'sheet2'</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'B'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]})</span>
 </span><span data-line="5"><span class="gp">... </span><span class="p">}</span>
 </span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">df_to_dict</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
 </span><span data-line="7"><span class="go">{</span>
-</span><span data-line="8"><span class="go">    &#39;sheet1&#39;: [{&#39;A&#39;: 1}, {&#39;A&#39;: 2}],</span>
-</span><span data-line="9"><span class="go">    &#39;sheet2&#39;: [{&#39;B&#39;: 3}, {&#39;B&#39;: 4}]</span>
+</span><span data-line="8"><span class="go">    'sheet1': [{'A': 1}, {'A': 2}],</span>
+</span><span data-line="9"><span class="go">    'sheet2': [{'B': 3}, {'B': 4}]</span>
 </span><span data-line="10"><span class="go">}</span>
 </span></pre></div>
 </div>
@@ -1924,8 +1924,8 @@ of multiple DataFrames or when working with nested data structures.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_list</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </span><span data-line="2"><span class="go">[1]</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_list</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="go">[&quot;hello&quot;]</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_list</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">["hello"]</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_list</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 </span><span data-line="6"><span class="go">[1, 2, 3]</span>
 </span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">as_list</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -1959,8 +1959,8 @@ empty lists.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">first</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 </span><span data-line="2"><span class="go">1</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">first</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
-</span><span data-line="4"><span class="go">&#39;a&#39;</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">first</span><span class="p">([</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">])</span>
+</span><span data-line="4"><span class="go">'a'</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">first</span><span class="p">([])</span>
 </span><span data-line="6"><span class="go">None</span>
 </span></pre></div>
@@ -1990,8 +1990,8 @@ empty lists.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">last</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 </span><span data-line="2"><span class="go">3</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">last</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">])</span>
-</span><span data-line="4"><span class="go">&#39;c&#39;</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">last</span><span class="p">([</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">])</span>
+</span><span data-line="4"><span class="go">'c'</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">last</span><span class="p">([])</span>
 </span><span data-line="6"><span class="go">None</span>
 </span></pre></div>
@@ -2008,21 +2008,21 @@ empty lists.</p>
 <p><strong>Statistical Imputation</strong></p>
 <ul>
 <li><p><strong>Mean Imputation</strong>: Replaces missing values with the mean of the column.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p><em>Uses</em> <code class="docutils literal notranslate"><span class="pre">sklearn.impute.SimpleImputer</span></code></p>
 </li>
 <li><p><strong>Median Imputation</strong>: Replaces missing values with the median of the column.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;median&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"median"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p><em>Uses</em> <code class="docutils literal notranslate"><span class="pre">sklearn.impute.SimpleImputer</span></code></p>
 </li>
 <li><p><strong>Mode Imputation</strong>: Replaces missing values with the most frequent value in the column.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;most_frequent&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"most_frequent"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -2032,21 +2032,21 @@ empty lists.</p>
 <p><strong>Machine Learning Based Imputation</strong></p>
 <ul>
 <li><p><strong>KNN Imputation</strong>: Uses K-Nearest Neighbors algorithm to impute missing values based on similarity.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;knn&quot;</span><span class="p">,</span> <span class="n">k_neighbors</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"knn"</span><span class="p">,</span> <span class="n">k_neighbors</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p><em>Uses</em> <code class="docutils literal notranslate"><span class="pre">sklearn.impute.KNNImputer</span></code></p>
 </li>
 <li><p><strong>Regression Imputation</strong>: Uses regression models (Ridge, Lasso, or Linear Regression) to predict missing values.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span> <span class="n">regression_model</span><span class="o">=</span><span class="s2">&quot;ridge&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"regression"</span><span class="p">,</span> <span class="n">regression_model</span><span class="o">=</span><span class="s2">"ridge"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
 <p><em>Uses</em> <code class="docutils literal notranslate"><span class="pre">sklearn.linear_model</span></code> <em>(Ridge, Lasso, LinearRegression)</em></p>
 </li>
 <li><p><strong>MICE (Multiple Imputation by Chained Equations)</strong>: An iterative approach where each feature with missing values is modeled as a function of other features.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;mice&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"mice"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -2056,19 +2056,19 @@ empty lists.</p>
 <p><strong>Time Series Imputation</strong></p>
 <ul>
 <li><p><strong>Forward Fill</strong>: Propagates the last valid observation forward.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;forward&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </li>
 <li><p><strong>Backward Fill</strong>: Uses the next valid observation to fill the gap.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;backward&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </li>
 <li><p><strong>Interpolation</strong>: Uses various interpolation methods (linear, polynomial, etc.) to estimate missing values.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;interpolate&quot;</span><span class="p">,</span> <span class="n">time_series_strategy</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"interpolate"</span><span class="p">,</span> <span class="n">time_series_strategy</span><span class="o">=</span><span class="s2">"linear"</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -2078,7 +2078,7 @@ empty lists.</p>
 <p><strong>Arbitrary Value Imputation</strong></p>
 <ul>
 <li><p><strong>Constant Value</strong>: Replaces missing values with a specified arbitrary value.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;arbitrary&quot;</span><span class="p">,</span> <span class="n">arbitrary_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"arbitrary"</span><span class="p">,</span> <span class="n">arbitrary_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -2087,7 +2087,7 @@ empty lists.</p>
 </ul>
 <p><strong>Column-Wise Imputation</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">DataImputer</span></code> also supports applying different imputation strategies to different columns:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">column_strategies</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;column1&quot;</span><span class="p">:</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;column2&quot;</span><span class="p">:</span> <span class="s2">&quot;knn&quot;</span><span class="p">},</span> <span class="n">k_neighbors</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">column_strategies</span><span class="o">=</span><span class="p">{</span><span class="s2">"column1"</span><span class="p">:</span> <span class="s2">"mean"</span><span class="p">,</span> <span class="s2">"column2"</span><span class="p">:</span> <span class="s2">"knn"</span><span class="p">},</span> <span class="n">k_neighbors</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </span><span data-line="2"><span class="n">imputed_df</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -2130,17 +2130,17 @@ offers flexible configuration options for different imputation approaches.</p>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create sample data with missing values</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-</span><span data-line="6"><span class="gp">... </span>    <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
-</span><span data-line="7"><span class="gp">... </span>    <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
-</span><span data-line="8"><span class="gp">... </span>    <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="s1">'A'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="s1">'B'</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">],</span>
+</span><span data-line="8"><span class="gp">... </span>    <span class="s1">'C'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 </span><span data-line="9"><span class="gp">... </span><span class="p">})</span>
 </span><span data-line="10"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Mean imputation</span>
-</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+</span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">)</span>
 </span><span data-line="13"><span class="gp">&gt;&gt;&gt; </span><span class="n">imputed_data</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span><span data-line="14"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="15"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Column-specific strategies</span>
-</span><span data-line="16"><span class="gp">&gt;&gt;&gt; </span><span class="n">strategies</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="s1">&#39;knn&#39;</span><span class="p">}</span>
+</span><span data-line="16"><span class="gp">&gt;&gt;&gt; </span><span class="n">strategies</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'A'</span><span class="p">:</span> <span class="s1">'mean'</span><span class="p">,</span> <span class="s1">'B'</span><span class="p">:</span> <span class="s1">'median'</span><span class="p">,</span> <span class="s1">'C'</span><span class="p">:</span> <span class="s1">'knn'</span><span class="p">}</span>
 </span><span data-line="17"><span class="gp">&gt;&gt;&gt; </span><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">column_strategies</span><span class="o">=</span><span class="n">strategies</span><span class="p">)</span>
 </span><span data-line="18"><span class="gp">&gt;&gt;&gt; </span><span class="n">imputed_data</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span></pre></div>
@@ -2174,12 +2174,12 @@ on the configuration and applies it to the input data.</p>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create data with missing values</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-</span><span data-line="6"><span class="gp">... </span>    <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
-</span><span data-line="7"><span class="gp">... </span>    <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="s1">'A'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+</span><span data-line="7"><span class="gp">... </span>    <span class="s1">'B'</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
 </span><span data-line="8"><span class="gp">... </span><span class="p">})</span>
 </span><span data-line="9"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Apply mean imputation</span>
-</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">imputer</span> <span class="o">=</span> <span class="n">DataImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">)</span>
 </span><span data-line="12"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">imputer</span><span class="o">.</span><span class="n">apply_imputation</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span><span data-line="13"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 </span></pre></div>

@@ -258,10 +258,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="3">
 </span><span data-line="4"><span class="c1"># Define log paths and create logger instance</span>
 </span><span data-line="5"><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
-</span><span data-line="6">    <span class="n">logger_type</span><span class="o">=</span><span class="s2">&quot;my_app&quot;</span><span class="p">,</span>
+</span><span data-line="6">    <span class="n">logger_type</span><span class="o">=</span><span class="s2">"my_app"</span><span class="p">,</span>
 </span><span data-line="7">    <span class="n">log_console_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
 </span><span data-line="8">    <span class="n">mango_color</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span data-line="9">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.log&quot;</span><span class="p">,</span>
+</span><span data-line="9">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">"logs/app.log"</span><span class="p">,</span>
 </span><span data-line="10">    <span class="n">log_file_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
 </span><span data-line="11"><span class="p">)</span>
 </span></pre></div>
@@ -275,13 +275,13 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="3">
 </span><span data-line="4"><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span data-line="5">    <span class="c1"># Log the start of script execution</span>
-</span><span data-line="6">    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Script started&quot;</span><span class="p">)</span>
+</span><span data-line="6">    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Script started"</span><span class="p">)</span>
 </span><span data-line="7">    <span class="n">value</span> <span class="o">=</span> <span class="mi">42</span>
 </span><span data-line="8">    <span class="c1"># Example using f-string for logging</span>
-</span><span data-line="9">    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing value: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="9">    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing value: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span><span data-line="10">    <span class="c1"># Your code here</span>
 </span><span data-line="11">
-</span><span data-line="12"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span data-line="12"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
 </span><span data-line="13">    <span class="n">main</span><span class="p">()</span>
 </span></pre></div>
 </div>
@@ -323,10 +323,10 @@ data-aria-dark="Switch to auto color mode">
 </span><span data-line="7">    <span class="n">mango_color</span><span class="o">=</span><span class="kc">True</span>
 </span><span data-line="8"><span class="p">)</span>
 </span><span data-line="9">
-</span><span data-line="10"><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Debug message&quot;</span><span class="p">)</span>
-</span><span data-line="11"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Info message&quot;</span><span class="p">)</span>
-</span><span data-line="12"><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning message&quot;</span><span class="p">)</span>
-</span><span data-line="13"><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error message&quot;</span><span class="p">)</span>
+</span><span data-line="10"><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Debug message"</span><span class="p">)</span>
+</span><span data-line="11"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Info message"</span><span class="p">)</span>
+</span><span data-line="12"><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Warning message"</span><span class="p">)</span>
+</span><span data-line="13"><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Error message"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -335,14 +335,14 @@ data-aria-dark="Switch to auto color mode">
 <p>To log to both console and file:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
 </span><span data-line="2">    <span class="n">log_console_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
-</span><span data-line="3">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.log&quot;</span><span class="p">,</span>
+</span><span data-line="3">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">"logs/app.log"</span><span class="p">,</span>
 </span><span data-line="4">    <span class="n">log_file_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
-</span><span data-line="5">    <span class="n">log_file_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> || </span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span data-line="6">    <span class="n">log_file_datefmt</span><span class="o">=</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
+</span><span data-line="5">    <span class="n">log_file_format</span><span class="o">=</span><span class="s2">"</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> || </span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">"</span><span class="p">,</span>
+</span><span data-line="6">    <span class="n">log_file_datefmt</span><span class="o">=</span><span class="s2">"%Y%m</span><span class="si">%d</span><span class="s2"> %H:%M:%S"</span>
 </span><span data-line="7"><span class="p">)</span>
 </span><span data-line="8">
-</span><span data-line="9"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This goes to both console and file&quot;</span><span class="p">)</span>
-</span><span data-line="10"><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;This only goes to file&quot;</span><span class="p">)</span>
+</span><span data-line="9"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"This goes to both console and file"</span><span class="p">)</span>
+</span><span data-line="10"><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"This only goes to file"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -350,11 +350,11 @@ data-aria-dark="Switch to auto color mode">
 <h2>JSON Logging<a class="headerlink" href="#json-logging" title="Link to this heading">¶</a></h2>
 <p>For structured logging in JSON format:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
-</span><span data-line="2">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.json&quot;</span><span class="p">,</span>
-</span><span data-line="3">    <span class="n">json_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;module&quot;</span><span class="p">]</span>
+</span><span data-line="2">    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">"logs/app.json"</span><span class="p">,</span>
+</span><span data-line="3">    <span class="n">json_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">"level"</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">,</span> <span class="s2">"module"</span><span class="p">]</span>
 </span><span data-line="4"><span class="p">)</span>
 </span><span data-line="5">
-</span><span data-line="6"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;This will be logged in JSON format&quot;</span><span class="p">)</span>
+</span><span data-line="6"><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"This will be logged in JSON format"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </section>
@@ -416,14 +416,14 @@ with extensive customization options.</p>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Logger with file output</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
-</span><span data-line="6"><span class="gp">... </span>    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.log&quot;</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">"logs/app.log"</span><span class="p">,</span>
 </span><span data-line="7"><span class="gp">... </span>    <span class="n">log_console_level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
 </span><span data-line="8"><span class="gp">... </span><span class="p">)</span>
 </span><span data-line="9"><span class="gp">&gt;&gt;&gt;</span>
 </span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># JSON logger</span>
 </span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_configured_logger</span><span class="p">(</span>
-</span><span data-line="12"><span class="gp">... </span>    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">&quot;logs/app.json&quot;</span><span class="p">,</span>
-</span><span data-line="13"><span class="gp">... </span>    <span class="n">json_fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">]</span>
+</span><span data-line="12"><span class="gp">... </span>    <span class="n">log_file_path</span><span class="o">=</span><span class="s2">"logs/app.json"</span><span class="p">,</span>
+</span><span data-line="13"><span class="gp">... </span>    <span class="n">json_fields</span><span class="o">=</span><span class="p">[</span><span class="s1">'level'</span><span class="p">,</span> <span class="s1">'message'</span><span class="p">,</span> <span class="s1">'time'</span><span class="p">]</span>
 </span><span data-line="14"><span class="gp">... </span><span class="p">)</span>
 </span></pre></div>
 </div>
@@ -518,8 +518,8 @@ systems and structured logging applications.</p>
 <li><p>threadName: Thread name where the log was generated</p></li>
 </ul>
 </dd>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span> <span class="o">=</span> <span class="n">JSONFormatter</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;level&#39;</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">])</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">&#39;app.json&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span> <span class="o">=</span> <span class="n">JSONFormatter</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">'level'</span><span class="p">,</span> <span class="s1">'message'</span><span class="p">,</span> <span class="s1">'time'</span><span class="p">])</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">'app.json'</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
 </span></pre></div>
@@ -560,7 +560,7 @@ the output file always contains valid JSON by overwriting it completely
 with each update. This prevents malformed JSON files that could occur
 with standard file handlers when the application terminates unexpectedly.</p>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">JSONFileHandler</span><span class="p">(</span><span class="s1">&#39;logs.json&#39;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span> <span class="o">=</span> <span class="n">JSONFileHandler</span><span class="p">(</span><span class="s1">'logs.json'</span><span class="p">)</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">formatter</span> <span class="o">=</span> <span class="n">JSONFormatter</span><span class="p">()</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
@@ -650,11 +650,11 @@ timing. All timing information is logged using the configured logger.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;operation1&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;data_processing&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">"operation1"</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"data_processing"</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... perform operation ...</span>
-</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">duration</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">&quot;data_processing&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Operation took </span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">duration</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">"data_processing"</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Operation took </span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -674,9 +674,9 @@ start timing. Use start() to begin timing this chronometer.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;sub_operation&quot;</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;sub_operation&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">"main"</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">"sub_operation"</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"sub_operation"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -701,8 +701,8 @@ exist, it will be created first. Optionally logs the start event.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;data_processing&quot;</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">"main"</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"data_processing"</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -733,11 +733,11 @@ Optionally logs the completion with the duration.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;operation&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">"main"</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"operation"</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... perform operation ...</span>
-</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">duration</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">&quot;operation&quot;</span><span class="p">)</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed in </span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">duration</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">"operation"</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Completed in </span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -763,11 +763,11 @@ Only chronometers that haven’t been stopped yet are affected.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op1&quot;</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op2&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">"main"</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"op1"</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"op2"</span><span class="p">)</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">durations</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">stop_all</span><span class="p">()</span>
-</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total operations: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total operations: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -799,10 +799,10 @@ If still running, reports the current elapsed time.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;long_operation&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">"main"</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"long_operation"</span><span class="p">)</span>
 </span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... some time later ...</span>
-</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">elapsed</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;long_operation&quot;</span><span class="p">,</span> <span class="s2">&quot;Still processing...&quot;</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">elapsed</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">"long_operation"</span><span class="p">,</span> <span class="s2">"Still processing..."</span><span class="p">)</span>
 </span></pre></div>
 </div>
 </dd>
@@ -825,10 +825,10 @@ duration; for running ones, reports current elapsed time.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
-</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op1&quot;</span><span class="p">)</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">&quot;op2&quot;</span><span class="p">)</span>
-</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">&quot;op1&quot;</span><span class="p">)</span>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span> <span class="o">=</span> <span class="n">Chrono</span><span class="p">(</span><span class="s2">"main"</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"op1"</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s2">"op2"</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">chrono</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="s2">"op1"</span><span class="p">)</span>
 </span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">durations</span> <span class="o">=</span> <span class="n">chrono</span><span class="o">.</span><span class="n">report_all</span><span class="p">()</span>
 </span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Reports final duration for op1, current elapsed for op2</span>
 </span></pre></div>
@@ -866,12 +866,12 @@ logger and log level.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">mango.logging.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_time</span>
 </span><span data-line="2"><span class="gp">&gt;&gt;&gt;</span>
-</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@log_time</span><span class="p">(</span><span class="s2">&quot;my_logger&quot;</span><span class="p">,</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nd">@log_time</span><span class="p">(</span><span class="s2">"my_logger"</span><span class="p">,</span> <span class="s2">"DEBUG"</span><span class="p">)</span>
 </span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">slow_function</span><span class="p">():</span>
 </span><span data-line="5"><span class="gp">... </span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</span><span data-line="6"><span class="gp">... </span>    <span class="k">return</span> <span class="s2">&quot;done&quot;</span>
+</span><span data-line="6"><span class="gp">... </span>    <span class="k">return</span> <span class="s2">"done"</span>
 </span><span data-line="7"><span class="gp">&gt;&gt;&gt;</span>
-</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">slow_function</span><span class="p">()</span>  <span class="c1"># Logs: &quot;slow_function took 1.00 seconds&quot;</span>
+</span><span data-line="8"><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">slow_function</span><span class="p">()</span>  <span class="c1"># Logs: "slow_function took 1.00 seconds"</span>
 </span></pre></div>
 </div>
 </dd>

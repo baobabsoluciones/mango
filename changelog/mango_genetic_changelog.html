@@ -136,9 +136,13 @@ data-aria-dark="Switch to auto color mode">
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#unreleased">[Unreleased]</a></li>
-<li><a class="reference internal" href="#id1">[1.0.1] - 2025-09-29</a></li>
-<li><a class="reference internal" href="#added">Added</a></li>
+<li><a class="reference internal" href="#id1">[1.0.3] - 2026-10-27</a></li>
 <li><a class="reference internal" href="#changed">Changed</a></li>
+<li><a class="reference internal" href="#removed">Removed</a></li>
+<li><a class="reference internal" href="#security">Security</a></li>
+<li><a class="reference internal" href="#id2">[1.0.1] - 2025-09-29</a></li>
+<li><a class="reference internal" href="#added">Added</a></li>
+<li><a class="reference internal" href="#id3">Changed</a></li>
 <li><a class="reference internal" href="#features">Features</a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -183,7 +187,30 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <h2>[Unreleased]<a class="headerlink" href="#unreleased" title="Link to this heading">¶</a></h2>
 </section>
 <section id="id1">
-<h2>[1.0.1] - 2025-09-29<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>[1.0.3] - 2026-10-27<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+</section>
+<section id="changed">
+<h2>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Allow <code class="docutils literal notranslate"><span class="pre">numpy&gt;=1.24.4,&lt;3.0.0</span></code> (was <code class="docutils literal notranslate"><span class="pre">&lt;2.0.0</span></code>)</p></li>
+<li><p>Depend on <code class="docutils literal notranslate"><span class="pre">mango&gt;=1.0.3,&lt;2.0.0</span></code> instead of the exact pin <code class="docutils literal notranslate"><span class="pre">mango==1.0.2</span></code></p></li>
+</ul>
+</section>
+<section id="removed">
+<h2>Removed<a class="headerlink" href="#removed" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Dropped Python 3.10 support (end of life since 2026-10); <code class="docutils literal notranslate"><span class="pre">requires-python</span></code> is now <code class="docutils literal notranslate"><span class="pre">&gt;=3.11</span></code></p></li>
+</ul>
+</section>
+<section id="security">
+<h2>Security<a class="headerlink" href="#security" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Require <code class="docutils literal notranslate"><span class="pre">mango&gt;=1.0.3</span></code>, <code class="docutils literal notranslate"><span class="pre">certifi&gt;=2026.10.19,&lt;2027.0.0</span></code> and <code class="docutils literal notranslate"><span class="pre">urllib3&gt;=2.8.0</span></code></p></li>
+<li><p>Refreshed <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> to patched versions of vulnerable dependencies</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>[1.0.1] - 2025-09-29<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
 </section>
 <section id="added">
 <h2>Added<a class="headerlink" href="#added" title="Link to this heading">¶</a></h2>
@@ -200,8 +227,8 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p>Comprehensive testing infrastructure with pytest</p></li>
 </ul>
 </section>
-<section id="changed">
-<h2>Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h2>
+<section id="id3">
+<h2>Changed<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Migrated from integrated module to standalone package</p></li>
 <li><p>Updated project configuration and dependencies</p></li>
