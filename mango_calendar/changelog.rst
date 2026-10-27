@@ -6,6 +6,13 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
+[1.0.1] - 2026-10-27
+--------------------
+
+Changed
+-------
+- Added upper bounds to all dependencies to prevent breakages from future major releases
+
 Removed
 -------
 - Dropped Python 3.10 support (end of life since 2026-10); ``requires-python`` is now ``>=3.11``
